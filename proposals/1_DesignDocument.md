@@ -21,18 +21,26 @@ The platform will enable citizens to reconstruct a fuller picture of their polic
 We will construct a database consisting of every officer in the Chicago Police Department.
 
 We have already acquired the basic linking dataset through FOIA, which consists of:
-• the name of each officer
-• the rank of each officer
-• the badge number of each officer (changes upon promotion so this will not be the primary key)
-• the gender of each officer
-• the race of each officer
-• the hire date of each officer
+
+* the name of each officer
+
+* the rank of each officer
+
+* the badge number of each officer (changes upon promotion so this will not be the primary key)
+
+* the gender of each officer
+
+* the race of each officer
+
+* the hire date of each officer
 
 This can be joined with salary information on the city of Chicago's open data portal to provide:
-• the salary of each officer
+
+* the salary of each officer
 
 In addition, for a subset of those officers that have received complaints we can link this data with the Invisible Institute's database to provide:
-• the (incomplete) complaint history of some officers
+
+* the (incomplete) complaint history of some officers
 
 We will be adding photos and facial recognition data to each officer. 
 
