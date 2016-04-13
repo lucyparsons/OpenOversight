@@ -1,12 +1,18 @@
 # Proposal 1: OpenOversight Design
 
+1. [Goal](#goal)
+2. [Motivations in Chicago](#motivations-in-chicago)
+3. [Initial Build](#initial-build)
+4. [Potential Extensions](#potential-extensions)
+5. [Potential Issues and Ethical Concerns](#potential-issues-and-ethical-concerns)
+
 # Goal
 
 The application of surveillance technologies and FOIA to get a systematic view of police actions for citizen transparency, accountability and oversight. 
 
 We will be using Chicago as a prototype, but we will build this platform such that other cities can contribute to it and use it to hold their own police departments accountable. 
 
-# Motivations in Chicago: 
+# Motivations in Chicago
 
 * Complaints are thrown away: A large fraction of complaints to the Chicago Police Department are thrown out because the police officer accused of misconduct cannot be identified. A complainant may not have provided the accused officers' badge number or name, but instead may have a picture or a description of what the officer looked like as well as where they were at a given time, but CPD is unable/unwilling to determine who that officer is. A public interface of police activity - for this concern, the officers identity and where they are active - would enable Chicago residents that are wronged by the police to be able to submit a complaint attributing their abuse to the correct individual. 
 
@@ -107,7 +113,7 @@ Here we would use [openalpr](https://github.com/openalpr/openalpr) to run the li
 
 Scraping of officer content on Twitter / Facebook / LinkedIn. 
 
-# Potential issues / ethical concerns: 
+# Potential issues and ethical concerns
 
 * We are conducting mass surveillance of Chicago Police officers and people may take issue with that. This will probably be the brunt of the criticism, but they are public officers and as such the public is entitled to information about their activities for accountability and oversight. There is a serious lack of accountability of police actions in many cities including Chicago and a platform like this could be part of the solution.  
 
