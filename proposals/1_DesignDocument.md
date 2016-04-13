@@ -8,11 +8,11 @@ We will be using Chicago as a prototype, but we will build this platform such th
 
 # Motivations in Chicago: 
 
-* Complaints are thrown away: A large fraction of complaints to the Chicago Police Department are thrown out because the  police officer accused of conduct cannot be identified. A complainant may not have provided a badge number or name, but instead may have a picture or a description of what the officer looked like as well as where they were at a given time, but CPD is unable/unwilling to determine who that officer is. A system that can build a public interface of police activity would enable Chicago residents that are wronged by the police to be able to submit a complaint attributing their abuse to the correct individual. 
+* Complaints are thrown away: A large fraction of complaints to the Chicago Police Department are thrown out because the police officer accused of misconduct cannot be identified. A complainant may not have provided the accused officers' badge number or name, but instead may have a picture or a description of what the officer looked like as well as where they were at a given time, but CPD is unable/unwilling to determine who that officer is. A public interface of police activity - for this concern, the officers identity and where they are active - would enable Chicago residents that are wronged by the police to be able to submit a complaint attributing their abuse to the correct individual. 
 
 # Initial Build
 
-The platform will enable citizens to reconstruct a fuller picture of their police department. 
+The platform will enable citizens to reconstruct a fuller picture of their police department. The initial build focuses on associating information about a police officer such as a photo of them with an identity. 
 
 ## Components
 
@@ -40,13 +40,13 @@ This can be joined with salary information on the city of Chicago's open data po
 
 In addition, for a subset of those officers that have received complaints we can link this data with the Invisible Institute's database to provide:
 
-* the (incomplete) complaint history of some officers
+* the (incomplete) complaint and investigation history of some officers
 
 We will be adding photos and facial recognition data to each officer. 
 
 ### Frontend Web Application
 
-We will build a web application that can be used to: submit new images for analysis (in "Submit Data") as well as search for new officers ("Find a Chicago Police Officer")
+We will build a web application that can be used to: submit new images for analysis (in "Submit Data") as well as search for new officers (in "Find a Chicago Police Officer")
 
 #### Browse the Database
 
@@ -54,19 +54,19 @@ A user can manually page through the database and select an individual officer t
 
 #### Submit Data
 
-Users should be able to submit images and videos (see "Data Collection" below) for review and inclusion into the database. For quality control purposes, images and videos should be reviewed to ensure the right officer is associated with each image. These reviews and classifications could be distributed to our users (see "Classify Images" below). 
+Users should be able to submit images and videos (see "Data Collection" below) for review and inclusion into the database. For quality control purposes, images and videos should be reviewed to ensure the right officer is associated with each image. These reviews and classifications will be distributed to our users (see "Classify Images" below). 
 
 #### Classify Images
 
-Landing page for those that wish to help us review (classification and verification) of images. We would require multiple users to check each image, and at least one trusted user for each image. Consensus between trusted users and users with accounts will help establish which users could become trusted in the future. This necessitates accounts to be made on the website for this purpose. We could also have a public leaderboard to encourage users to participate and to reward those that contribute a significant amount of time to reviewing images (similarly to those who contribute a lot of training data). 
+Landing page for those that wish to help us review (classification and verification) of images. We would require multiple users to check each image, and will have at least one trusted user examine each image. Consensus between trusted users accounts and untrusted user accounts will help establish which users could become trusted in the future. We could also have a public leaderboard to encourage users to participate and to reward those that contribute a significant amount of time to reviewing images (similarly for those who contribute a lot of training data). 
 
 #### Find a Chicago Police Officer
 
 Initially, we can use demographic information that we have about each officer (approximate age, race, gender etc.) to filter down the full dataset. 
 
-This will generate a series of "digital line ups" that Chicago residents can use to try and determine which officer they interacted with. If a match is erroneously reported by a user and an officer is falsely accused of misconduct, CPD should be able to use its internal data sources to exonerate the officer. 
+Then we will generate a series of "digital line ups" that Chicago residents can use to try and determine which officer they interacted with. If a match is erroneously reported by a user and an officer is falsely accused of misconduct, CPD should be able to use its internal data sources to exonerate the officer. 
 
-However, after sufficient training data is procured, we can allow a user to submit an image of an officer and we can try to match the face with one in our database. If the test image is not of a police officer or cannot be matched, we can proceed with the "digital line up" and delete the image from our servers. 
+In addition, after sufficient training data is procured, we can allow a user to submit an image of an officer and we can try to match the face with one in our database. If the test image is not of a police officer or cannot be matched, we can proceed with the "digital line up".
 
 ### Machine Learning: Face Detection and Recognition
 
@@ -82,7 +82,7 @@ Note that many images of each officer will be required in order to reliably perf
 
 *  We can also scrape data from public accounts operated by the Chicago Police Department. 
 
-*  We will also want to solicit video and still images from the public. We can encourage people on the street to submit any images they have, and we can also further build our training data by encouraging people to photograph police officers in the course of their duty. 
+*  We will also want to solicit video and still images from the public. We can encourage people to submit any images they have, and we can also further build our training data by encouraging people to photograph police officers in the course of their duty. 
 
 ### Possible data collection applications: 
 
