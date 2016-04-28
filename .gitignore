@@ -1,3 +1,11 @@
+# Make sure data files don't get uploaded
+*.xls
+*.xlsx
+*.csv
+
+# Credentials
+dbcred*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
