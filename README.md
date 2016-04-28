@@ -13,8 +13,6 @@ Our technology stack:
 
 This project is written and maintained by @redshiftzero with contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or use our crowd-sourced human labeling tool to help build training datasets.
 
-One way to get images for the dataset is to say that you are traveling and ask to have your picture taken with a CPD officer. Ensure that their badge number, face, and name tag are clearly displayed. 
-
 ## Issues
 
 Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//issues/new) to submit issues or suggestions. 
