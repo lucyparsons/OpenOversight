@@ -7,7 +7,7 @@ As a proof of concept, OpenOversight currently uses the Chicago Police Departmen
 Our technology stack:
  * We use Python 2.7 as we have deps not yet Python 3 compatible 
  * Machine learning and facial recognition: openface, opencv
- * Web frontend: Django
+ * Web frontend: Flask
  * Database backend: psycopg2, PostgreSQL
  * ETL toolchain: pandas, sqlalchemy
 
