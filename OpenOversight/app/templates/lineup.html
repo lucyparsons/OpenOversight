@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+<h1>Results</h1>
+
+<h4>Your Search:</h4>
+
+<p>Department: {{ form['dept'] }}</p>
+<p>Rank: {{ form['rank'] }}</p>
+<p>Race: {{ form['race'] }}</p>
+<p>Gender: {{ form['gender'] }}</p>
+<p>Age: {{ form['min_age'] }} to {{ form['max_age'] }}</p>
+<p>Latitude: {{ form['latitude'] }}</p>
+<p>Longitude: {{ form['longitude'] }}</p>
+
+<div class="page-header">
+<h2>Digital Lineup <small>Do you see the officer here?</small></h2>
+</div>
+{{ officers }}
+
+</div>
+
+{% endblock %}
