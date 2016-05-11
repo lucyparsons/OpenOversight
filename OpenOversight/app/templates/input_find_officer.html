@@ -14,25 +14,49 @@
         <h2>Agency Information</h2>
     </div>
     <h4>Department: {{ form.dept }}</h4>
+    {% for error in form.dept.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
     <p>Don't see your department? Want to bring OpenOversight to your city? Email us at <a href="mailto:openoversight@redshiftzero.com">OpenOversight</a>.</p>
      
     <h4>Rank: {{ form.rank }}</h4>
+    {% for error in form.rank.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
 
     <div class="page-header">
         <h2>Demographic Information</h2>
     </div>
 
     <h4>Race: {{ form.race }}</h4>
+    {% for error in form.race.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
 
     <h4>Gender: {{ form.gender }}</h4>
+    {% for error in form.gender.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
 
     <h4>Age: {{ form.min_age(size=4) }} to {{ form.max_age(size=4) }}</h4>
+    {% for error in form.min_age.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
+    {% for error in form.max_age.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
 
     <div class="page-header">
         <h2>Location Information</h2>
     </div>
     <h4>Latitude: {{ form.latitude(size=10) }}</h4>
+    {% for error in form.latitude.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
     <h4>Longitude: {{ form.longitude(size=10) }}</h4>
+    {% for error in form.longitude.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
     <p>The location of where the event occured can help us identify an officer.</p>
 
     <div class="page-header">
@@ -41,6 +65,9 @@
     <p>Uploading an image of the officer's face will enable us to run facial recognition to determine if we find a matching face in our database.</p> 
 
     {{ form.upload }} 
+    {% for error in form.upload.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
 
     <div class="page-header">
         <h2>Ready to Submit?</h2>

@@ -19,6 +19,7 @@ def index():
 def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
+        flash('[DEBUG] Forms validate correctly')
         return redirect('/lineup')
     return render_template('input_find_officer.html', form=form)
 
