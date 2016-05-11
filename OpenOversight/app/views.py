@@ -3,9 +3,10 @@ from flask import (render_template, request, redirect, url_for,
                   send_from_directory)
 from werkzeug import secure_filename
 from app import app
+import pdb
 
 from utils import allowed_file
-import config
+from forms import FindOfficerForm
 
 
 @app.route('/')
@@ -16,14 +17,17 @@ def index():
 
 @app.route('/find')
 def get_officer():
+    form = FindOfficerForm()
+    if form.validate_on_submit():
+        return redirect('/lineup')
+    return render_template('input_find_officer.html', form=form)
 
-    return render_template('input_find_officer.html')
 
-
-@app.route('/lineup')
+@app.route('/lineup', methods=['GET', 'POST'])
 def get_lineup():
-    
-    return render_template('lineup.html')
+    officers = ['Alice', 'Bob']
+    form_values = request.form
+    return render_template('lineup.html', officers=officers, form=form_values)
 
 
 @app.route('/submit')
@@ -36,7 +40,7 @@ def upload_file():
     file = request.files['file']
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(config.UNLABELLED_UPLOADS, filename))
+        file.save(os.path.join(app.config['UNLABELLED_UPLOADS'], filename))
         return redirect(url_for('show_upload',
                                 filename=filename))
 
