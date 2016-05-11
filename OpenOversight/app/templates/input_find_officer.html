@@ -7,7 +7,7 @@
     <h1>Find an Officer</h1>
     <p>Here you will provide what you know about the officer. Don't worry if you don't know or have all the information here. We will take what you provide and generate a digital line-up for you to examine to see if you recognize the officer in question.</p>
     <p>Note that this form is designed for you to search for one officer at a time. If you want to file a complaint on multiple officers, you should use this service multiple times.</p>
-    <form action="{{ url_for('get_lineup') }}" method="post">
+    <form action="{{ url_for('get_officer') }}" method="post">
     {{ form.hidden_tag() }}
 
     <div class="page-header">
