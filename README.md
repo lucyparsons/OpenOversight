@@ -1,6 +1,6 @@
 # OpenOversight
 
-OpenOversight is a Lucy Parson Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide a set of tools including facial recognition capabilities and digital line-ups to help people identify police officers they would like to file a complaint on.
+OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide a set of tools including facial recognition capabilities and digital line-ups to help people identify police officers they would like to file a complaint on.
 
 As a proof of concept, OpenOversight currently uses the Chicago Police Department but this infrastructure will be used to extent the project to other cities where additional oversight is needed. Interested in helping bring OpenOversight to your city? Email us at openoversight@redshiftzero.com.  
 

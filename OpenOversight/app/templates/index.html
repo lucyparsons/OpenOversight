@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="container theme-showcase" role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h1>OpenOversight</h1>
+        <p>OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide tools including facial recognition capabilities and digital line-ups to help people identify police officers they would like to file a complaint about. <button type="button" class="btn btn-default">Read More</button></p>
+      </div>
+
+      <div class="page-header">
+        <h1>Find an Officer</h1>
+      </div>
+      <p>
+        <a href="/find"><button type="button" class="btn btn-lg btn-primary">Get Started</button></a>
+      </p>
+     
+      <div class="page-header">
+        <h1>Contribute Images or Work</h1>
+      </div>
+      <p> 
+        <a href="/submit"><button type="button" class="btn btn-lg btn-primary">Submit Images</button></a>
+      </p>
+      <p> 
+        <a href="/label"><button type="button" class="btn btn-lg btn-primary">Put me to Work!</button></a>
+      </p>
+
+    {% endblock %}
