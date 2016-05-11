@@ -1,6 +1,6 @@
 import os
 from flask import (render_template, request, redirect, url_for,
-                  send_from_directory)
+                  send_from_directory, flash)
 from werkzeug import secure_filename
 from app import app
 import pdb
@@ -15,12 +15,12 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/find')
+@app.route('/find', methods=['GET', 'POST'])
 def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
         flash('[DEBUG] Forms validate correctly')
-        return redirect('/lineup')
+        return redirect(url_for('get_lineup'), code=307)
     return render_template('input_find_officer.html', form=form)
 
 
