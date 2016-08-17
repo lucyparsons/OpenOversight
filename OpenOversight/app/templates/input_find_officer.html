@@ -60,16 +60,6 @@
     <p>The location of where the event occured can help us identify an officer.</p>
 
     <div class="page-header">
-        <h2>Facial Recognition</h2>
-    </div>
-    <p>Uploading an image of the officer's face will enable us to run facial recognition to determine if we find a matching face in our database.</p> 
-
-    {{ form.upload }} 
-    {% for error in form.upload.errors %}
-        <p><span style="color: red;">[{{ error }}]</span></p>
-    {% endfor %}
-
-    <div class="page-header">
         <h2>Ready to Submit?</h2>
     </div>
     <input type="submit" value="Go!" />
