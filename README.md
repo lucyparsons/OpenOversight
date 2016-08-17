@@ -1,17 +1,18 @@
 # OpenOversight
 
-OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide a set of tools including facial recognition capabilities and digital line-ups to help people identify police officers they would like to file a complaint on.
+OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide digital line-ups to help people identify police officers they would like to file a complaint on.
 
-As a proof of concept, OpenOversight currently uses the Chicago Police Department but this infrastructure will be used to extent the project to other cities where additional oversight is needed. Interested in helping bring OpenOversight to your city? Email us at openoversight@redshiftzero.com.  
+As a proof of concept, OpenOversight currently uses the Chicago Police Department but this infrastructure will be used to extent the project to other cities where it is needed. Interested in helping bring OpenOversight to your city? Email us at info@lucyparsonslabs.com.  
 
 Our technology stack:
+
  * We use Python 2.7 as we have deps not yet Python 3 compatible 
- * Machine learning and facial recognition: openface, opencv
+ * Face detection: openface, opencv
  * Web frontend: Flask, WTForms for input validation
  * Database backend: psycopg2, PostgreSQL
  * ETL toolchain: pandas, sqlalchemy
 
-This project is written and maintained by @redshiftzero with contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or use our crowd-sourced human labeling tool to help build training datasets.
+This project is written and maintained by @lucyparsonslabs with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or use our crowd-sourced human labeling tool to help build training datasets.
 
 ## Issues
 
