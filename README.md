@@ -24,7 +24,7 @@ TODO
 
 ## Components
 
-* `OpenOversight`: the main web application and facial recognition code
+* `OpenOversight`: digital line up web application 
 * `socmint`: scripts for gathering images from social media, currently just official police accounts
 * `etl`: scripts for taking primarily data dumps from FOIA and other organizations, cleaning them, and uploading them into our database 
 * `database`: details of how our officer and image databases are set up 
@@ -34,4 +34,4 @@ TODO
 * Public datasets: Download recently tweeted photos from official police accounts. 
 * Linking dataset: In order to provide identities of officers, we need the roster of all police officers as well as their star number history (if star numbers change upon promotion). 
 * Solicitation from our users: Get users to submit images of police officers they take or find online to augment our training data.
-* Officer activity information: Acquired through FOIA
+* Officer activity information: TODO acquire through FOIA
