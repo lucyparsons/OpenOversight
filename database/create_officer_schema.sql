@@ -1,0 +1,2 @@
+DROP SCHEMA IF EXISTS officers CASCADE;
+CREATE SCHEMA officers;
