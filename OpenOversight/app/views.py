@@ -4,9 +4,11 @@ from flask import (render_template, request, redirect, url_for,
 from werkzeug import secure_filename
 from app import app
 import pdb
+from sqlalchemy import create_engine
 
-from utils import allowed_file
+from utils import allowed_file, grab_officers
 from forms import FindOfficerForm
+import dbcred
 
 
 @app.route('/')
@@ -19,16 +21,24 @@ def index():
 def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
-        flash('[DEBUG] Forms validate correctly')
+        pass
+        #flash('[DEBUG] Forms validate correctly')
         return redirect(url_for('get_lineup'), code=307)
     return render_template('input_find_officer.html', form=form)
 
 
 @app.route('/lineup', methods=['GET', 'POST'])
 def get_lineup():
-    officers = ['Alice', 'Bob']
+    engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbcred.user, dbcred.password,
+                                                                dbcred.host, dbcred.port,
+                                                                'chicagopolice'))
     form_values = request.form
-    return render_template('lineup.html', officers=officers, form=form_values)
+    officers = grab_officers(form_values,  engine)
+    #officer_images = []
+    #for officer in officers:
+    #    officer_images.append('http://placehold.it/400x300')
+    return render_template('lineup.html', officers=officers, # officer_images=officer_images,
+                           form=form_values)
 
 
 @app.route('/submit')

@@ -5,10 +5,10 @@ from flask_wtf.file import FileAllowed
 
 
 # Choices are a list of (value, label) tuples
-RACE_CHOICES = [('Black', 'Black'), ('White', 'White'), ('Asian', 'Asian'),
-                ('Hispanic', 'Hispanic'), ('Other', 'Other'),
-                ('Not Sure', 'Not Sure')]
-GENDER_CHOICES = [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other'),
+RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
+                ('HISPANIC', 'Hispanic'), ('PACIFIC ISLANDER', 'Pacific Islander'), 
+                ('Other', 'Other'), ('Not Sure', 'Not Sure')]
+GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
                   ('Not Sure', 'Not Sure')]
 RANK_CHOICES = [('Not Sure', 'Not Sure'), ('PO', 'Police Officer'),
                 ('FTO', 'Field Training Officer'), ('SGT', 'Sergeant'),
