@@ -10,7 +10,12 @@ RACE_CHOICES = [('Black', 'Black'), ('White', 'White'), ('Asian', 'Asian'),
                 ('Not Sure', 'Not Sure')]
 GENDER_CHOICES = [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other'),
                   ('Not Sure', 'Not Sure')]
-RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SGT', 'Sergeant')]
+RANK_CHOICES = [('Not Sure', 'Not Sure'), ('PO', 'Police Officer'),
+                ('FTO', 'Field Training Officer'), ('SGT', 'Sergeant'),
+                ('LT', 'Lieutenant'), 
+                ('CPT', 'Captain'), ('CMDR', 'Commander'),
+                ('DEPCHIEF', 'Deputy Chief'), ('CHIEF', 'Chief'), 
+                ('DEPSUPERINT', 'Deputy Superintendent'), ('SUPERINT', 'Superintendent')]
 DEPT_CHOICES = [('ChicagoPD', 'Chicago Police Department')]
 
 
