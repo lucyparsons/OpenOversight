@@ -1,4 +1,4 @@
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms import StringField, BooleanField, DecimalField, SelectField, IntegerField, FileField
 from wtforms.validators import DataRequired, AnyOf, NumberRange
 from flask_wtf.file import FileAllowed
@@ -49,6 +49,4 @@ class FindOfficerForm(Form):
     longitude = DecimalField('longitude', default=False, validators=[
         NumberRange(min=-180, max=180)
         ])
-    upload = FileField('image', default=False, validators=[
-        FileAllowed(['png', 'jpg', 'jpeg'], 'Images only!')
-        ])
+
