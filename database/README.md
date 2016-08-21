@@ -1,9 +1,30 @@
 # Database Setup
 
-## Roster
+## Schema/Table Creation
 
-The backend is an Amazon RDS PostgreSQL database.
+Tables should be created in this order due to foreign key constraints:
 
-## Image Storage
+```
+psql -f create_officer_schema.sql
+psql -f create_officer_roster.sql
+psql -f create_table_raw_images.sql
+psql -f create_officer_faces.sql
+psql -f create_officer_assignments.sql
+psql -f create_officer_unit_types.sql
+```
 
-We store the officer images on Amazon S3, and have a table in PostgreSQL that keeps track of which officers each image is associated with. Each police department has an S3 bucket with a series of directories each named for an officer's `oo_id` inside. 
+## Database Diagram
+
+![](oodb_with_rawimg_table.jpg)
+
+(if you want to nicely typeset this please do - and ideally in a way that enables us to easily make edits (e.g. LaTeX or graphviz))
+
+## Populating from Raw Data
+
+Everything here assumes that you executed the ETL scripts in `etl` to load the raw data into `public`. Once you've done that you can get the data into the form that the webapp expects using the following scripts:
+
+```
+psql -f populate_officer_roster.sql
+```
+
+Tables `faces` and `raw_images` are empty until rows are added by taggers and uploaders respectively. 
