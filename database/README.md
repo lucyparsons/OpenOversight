@@ -25,6 +25,7 @@ Everything here assumes that you executed the ETL scripts in `etl` to load the r
 
 ```
 psql -f populate_officer_roster.sql
+psql -f populate_officer_unittypes.sql
 ```
 
 Tables `faces` and `raw_images` are empty until rows are added by taggers and uploaders respectively. 
