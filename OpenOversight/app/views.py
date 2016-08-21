@@ -33,7 +33,7 @@ def get_lineup():
                                                                 dbcred.host, dbcred.port,
                                                                 'chicagopolice'))
     form_values = request.form
-    officers = grab_officers(form_values,  engine)
+    officers = grab_officers(form_values, engine)
     #officer_images = []
     #for officer in officers:
     #    officer_images.append('http://placehold.it/400x300')
