@@ -25,6 +25,7 @@ Everything here assumes that you executed the ETL scripts in `etl` to load the r
 
 ```
 psql -f populate_officer_roster.sql
+psql -f populate_officer_assignments.sql
 psql -f populate_officer_unittypes.sql
 ```
 
