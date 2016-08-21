@@ -1,4 +1,6 @@
-import config 
+import config
+import datetime
+
 
 def grab_officers(form, engine):
     where_clauses = []
@@ -8,20 +10,22 @@ def grab_officers(form, engine):
     if form['gender'] in ('M', 'F'):
         where_clauses.append("gender = '{}'".format(form['gender']))
 
-    base_query = 'SELECT officer_id, first_name, middle_initial, last_name from officers.roster'
+    current_year = datetime.datetime.now().year
+    min_birth_year = current_year - int(form['min_age'])
+    max_birth_year = current_year - int(form['max_age'])
 
-    if where_clauses != []:
-        where_clause = ' and '.join(where_clauses)
-        full_query = '{} where {}'.format(base_query, where_clause)
-    else:
-        full_query = base_query
+    where_clause = ' AND '.join(where_clauses)
+    query = ('SELECT officer_id, first_name, middle_initial, last_name, birth_year '
+             'FROM officers.roster '
+             'WHERE ((birth_year > {} AND birth_year < {}) '
+             'OR birth_year is null) AND {}').format(min_birth_year, max_birth_year, where_clause)
 
-    return engine.execute(full_query)
+    return engine.execute(query)
 
 
 def grab_officer_face(id, engine):
     pass
-    return None
+    return 'blah'
 
 
 def allowed_file(filename):
