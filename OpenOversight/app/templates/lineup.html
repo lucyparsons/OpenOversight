@@ -4,42 +4,37 @@
 <div class="container theme-showcase" role="main">
 
     <div class="container">
-
         <div class="row">
-
             <div class="col-lg-12">
                 <h1 class="page-header">Digital Lineup <small>Do you see the officer here?</small></h1>
             </div>
-
-            {% if officers.rowcount < 1: %}
             <div class="container">
-                <h4>No officers found matching your query</h4>
-            </div>
-            {% endif %}
+            <!--<h3><small>We found</small> {{ officers.rowcount }} <small>matching officers.</small></h3>-->
+
             {% for officer in officers %}
             <div class="col-lg-3 col-md-4 col-xs-6 thumb">
-                <h4>{{ officer[0].lower()|title }} 
-                {% if officer[1] %}{{ officer[1] }}. {% endif %}
-                {{ officer[2].lower()|title }} <small>#{{ officer[8] }}</small></h4>
-                <a class="thumbnail" href="#">
-                    <img class="img-responsive" src="http://placehold.it/400x300" alt="">
-                </a>
+                <h5>{{ officers[officer]['first_name'].lower()|title }} 
+                {% if officers[officer]['middle_initial'] %}{{ officers[officer]['middle_initial'] }}. {% endif %}
+                {{ officers[officer]['last_name'].lower()|title }} <small>#{{ officers[officer]['star_no'] }}</small></h5>
+                <!--<a class="thumbnail" href="#">-->
+                    <img class="img-responsive thumbnail" src="{{ officer_images[officer] }}" alt="">
+                <!--</a>-->
             </div>
             {% endfor %}
+            </div>
+
         </div>
 
 <div class="page-header">
-<h2>Your Query</h2>
-
-<h4>You searched based on:</h4>
+<h1>Your Query</h1>
 </div>
-<p>Department: {{ form['dept'] }}</p>
-<p>Rank: {{ form['rank'] }}</p>
-<p>Race: {{ form['race'] }}</p>
-<p>Gender: {{ form['gender'] }}</p>
-<p>Age: {{ form['min_age'] }} to {{ form['max_age'] }}</p>
-<p>Latitude: {{ form['latitude'] }}</p>
-<p>Longitude: {{ form['longitude'] }}</p>
+<p><b>Department</b>: {{ form['dept'] }}</p>
+<p><b>Officer rank</b>: {{ form['rank'] }}</p>
+<p><b>Officer race</b>: {{ form['race'] }}</p>
+<p><b>Officer gender</b>: {{ form['gender'] }}</p>
+<p><b>Officer age</b>: {{ form['min_age'] }} to {{ form['max_age'] }}</p>
+<p><b>Incident latitude</b>: {{ form['latitude'] }}</p>
+<p><b>Incident longitude</b>: {{ form['longitude'] }}</p>
 
 </div>
 
