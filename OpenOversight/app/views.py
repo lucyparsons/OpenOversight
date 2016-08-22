@@ -6,7 +6,7 @@ from app import app
 import pdb
 from sqlalchemy import create_engine
 
-from utils import allowed_file, grab_officers
+from utils import allowed_file, grab_officers, grab_officer_faces
 from forms import FindOfficerForm
 import dbcred
 
@@ -33,12 +33,30 @@ def get_lineup():
                                                                 dbcred.host, dbcred.port,
                                                                 'chicagopolice'))
     form_values = request.form
+
     officers = grab_officers(form_values, engine)
-    #officer_images = []
-    #for officer in officers:
-    #    officer_images.append('http://placehold.it/400x300')
-    return render_template('lineup.html', officers=officers, # officer_images=officer_images,
-                           form=form_values)
+    results_dict = {}
+    officer_ids, full_names = [], []
+    for officer in officers:
+        officer_id = officer[5]
+        current_full_name = '{} {} {}'.format(officer[0], officer[1], officer[2])
+        if current_full_name in full_names:
+            continue
+        else:
+            full_names.append(current_full_name)
+            results_dict.update({officer_id: { 
+                'first_name': officer[0],
+                'last_name': officer[2],
+                'middle_initial': officer[1],
+                'star_no': officer[8]
+                }})
+            officer_ids.append(officer_id)
+
+    if len(officer_ids) > 0:
+        officer_images = grab_officer_faces(officer_ids, engine)
+
+    return render_template('lineup.html', officers=results_dict, form=form_values, 
+                           officer_images=officer_images)
 
 
 @app.route('/submit')
