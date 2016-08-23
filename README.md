@@ -30,6 +30,10 @@ Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//iss
 * `socmint`: scripts for gathering images from social media, currently just official police accounts
 * `etl` and `database`: scripts for taking primarily data dumps from FOIA and other organizations, cleaning them, and uploading them into our database
 
+# Installation
+
+Please see the `DEPLOY.md` file for installation instructions.
+
 ## Data Collection
 
 * Public datasets: Download recently tweeted photos from official police accounts. 
