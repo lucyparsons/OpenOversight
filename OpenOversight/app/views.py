@@ -94,3 +94,7 @@ def about_oo():
 @app.route('/contact')
 def contact_oo():
     return render_template('contact.html')
+
+@app.route('/privacy')
+def privacy_oo():
+    return render_template('privacy.html')
