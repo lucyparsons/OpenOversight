@@ -72,3 +72,26 @@ Change the ***REMOVED*** key used for generating tokens to prevent cross-site re
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'changemeplzorelsehax'
 ```
+
+# Systemd
+
+You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7).
+```
+[Unit]
+Description=Gunicorn instance to serve OpenOversight
+After=network.target
+
+[Service]
+User=nginx
+Group=nginx
+WorkingDirectory= /home/nginx/oovirtenv/OpenOversight/OpenOversight
+Environment="PATH=/home/nginx/oovirtenv/bin"
+ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 app:app &
+
+[Install]
+WantedBy=multi-user.target
+```
+
+# Contact
+
+If you're running into installation problems, please open an issue or email us `info AT lucyparsonslabs DOT com`
