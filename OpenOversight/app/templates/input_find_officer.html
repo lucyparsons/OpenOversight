@@ -47,19 +47,6 @@
     {% endfor %}
 
     <div class="page-header">
-        <h2>Location Information</h2>
-    </div>
-    <h4>Latitude: {{ form.latitude(size=10) }}</h4>
-    {% for error in form.latitude.errors %}
-        <p><span style="color: red;">[{{ error }}]</span></p>
-    {% endfor %}
-    <h4>Longitude: {{ form.longitude(size=10) }}</h4>
-    {% for error in form.longitude.errors %}
-        <p><span style="color: red;">[{{ error }}]</span></p>
-    {% endfor %}
-    <p>The location of where the event occured can help us identify an officer.</p>
-
-    <div class="page-header">
         <h2>Ready to Submit?</h2>
     </div>
     <input type="submit" value="Go!" />
