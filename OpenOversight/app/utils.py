@@ -38,6 +38,9 @@ def grab_officers(form, engine):
 
 
 def grab_officer_faces(officer_ids, engine):
+    if len(officer_ids) == 0:
+        return []
+
     query = ('SELECT officer_id, t1.filepath FROM officers.raw_images t1 '
              'INNER JOIN officers.faces t2 '
              'ON t1.img_id = t2.img_id '
