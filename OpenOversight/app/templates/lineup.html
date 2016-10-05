@@ -55,6 +55,12 @@ img{
             {% endfor %}
             </div>
 
+            {% if officers|length == 0 %}
+            <div class="container">
+            <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
+            </div>
+            {% endif %}
+
         </div>
 
 <div class="page-header">
