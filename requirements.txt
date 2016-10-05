@@ -1,0 +1,6 @@
+flask
+werkzeug
+flask-WTF
+psycopg2
+sqlalchemy
+gunicorn==17.5

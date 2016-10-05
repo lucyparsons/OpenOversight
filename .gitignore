@@ -68,3 +68,12 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#Ruby stuff
+Gemfile.lock
+
+#Puppet module stuff
+vagrant/puppet/modules/
+vagrant/puppet/.tmp
+.librarian
+.vagrant
