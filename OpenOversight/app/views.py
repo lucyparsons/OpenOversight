@@ -52,8 +52,7 @@ def get_lineup():
                 }})
             officer_ids.append(officer_id)
 
-    if len(officer_ids) > 0:
-        officer_images = grab_officer_faces(officer_ids, engine)
+    officer_images = grab_officer_faces(officer_ids, engine)
 
     return render_template('lineup.html', officers=results_dict, form=form_values, 
                            officer_images=officer_images)
