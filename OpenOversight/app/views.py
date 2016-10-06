@@ -1,6 +1,6 @@
 import os
 from flask import (render_template, request, redirect, url_for,
-                  send_from_directory, flash)
+                  send_from_directory, flash, session)
 from werkzeug import secure_filename
 from app import app
 import pdb
@@ -56,6 +56,16 @@ def get_lineup():
 
     return render_template('lineup.html', officers=results_dict, form=form_values, 
                            officer_images=officer_images)
+
+
+@app.route('/complaint', methods=['GET', 'POST'])
+def submit_complaint():
+    return render_template('complaint.html',
+                           officer_first_name=request.args.get('officer_first_name'),
+                           officer_last_name=request.args.get('officer_last_name'),
+                           officer_middle_initial=request.args.get('officer_middle_name'),
+                           officer_star=request.args.get('officer_star'),
+                           officer_image=request.args.get('officer_image'))
 
 
 @app.route('/submit')
