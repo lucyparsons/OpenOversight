@@ -3,4 +3,6 @@ werkzeug
 flask-WTF
 psycopg2
 sqlalchemy
+sqlalchemy-migrate
+flask-sqlalchemy
 gunicorn==17.5
