@@ -1,5 +1,11 @@
 # Contributing Guide
 
+First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback. 
+
+## Submitting a PR
+
+When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit. 
+
 ## Development Environment
 
 If you don't have bundler installed:
