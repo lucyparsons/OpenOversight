@@ -1,4 +1,4 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, DecimalField, SelectField, IntegerField, FileField
 from wtforms.validators import DataRequired, AnyOf, NumberRange
 from flask_wtf.file import FileAllowed
@@ -23,7 +23,7 @@ def allowed_values(choices):
     return [x[0] for x in choices]
 
 
-class HumintContribution(Form):
+class HumintContribution(FlaskForm):
     photo = FileField('image', validators=[
         DataRequired(),
         FileAllowed(['png', 'jpg', 'jpeg', 'mpg', 'mpeg', 'mp4', 'mov'], 
@@ -31,7 +31,7 @@ class HumintContribution(Form):
     ])
 
 
-class FindOfficerForm(Form):
+class FindOfficerForm(FlaskForm):
     dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
                        validators=[DataRequired(),
                                    AnyOf(allowed_values(DEPT_CHOICES))])
