@@ -53,7 +53,7 @@ def grab_officer_faces(officer_ids, engine):
     
     for officer_id in officer_ids:
         if officer_id not in officer_images.keys():
-            officer_images.update({officer_id: 'http://placehold.it/200x200'})
+            officer_images.update({officer_id: 'https://placehold.it/200x200'})
 
     return officer_images
 
