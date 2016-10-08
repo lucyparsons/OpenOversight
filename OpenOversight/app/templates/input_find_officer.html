@@ -24,6 +24,17 @@
         <p><span style="color: red;">[{{ error }}]</span></p>
     {% endfor %}
 
+    <p><a id="show_img">Show rank shoulder patches as reference</a></p>
+    <img id="hidden_img" style="display:none;" src="{{url_for('static', filename='images/OfficerRank.png')}}" width="30%" height="30%">
+
+    <script>
+    $(document).ready(function(){
+       $("#show_img").on("click", function(){
+          $("#hidden_img").show();
+       });
+    });
+    </script>
+
     <div class="page-header">
         <h2>Demographic Information</h2>
     </div>
