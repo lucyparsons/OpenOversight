@@ -6,9 +6,12 @@ services:
     build: .
     ports:
       - "8000"
+    depends_on:
+      - postgres
     volumes:
       - /usr/src/app
       - /usr/src/app/static
+      - /storage/docker/uploads:/app/uploads
     command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:8000 app:app 
 
   nginx:
@@ -24,3 +27,14 @@ services:
     depends_on:
       - web
     command: nginx -g 'daemon off;'
+
+  postgres:
+    restart: always
+    build: ./docker/postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432"
+    volumes:
+      - /storage/docker/postgres-data:/var/lib/postgresql
