@@ -26,4 +26,8 @@ You can develop from here and also access the PostgreSQL development database vi
 
 with the password `terriblepassword`. 
 
+The credentials for the testing/development set up are expected to be in a file `$PGPASS`, so set that up: 
+
+`echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" >> ~/.pgpass`
+
 ## Running Unit Tests
