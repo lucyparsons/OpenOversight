@@ -20,14 +20,25 @@ This brings the vagrant box up and you can now SSH into it:
 
 `vagrant ssh`
 
-You can develop from here and also access the PostgreSQL development database via:
+You can access the PostgreSQL development database via psql using:
 
 `psql  -h localhost -d openoversight-dev -U openoversight --password`
 
 with the password `terriblepassword`. 
 
-The credentials for the testing/development set up are expected to be in a file `$PGPASS`, so set that up: 
+For the webapp, the credentials for the testing/development environment are expected to be in a file `$PGPASS`, so set that up: 
 
 `echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" >> ~/.pgpass`
+`echo "export PGPASS=~/.pgpass" >> ~/.bashrc`
+
+In the `OpenOversight` directory, there is a script to create the database:
+
+`python create_db.py`
+
+If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. However, if you're migrating the database, you can use:
+
+`python migrate_db.py`
+
+to generate migration scripts, then run `python upgrade_db.py` and `python downgrade_db.py` as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
 
 ## Running Unit Tests
