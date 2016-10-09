@@ -3,12 +3,9 @@ from flask import (render_template, request, redirect, url_for,
                   send_from_directory, flash, session)
 from werkzeug import secure_filename
 from app import app
-import pdb
-from sqlalchemy import create_engine
 
 from utils import allowed_file, grab_officers, grab_officer_faces
 from forms import FindOfficerForm
-import dbcred
 
 
 @app.route('/')
@@ -21,40 +18,20 @@ def index():
 def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
-        pass
-        #flash('[DEBUG] Forms validate correctly')
+        #  flash('[DEBUG] Forms validate correctly')
         return redirect(url_for('get_lineup'), code=307)
     return render_template('input_find_officer.html', form=form)
 
 
 @app.route('/lineup', methods=['GET', 'POST'])
 def get_lineup():
-    engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbcred.user, dbcred.password,
-                                                                dbcred.host, dbcred.port,
-                                                                'chicagopolice'))
     form_values = request.form
 
-    officers = grab_officers(form_values, engine)
-    results_dict = {}
-    officer_ids, full_names = [], []
-    for officer in officers:
-        officer_id = officer[5]
-        current_full_name = '{} {} {}'.format(officer[0], officer[1], officer[2])
-        if current_full_name in full_names:
-            continue
-        else:
-            full_names.append(current_full_name)
-            results_dict.update({officer_id: { 
-                'first_name': officer[0],
-                'last_name': officer[2],
-                'middle_initial': officer[1],
-                'star_no': officer[8]
-                }})
-            officer_ids.append(officer_id)
+    officers = grab_officers(form_values)
+    officer_ids = [officer.Officer.id for officer in officers]
+    officer_images = grab_officer_faces(officer_ids)
 
-    officer_images = grab_officer_faces(officer_ids, engine)
-
-    return render_template('lineup.html', officers=results_dict, form=form_values, 
+    return render_template('lineup.html', officers=officers, form=form_values,
                            officer_images=officer_images)
 
 
