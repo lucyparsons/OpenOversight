@@ -1,58 +1,51 @@
 import config
 import datetime
 
+from flask_sqlalchemy import SQLAlchemy
+from app import app
+from app.models import Officer, Assignment, Image, Face
+import pdb
 
-def grab_officers(form, engine):
-    where_clauses = []
+db = SQLAlchemy(app)
+
+
+def grab_officers(form):
+    officer_query = db.session.query(Officer, Assignment).join(Assignment)
 
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC', 'PACIFIC ISLANDER'):
-        where_clauses.append("race like '%%{}%%'".format(form['race']))
+        officer_query = officer_query.filter(Officer.race.like('%%{}%%'.format(form['race'])))
     if form['gender'] in ('M', 'F'):
-        where_clauses.append("gender = '{}'".format(form['gender']))
+        officer_query = officer_query.filter(Officer.gender == form['gender'])
     if form['rank'] =='PO':
-        where_clauses.append("(rank like '%%PO%%' or rank like '%%POLICE OFFICER%%' or rank is null)")
+        officer_query = officer_query.filter(db.or_(Assignment.rank.like('%%PO%%'),
+                                                    Assignment.rank.like('%%POLICE OFFICER%%'),
+                                                    Assignment.rank == None))
     if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN', 'COMMANDER', 
                         'DEP CHIEF', 'CHIEF', 'DEPUTY SUPT', 'SUPT OF POLICE'):
-        where_clauses.append("(rank like '%%{}%%' or rank is null)".format(form['rank']))
+        officer_query = officer_query.filter(db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
+                                                    Assignment.rank == None))
 
     current_year = datetime.datetime.now().year
     min_birth_year = current_year - int(form['min_age'])
     max_birth_year = current_year - int(form['max_age'])
+    officer_query = officer_query.filter(db.and_(Officer.birth_year <= min_birth_year,
+                                                 Officer.birth_year >= max_birth_year))
 
-    where_clause = ' AND '.join(where_clauses)
-    if len(where_clause) > 0:
-        where_clause = ' AND {}'.format(where_clause)
-
-    query = ('SELECT DISTINCT ON (t1.officer_id) '
-             't1.first_name, '
-             't1.middle_initial, t1.last_name, '
-             't1.race, t1.gender, t1.officer_id, '
-             't1.birth_year, t2.rank, t2.star_no, t2.start_date, t2.unit '
-             'FROM officers.roster t1 '
-             'INNER JOIN officers.assignments t2 '
-             'ON t1.officer_id = t2.officer_id '
-             'WHERE ((t1.birth_year <= {} AND t1.birth_year >= {}) '
-             'OR t1.birth_year is null) {} '
-             'ORDER BY t1.officer_id, t2.start_date DESC').format(min_birth_year, max_birth_year, where_clause)
-    return engine.execute(query)
+    return officer_query.all()
 
 
-def grab_officer_faces(officer_ids, engine):
+def grab_officer_faces(officer_ids):
     if len(officer_ids) == 0:
         return []
 
-    query = ('SELECT officer_id, t1.filepath FROM officers.raw_images t1 '
-             'INNER JOIN officers.faces t2 '
-             'ON t1.img_id = t2.img_id '
-             'WHERE officer_id in ({})').format(", ".join([str(x) for x in officer_ids]))
-    matches = engine.execute(query)
-
     officer_images = {}
-    for match in matches:
-        officer_images.update({match[0]: match[1]})
-    
+    face_query = db.session.query(Image, Face).join(Face)
     for officer_id in officer_ids:
-        if officer_id not in officer_images.keys():
+        faces = face_query.filter(Face.officer_id == officer_id).all()
+
+        if len(faces) > 0:
+            officer_images.update({officer_id: faces[0].Image.filepath})
+        else:   # use placeholder image
             officer_images.update({officer_id: 'https://placehold.it/200x200'})
 
     return officer_images
