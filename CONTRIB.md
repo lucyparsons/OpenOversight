@@ -35,10 +35,28 @@ In the `OpenOversight` directory, there is a script to create the database:
 
 `python create_db.py`
 
-If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. However, if you're migrating the database, you can use:
+If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. 
+
+
+After you create the database, run `test_data.populate()` to put test officers, assignments, and images into the database. 
+
+
+
+
+
+## Running Unit Tests
+
+ Run tests with `nose`:
+
+```nosetests -v```
+
+Note: One could put `test_data.populate()` into `setUp` and `test_data.cleanup()` into `tearDown` but in this case we want the data to stay in the database so that we can play with the web application so we should just have vagrant run that during the provisioning of the development VM. 
+
+## Migrating the Database
+
+If you e.g. add a new column or table, you'll need to migrate the database. You can use:
 
 `python migrate_db.py`
 
-to generate migration scripts, then run `python upgrade_db.py` and `python downgrade_db.py` as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
-
-## Running Unit Tests
+to do this.
+`python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
