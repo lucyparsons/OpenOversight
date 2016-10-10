@@ -43,20 +43,20 @@ img{
             <div class="col-md-3 col-sm-4 col-xs-12">
                 <div class="thumbnail_container">
                 <div class="row">
-                <h4>{{ officers[officer]['first_name'].lower()|title }} 
-                {% if officers[officer]['middle_initial'] %}{{ officers[officer]['middle_initial'] }}. {% endif %}
-                {{ officers[officer]['last_name'].lower()|title }} <small>#{{ officers[officer]['star_no'] }}</small></h4>
-                
+                <h4>{{ officer.Officer.first_name.lower()|title }} 
+                {% if officer.Officer.middle_initial %}{{ officer.Officer.middle_initial }}. {% endif %}
+                {{ officer.Officer.last_name.lower()|title }} <small>#{{ officer.Assignment.star_no }}</small></h4>
+
                 </div>
-                <img class="img-responsive thumbnail" src="{{ officer_images[officer] }}" alt="Officer face">
+                <img class="img-responsive thumbnail" src="{{ officer_images[officer.Officer.id] }}" alt="Officer face">
 
                 </div>
                 <center><a href="{{ url_for('submit_complaint',
-                           officer_last_name=officers[officer]['last_name'],
-                           officer_first_name=officers[officer]['first_name'],
-                           officer_middle_initial=officers[officer]['middle_initial'],
-                           officer_star=officers[officer]['star_no'],
-                           officer_image=officer_images[officer]) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
+                           officer_last_name=officer.Officer.last_name,
+                           officer_first_name=officer.Officer.first_name,
+                           officer_middle_initial=officer.Officer.middle_initial,
+                           officer_star=officer.Assignment.star_no,
+                           officer_image=officer_images[officer.Officer.id]) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
                 <br><br><br><br>
             </div>
             {% endfor %}

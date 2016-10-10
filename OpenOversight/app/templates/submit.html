@@ -8,6 +8,7 @@
 
    <div class="input-group input-group-lg">
    <form action="upload" method="post" enctype="multipart/form-data">
+     {{ form.hidden_tag() }}
      <input type="file" name="file"><br><br>
      <input type="submit" value="Upload">
    </form>
