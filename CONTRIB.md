@@ -31,7 +31,7 @@ For the webapp, the credentials for the testing/development environment are expe
 `echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" >> ~/.pgpass`
 `echo "export PGPASS=~/.pgpass" >> ~/.bashrc`
 
-In the `OpenOversight` directory, there is a script to create the database:
+In the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
 `python create_db.py`
 
