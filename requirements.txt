@@ -1,9 +1,9 @@
-flask
-werkzeug
-flask-WTF
-psycopg2
+flask>=0.11.1
+werkzeug>=0.11.1
+flask-WTF>=0.13.1
+psycopg2>=2.6.2
 sqlalchemy
 sqlalchemy-migrate
-flask-sqlalchemy
+flask-sqlalchemy>=2.1
 nose
 gunicorn==17.5
