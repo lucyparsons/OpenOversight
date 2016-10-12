@@ -8,9 +8,9 @@ import time
 import io
 import os
 
-***REMOVED*** = '***REMOVED***'
-***REMOVED*** = '***REMOVED***'
-flickr = flickrapi.FlickrAPI(***REMOVED***, ***REMOVED***, format='parsed-json')
+api_key = ''
+secret = ''
+flickr = flickrapi.FlickrAPI(api_key, secret, format='parsed-json')
 
 os.system('clear') 
 group_url = raw_input("Enter a Flickr Group URL: ")

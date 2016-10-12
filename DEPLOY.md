@@ -66,7 +66,7 @@ port = 6666
 
 ## CSRF attacks
 
-Change the ***REMOVED*** key used for generating tokens to prevent cross-site request forgery (CSRF) attacks in `config.py`:
+Change the secret key used for generating tokens to prevent cross-site request forgery (CSRF) attacks in `config.py`:
 
 ```
 WTF_CSRF_ENABLED = True
