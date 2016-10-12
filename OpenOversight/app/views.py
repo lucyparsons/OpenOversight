@@ -19,19 +19,19 @@ def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
         #  flash('[DEBUG] Forms validate correctly')
-        return redirect(url_for('get_lineup'), code=307)
+        return redirect(url_for('get_gallery'), code=307)
     return render_template('input_find_officer.html', form=form)
 
 
-@app.route('/lineup', methods=['GET', 'POST'])
-def get_lineup():
+@app.route('/gallery', methods=['GET', 'POST'])
+def get_gallery():
     form_values = request.form
 
     officers = grab_officers(form_values)
     officer_ids = [officer.Officer.id for officer in officers]
     officer_images = grab_officer_faces(officer_ids)
 
-    return render_template('lineup.html', officers=officers, form=form_values,
+    return render_template('gallery.html', officers=officers, form=form_values,
                            officer_images=officer_images)
 
 
