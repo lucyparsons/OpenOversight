@@ -28,8 +28,9 @@ def grab_officers(form):
     current_year = datetime.datetime.now().year
     min_birth_year = current_year - int(form['min_age'])
     max_birth_year = current_year - int(form['max_age'])
-    officer_query = officer_query.filter(db.and_(Officer.birth_year <= min_birth_year,
-                                                 Officer.birth_year >= max_birth_year))
+    officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
+                                                        Officer.birth_year >= max_birth_year),
+                                                Officer.birth_year == None))
 
     return officer_query.all()
 
