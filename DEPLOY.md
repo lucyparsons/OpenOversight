@@ -4,13 +4,7 @@ When this application is deployed you will need to do some setup. These instruct
 
 # Dependencies
 
-At minimum you will need to install the pip packages using pip:
- * flask
- * werkzeug
- * Flask-WTF
- * psycopg2
- * sqlalchemy
- * gunicorn
+We distribute a `requirements.txt` file listing the things the application depends upon. `pip install -r requirements.txt` will install prerequisites.
 
 You may also need the `libpq-dev` package if psycopg2 fails to install.
 
@@ -54,30 +48,21 @@ server {
 ```
 ##  Gunicorn
 
-You will want to run gunicorn in the background with multiple worker threads. You can instantiate gunicorn by running `gunicorn -w 4 -b 127.0.0.1:4000 app:app &` and then run ps -ef | grep gunicorn to see the running PIDs. Execute gunicorn out of the OpenOversight directory that has the `app/` directory in it.
+You will want to run gunicorn in the background with multiple worker threads. You can instantiate gunicorn by running `gunicorn -w 4 -b 127.0.0.1:4000 app:app &` and then `run ps -ef | grep gunicorn` to see the running PIDs. Execute gunicorn out of the OpenOversight directory that has the `app/` directory in it to test that the app comes up.
 
-##  Database Configuration
+##  Application Configuration
 
-Your database credentials should be set in the `app/` folder in a file called dbcred.py. An example configuration is below (assuming an Amazon RDS).
+We configure the database by setting a .env file in the OpenOversight directory of the repository. A sample .env is:
 ```
-user =""
-password = ""
-host = "infomarmationfromamazon.rds.amazonaws.com"
-port = 6666
+SQLALCHEMY_DATABASE_URI="postgresql://openoversight:terriblepassword@localhost/openoversight-dev"
+SECRET_KEY=terriblecsrftoken
 ```
-
-## CSRF attacks
-
-Change the secret key used for generating tokens to prevent cross-site request forgery (CSRF) attacks in `config.py`:
-
-```
-WTF_CSRF_ENABLED = True
-SECRET_KEY = 'changemeplzorelsehax'
-```
+The parts of the database URI are the user, password, server, and database respectively used to connect to the application.
+The CSRF token should be a random string of reasonable length. 'terriblecsrftoken' is, of course, a terrible CSRF token.
 
 # Systemd
 
-You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). We define a static environment variable called `PGPASS` which is loaded by systemd before it drops priviledges for ngingx. More details can be found in `CONTRIB.md`.
+You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). More details can be found in `CONTRIB.md`.
 
 ```
 [Unit]
@@ -89,8 +74,7 @@ User=nginx
 Group=nginx
 WorkingDirectory=/home/nginx/oovirtenv/OpenOversight/OpenOversight
 Environment="PATH=/home/nginx/oovirtenv/bin"
-Environment="PGPASS=~/.pgpass"
-ExecStart=/usr/local/bin/gunicorn -w 16 -b 127.0.0.1:4000 --timeout 90 app:app 
+ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 --timeout 90 app:app 
 
 [Install]
 WantedBy=multi-user.target
@@ -98,4 +82,4 @@ WantedBy=multi-user.target
 
 # Contact
 
-If you're running into installation problems, please open an issue or email us `info AT lucyparsonslabs DOT com`
+If you're running into installation problems, please open an issue or email us `info AT lucyparsonslabs DOT com`.

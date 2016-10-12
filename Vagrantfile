@@ -21,12 +21,6 @@ Vagrant.configure(2) do |config|
      # Customize the amount of memory on the VM:
      vb.memory = "512"
    end
-  
-  # Enable provisioning with a shell script. Required for puppet not to freak out.
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get update
-    sudo apt-get upgrade -y
-  SHELL
 
   # Provision with our standalone-puppet provider
   config.vm.provision "puppet" do |puppet|

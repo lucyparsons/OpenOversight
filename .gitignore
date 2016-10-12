@@ -6,6 +6,15 @@
 # Credentials
 dbcred*
 
+# flask db migrations
+OpenOversight/db_repository/
+
+# Local environment files
+**/.env
+
+# Swapfiles from our text editors
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

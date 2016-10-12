@@ -1,15 +1,14 @@
 import os
 from os.path import expanduser
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-with open(expanduser(os.environ['PGPASS']), 'r') as f:
-    host, port, database, user, password = f.read().rstrip('\n').split(':')
-
 # DB SETUP
-SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}/{}'.format(user, password, host, database)
+SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
-SQLALCHEMY_TRACK_MODIFICATIONS = True
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # File Upload Settings
 UNLABELLED_UPLOADS = 'uploads/'
