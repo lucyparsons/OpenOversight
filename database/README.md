@@ -2,16 +2,7 @@
 
 ## Schema/Table Creation
 
-Tables should be created in this order due to foreign key constraints:
-
-```
-psql -f create_officer_schema.sql
-psql -f create_officer_roster.sql
-psql -f create_table_raw_images.sql
-psql -f create_officer_faces.sql
-psql -f create_officer_assignments.sql
-psql -f create_officer_unit_types.sql
-```
+Create with `OpenOversight/create_db.py`
 
 ## Database Diagram
 
@@ -24,9 +15,7 @@ psql -f create_officer_unit_types.sql
 Everything here assumes that you executed the ETL scripts in `etl` to load the raw data into `public`. Once you've done that you can get the data into the form that the webapp expects using the following scripts:
 
 ```
-psql -f populate_officer_roster.sql
-psql -f populate_officer_assignments.sql
-psql -f populate_officer_unittypes.sql
+psql -f populate_officer_roster_and_assignment.sql
 ```
 
-Tables `faces` and `raw_images` are empty until rows are added by taggers and uploaders respectively. 
+Note: the remaining SQL scripts in here are deprecated
