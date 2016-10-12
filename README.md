@@ -1,6 +1,6 @@
 # OpenOversight
 
-OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and and provide digital galleries of photographs to help people identify police officers they would like to file a complaint on.
+OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and provide digital galleries of photographs to help people identify police officers they would like to file a complaint on.
 
 ![](docs/img/updated_gallery.png)
 
