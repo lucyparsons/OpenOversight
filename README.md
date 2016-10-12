@@ -1,6 +1,6 @@
 # OpenOversight
 
-OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide digital line-ups to help people identify police officers they would like to file a complaint on.
+OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officers and provide digital galleries to help people identify police officers they would like to file a complaint on.
 
 ![](docs/img/swag.png)
 
@@ -26,7 +26,7 @@ Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//iss
 
 ## Components
 
-* `OpenOversight`: digital line up web application 
+* `OpenOversight`: digital gallery web application 
 * `socmint`: scripts for gathering images from social media, currently just official police accounts
 * `etl` and `database`: scripts for taking primarily data dumps from FOIA and other organizations, cleaning them, and uploading them into our database
 
