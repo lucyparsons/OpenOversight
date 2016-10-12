@@ -70,9 +70,9 @@ Landing page for those that wish to help us review (classification and verificat
 
 Initially, we can use demographic information that we have about each officer (approximate age, race, gender etc.) to filter down the full dataset. 
 
-Then we will generate a series of "digital line ups" that Chicago residents can use to try and determine which officer they interacted with. If a match is erroneously reported by a user and an officer is falsely accused of misconduct, CPD should be able to use its internal data sources to exonerate the officer. 
+Then we will generate a series of "digital galleries" that Chicago residents can use to try and determine which officer they interacted with. If a match is erroneously reported by a user and an officer is falsely accused of misconduct, CPD should be able to use its internal data sources to exonerate the officer. 
 
-In addition, after sufficient training data is procured, we can allow a user to submit an image of an officer and we can try to match the face with one in our database. If the test image is not of a police officer or cannot be matched, we can proceed with the "digital line up".
+In addition, after sufficient training data is procured, we can allow a user to submit an image of an officer and we can try to match the face with one in our database. If the test image is not of a police officer or cannot be matched, we can proceed with the "digital gallery".
 
 ### Machine Learning: Face Detection and Recognition
 

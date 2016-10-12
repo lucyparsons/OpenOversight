@@ -2,7 +2,7 @@
 
 ## Complainant
 
-A complainant should be able to go to our website, look up where, when, and any detail about the officer. They should be served with a Digital Lineup. If they have a picture, they should upload it and get a Digital Lineup with the highest probability matches based on facial recognition included. 
+A complainant should be able to go to our website, look up where, when, and any detail about the officer. They should be served with a Digital Gallery. If they have a picture, they should upload it and get a Digital Gallery with the highest probability matches based on facial recognition included. 
 
 ## Complaint Platform
 
