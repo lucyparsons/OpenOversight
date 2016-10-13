@@ -29,7 +29,10 @@ with the password `terriblepassword`.
 For the webapp, the credentials for the testing/development environment are expected to be in a file `$PGPASS`, so set that up: 
 
 `echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" >> ~/.pgpass`
+
 `echo "export PGPASS=~/.pgpass" >> ~/.bashrc`
+
+`source ~/.bashrc`
 
 In the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
