@@ -1,4 +1,12 @@
+<<<<<<< HEAD
 from datetime import datetime
+=======
+#!/usr/bin/python
+
+import argparse
+from datetime import datetime
+import sys
+>>>>>>> upstream/develop
 
 from app import db, models
 
@@ -57,6 +65,14 @@ def populate():
 
 def cleanup():
     """ Cleanup database"""
+<<<<<<< HEAD
+=======
+
+    faces = models.Face.query.all()
+    for face in faces:
+        db.session.delete(face)
+
+>>>>>>> upstream/develop
     officers = models.Officer.query.all()
     for po in officers:
         db.session.delete(po)
@@ -65,12 +81,46 @@ def cleanup():
     for assn in assignments:
         db.session.delete(assn)
 
+<<<<<<< HEAD
     faces = models.Face.query.all()
     for face in faces:
         db.session.delete(face)
 
+=======
+>>>>>>> upstream/develop
     images = models.Image.query.all()
     for image in images:
         db.session.delete(image)
 
+<<<<<<< HEAD
     db.session.commit()
+=======
+    # TODO: Reset primary keys on all these tables
+    db.session.commit()
+
+
+if __name__=="__main__":
+   parser = argparse.ArgumentParser()
+   parser.add_argument("-p", "--populate", action='store_true',
+                       help="populate the database with test data")
+   parser.add_argument("-c", "--cleanup", action='store_true',
+                       help="delete all test data from the database")
+   args = parser.parse_args()
+
+   if args.populate:
+       print("[*] Populating database with test data...")
+       try:
+           populate()
+           print("[*] Completed successfully!")
+       except:
+           print("[!] Encountered an unknown issue, exiting.")
+           sys.exit(1)
+   if args.cleanup:
+       print("[*] Cleaning up database...")
+       try:
+           cleanup()
+           print("[*] Completed successfully!")
+       except:
+           print("[!] Encountered an unknown issue, exiting.")
+           sys.exit(1)
+>>>>>>> upstream/develop
