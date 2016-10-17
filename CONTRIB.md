@@ -28,9 +28,14 @@ with the password `terriblepassword`.
 
 For the webapp, the credentials for the testing/development environment are expected to be in a file `$PGPASS`, so set that up: 
 
+<<<<<<< HEAD
 `echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" > ~/.pgpass`
 `echo "export PGPASS=~/.pgpass" > ~/.bashrc`
 `source ~/.bashrc`
+=======
+`echo "localhost:5432:openoversight-dev:openoversight:terriblepassword" >> ~/.pgpass`
+`echo "export PGPASS=~/.pgpass" >> ~/.bashrc`
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
 
 In the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
@@ -42,6 +47,12 @@ If the database doesn't already exist, `create_db.py` will set it up and store t
 After you create the database, run `test_data.populate()` to put test officers, assignments, and images into the database. 
 
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
 ## Running Unit Tests
 
  Run tests with `nose`:
@@ -57,4 +68,8 @@ If you e.g. add a new column or table, you'll need to migrate the database. You 
 `python migrate_db.py`
 
 to do this.
+<<<<<<< HEAD
 `python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+=======
+`python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
