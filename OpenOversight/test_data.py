@@ -1,8 +1,16 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+from datetime import datetime
+=======
 #!/usr/bin/python
 
 import argparse
 from datetime import datetime
 import sys
+>>>>>>> upstream/develop
+=======
+from datetime import datetime
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
 
 from app import db, models
 
@@ -61,11 +69,17 @@ def populate():
 
 def cleanup():
     """ Cleanup database"""
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
 
     faces = models.Face.query.all()
     for face in faces:
         db.session.delete(face)
 
+>>>>>>> upstream/develop
+=======
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
     officers = models.Officer.query.all()
     for po in officers:
         db.session.delete(po)
@@ -74,10 +88,27 @@ def cleanup():
     for assn in assignments:
         db.session.delete(assn)
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
+    faces = models.Face.query.all()
+    for face in faces:
+        db.session.delete(face)
+
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/develop
+=======
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
     images = models.Image.query.all()
     for image in images:
         db.session.delete(image)
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+    db.session.commit()
+=======
     # TODO: Reset primary keys on all these tables
     db.session.commit()
 
@@ -106,3 +137,7 @@ if __name__=="__main__":
        except:
            print("[!] Encountered an unknown issue, exiting.")
            sys.exit(1)
+>>>>>>> upstream/develop
+=======
+    db.session.commit()
+>>>>>>> e1e984861d6febe26662280ace18822a855a95ac
