@@ -75,7 +75,7 @@ SECRET_KEY = 'changemeplzorelsehax'
 
 # Systemd
 
-You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). Special care should be taken when using the environment variables defined in `CONTRIB.md`.
+You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). We define a static environment variable called `PGPASS` which is loaded by systemd before it drops priviledges for ngingx. More details can be found in `CONTRIB.md`.
 
 ```
 [Unit]
@@ -87,6 +87,7 @@ User=nginx
 Group=nginx
 WorkingDirectory=/home/nginx/oovirtenv/OpenOversight/OpenOversight
 Environment="PATH=/home/nginx/oovirtenv/bin"
+Environment="PGPASS=~/.pgpass"
 ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 app:app 
 
 [Install]
