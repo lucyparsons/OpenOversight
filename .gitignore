@@ -77,3 +77,6 @@ vagrant/puppet/modules/
 vagrant/puppet/.tmp
 .librarian
 .vagrant
+
+#Dirs created in dev
+OpenOversight/db_repository/
