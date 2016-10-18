@@ -3,7 +3,6 @@ from flask import (render_template, request, redirect, url_for,
                   send_from_directory, flash, session)
 from werkzeug import secure_filename
 from app import app
-import pdb
 
 from utils import (allowed_file, grab_officers, grab_officer_faces,
                   sort_officers_by_photos)
@@ -29,14 +28,13 @@ def get_officer():
 def get_gallery():
     form_values = request.form
     officers = grab_officers(form_values)
-    officer_ids = [officer.Officer.id for officer in officers]
-    officer_images = grab_officer_faces(officer_ids)
-    sorted_officers = sort_officers_by_photos(officers, officer_images)
+    officer_images = grab_officer_faces(form_values)
+    sorted_officers, officer_images= sort_officers_by_photos(officers, officer_images)
 
     return render_template('gallery.html',
                            officers=sorted_officers,
                            form=form_values,
-                           officer_images=officer_images)
+		                       officer_images=officer_images)
 
 
 @app.route('/complaint', methods=['GET', 'POST'])
