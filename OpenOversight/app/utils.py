@@ -47,10 +47,22 @@ def grab_officer_faces(officer_ids):
         if len(faces) > 0:
             officer_images.update({officer_id: faces[0].Image.filepath})
         else:   # use placeholder image
-            officer_images.update({officer_id: 'https://placehold.it/200x200'})
+            officer_images.update({officer_id: 'static/images/placeholder.png'})
 
     return officer_images
 
+
+def sort_officers_by_photos(officers, officer_images):
+    identified_officers = []
+    unidentified_officers = []
+    for officer in officers:
+        if officer_images[officer.Officer.id] == 'static/images/placeholder.png':
+            unidentified_officers.append(officer)
+        else:
+            identified_officers.append(officer)
+    
+    officers = identified_officers + unidentified_officers
+    return officers
 
 def allowed_file(filename):
     return '.' in filename and \

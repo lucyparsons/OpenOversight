@@ -17,3 +17,6 @@ body {
   width: auto;
 }
 
+.glyphicon {
+    font-size: 30px;
+}

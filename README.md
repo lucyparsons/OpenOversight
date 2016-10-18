@@ -6,7 +6,7 @@ OpenOversight is a Lucy Parsons Labs project to improve police accountability th
 
 As a proof of concept, OpenOversight currently uses the Chicago Police Department but this infrastructure will be used to extent the project to other cities where it is needed. Interested in helping bring OpenOversight to your city? Email us at [info@lucyparsonslabs.com](mailto:info@lucyparsonslabs.com).  
 
-This project is written and maintained by [@lucyparsonslabs](https://twitter.com/lucyparsonslabs.com) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or use our crowd-sourced human labeling tool to help build training datasets.
+This project is written and maintained by [@lucyparsonslabs](https://twitter.com/lucyparsonslabs.com) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or talk to us about how to help sort and tag images. This project is in public beta, and we are currently soliciting photographs to add to the database.
 
 ## Note to Law Enforcement
 
@@ -18,8 +18,7 @@ Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//iss
 
 ## Technologies 
 
- * We use Python 2.7 as we have deps not yet Python 3 compatible 
- * Face detection: openface, opencv
+ * We use Python 2.7
  * Web frontend: Flask, WTForms for input validation
  * Database backend: psycopg2, PostgreSQL
  * ETL toolchain: pandas, sqlalchemy
