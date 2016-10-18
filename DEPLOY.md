@@ -47,7 +47,7 @@ server {
                 proxy_redirect     off;
                 proxy_set_header Host $host;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                
-		proxy_connect_timeout 300s;
+                proxy_connect_timeout 300s;
                 proxy_read_timeout 300s;
         }
 }
