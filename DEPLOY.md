@@ -47,6 +47,8 @@ server {
                 proxy_redirect     off;
                 proxy_set_header Host $host;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_connect_timeout 300s;
+                proxy_read_timeout 300s;
         }
 }
 ```
@@ -88,7 +90,7 @@ Group=nginx
 WorkingDirectory=/home/nginx/oovirtenv/OpenOversight/OpenOversight
 Environment="PATH=/home/nginx/oovirtenv/bin"
 Environment="PGPASS=~/.pgpass"
-ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 app:app 
+ExecStart=/usr/local/bin/gunicorn -w 16 -b 127.0.0.1:4000 --timeout 90 app:app 
 
 [Install]
 WantedBy=multi-user.target
