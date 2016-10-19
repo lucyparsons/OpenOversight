@@ -80,6 +80,9 @@ vagrant/puppet/.tmp
 
 #Dirs created in dev
 OpenOversight/db_repository/
+<<<<<<< HEAD
 
 # Editor files
+=======
+>>>>>>> 98df3c8cefe7af4d1f558dcb130c33cdbeeae674
 .idea/

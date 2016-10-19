@@ -1,5 +1,6 @@
 <div class="top-paginate">
     <span class="paginate-navigate">
+<<<<<<< HEAD
 	{% if officers_paginate.has_prev %}
 	    <form action="{{ url_for('get_gallery', page=officers_paginate.prev_num) }}" method="post">
 		{% include 'partials/officer_form_fields_hidden.html' %}
@@ -12,6 +13,20 @@
 		<input type="submit" value=">> " />
 	    </form>
 	{% endif %}
+=======
+        {% if officers_paginate.has_prev %}
+            <form action="{{ url_for('get_gallery', page=officers_paginate.prev_num) }}" method="post">
+                {% include 'partials/officer_form_fields_hidden.html' %}
+                <input type="submit" value="<< " />
+            </form>
+        {% endif %}
+        {% if officers_paginate.has_next %}
+            <form action="{{ url_for('get_gallery', page=officers_paginate.next_num) }}" method="post">
+                {% include 'partials/officer_form_fields_hidden.html' %}
+                <input type="submit" value=">> " />
+            </form>
+        {% endif %}
+>>>>>>> 98df3c8cefe7af4d1f558dcb130c33cdbeeae674
     </span>
     {% if officers_paginate.total > 0 %}
     <span class="paginate-info">Page {{ officers_paginate.page }} of {{ officers_paginate.pages }}</span>

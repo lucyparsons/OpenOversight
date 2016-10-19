@@ -33,11 +33,6 @@ def grab_officers(form):
                                                 Officer.birth_year == None))
     return officer_query
 
-def grab_officers(form):
-    officer_query = db.session.query(Assignment, Officer).join(Officer)
-    officer_query = filter_by_form(form, officer_query)
-    return officer_query.all()
-
 
 def grab_officer_faces(form):
     officer_query = db.session.query(Assignment, Officer, Face, Image) \
@@ -64,7 +59,6 @@ def sort_officers_by_photos(all_officers, officers_w_images):
             officers.append(officer)
 
     return officers, all_officer_images
-
 
 
 def allowed_file(filename):
