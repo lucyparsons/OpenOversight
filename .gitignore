@@ -6,9 +6,6 @@
 # Credentials
 dbcred*
 
-# flask db migrations
-OpenOversight/db_repository/
-
 # Local environment files
 **/.env
 
