@@ -9,9 +9,7 @@ import pdb
 db = SQLAlchemy(app)
 
 
-def grab_officers(form):
-    officer_query = db.session.query(Officer, Assignment).join(Assignment)
-
+def filter_by_form(form, officer_query):
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC', 'PACIFIC ISLANDER'):
         officer_query = officer_query.filter(Officer.race.like('%%{}%%'.format(form['race'])))
     if form['gender'] in ('M', 'F'):
@@ -31,38 +29,40 @@ def grab_officers(form):
     officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))
+    return officer_query
 
+
+def grab_officers(form):
+    officer_query = db.session.query(Assignment, Officer).join(Officer)
+    officer_query = filter_by_form(form, officer_query)
     return officer_query.all()
 
 
-def grab_officer_faces(officer_ids):
-    if len(officer_ids) == 0:
-        return []
-
-    officer_images = {}
-    face_query = db.session.query(Image, Face).join(Face)
-    for officer_id in officer_ids:
-        faces = face_query.filter(Face.officer_id == officer_id).all()
-
-        if len(faces) > 0:
-            officer_images.update({officer_id: faces[0].Image.filepath})
-        else:   # use placeholder image
-            officer_images.update({officer_id: 'static/images/placeholder.png'})
-
+def grab_officer_faces(form):
+    officer_query = db.session.query(Assignment, Officer, Face, Image) \
+                                    .join(Officer).join(Face).join(Image)
+    officer_query = filter_by_form(form, officer_query)
+    officer_images = officer_query.all()
     return officer_images
 
 
-def sort_officers_by_photos(officers, officer_images):
-    identified_officers = []
-    unidentified_officers = []
-    for officer in officers:
-        if officer_images[officer.Officer.id] == 'static/images/placeholder.png':
-            unidentified_officers.append(officer)
+def sort_officers_by_photos(all_officers, officers_w_images):
+    all_officer_ids_w_photos = [x.Officer.id for x in officers_w_images]
+    all_officer_ids = [x.Officer.id for x in all_officers]
+
+    all_officer_images = {}
+    officers = officers_w_images
+    for officer in officers_w_images:
+        all_officer_images.update({officer.Officer.id: officer.Image.filepath})
+
+    for officer in all_officers:
+        if officer.Officer.id in all_officer_ids_w_photos:
+            continue
         else:
-            identified_officers.append(officer)
+            all_officer_images.update({officer.Officer.id: 'static/images/placeholder.png'})
+            officers.append(officer)
     
-    officers = identified_officers + unidentified_officers
-    return officers
+    return officers, all_officer_images
 
 def allowed_file(filename):
     return '.' in filename and \

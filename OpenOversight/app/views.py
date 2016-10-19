@@ -28,9 +28,8 @@ def get_officer():
 def get_gallery():
     form_values = request.form
     officers = grab_officers(form_values)
-    officer_ids = [officer.Officer.id for officer in officers]
-    officer_images = grab_officer_faces(officer_ids)
-    sorted_officers = sort_officers_by_photos(officers, officer_images)
+    officer_images = grab_officer_faces(form_values)
+    sorted_officers, officer_images= sort_officers_by_photos(officers, officer_images)
 
     return render_template('gallery.html',
                            officers=sorted_officers,
