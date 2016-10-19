@@ -64,7 +64,6 @@ def sort_officers_by_photos(all_officers, officers_w_images):
     
     return officers, all_officer_images
 
-
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1] in config.ALLOWED_EXTENSIONS

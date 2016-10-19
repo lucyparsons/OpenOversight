@@ -73,10 +73,10 @@ def cleanup():
     assignments = models.Assignment.query.all()
     for assn in assignments:
         db.session.delete(assn)
-
-    images = models.Image.query.all()
-    for image in images:
-        db.session.delete(image)
+   
+    faces = models.Face.query.all()
+    for face in faces:
+        db.session.delete(face)
 
     # TODO: Reset primary keys on all these tables
     db.session.commit()

@@ -34,7 +34,7 @@ def get_gallery():
     return render_template('gallery.html',
                            officers=sorted_officers,
                            form=form_values,
-		                       officer_images=officer_images)
+		           officer_images=officer_images)
 
 
 @app.route('/complaint', methods=['GET', 'POST'])
