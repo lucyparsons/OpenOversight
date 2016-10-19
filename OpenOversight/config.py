@@ -16,7 +16,7 @@ UNLABELLED_UPLOADS = 'uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'mpeg', 'mp4'])
 
 # pagination
-OFFICERS_PER_PAGE = 2
+OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)
 
 # Form Settings
 WTF_CSRF_ENABLED = True

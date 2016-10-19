@@ -63,8 +63,9 @@ def populate():
     face2 = models.Face(officer_id=po2.id, img_id=image2.id)
     face3 = models.Face(officer_id=po3.id, img_id=image3.id)
     face4 = models.Face(officer_id=po4.id, img_id=image4.id)
+    face5 = models.Face(officer_id=po1.id, img_id=image3.id)
 
-    test_faces = [face1, face2, face3, face4]
+    test_faces = [face1, face2, face3, face4, face5]
     db.session.add_all(test_faces)
     db.session.commit()
 

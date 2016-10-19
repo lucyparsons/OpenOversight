@@ -4,9 +4,6 @@ from flask import (render_template, request, redirect, url_for,
 from werkzeug import secure_filename
 from app import app
 
-# from utils import (allowed_file, grab_officers, grab_officer_faces,
-#                    sort_officers_by_photos)
-
 from utils import allowed_file, grab_officers
 from forms import FindOfficerForm
 import config
