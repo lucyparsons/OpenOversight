@@ -14,7 +14,7 @@ class Officer(db.Model):
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     pd_id = db.Column(db.Integer, index=True, unique=False)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
-
+    face = db.relationship('Face', backref='officer', lazy='dynamic')
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
                                                   self.first_name,
@@ -55,6 +55,7 @@ class Face(db.Model):
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
     img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
     face_position = db.Column(db.String(120), index=True, unique=False, nullable=True)  # No box dtype in SQLalchemy afaict
+    image = db.relationship('Image', backref='face')
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)

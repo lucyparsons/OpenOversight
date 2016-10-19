@@ -39,8 +39,13 @@ img{
             <div class="container">
             <!--<h3><small>We found</small> {{ officers.rowcount }} <small>matching officers.</small></h3>-->
             {% include 'partials/paginate.html' %}
-            {% for officer in officers %}
-            {% with assignment = officer.assignments.first() %}
+            {% for officer in officers.items %}
+                {% if officer.face.first() is none %}
+                    {% set officer_image = '/static/images/placeholder.png' %}
+                {% else %}
+                    {% set officer_image = officer.face.first().image.filepath %}
+                {% endif %}
+            {% set assignment = officer.assignments.first() %}
             <div class="col-md-3 col-sm-4 col-xs-12">
                 <div class="thumbnail_container">
                 <div class="row">
@@ -49,21 +54,20 @@ img{
                 {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
 
                 </div>
-                <img class="img-responsive thumbnail" src="/{{ officer_images[officer.id] }}" alt="Officer face">
+                <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
                 </div>
                 <center><a href="{{ url_for('submit_complaint',
                            officer_last_name=officer.last_name,
                            officer_first_name=officer.first_name,
                            officer_middle_initial=officer.middle_initial,
                            officer_star=assignment.star_no,
-                           officer_image=officer_images[officer.id]) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
+                           officer_image=officer_image) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
                 <br><br><br><br>
             </div>
-            {%  endwith %}
             {% endfor %}
             </div>
 
-            {% if officers|length == 0 %}
+            {% if officers.items|length == 0 %}
             <div class="container">
             <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
             </div>

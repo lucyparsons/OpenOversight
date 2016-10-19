@@ -4,8 +4,10 @@ from flask import (render_template, request, redirect, url_for,
 from werkzeug import secure_filename
 from app import app
 
-from utils import (allowed_file, grab_officers, grab_officer_faces,
-                   sort_officers_by_photos)
+# from utils import (allowed_file, grab_officers, grab_officer_faces,
+#                    sort_officers_by_photos)
+
+from utils import allowed_file, grab_officers
 from forms import FindOfficerForm
 import config
 
@@ -31,17 +33,11 @@ def get_gallery(page=1):
     form = FindOfficerForm()
     if form.validate_on_submit():
         form_values = form.data
-        officers = grab_officers(form_values)
-        officers = officers.paginate(page, config.OFFICERS_PER_PAGE, False)
-        officer_ids = [officer.id for officer in officers.items]
-        officer_images = grab_officer_faces(officer_ids)
-        sorted_officers = sort_officers_by_photos(officers.items, officer_images)
+        officers = grab_officers(form_values).paginate(page, config.OFFICERS_PER_PAGE, False)
         return render_template('gallery.html',
-                               officers_paginate=officers,
-                               officers=sorted_officers,
+                               officers=officers,
                                form=form,
-                               form_data=form_values,
-                               officer_images=officer_images)
+                               form_data=form_values)
     else:
         return redirect(url_for('get_officer'))
 
