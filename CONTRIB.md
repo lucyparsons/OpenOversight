@@ -40,7 +40,6 @@ In the `/vagrant/OpenOversight` directory, there is a script to create the datab
 
 If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. 
 
-
 After you create the database, run `./test_data.py --populate` to put test officers, assignments, and images into the database.
 
 
