@@ -10,8 +10,8 @@ db = SQLAlchemy(app)
 
 
 def grab_officers(form):
-    officer_query = db.session.query(Officer, Assignment).join(Assignment)
-
+    # officer_query = db.session.query(Officer, Assignment).join(Assignment)
+    officer_query = Officer.query.join(Assignment)
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC', 'PACIFIC ISLANDER'):
         officer_query = officer_query.filter(Officer.race.like('%%{}%%'.format(form['race'])))
     if form['gender'] in ('M', 'F'):
@@ -32,7 +32,7 @@ def grab_officers(form):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))
 
-    return officer_query.all()
+    return officer_query
 
 
 def grab_officer_faces(officer_ids):
@@ -56,7 +56,7 @@ def sort_officers_by_photos(officers, officer_images):
     identified_officers = []
     unidentified_officers = []
     for officer in officers:
-        if officer_images[officer.Officer.id] == 'static/images/placeholder.png':
+        if officer_images[officer.id] == 'static/images/placeholder.png':
             unidentified_officers.append(officer)
         else:
             identified_officers.append(officer)

@@ -15,6 +15,9 @@ SQLALCHEMY_TRACK_MODIFICATIONS = True
 UNLABELLED_UPLOADS = 'uploads/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'mpeg', 'mp4'])
 
+# pagination
+OFFICERS_PER_PAGE = 2
+
 # Form Settings
 WTF_CSRF_ENABLED = True
 SECRET_KEY = 'changemeplzorelsehax'

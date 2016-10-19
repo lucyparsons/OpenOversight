@@ -25,19 +25,25 @@ def get_officer():
     return render_template('input_find_officer.html', form=form)
 
 
-@app.route('/gallery', methods=['GET', 'POST'])
-def get_gallery():
-    form_values = request.form
-    officers = grab_officers(form_values)
-    officer_ids = [officer.Officer.id for officer in officers]
-    officer_images = grab_officer_faces(officer_ids)
-    sorted_officers = sort_officers_by_photos(officers, officer_images)
-
-    return render_template('gallery.html',
-                           officers=sorted_officers,
-                           form=form_values,
-                           officer_images=officer_images)
-
+@app.route('/gallery/<int:page>', methods=['POST'])
+@app.route('/gallery', methods=['POST'])
+def get_gallery(page=1):
+    form = FindOfficerForm()
+    if form.validate_on_submit():
+        form_values = form.data
+        officers = grab_officers(form_values)
+        officers = officers.paginate(page, config.OFFICERS_PER_PAGE, False)
+        officer_ids = [officer.id for officer in officers.items]
+        officer_images = grab_officer_faces(officer_ids)
+        sorted_officers = sort_officers_by_photos(officers.items, officer_images)
+        return render_template('gallery.html',
+                               officers_paginate=officers,
+                               officers=sorted_officers,
+                               form=form,
+                               form_data=form_values,
+                               officer_images=officer_images)
+    else:
+        return redirect(url_for('get_officer'))
 
 @app.route('/complaint', methods=['GET', 'POST'])
 def submit_complaint():
