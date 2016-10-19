@@ -9,7 +9,9 @@ import pdb
 db = SQLAlchemy(app)
 
 
-def filter_by_form(form, officer_query):
+def grab_officers(form):
+    # officer_query = db.session.query(Officer, Assignment).join(Assignment)
+    officer_query = Officer.query.join(Assignment)
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC', 'PACIFIC ISLANDER'):
         officer_query = officer_query.filter(Officer.race.like('%%{}%%'.format(form['race'])))
     if form['gender'] in ('M', 'F'):
@@ -30,7 +32,6 @@ def filter_by_form(form, officer_query):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))
     return officer_query
-
 
 def grab_officers(form):
     officer_query = db.session.query(Assignment, Officer).join(Officer)
@@ -61,8 +62,9 @@ def sort_officers_by_photos(all_officers, officers_w_images):
         else:
             all_officer_images.update({officer.Officer.id: 'static/images/placeholder.png'})
             officers.append(officer)
-    
+
     return officers, all_officer_images
+
 
 
 def allowed_file(filename):

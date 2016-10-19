@@ -1,13 +1,14 @@
 import os
 from flask import (render_template, request, redirect, url_for,
-                  send_from_directory, flash, session)
+                   send_from_directory, flash, session)
 from werkzeug import secure_filename
 from app import app
 
 from utils import (allowed_file, grab_officers, grab_officer_faces,
-                  sort_officers_by_photos)
+                   sort_officers_by_photos)
 from forms import FindOfficerForm
 import config
+
 
 @app.route('/')
 @app.route('/index')
@@ -24,17 +25,25 @@ def get_officer():
     return render_template('input_find_officer.html', form=form)
 
 
-@app.route('/gallery', methods=['GET', 'POST'])
-def get_gallery():
-    form_values = request.form
+@app.route('/gallery/<int:page>', methods=['POST'])
+@app.route('/gallery', methods=['POST'])
+def get_gallery(page=1):
+    form = FindOfficerForm()
+    if form.validate_on_submit():
+        form_values = form.data
     officers = grab_officers(form_values)
-    officer_images = grab_officer_faces(form_values)
-    sorted_officers, officer_images= sort_officers_by_photos(officers, officer_images)
-
+    officers = officers.paginate(page, config.OFFICERS_PER_PAGE, False)
+    officer_ids = [officer.id for officer in officers.items]
+    officer_images = grab_officer_faces(officer_ids)
+    sorted_officers = sort_officers_by_photos(officers.items, officer_images)
     return render_template('gallery.html',
+                           officers_paginate=officers,
                            officers=sorted_officers,
-                           form=form_values,
-		                       officer_images=officer_images)
+                           form=form,
+                           form_data=form_values,
+                           officer_images=officer_images)
+    else:
+    return redirect(url_for('get_officer'))
 
 
 @app.route('/complaint', methods=['GET', 'POST'])
@@ -64,7 +73,7 @@ def upload_file():
 
 @app.route('/show_upload/<filename>')
 def show_upload(filename):
-    #return send_from_directory('../'+config.UNLABELLED_UPLOADS,
+    # return send_from_directory('../'+config.UNLABELLED_UPLOADS,
     #                           filename)
     return 'Successfully uploaded: {}'.format(filename)
 
@@ -82,6 +91,7 @@ def about_oo():
 @app.route('/contact')
 def contact_oo():
     return render_template('contact.html')
+
 
 @app.route('/privacy')
 def privacy_oo():
