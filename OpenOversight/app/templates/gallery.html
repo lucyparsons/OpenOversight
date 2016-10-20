@@ -38,31 +38,36 @@ img{
             </div>
             <div class="container">
             <!--<h3><small>We found</small> {{ officers.rowcount }} <small>matching officers.</small></h3>-->
-
-            {% for officer in officers %}
+            {% include 'partials/paginate.html' %}
+            {% for officer in officers.items %}
+                {% if officer.face.first() is none %}
+                    {% set officer_image = '/static/images/placeholder.png' %}
+                {% else %}
+                    {% set officer_image = officer.face.first().image.filepath %}
+                {% endif %}
+            {% set assignment = officer.assignments.first() %}
             <div class="col-md-3 col-sm-4 col-xs-12">
                 <div class="thumbnail_container">
                 <div class="row">
-                <h4>{{ officer.Officer.first_name.lower()|title }} 
-                {% if officer.Officer.middle_initial %}{{ officer.Officer.middle_initial }}. {% endif %}
-                {{ officer.Officer.last_name.lower()|title }} <small>#{{ officer.Assignment.star_no }}</small></h4>
+                <h4>{{ officer.first_name.lower()|title }}
+                {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
+                {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
 
                 </div>
-                <img class="img-responsive thumbnail" src="{{ officer_images[officer.Officer.id] }}" alt="Officer face">
-
+                <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
                 </div>
                 <center><a href="{{ url_for('submit_complaint',
-                           officer_last_name=officer.Officer.last_name,
-                           officer_first_name=officer.Officer.first_name,
-                           officer_middle_initial=officer.Officer.middle_initial,
-                           officer_star=officer.Assignment.star_no,
-                           officer_image=officer_images[officer.Officer.id]) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
+                           officer_last_name=officer.last_name,
+                           officer_first_name=officer.first_name,
+                           officer_middle_initial=officer.middle_initial,
+                           officer_star=assignment.star_no,
+                           officer_image=officer_image) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
                 <br><br><br><br>
             </div>
             {% endfor %}
             </div>
 
-            {% if officers|length == 0 %}
+            {% if officers.items|length == 0 %}
             <div class="container">
             <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
             </div>
@@ -77,11 +82,11 @@ img{
 <div class="page-header">
 <h1>Your Query</h1>
 </div>
-<p><b>Department</b>: {{ form['dept'] }}</p>
-<p><b>Officer rank</b>: {{ form['rank'] }}</p>
-<p><b>Officer race</b>: {{ form['race'] }}</p>
-<p><b>Officer gender</b>: {{ form['gender'] }}</p>
-<p><b>Officer age</b>: {{ form['min_age'] }} to {{ form['max_age'] }}</p>
+<p><b>Department</b>: {{ form_data['dept'] }}</p>
+<p><b>Officer rank</b>: {{ form_data['rank'] }}</p>
+<p><b>Officer race</b>: {{ form_data['race'] }}</p>
+<p><b>Officer gender</b>: {{ form_data['gender'] }}</p>
+<p><b>Officer age</b>: {{ form_data['min_age'] }} to {{ form_data['max_age'] }}</p>
 
 </div>
 

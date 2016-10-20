@@ -83,3 +83,6 @@ vagrant/puppet/modules/
 vagrant/puppet/.tmp
 .librarian
 .vagrant
+
+# Editor files
+.idea/
