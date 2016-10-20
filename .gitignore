@@ -6,6 +6,12 @@
 # Credentials
 dbcred*
 
+# Local environment files
+**/.env
+
+# Swapfiles from our text editors
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
