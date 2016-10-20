@@ -32,13 +32,6 @@ def populate():
     db.session.add_all(test_officers)
     db.session.commit()
 
-    # po1 = models.Officer.query.filter(models.Officer.last_name == 'Tinkle').first()
-    # po2 = models.Officer.query.filter(models.Officer.last_name == 'Jass').first()
-    # po3 = models.Officer.query.filter(models.Officer.last_name == 'Tinkle').first()
-    # po4 = models.Officer.query.get(4)
-    # po5 = models.Officer.query.get(5)
-    # po6 = models.Officer.query.get(6)
-
     star1 = models.Assignment(star_no=1234, rank='COMMANDER', officer=po1)
     star2 = models.Assignment(star_no=5678, rank='PO', officer=po2)
     star3 = models.Assignment(star_no=9012, rank='CHIEF', officer=po3)

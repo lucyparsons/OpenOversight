@@ -78,8 +78,5 @@ vagrant/puppet/.tmp
 .librarian
 .vagrant
 
-#Dirs created in dev
-OpenOversight/db_repository/
-
 # Editor files
 .idea/
