@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm as Form
-from wtforms import StringField, BooleanField, DecimalField, SelectField, IntegerField, FileField
-from wtforms.validators import DataRequired, AnyOf, NumberRange
+from wtforms import (StringField, BooleanField, DecimalField,
+                     SelectField, IntegerField, FileField)
+from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
+                                Length, Optional)
 from flask_wtf.file import FileAllowed
 
 
@@ -32,6 +34,13 @@ class HumintContribution(Form):
 
 
 class FindOfficerForm(Form):
+    name = StringField('name', default='',
+                       validators=[Regexp('\w*'),
+                                   Length(max=50),
+                                   Optional()])
+    badge = StringField('badge', default='',
+                         validators=[Regexp('\w*'),
+                                     Length(max=10)])
     dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
                        validators=[DataRequired(),
                                    AnyOf(allowed_values(DEPT_CHOICES))])
