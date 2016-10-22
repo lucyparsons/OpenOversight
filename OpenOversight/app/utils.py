@@ -38,7 +38,6 @@ def filter_by_form(form, officer_query):
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
 
-
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1] in config.ALLOWED_EXTENSIONS
