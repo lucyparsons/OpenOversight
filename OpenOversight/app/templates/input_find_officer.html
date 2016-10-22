@@ -19,6 +19,26 @@
     {% endfor %}
     <p>Don't see your department? Want to bring OpenOversight to your city? Email us at <a href="mailto:info@lucyparsonslabs.com">OpenOversight</a>.</p>
      
+    <div class="page-header">
+        <h2>Partial Name or Badge Number</h2>
+    </div>
+
+    <h4>Do you remember any part of the Officer's last name?</h4>
+    {{ form.name }}
+    {% for error in form.name.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
+
+    <h4>Do you remember any part of the Officer's badge number?</h4>
+    {{ form.badge }}
+    {% for error in form.badge.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
+
+    <div class="page-header">
+        <h2>Rank</h2>
+    </div>
+
     <h4>Rank: {{ form.rank }}</h4>
     {% for error in form.rank.errors %}
         <p><span style="color: red;">[{{ error }}]</span></p>
