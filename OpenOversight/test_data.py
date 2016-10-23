@@ -9,22 +9,22 @@ from app import db, models
 
 def populate():
     """ Populate database with test data"""
-    po1 = models.Officer(last_name='Tinkle', first_name='Ivana', race='BLACK',
+    po1 = models.Officer(last_name='TINKLE', first_name='IVANA', race='BLACK',
                          gender='F', employment_date=datetime(2000, 4, 4, 1, 1, 1),
                          birth_year=1970, pd_id=1)
-    po2 = models.Officer(last_name='Jass', first_name='Hugh', race='WHITE',
+    po2 = models.Officer(last_name='JASS', first_name='HUGH', race='WHITE',
                          gender='M', birth_year=1950, pd_id=1,
                          employment_date=datetime(1996, 4, 4, 1, 1, 1))
-    po3 = models.Officer(last_name='Butz', first_name='Seymour', race='WHITE',
+    po3 = models.Officer(last_name='BUTZ', first_name='SEYMOUR', race='WHITE',
                          gender='F', birth_year=1950, pd_id=1,
                          employment_date=datetime(1983, 4, 4, 1, 1, 1))
-    po4 = models.Officer(last_name='Cuddleme', first_name='Haywood', middle_initial='U',
+    po4 = models.Officer(last_name='CUDDLEME', first_name='HAYWOOD', middle_initial='U',
                          race='HISPANIC', gender='F', birth_year=1950, pd_id=1,
                          employment_date=datetime(2014, 4, 4, 1, 1, 1))
-    po5 = models.Officer(last_name='Klozoff', first_name='Oliver', middle_initial='U',
+    po5 = models.Officer(last_name='KLOZOFF', first_name='OLIVER', middle_initial='U',
                          race='WHITE', gender='M', birth_year=1950, pd_id=1,
                          employment_date=datetime(2004, 4, 4, 1, 1, 1))
-    po6 = models.Officer(last_name='O\'Problem', first_name='Bea', middle_initial='U',
+    po6 = models.Officer(last_name='O\'PROBLEM', first_name='BEA', middle_initial='U',
                          race='HISPANIC', gender='F', birth_year=1978, pd_id=1,
                          employment_date=datetime(2014, 4, 4, 1, 1, 1))
 
