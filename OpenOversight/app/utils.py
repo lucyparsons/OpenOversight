@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 def filter_by_form(form, officer_query):
     if form['name']:
         officer_query = officer_query.filter(
-            Officer.last_name.ilike(func.upper('%%{}%%'.format(form['name'])))
+            Officer.last_name.ilike('%%{}%%'.format(form['name']))
             )
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
                         'PACIFIC ISLANDER'):

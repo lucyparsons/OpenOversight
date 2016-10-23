@@ -15,7 +15,7 @@ def populate():
     po2 = models.Officer(last_name='JASS', first_name='HUGH', race='WHITE',
                          gender='M', birth_year=1950, pd_id=1,
                          employment_date=datetime(1996, 4, 4, 1, 1, 1))
-    po3 = models.Officer(last_name='BUTZ', first_name='SEYMOUR', race='WHITE',
+    po3 = models.Officer(last_name='Butz', first_name='Seymour', race='WHITE',
                          gender='F', birth_year=1950, pd_id=1,
                          employment_date=datetime(1983, 4, 4, 1, 1, 1))
     po4 = models.Officer(last_name='CUDDLEME', first_name='HAYWOOD', middle_initial='U',
