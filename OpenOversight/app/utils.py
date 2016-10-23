@@ -2,7 +2,7 @@ import config
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
 from app import app
 from app.models import Officer, Assignment, Image, Face
@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 def filter_by_form(form, officer_query):
     if form['name']:
         officer_query = officer_query.filter(
-            Officer.last_name.like('%%{}%%'.format(form['name'].upper))
+            Officer.last_name.ilike(func.upper('%%{}%%'.format(form['name'])))
             )
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
                         'PACIFIC ISLANDER'):
