@@ -4,10 +4,10 @@ import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
-from app import app
-from app.models import Officer, Assignment, Image, Face
+from app import create_app
+from .models import Officer, Assignment, Image, Face
 import pdb
-
+app = create_app('default')
 db = SQLAlchemy(app)
 
 

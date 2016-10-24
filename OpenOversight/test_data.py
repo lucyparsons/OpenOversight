@@ -5,8 +5,9 @@ from datetime import datetime
 import sys
 import random
 
-from app import db, models
-
+from app import create_app, db, models
+app = create_app('development')
+db.app = app
 
 NUM_OFFICERS = 120
 random.seed(666)
