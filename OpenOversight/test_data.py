@@ -21,7 +21,6 @@ def pick_race():
     return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
                          'PACIFIC ISLANDER'])
 
-
 def pick_gender():
     return random.choice(['M', 'F'])
 
@@ -37,7 +36,6 @@ def pick_name():
 
 def pick_rank():
     return random.choice(['COMMANDER', 'CAPTAIN', 'PO'])
-
 
 def pick_star():
     return random.randint(1, 9999)
@@ -101,7 +99,7 @@ def cleanup():
     assignments = models.Assignment.query.all()
     for assn in assignments:
         db.session.delete(assn)
-   
+
     faces = models.Face.query.all()
     for face in faces:
         db.session.delete(face)
