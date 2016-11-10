@@ -3,46 +3,49 @@
 import argparse
 from datetime import datetime
 import sys
+import random
 
 from app import db, models
 
 
+NUM_OFFICERS = 120
+random.seed(666)
+
+
+def pick_birth_date():
+    return random.randint(1950, 2000)
+
+
+def pick_race():
+    return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
+                         'PACIFIC ISLANDER'])
+
+
+def pick_gender():
+    return random.choice(['M', 'F'])
+
+
+def pick_name():
+    troll_cops = [('IVANA', '', 'TINKLE'),
+                  ('Seymour', '', 'Butz'),
+                  ('HAYWOOD', 'U', 'CUDDLEME'),
+                  ('BEA', '', 'O\'PROBLEM'),
+                  ('URA', '', 'SNOTBALL')]
+    return random.choice(troll_cops)
+
+
+def pick_rank():
+    return random.choice(['COMMANDER', 'CAPTAIN', 'PO'])
+
+
+def pick_star():
+    return random.randint(1, 9999)
+
+
 def populate():
     """ Populate database with test data"""
-    po1 = models.Officer(last_name='TINKLE', first_name='IVANA', race='BLACK',
-                         gender='F', employment_date=datetime(2000, 4, 4, 1, 1, 1),
-                         birth_year=1970, pd_id=1)
-    po2 = models.Officer(last_name='JASS', first_name='HUGH', race='WHITE',
-                         gender='M', birth_year=1950, pd_id=1,
-                         employment_date=datetime(1996, 4, 4, 1, 1, 1))
-    po3 = models.Officer(last_name='Butz', first_name='Seymour', race='WHITE',
-                         gender='F', birth_year=1950, pd_id=1,
-                         employment_date=datetime(1983, 4, 4, 1, 1, 1))
-    po4 = models.Officer(last_name='CUDDLEME', first_name='HAYWOOD', middle_initial='U',
-                         race='HISPANIC', gender='F', birth_year=1950, pd_id=1,
-                         employment_date=datetime(2014, 4, 4, 1, 1, 1))
-    po5 = models.Officer(last_name='KLOZOFF', first_name='OLIVER', middle_initial='U',
-                         race='WHITE', gender='M', birth_year=1950, pd_id=1,
-                         employment_date=datetime(2004, 4, 4, 1, 1, 1))
-    po6 = models.Officer(last_name='O\'PROBLEM', first_name='BEA', middle_initial='U',
-                         race='HISPANIC', gender='F', birth_year=1978, pd_id=1,
-                         employment_date=datetime(2014, 4, 4, 1, 1, 1))
 
-    test_officers = [po1, po2, po3, po4, po5, po6]
-    db.session.add_all(test_officers)
-    db.session.commit()
-
-    star1 = models.Assignment(star_no=1234, rank='COMMANDER', officer=po1)
-    star2 = models.Assignment(star_no=5678, rank='PO', officer=po2)
-    star3 = models.Assignment(star_no=9012, rank='CHIEF', officer=po3)
-    star4 = models.Assignment(star_no=3456, rank='LIEUTENANT', officer=po4)
-    star5 = models.Assignment(star_no=5227, rank='PO', officer=po5)
-    star6 = models.Assignment(star_no=9120, rank='DEPUTY CHIEF', officer=po6)
-
-    test_assignments = [star1, star2, star3, star4, star5, star6]
-    db.session.add_all(test_assignments)
-    db.session.commit()
-
+    # Add images from Springfield Police Department
     image1 = models.Image(filepath='static/images/test_cop1.png')
     image2 = models.Image(filepath='static/images/test_cop2.png')
     image3 = models.Image(filepath='static/images/test_cop3.png')
@@ -52,15 +55,35 @@ def populate():
     db.session.add_all(test_images)
     db.session.commit()
 
-    face1 = models.Face(officer_id=po1.id, img_id=image1.id)
-    face2 = models.Face(officer_id=po2.id, img_id=image2.id)
-    face3 = models.Face(officer_id=po3.id, img_id=image3.id)
-    face4 = models.Face(officer_id=po4.id, img_id=image4.id)
-    face5 = models.Face(officer_id=po1.id, img_id=image3.id)
+    # Generate officers for Springfield Police Department
+    for officer_id in range(NUM_OFFICERS):
+        year_born = pick_birth_date()
+        name = pick_name()
+        test_officer = models.Officer(
+            last_name=name[2], first_name=name[0],
+            middle_initial=name[1],
+            race=pick_race(), gender=pick_gender(),
+            birth_year=year_born,
+            employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
+            pd_id=1
+            )
 
-    test_faces = [face1, face2, face3, face4, face5]
-    db.session.add_all(test_faces)
-    db.session.commit()
+        db.session.add(test_officer)
+        db.session.commit()
+
+        test_assignment = models.Assignment(star_no=pick_star(),
+                                            rank=pick_rank(),
+                                            officer=test_officer)
+
+        db.session.add(test_assignment)
+        db.session.commit()
+
+        # Not all officers should have faces
+        if random.uniform(0, 1) >= 0.5:
+            test_face = models.Face(officer_id=test_officer.id,
+                                img_id=random.choice(test_images).id)
+            db.session.add(test_face)
+            db.session.commit()
 
 
 def cleanup():
@@ -103,6 +126,7 @@ if __name__=="__main__":
            print("[!] Encountered an unknown issue, exiting.")
            print(e)
            sys.exit(1)
+
    if args.cleanup:
        print("[*] Cleaning up database...")
        try:

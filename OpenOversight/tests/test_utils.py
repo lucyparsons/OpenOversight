@@ -30,7 +30,7 @@ class TestUtils(unittest.TestCase):
     def test_get_badge_number(self):
         results = utils.grab_officers({'race': 'Not Sure', 'gender': 'Not Sure',
                                        'rank': 'COMMANDER', 'min_age': 16, 'max_age': 85,
-                                       'name': '', 'badge': ''})
+                                       'name': '', 'badge': 1234})
         for element in results:
             assignment = element.assignments.first()
             self.assertEquals(assignment.star_no, 1234)
