@@ -9,6 +9,7 @@ from app import db, models
 
 
 NUM_OFFICERS = 120
+random.seed(666)
 
 
 def pick_birth_date():
