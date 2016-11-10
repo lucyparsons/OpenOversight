@@ -78,10 +78,12 @@ def populate():
         db.session.add(test_assignment)
         db.session.commit()
 
-        test_face = models.Face(officer_id=test_officer.id,
+        # Not all officers should have faces
+        if random.uniform(0, 1) >= 0.5:
+            test_face = models.Face(officer_id=test_officer.id,
                                 img_id=random.choice(test_images).id)
-        db.session.add(test_face)
-        db.session.commit()
+            db.session.add(test_face)
+            db.session.commit()
 
 
 def cleanup():
