@@ -51,15 +51,20 @@ class FindOfficerForm(Form):
     gender = SelectField('gender', default='MALE',
 			 choices=GENDER_CHOICES,
 			 validators=[AnyOf(allowed_values(GENDER_CHOICES))])
-    min_age = IntegerField('min_age', default=16, validators=[
-	NumberRange(min=16, max=100)
-	])
-    max_age = IntegerField('max_age', default=85, validators=[
-	NumberRange(min=16, max=100)
-	])
-    latitude = DecimalField('latitude', default=False, validators=[
-	NumberRange(min=-90, max=90)
-	])
-    longitude = DecimalField('longitude', default=False, validators=[
-	NumberRange(min=-180, max=180)
-	])
+    min_age = IntegerField('min_age', default=16, validators=[NumberRange(min=16, max=100)])
+    max_age = IntegerField('max_age', default=85, validators=[NumberRange(min=16, max=100)])
+    latitude = DecimalField('latitude', default=False, validators=[NumberRange(min=-90, max=90)])
+    longitude = DecimalField('longitude', default=False, validators=[NumberRange(min=-180, max=180)])
+
+
+class FindOfficerIDForm(Form):
+    name = StringField('name', default='',
+		       validators=[Regexp('\w*'),
+				   Length(max=50),
+				   Optional()])
+    badge = StringField('badge', default='',
+			 validators=[Regexp('\w*'),
+				     Length(max=10)])
+    dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
+		       validators=[DataRequired(),
+				   AnyOf(allowed_values(DEPT_CHOICES))])
