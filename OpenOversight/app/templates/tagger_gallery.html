@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="page-header">Matching Officers</h1>
+            </div>
+            <div class="container">
+            {% include 'partials/roster_paginate.html' %}
+            {% for officer in officers.items %}
+                {% if officer.face.first() is none %}
+                    {% set officer_image = '/static/images/placeholder.png' %}
+                {% else %}
+                    {% set officer_image = officer.face.first().image.filepath %}
+                {% endif %}
+            {% set assignment = officer.assignments.first() %}
+            <div class="col-md-3 col-sm-4 col-xs-12">
+                <div class="thumbnail_container">
+                <div class="row">
+                <h4>{{ officer.first_name.lower()|title }}
+                {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
+                {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
+                <h5>OpenOversight ID: {{ officer.id }}</h5>
+                <h5>Race: {{ officer.race }}</h5>
+                <h5>Gender: {{ officer.gender }}</h5>
+
+                </div>
+                <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
+                </div>
+                <br><br><br><br>
+            </div>
+            {% endfor %}
+            </div>
+
+            {% if officers.items|length == 0 %}
+            <div class="container">
+            <h4>Sorry, no officers found in the roster. <a href="/label">Try again</a></h4>
+            </div>
+            {% endif %}
+
+        </div>
+
+</div>
+</div>
+{% endblock %}
