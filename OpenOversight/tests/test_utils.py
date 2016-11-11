@@ -1,4 +1,4 @@
-from OpenOversight.app import utils
+from app import utils
 
 
 # Utils tests

@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+install:
+before_script:
+  - pip install -e .
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - cd OpenOversight
+script:
+  - py.test -v --cov=app
