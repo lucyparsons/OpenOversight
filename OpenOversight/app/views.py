@@ -4,8 +4,8 @@ from flask import (render_template, request, redirect, url_for,
 from werkzeug import secure_filename
 from app import app
 
-from utils import allowed_file, grab_officers
-from forms import FindOfficerForm
+from utils import allowed_file, grab_officers, roster_lookup
+from forms import FindOfficerForm, FindOfficerIDForm
 import config
 
 
@@ -24,6 +24,21 @@ def get_officer():
     return render_template('input_find_officer.html', form=form)
 
 
+@app.route('/tagger_gallery/<int:page>', methods=['POST'])
+@app.route('/tagger_gallery', methods=['POST'])
+def get_tagger_gallery(page=1):
+    form = FindOfficerIDForm()
+    if form.validate_on_submit():
+        form_values = form.data
+        officers = roster_lookup(form_values).paginate(page, config.OFFICERS_PER_PAGE, False)
+        return render_template('tagger_gallery.html',
+                               officers=officers,
+                               form=form,
+                               form_data=form_values)
+    else:
+        return redirect(url_for('label_data'))
+
+
 @app.route('/gallery/<int:page>', methods=['POST'])
 @app.route('/gallery', methods=['POST'])
 def get_gallery(page=1):
@@ -37,6 +52,7 @@ def get_gallery(page=1):
                                form_data=form_values)
     else:
         return redirect(url_for('get_officer'))
+
 
 @app.route('/complaint', methods=['GET', 'POST'])
 def submit_complaint():
@@ -70,9 +86,13 @@ def show_upload(filename):
     return 'Successfully uploaded: {}'.format(filename)
 
 
-@app.route('/label')
+@app.route('/label', methods=['GET', 'POST'])
 def label_data():
-    return render_template('label_data.html')
+    form = FindOfficerForm()
+    if form.validate_on_submit():
+        #  flash('[DEBUG] Forms validate correctly')
+        return redirect(url_for('get_tagger_gallery'), code=307)
+    return render_template('label_data.html', form=form)
 
 
 @app.route('/about')

@@ -64,3 +64,15 @@ class FindOfficerForm(Form):
         NumberRange(min=-180, max=180)
         ])
 
+
+class FindOfficerIDForm(Form):
+    name = StringField('name', default='',
+                       validators=[Regexp('\w*'),
+                                   Length(max=50),
+                                   Optional()])
+    badge = StringField('badge', default='',
+                         validators=[Regexp('\w*'),
+                                     Length(max=10)])
+    dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
+                       validators=[DataRequired(),
+                                   AnyOf(allowed_values(DEPT_CHOICES))])

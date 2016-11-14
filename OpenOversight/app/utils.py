@@ -57,8 +57,30 @@ def filter_by_form(form, officer_query):
     return officer_query
 
 
+def filter_roster(form, officer_query):
+    if form['name']:
+        officer_query = officer_query.filter(
+            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+            )
+
+    officer_query = officer_query.join(Assignment)
+    if form['badge']:
+        officer_query = officer_query.filter(
+                cast( Assignment.star_no, db.String ) \
+                .like('%%{}%%'.format(form['badge']))
+            )
+
+    officer_query = officer_query.outerjoin(Face).order_by(Face.officer_id.asc()).order_by(Officer.id.desc())
+    return officer_query
+
+
+def roster_lookup(form):
+    return filter_roster(form, Officer.query)
+
+
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
+
 
 def allowed_file(filename):
     return '.' in filename and \
