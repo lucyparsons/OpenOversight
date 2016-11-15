@@ -28,7 +28,7 @@
                 </div>
                 <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
                 </div>
-                <center><a href="{{ url_for('submit_complaint',
+		<center><a href="{{ url_for('main.submit_complaint',
                            officer_last_name=officer.last_name,
                            officer_first_name=officer.first_name,
                            officer_middle_initial=officer.middle_initial,
