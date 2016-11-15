@@ -29,20 +29,11 @@ def test_rank_filter_select_all_commanders(mockdata):
 
 def test_rank_filter_select_all_police_officers(mockdata):
     results = utils.grab_officers({'race': 'Not Sure', 'gender': 'Not Sure',
-				   'rank': 'PO', 'min_age': 16, 'max_age': 85,
-				   'name': '', 'badge': ''})
-    for element in results:
-        assignment = element.assignments.first()
-        assert assignment.rank == 'PO'
-
-
-def test_get_badge_number(mockdata):
-    results = utils.grab_officers({'race': 'Not Sure', 'gender': 'Not Sure',
-                                   'rank': 'COMMANDER', 'min_age': 16, 'max_age': 85,
+                                   'rank': 'PO', 'min_age': 16, 'max_age': 85,
                                    'name': '', 'badge': ''})
     for element in results:
         assignment = element.assignments.first()
-        assert assignment.star_no == 1234
+        assert assignment.rank == 'PO'
 
 
 def test_filter_by_name(mockdata):
@@ -67,6 +58,7 @@ def test_allowed_filenames(app):
     for e in extension:
         test_filename = 'test.{}'.format(e)
         assert utils.allowed_file(test_filename) == True
+
 
 def test_not_allowed_filenames(app):
     test_filename = 'test.gif'

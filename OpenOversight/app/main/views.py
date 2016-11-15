@@ -1,12 +1,10 @@
 import os
 from flask import (render_template, request, redirect, url_for,
-		   send_from_directory, flash, session)
+                   send_from_directory, flash, session, current_app)
 from werkzeug import secure_filename
 from . import main
 from ..utils import allowed_file, grab_officers
 from .forms import FindOfficerForm
-import config
-
 
 @main.route('/')
 @main.route('/index')
@@ -18,8 +16,8 @@ def index():
 def get_officer():
     form = FindOfficerForm()
     if form.validate_on_submit():
-	#  flash('[DEBUG] Forms validate correctly')
-	return redirect(url_for('get_gallery'), code=307)
+        #  flash('[DEBUG] Forms validate correctly')
+        return redirect(url_for('get_gallery'), code=307)
     return render_template('input_find_officer.html', form=form)
 
 
@@ -28,23 +26,23 @@ def get_officer():
 def get_gallery(page=1):
     form = FindOfficerForm()
     if form.validate_on_submit():
-	form_values = form.data
-	officers = grab_officers(form_values).paginate(page, config.OFFICERS_PER_PAGE, False)
-	return render_template('gallery.html',
-			       officers=officers,
-			       form=form,
-			       form_data=form_values)
+        form_values = form.data
+        officers = grab_officers(form_values).paginate(page, current_app.config.OFFICERS_PER_PAGE, False)
+        return render_template('gallery.html',
+                               officers=officers,
+                               form=form,
+                               form_data=form_values)
     else:
-	return redirect(url_for('get_officer'))
+        return redirect(url_for('get_officer'))
 
 @main.route('/complaint', methods=['GET', 'POST'])
 def submit_complaint():
     return render_template('complaint.html',
-			   officer_first_name=request.args.get('officer_first_name'),
-			   officer_last_name=request.args.get('officer_last_name'),
-			   officer_middle_initial=request.args.get('officer_middle_name'),
-			   officer_star=request.args.get('officer_star'),
-			   officer_image=request.args.get('officer_image'))
+                           officer_first_name=request.args.get('officer_first_name'),
+                           officer_last_name=request.args.get('officer_last_name'),
+                           officer_middle_initial=request.args.get('officer_middle_name'),
+                           officer_star=request.args.get('officer_star'),
+                           officer_image=request.args.get('officer_image'))
 
 
 @main.route('/submit')
@@ -56,10 +54,10 @@ def submit_data():
 def upload_file():
     file = request.files['file']
     if file and allowed_file(file.filename):
-	filename = secure_filename(file.filename)
-	file.save(os.path.join(app.config['UNLABELLED_UPLOADS'], filename))
-	return redirect(url_for('show_upload',
-				filename=filename))
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UNLABELLED_UPLOADS'], filename))
+        return redirect(url_for('show_upload',
+                                filename=filename))
 
 
 @main.route('/show_upload/<filename>')

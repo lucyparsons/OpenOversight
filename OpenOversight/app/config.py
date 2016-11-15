@@ -23,6 +23,9 @@ class BaseConfig(object):
     WTF_CSRF_ENABLED = True
     SECRET_KEY = 'changemeplzorelsehax'
 
+    NUM_OFFICERS = 120
+    SEED = 666
+
     @staticmethod
     def init_app(app):
         pass
