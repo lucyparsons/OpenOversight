@@ -2,11 +2,11 @@ from app.models import Officer, Assignment, Face, Image
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
-    assert officer.__repr__() == '<Officer ID 1: IVANA None TINKLE>'
+    assert officer.__repr__() == '<Officer ID {}: {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name)
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert assignment.__repr__() == '<Assignment: ID 1 : 1234>'
+    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.id, assignment.star_no)
 
 def test_image_repr(mockdata):
     image = Image.query.first()
