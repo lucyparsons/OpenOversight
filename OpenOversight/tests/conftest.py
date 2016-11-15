@@ -1,9 +1,8 @@
-import os
 import pytest
 from flask import current_app
-from app import create_app
-from app import db as _db
-from app import models
+from OpenOversight.app import create_app
+from OpenOversight.app import db as _db
+from OpenOversight.app import models
 from datetime import datetime
 import random
 
@@ -16,7 +15,6 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
 
 def pick_birth_date():
     return random.randint(1950, 2000)
-
 
 def pick_race():
     return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
@@ -55,7 +53,7 @@ def generate_officer():
         pd_id=1
     )
 
-def build_assignment(officer):
+def build_assignment(officer, unit):
     return models.Assignment(star_no=pick_star(),
                       rank=pick_rank(),
                       officer=officer)
@@ -70,7 +68,7 @@ def assign_faces(officer, images):
 def app(request):
     """Session-wide test `Flask` application."""
     app = create_app('testing')
-
+    app.config['WTF_CSRF_ENABLED'] = False
     # Establish an application context before running the tests.
     ctx = app.app_context()
     ctx.push()
@@ -84,12 +82,9 @@ def app(request):
 @pytest.fixture(scope='session')
 def db(app, request):
     """Session-wide test database."""
-    # if os.path.exists(TESTDB_PATH):
-    #     os.unlink(TESTDB_PATH)
 
     def teardown():
         _db.drop_all()
-        # os.unlink(TESTDB_PATH)
 
     _db.app = app
     _db.create_all()
@@ -127,12 +122,15 @@ def mockdata(session, request):
     image3 = models.Image(filepath='static/images/test_cop3.png')
     image4 = models.Image(filepath='static/images/test_cop4.png')
 
+    unit1 = models.Unit(descrip="test")
+
     test_images = [image1, image2, image3, image4]
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
-    assignments = [build_assignment(officer) for officer in officers]
+    assignments = [build_assignment(officer, unit1) for officer in officers]
     faces = [assign_faces(officer, test_images) for officer in officers]
     faces = [f for f in faces if f]
     session.add_all(test_images)
+    session.add(unit1)
     session.add_all(officers)
     session.add_all(assignments)
     session.add_all(faces)

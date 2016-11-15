@@ -1,4 +1,4 @@
-from app.models import Officer, Assignment, Face, Image
+from OpenOversight.app.models import Officer, Assignment, Face, Image, Unit
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
@@ -15,3 +15,7 @@ def test_image_repr(mockdata):
 def test_face_repr(mockdata):
     face = Face.query.first()
     assert face.__repr__() == '<Tag ID {}: {} - {}>'.format(face.id, face.officer_id, face.img_id)
+
+def test_unit(mockdata):
+    unit = Unit.query.first()
+    assert unit.__repr__() == '<Unit ID {}: {}>'.format(unit.id, unit.descrip)

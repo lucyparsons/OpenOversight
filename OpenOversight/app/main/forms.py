@@ -56,7 +56,6 @@ class FindOfficerForm(Form):
     latitude = DecimalField('latitude', default=False, validators=[NumberRange(min=-90, max=90)])
     longitude = DecimalField('longitude', default=False, validators=[NumberRange(min=-180, max=180)])
 
-
 class FindOfficerIDForm(Form):
     name = StringField('name', default='',
 		       validators=[Regexp('\w*'),
