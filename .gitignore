@@ -29,7 +29,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -79,7 +78,6 @@ target/
 Gemfile.lock
 
 #Puppet module stuff
-vagrant/puppet/modules/
 vagrant/puppet/.tmp
 .librarian
 .vagrant
