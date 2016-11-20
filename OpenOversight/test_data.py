@@ -30,6 +30,7 @@ def pick_name():
                   ('Seymour', '', 'Butz'),
                   ('HAYWOOD', 'U', 'CUDDLEME'),
                   ('BEA', '', 'O\'PROBLEM'),
+                  ('BACON', '', 'OFFICER'),
                   ('URA', '', 'SNOTBALL')]
     return random.choice(troll_cops)
 
@@ -50,8 +51,8 @@ def populate():
     image2 = models.Image(filepath='static/images/test_cop2.png')
     image3 = models.Image(filepath='static/images/test_cop3.png')
     image4 = models.Image(filepath='static/images/test_cop4.png')
-
-    test_images = [image1, image2, image3, image4]
+    image5 = models.Image(filepath='static/images/test_cop5.jpg')
+    test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
     db.session.commit()
 
