@@ -1,5 +1,21 @@
-# Install postgres and python on the Vagrant VM
-  $virtualenv = '/home/vagrant/oovirtenv'
+# Install prerequisites and a development environment for OpenOversight
+
+
+
+  # Ubuntu renamed their vagrant image's default user between
+  # ubuntu/trusty64 and ubuntu/xenial64. This doesn't work on
+  # xenial64 yet, because of stankevich/puppet-python, but we
+  # will be more prepared when the time comes maybe
+  case $operatingsystemmajrelease {
+    '16.04': {
+      $system_user = 'ubuntu'
+    }
+    default: {
+      $system_user = 'vagrant'
+    }
+  }
+
+  $virtualenv = "/home/${system_user}/oovirtenv"
 
   $database_name     = 'openoversight-dev'
   $database_server   = 'localhost'
@@ -27,11 +43,16 @@
     virtualenv => present,
   }
 
-  file {'/vagrant/OpenOversight/.env':
+  python::dotfile {'/vagrant/OpenOversight/.env':
     ensure  => present,
-    owner   => 'vagrant',
-    mode    => '0755',
-    content => "SQLALCHEMY_DATABASE_URI=\"${database_uri}\"\nSECRET_KEY=${csrf_token}",
+    owner   => $system_user,
+    mode    => '0644',
+    config  => {
+      'global' => {
+        'SQLALCHEMY_DATABASE_URI' => $database_uri,
+        'SECRET_KEY' => $csrf_token,
+      }
+    },
     notify  => Python::Gunicorn['oo'],
   }
 
@@ -39,7 +60,7 @@
     ensure       => present,
     requirements => '/vagrant/requirements.txt',
     venv_dir     => $virtualenv,
-    owner        => 'vagrant',
+    owner        => $system_user,
     require      => Package['libpq-dev'],
   }
 
@@ -57,6 +78,7 @@
     command     => "python create_db.py",
     cwd         => '/vagrant/OpenOversight',
     path        => "${virtualenv}/bin",
+    user        => $system_user,
     require     => [ File['/vagrant/OpenOversight/.env'], Python::Virtualenv['/vagrant'], Postgresql::Server::Db[$database_name]  ]
   }
 
@@ -64,6 +86,7 @@
     command     => "python test_data.py -p",
     cwd         => '/vagrant/OpenOversight',
     path        => "${virtualenv}/bin",
+    user        => $system_user,
     require     => Exec['set up database'],
   }
 
