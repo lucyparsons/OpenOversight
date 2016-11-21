@@ -8,27 +8,19 @@ When you come to implement your new feature, you should branch off `develop` and
 
 ## Development Environment
 
-Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and Virtualbox installed to start out. Vagrant and the Puppet modules that provision the box use Ruby, so you'll want some reasonably-modern Ruby. Anything in the 2.0-2.2 area should work.
+Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and Virtualbox installed to start out.
 
-If you don't have bundler installed:
+Make sure that vagrant and Virtualbox are installed, and then run:
 
-`gem install bundler`
+`vagrant up`
 
-If you don't have rake installed:
-
-`bundle install`
-
-Then provision the VM:
-
-`rake vagrant:provision`
-
-This brings the vagrant box up and provisions it. (Behind the scenes, it's grabbing some puppet modules and then running `vagrant up`.) If everything works, you should get a webserver listening at `http://localhost:3000` you can browse to. In addition, you can now SSH into it:
+This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` you can browse to on your host machine. In addition, you can now SSH into it:
 
 `vagrant ssh`
 
-The app is running under gunicorn, which means that it does not dynamically reload your changes.
+The app, as provisoined, is running under gunicorn, which means that it does not dynamically reload your changes.
 
-If you run the app in debug mode, you can see these changes take effect on every update, but certain changes will kill the server. To do this:
+If you run the app in debug mode, you can see these changes take effect on every update, but certain changes will kill the server in a way some of us find really irritating. To do this:
 
 `vagrant ssh` (if you're not already there)
 ```
@@ -75,3 +67,23 @@ If you e.g. add a new column or table, you'll need to migrate the database. You 
 
 to do this.
 `python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+
+## Changing the Development Environment
+
+If you're making massive changes to the development environment provisioning, you should know that Vagrant and the Puppet modules that provision the box use Ruby, so you'll want some reasonably-modern Ruby. Anything in the 2.0-2.2 area should work. Puppet has some annoying interactions where puppet 3 doesn't work with ruby 2.2, though, so you might have to get creative on modern OSes.
+
+If you don't have bundler installed:
+
+`gem install bundler`
+
+If you don't have rake installed:
+
+`bundle install`
+
+Then provision the VM:
+
+`rake vagrant:provision`
+
+Puppet modules are dropped into place by librarian-puppet, and there's a rake task that'll do it without the headache of remembering all the paths and such:
+
+`rake vagrant:build_puppet`
