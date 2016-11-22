@@ -21,7 +21,7 @@
         <p>Use the following
             form to put in the details you can see in the image:</p>
 
-        <form action="{{ url_for('get_tagger_gallery') }}" method="post">
+        <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
             {{ form.hidden_tag() }}
             <h4>Department: {{ form.dept }}</h4>
             {% for error in form.dept.errors %}
