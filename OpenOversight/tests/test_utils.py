@@ -27,6 +27,15 @@ def test_rank_filter_select_all_commanders(mockdata):
         assert assignment.rank == 'COMMANDER'
 
 
+def test_rank_filter_select_all_police_officers(mockdata):
+    results = utils.grab_officers({'race': 'Not Sure', 'gender': 'Not Sure',
+				   'rank': 'PO', 'min_age': 16, 'max_age': 85,
+				   'name': '', 'badge': ''})
+    for element in results:
+        assignment = element.assignments.first()
+        assert assignment.rank == 'PO'
+
+
 def test_get_badge_number(mockdata):
     results = utils.grab_officers({'race': 'Not Sure', 'gender': 'Not Sure',
                                    'rank': 'COMMANDER', 'min_age': 16, 'max_age': 85,
@@ -53,22 +62,12 @@ def test_filter_by_badge_no(mockdata):
         assert '12' in str(assignment.star_no)
 
 
-# Routing and view tests
-def test_home(client):
-    rv = client.get('/')
-    assert rv.status_code == 200
+def test_allowed_filenames(app):
+    extension = ['png', 'jpg', 'jpeg', 'mpeg', 'mp4']
+    for e in extension:
+        test_filename = 'test.{}'.format(e)
+        assert utils.allowed_file(test_filename) == True
 
-
-def test_find(client):
-    rv = client.get('/find')
-    assert rv.status_code == 200
-
-
-def test_about(client):
-    rv = client.get('/about')
-    assert rv.status_code == 200
-
-
-def test_contact(client):
-    rv = client.get('/contact')
-    assert rv.status_code == 200
+def test_not_allowed_filenames(app):
+    test_filename = 'test.gif'
+    assert utils.allowed_file(test_filename) == False
