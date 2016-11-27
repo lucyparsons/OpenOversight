@@ -18,7 +18,8 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
 	    ('HAYWOOD', 'U', 'CUDDLEME'),
 	    ('BEA', '', 'O\'PROBLEM'),
 	    ('URA', '', 'SNOTBALL'),
-	    ('HUGH', '', 'JASS')]
+	    ('HUGH', '', 'JASS'),
+      ('OFFICER', '', 'BACON')]
 
 def pick_birth_date():
     return random.randint(1950, 2000)
@@ -80,8 +81,9 @@ def populate():
     image2 = models.Image(filepath='static/images/test_cop2.png')
     image3 = models.Image(filepath='static/images/test_cop3.png')
     image4 = models.Image(filepath='static/images/test_cop4.png')
+    image5 = models.Image(filepath='static/images/test_cop5.png')
 
-    test_images = [image1, image2, image3, image4]
+    test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
     db.session.commit()
 
