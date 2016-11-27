@@ -1,6 +1,7 @@
-[![Coverage Status](https://coveralls.io/repos/github/scuerda/OpenOversight/badge.svg?branch=generate-test-data)](https://coveralls.io/github/scuerda/OpenOversight?branch=generate-test-data)
-
 # OpenOversight
+
+[![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight)
+[![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop)
 
 OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and provide digital galleries of photographs to help people identify police officers they would like to file a complaint on.
 
