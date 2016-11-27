@@ -27,8 +27,8 @@ If you run the app in debug mode, you can see these changes take effect on every
 $ sudo service gunicorn stop
  * Stopping Gunicorn workers
  [oo] *
-vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/
-vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ ~/oovirtenv/bin/python ./run.py
+vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/
+vagrant@vagrant-ubuntu-trusty-64:/vagrant$ ~/oovirtenv/bin/python ./run.py
  * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
