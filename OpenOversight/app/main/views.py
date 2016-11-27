@@ -53,7 +53,7 @@ def get_gallery(page=1):
     if form.validate_on_submit():
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_values = form.data
-        officers = grab_officers(form_values).paginate(page, current_app.config.OFFICERS_PER_PAGE, False)
+        officers = grab_officers(form_values).paginate(page, OFFICERS_PER_PAGE, False)
         return render_template('gallery.html',
                                officers=officers,
                                form=form,
