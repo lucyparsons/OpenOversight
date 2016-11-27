@@ -76,7 +76,7 @@
 
   exec{'set up database':
     command     => "python create_db.py",
-    cwd         => '/vagrant/OpenOversight',
+    cwd         => '/vagrant',
     path        => "${virtualenv}/bin",
     user        => $system_user,
     require     => [ File['/vagrant/OpenOversight/.env'], Python::Virtualenv['/vagrant'], Postgresql::Server::Db[$database_name]  ]
@@ -84,7 +84,7 @@
 
   exec{'create test data':
     command     => "python test_data.py -p",
-    cwd         => '/vagrant/OpenOversight',
+    cwd         => '/vagrant',
     path        => "${virtualenv}/bin",
     user        => $system_user,
     require     => Exec['set up database'],
