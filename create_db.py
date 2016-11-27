@@ -2,13 +2,16 @@
 
 from migrate.versioning import api
 from migrate.exceptions import DatabaseAlreadyControlledError
-from config import SQLALCHEMY_DATABASE_URI
-from config import SQLALCHEMY_MIGRATE_REPO
-from app import db
+from OpenOversight.app import create_app, db, models
+app = create_app('development')
+db.app = app
 import os.path
 
 try:
     db.create_all()
+
+    SQLALCHEMY_MIGRATE_REPO = app.config['SQLALCHEMY_MIGRATE_REPO']
+    SQLALCHEMY_DATABASE_URI = app.config['SQLALCHEMY_DATABASE_URI']
 
     if not os.path.exists(SQLALCHEMY_MIGRATE_REPO):
         api.create(SQLALCHEMY_MIGRATE_REPO, 'database repository')
@@ -20,4 +23,4 @@ try:
                            api.version(SQLALCHEMY_MIGRATE_REPO))
 
 except DatabaseAlreadyControlledError:
-  print "Database already exists, not creating"
+    print "Database already exists, not creating"

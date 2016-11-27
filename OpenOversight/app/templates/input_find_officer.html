@@ -7,7 +7,7 @@
     <h1>Find an Officer</h1>
     <p>Fill in the information you know about a police officer you interacted with. Don't worry if you don't know or have answers to every question. OpenOversight takes what you provide and generates a digital gallery of Chicago police officers who may be a match. </p>
     <p>Note that this form is designed for you to search for one officer at a time. If you want to file a complaints against multiple officers, you need to search for each one individually. </p>
-    <form action="{{ url_for('get_officer') }}" method="post">
+    <form action="{{ url_for('main.get_officer') }}" method="post">
     {{ form.hidden_tag() }}
 
     <div class="page-header">
