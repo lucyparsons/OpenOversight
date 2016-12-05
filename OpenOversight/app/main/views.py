@@ -1,10 +1,21 @@
 import os
 from flask import (render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
+from flask_login import (LoginManager, login_user, logout_user,
+                         current_user, login_required)
 from werkzeug import secure_filename
+
 from . import main
 from ..utils import allowed_file, grab_officers, roster_lookup
 from .forms import FindOfficerForm, FindOfficerIDForm
+
+login_manager = LoginManager()
+#login_manager.init_app(current_app)  # TODO FIX
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 
 @main.route('/')
@@ -91,6 +102,27 @@ def show_upload(filename):
     # return send_from_directory('../'+config.UNLABELLED_UPLOADS,
     #                           filename)
     return 'Successfully uploaded: {}'.format(filename)
+
+
+@main.route('/register' , methods=['GET','POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    user = User(request.form['username'] , request.form['password'],request.form['email'])
+    try: 
+        db.session.add(user)
+        db.session.commit()
+        flash('User successfully registered')
+    except Exception as e:
+        flask('Failed to create user!')
+    return redirect(url_for('login'))
+
+
+@main.route('/login',methods=['GET','POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+    return redirect(url_for('index'))
 
 
 @main.route('/about')
