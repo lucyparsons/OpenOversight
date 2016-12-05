@@ -2,6 +2,7 @@ flask>=0.11.1
 python-dotenv
 werkzeug>=0.11.1
 flask-WTF>=0.13.1
+flask-login
 psycopg2>=2.6.2
 sqlalchemy
 sqlalchemy-migrate
