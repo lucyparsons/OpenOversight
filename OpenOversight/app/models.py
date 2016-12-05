@@ -56,7 +56,7 @@ class Face(db.Model):
     img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
     face_position = db.Column(db.String(120), index=True, unique=False, nullable=True)  # No box dtype in SQLalchemy afaict
     image = db.relationship('Image', backref='face')
-    user_tagging = db.relationship('User', backref='user_accounts')
+    user_id = db.Column(db.Integer, db.ForeignKey('user_accounts.id'), nullable=True)
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
