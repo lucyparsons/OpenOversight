@@ -18,7 +18,7 @@
         <p><span style="color: red;">[{{ error }}]</span></p>
     {% endfor %}
     <p>Don't see your department? Want to bring OpenOversight to your city? Email us at <a href="mailto:info@lucyparsonslabs.com">OpenOversight</a>.</p>
-     
+
     <div class="page-header">
         <h2>Partial Name or Badge Number</h2>
     </div>
@@ -44,13 +44,24 @@
         <p><span style="color: red;">[{{ error }}]</span></p>
     {% endfor %}
 
+    <div id="show_img_div">
     <p><a id="show_img">Show rank shoulder patches as reference</a></p>
-    <img id="hidden_img" style="display:none;" src="{{url_for('static', filename='images/OfficerRank.png')}}" width="30%" height="30%">
+    </div>
+    <div id="hidden_img" style="display:none;">
+      <p><a id="hide_img">Hide rank shoulder patches</a></p>
+      <img src="{{url_for('static', filename='images/OfficerRank.png')}}" width="50%" height="50%">
+    </div>
 
     <script>
     $(document).ready(function(){
        $("#show_img").on("click", function(){
           $("#hidden_img").show();
+          $("#show_img_div").hide();
+       });
+
+       $("#hide_img").click(function(){
+          $("#hidden_img").hide();
+          $("#show_img_div").show();
        });
     });
     </script>
