@@ -9,6 +9,7 @@
                 <h1 class="page-header">Digital Gallery <small>Do you see the officer here?</small></h1>
             </div>
             <div class="container">
+            <a href="/find"><button type="button" class="btn btn-info btn-sm">Go Back to Search</button></a>
             <!--<h3><small>We found</small> {{ officers.rowcount }} <small>matching officers.</small></h3>-->
             {% include 'partials/paginate.html' %}
             {% for officer in officers.items %}
@@ -59,6 +60,7 @@
 <p><b>Officer race</b>: {{ form_data['race'] }}</p>
 <p><b>Officer gender</b>: {{ form_data['gender'] }}</p>
 <p><b>Officer age</b>: {{ form_data['min_age'] }} to {{ form_data['max_age'] }}</p>
+<a href="/find"><button type="button" class="btn btn-info btn-sm">Search Again</button></a>
 
 </div>
 
