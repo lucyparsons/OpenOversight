@@ -28,11 +28,6 @@ body {
      float:left;
 }
 
-.thumbnail {
-    position:absolute;
-    width:80%;
-    height:80%;
-}
 .thumbnail img {
     position: absolute;
     top: 0;
