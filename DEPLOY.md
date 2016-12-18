@@ -79,6 +79,9 @@ ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 --timeout 90 app:app
 [Install]
 WantedBy=multi-user.target
 ```
+# Python Fabric
+
+We use [Python Fabric](http://www.fabfile.org/) to manage our deployments and database backups. A sample fabric file is found in `fabric.py`. The usage is `fab host command`, so for example `fab staging deploy` would deploy our latest commits to the staging server.
 
 # Contact
 
