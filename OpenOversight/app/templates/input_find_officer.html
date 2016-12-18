@@ -91,10 +91,18 @@
     <div class="page-header">
         <h2>Ready to Submit?</h2>
     </div>
-    <input type="submit" value="Go!" />
-    </form>
 
-</div>
+    <script>
+    $(document).ready(function(){
+       $("#user-notification").on("click", function(){
+          $("#loader").show();
+       });
+    });
+    </script>
+
+    <input type="submit" value="Go!" id="user-notification" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
+
+    </form>
 
 </div>
 {% endblock %}
