@@ -72,7 +72,7 @@
     require    => [ File['/vagrant/OpenOversight/.env'], Postgresql::Server::Db['openoversight-dev'] ]
   }
 
-  package {'libpq-dev': }
+  package {['libpq-dev', 'libffi-dev']: }
 
   exec{'set up database':
     command     => "python create_db.py",
