@@ -5,7 +5,8 @@ from datetime import datetime
 import sys
 import random
 
-from OpenOversight.app import create_app, db, models
+from OpenOversight.app import create_app, models
+from OpenOversight.app.models import db
 app = create_app('development')
 db.app = app
 

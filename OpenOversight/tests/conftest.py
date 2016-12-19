@@ -1,8 +1,8 @@
 import pytest
 from flask import current_app
 from OpenOversight.app import create_app
-from OpenOversight.app import db as _db
 from OpenOversight.app import models
+from OpenOversight.app.models import db as _db
 from datetime import datetime
 import random
 

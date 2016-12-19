@@ -4,12 +4,8 @@ from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
-from OpenOversight.app import create_app
-from .models import Officer, Assignment, Image, Face
+from .models import db, Officer, Assignment, Image, Face
 import pdb
-app = create_app('default')
-db = SQLAlchemy(app)
-
 
 def filter_by_form(form, officer_query):
     if form['name']:
