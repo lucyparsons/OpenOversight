@@ -25,13 +25,12 @@ def get_officer():
 def label_data():
     form = FindOfficerIDForm()
     if form.validate_on_submit():
-        #  flash('[DEBUG] Forms validate correctly')
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     return render_template('label_data.html', form=form)
 
 
-@main.route('/tagger_gallery/<int:page>', methods=['POST'])
-@main.route('/tagger_gallery', methods=['POST'])
+@main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
+@main.route('/tagger_gallery', methods=['GET', 'POST'])
 def get_tagger_gallery(page=1):
     form = FindOfficerIDForm()
     if form.validate_on_submit():
@@ -46,8 +45,8 @@ def get_tagger_gallery(page=1):
         return redirect(url_for('main.label_data'), code=307)
 
 
-@main.route('/gallery/<int:page>', methods=['POST'])
-@main.route('/gallery', methods=['POST'])
+@main.route('/gallery/<int:page>', methods=['GET', 'POST'])
+@main.route('/gallery', methods=['GET','POST'])
 def get_gallery(page=1):
     form = FindOfficerForm()
     if form.validate_on_submit():
