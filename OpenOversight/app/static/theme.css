@@ -22,22 +22,14 @@ body {
 }
 
 .thumbnail_container {
-     position: relative;
-     width: 100%;
-     padding-bottom: 100%;
      float:left;
+     max-height:300px;
+     max-width:auto;
+     padding-bottom: 210%;
+     margin:25px;
 }
 
 .thumbnail img {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-}
-
-img{
     max-height:80%;
     max-width:80%;
 }
