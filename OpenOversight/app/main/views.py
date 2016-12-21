@@ -35,12 +35,12 @@ def get_tagger_gallery(page=1):
     form = FindOfficerIDForm()
     if form.validate_on_submit():
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-        form_values = form.data
-        officers = roster_lookup(form_values).paginate(page, OFFICERS_PER_PAGE, False)
+        form_data = form.data
+        officers = roster_lookup(form_data).paginate(page, OFFICERS_PER_PAGE, False)
         return render_template('tagger_gallery.html',
                                officers=officers,
                                form=form,
-                               form_data=form_values)
+                               form_data=form_data)
     else:
         return redirect(url_for('main.label_data'), code=307)
 
@@ -51,12 +51,12 @@ def get_gallery(page=1):
     form = FindOfficerForm()
     if form.validate_on_submit():
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-        form_values = form.data
-        officers = grab_officers(form_values).paginate(page, OFFICERS_PER_PAGE, False)
+        form_data = form.data
+        officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
         return render_template('gallery.html',
                                officers=officers,
                                form=form,
-                               form_data=form_values)
+                               form_data=form_data)
     else:
         return redirect(url_for('main.get_officer'))
 

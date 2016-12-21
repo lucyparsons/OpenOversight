@@ -20,9 +20,7 @@ def test_routes_ok(route, client):
 
 
 @pytest.mark.parametrize("route", [
-    ('/gallery'),
-    ('/upload'),
-    ('/tagger_gallery')
+    ('/upload')
 ])
 def test_route_method_not_allowd(route, client):
     rv = client.get(route)

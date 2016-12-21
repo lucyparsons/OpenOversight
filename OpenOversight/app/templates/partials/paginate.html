@@ -1,5 +1,6 @@
 <div class="top-paginate">
     <span class="paginate-navigate">
+
 	{% if officers.has_prev %}
 	    <form action="{{ url_for('main.get_gallery', page=officers.prev_num) }}" method="post">
 		{% include 'partials/officer_form_fields_hidden.html' %}
