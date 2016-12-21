@@ -3,64 +3,58 @@
 
 <div class="container theme-showcase" role="main">
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Digital Gallery <small>Do you see the officer here?</small></h1>
-            </div>
-            <div class="container">
-            <a href="/find"><button type="button" class="btn btn-info btn-sm">Go Back to Search</button></a>
-            <!--<h3><small>We found</small> {{ officers.rowcount }} <small>matching officers.</small></h3>-->
-            {% include 'partials/paginate.html' %}
-            {% for officer in officers.items %}
-                {% if officer.face.first() is none %}
-                    {% set officer_image = '/static/images/placeholder.png' %}
-                {% else %}
-                    {% set officer_image = officer.face.first().image.filepath %}
-                {% endif %}
-            {% set assignment = officer.assignments.first() %}
-            <div class="col-md-3 col-sm-4 col-xs-12">
-                <div class="thumbnail_container">
-                <div class="row">
-                <h4>{{ officer.first_name.lower()|title }}
+  <h1 class="page-header">Digital Gallery <small>Do you see the officer here?</small></h1>
+  <a href="/find"><button type="button" class="btn btn-info btn-sm">Go Back to Search</button></a>
+
+  {% include 'partials/paginate.html' %}
+  <div class="row">
+  {% for officer in officers.items %}
+    {% if officer.face.first() is none %}
+      {% set officer_image = '/static/images/placeholder.png' %}
+    {% else %}
+      {% set officer_image = officer.face.first().image.filepath %}
+    {% endif %}
+    {% set assignment = officer.assignments.first() %}
+      <div class="col-md-4 col-sm-4 col-xs-12">
+        <div class="thumbnail_container">
+          <h4>{{ officer.first_name.lower()|title }}
                 {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
                 {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
-
-                </div>
-                <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
-                </div>
-		<center><a href="{{ url_for('main.submit_complaint',
+          <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
+		      <center><a href="{{ url_for('main.submit_complaint',
                            officer_last_name=officer.last_name,
                            officer_first_name=officer.first_name,
                            officer_middle_initial=officer.middle_initial,
                            officer_star=assignment.star_no,
-                           officer_image=officer_image) }}"><button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
-                <br><br><br><br>
-            </div>
-            {% endfor %}
-            </div>
-
-            {% if officers.items|length == 0 %}
-            <div class="container">
-            <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
-            </div>
-            {% endif %}
-
+                           officer_image=officer_image) }}">
+          <button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
         </div>
+      </div>
+  {% endfor %}
+  </div>
+  {% include 'partials/paginate.html' %}
 
-     <div class="jumbotron">
-      <span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span><br>
-      <b>See any errors?</b> OpenOversight is currently in public beta. Please submit any issues or suggestions you have for us on <a href="https://github.com/lucyparsons/OpenOversight">GitHub</a>, <a href="https://twitter.com/lucyparsonslabs">Twitter</a>, or by email to <a href="info@lucyparsonslabs.com">info@lucyparsonslabs.com</a>. We are very interested in any data corrections or inaccuracies you would like to report and correct.</div>
+  {% if officers.items|length == 0 %}
+    <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
+  {% endif %}
 
-<div class="page-header">
-<h1>Your Query</h1>
-</div>
-<p><b>Department</b>: {{ form_data['dept'] }}</p>
-<p><b>Officer rank</b>: {{ form_data['rank'] }}</p>
-<p><b>Officer race</b>: {{ form_data['race'] }}</p>
-<p><b>Officer gender</b>: {{ form_data['gender'] }}</p>
-<p><b>Officer age</b>: {{ form_data['min_age'] }} to {{ form_data['max_age'] }}</p>
-<a href="/find"><button type="button" class="btn btn-info btn-sm">Search Again</button></a>
+  <div class="jumbotron">
+    <span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span><br>
+    <b>See any errors?</b> OpenOversight is currently in public beta.
+    Please submit any issues or suggestions you have for us on <a href="https://github.com/lucyparsons/OpenOversight">GitHub</a>,
+    <a href="https://twitter.com/lucyparsonslabs">Twitter</a>, or by email to <a href="info@lucyparsonslabs.com">info@lucyparsonslabs.com</a>.
+    We are very interested in any data corrections or inaccuracies you would like to report and correct.
+  </div>
+
+  <div class="page-header">
+    <h1>Your Query</h1>
+  </div>
+  <p><b>Department</b>: {{ form_data['dept'] }}</p>
+  <p><b>Officer rank</b>: {{ form_data['rank'] }}</p>
+  <p><b>Officer race</b>: {{ form_data['race'] }}</p>
+  <p><b>Officer gender</b>: {{ form_data['gender'] }}</p>
+  <p><b>Officer age</b>: {{ form_data['min_age'] }} to {{ form_data['max_age'] }}</p>
+  <a href="/find"><button type="button" class="btn btn-info btn-sm">Search Again</button></a>
 
 </div>
 
