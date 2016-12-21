@@ -24,7 +24,7 @@ body {
 .thumbnail_container {
      float:left;
      max-height:300px;
-     max-width:auto;
+     max-width:80%;
      padding-bottom: 210%;
      margin:25px;
 }
