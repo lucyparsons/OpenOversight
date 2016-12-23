@@ -48,7 +48,7 @@ class FindOfficerForm(Form):
 		       validators=[AnyOf(allowed_values(RANK_CHOICES))])
     race = SelectField('race', default='WHITE', choices=RACE_CHOICES,
 		       validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('gender', default='MALE',
+    gender = SelectField('gender', default='M',
 			 choices=GENDER_CHOICES,
 			 validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     min_age = IntegerField('min_age', default=16, validators=[
