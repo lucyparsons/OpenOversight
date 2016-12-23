@@ -6,6 +6,12 @@
 # Credentials
 dbcred*
 
+# Local environment files
+**/.env
+
+# Swapfiles from our text editors
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -23,7 +29,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -73,7 +78,9 @@ target/
 Gemfile.lock
 
 #Puppet module stuff
-vagrant/puppet/modules/
 vagrant/puppet/.tmp
 .librarian
 .vagrant
+
+# Editor files
+.idea/

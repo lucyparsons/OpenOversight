@@ -10,7 +10,7 @@ namespace :vagrant do
   end
 
   desc 'bring up the vagrant development VM'
-  task :provision => [:bundle_install, 'vagrant:build_puppet']  do
+  task :provision do
     sh 'vagrant up'
   end
 end

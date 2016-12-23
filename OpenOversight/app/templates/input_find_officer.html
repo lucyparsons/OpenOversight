@@ -7,7 +7,7 @@
     <h1>Find an Officer</h1>
     <p>Fill in the information you know about a police officer you interacted with. Don't worry if you don't know or have answers to every question. OpenOversight takes what you provide and generates a digital gallery of Chicago police officers who may be a match. </p>
     <p>Note that this form is designed for you to search for one officer at a time. If you want to file a complaints against multiple officers, you need to search for each one individually. </p>
-    <form action="{{ url_for('get_officer') }}" method="post">
+    <form action="{{ url_for('main.get_officer') }}" method="post">
     {{ form.hidden_tag() }}
 
     <div class="page-header">
@@ -18,19 +18,50 @@
         <p><span style="color: red;">[{{ error }}]</span></p>
     {% endfor %}
     <p>Don't see your department? Want to bring OpenOversight to your city? Email us at <a href="mailto:info@lucyparsonslabs.com">OpenOversight</a>.</p>
-     
+
+    <div class="page-header">
+        <h2>Partial Name or Badge Number</h2>
+    </div>
+
+    <h4>Do you remember any part of the Officer's last name?</h4>
+    {{ form.name }}
+    {% for error in form.name.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
+
+    <h4>Do you remember any part of the Officer's badge number?</h4>
+    {{ form.badge }}
+    {% for error in form.badge.errors %}
+        <p><span style="color: red;">[{{ error }}]</span></p>
+    {% endfor %}
+
+    <div class="page-header">
+        <h2>Rank</h2>
+    </div>
+
     <h4>Rank: {{ form.rank }}</h4>
     {% for error in form.rank.errors %}
         <p><span style="color: red;">[{{ error }}]</span></p>
     {% endfor %}
 
+    <div id="show_img_div">
     <p><a id="show_img">Show rank shoulder patches as reference</a></p>
-    <img id="hidden_img" style="display:none;" src="{{url_for('static', filename='images/OfficerRank.png')}}" width="30%" height="30%">
+    </div>
+    <div id="hidden_img" style="display:none;">
+      <p><a id="hide_img">Hide rank shoulder patches</a></p>
+      <img src="{{url_for('static', filename='images/OfficerRank.png')}}" width="50%" height="50%">
+    </div>
 
     <script>
     $(document).ready(function(){
        $("#show_img").on("click", function(){
           $("#hidden_img").show();
+          $("#show_img_div").hide();
+       });
+
+       $("#hide_img").click(function(){
+          $("#hidden_img").hide();
+          $("#show_img_div").show();
        });
     });
     </script>
@@ -60,10 +91,18 @@
     <div class="page-header">
         <h2>Ready to Submit?</h2>
     </div>
-    <input type="submit" value="Go!" />
-    </form>
 
-</div>
+    <script>
+    $(document).ready(function(){
+       $("#user-notification").on("click", function(){
+          $("#loader").show();
+       });
+    });
+    </script>
+
+    <input type="submit" value="Go!" id="user-notification" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
+
+    </form>
 
 </div>
 {% endblock %}
