@@ -96,27 +96,6 @@ def show_upload(filename):
     return 'Successfully uploaded: {}'.format(filename)
 
 
-@main.route('/register' , methods=['GET','POST'])
-def register():
-    if request.method == 'GET':
-        return render_template('register.html')
-    user = User(request.form['username'] , request.form['password'],request.form['email'])
-    try:
-        db.session.add(user)
-        db.session.commit()
-        flash('User successfully registered')
-    except Exception as e:
-        flask('Failed to create user!')
-    return redirect(url_for('login'))
-
-
-@main.route('/login',methods=['GET','POST'])
-def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-    return redirect(url_for('index'))
-
-
 @main.route('/about')
 def about_oo():
     return render_template('about.html')
