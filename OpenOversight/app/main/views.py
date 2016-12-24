@@ -9,14 +9,6 @@ from . import main
 from ..utils import allowed_file, grab_officers, roster_lookup
 from .forms import FindOfficerForm, FindOfficerIDForm
 
-login_manager = LoginManager()
-#login_manager.init_app(current_app)  # TODO FIX
-login_manager.login_view = 'login'
-
-@login_manager.user_loader
-def load_user(id):
-    return User.query.get(int(id))
-
 
 @main.route('/')
 @main.route('/index')
@@ -109,7 +101,7 @@ def register():
     if request.method == 'GET':
         return render_template('register.html')
     user = User(request.form['username'] , request.form['password'],request.form['email'])
-    try: 
+    try:
         db.session.add(user)
         db.session.commit()
         flash('User successfully registered')
