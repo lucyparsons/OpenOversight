@@ -10,7 +10,7 @@
   <div class="row">
   {% for officer in officers.items %}
     {% if officer.face.first() is none %}
-      {% set officer_image = 'images/placeholder.png' %}
+      {% set officer_image = '/static/images/placeholder.png' %}
     {% else %}
       {% set officer_image = officer.face.first().image.filepath %}
     {% endif %}
