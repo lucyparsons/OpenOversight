@@ -11,6 +11,7 @@ class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     # File Upload Settings
     UNLABELLED_UPLOADS = 'uploads/'
