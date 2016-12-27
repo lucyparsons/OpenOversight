@@ -167,29 +167,3 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-"""
-class User(db.Model):
-    __tablename__ = 'user_accounts'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120))
-    username = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String)
-    authenticated = db.Column(db.Boolean, default=False)
-    registered_on = db.Column(db.DateTime)
-
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return self.id
-
-    def is_authenticated(self):
-        return self.authenticated
-
-    def is_anonymous(self):
-        return False
-
-    def __repr__(self):
-        return '<User {}>'.format(self.username)
-"""
