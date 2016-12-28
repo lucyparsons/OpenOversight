@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}OpenOversight - Volunteer Registration{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+<div class="page-header">
+    <h1>Register as an OpenOversight Volunteer</h1>
+</div>
+<div class="col-md-4">
+    {{ wtf.quick_form(form, button_map={'submit':'primary'}) }}
+</div>
+
+</div>
+{% endblock %}

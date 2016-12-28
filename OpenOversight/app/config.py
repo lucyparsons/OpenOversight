@@ -11,6 +11,7 @@ class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     # File Upload Settings
     UNLABELLED_UPLOADS = 'uploads/'
@@ -22,6 +23,16 @@ class BaseConfig(object):
     # Form Settings
     WTF_CSRF_ENABLED = True
     SECRET_KEY = 'changemeplzorelsehax'
+
+    # Mail Settings
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    OO_MAIL_SUBJECT_PREFIX = '[OpenOversight]'
+    OO_MAIL_SENDER = 'OpenOversight <OpenOversight@gmail.com>'
+    # OO_ADMIN = os.environ.get('OO_ADMIN')
 
     NUM_OFFICERS = 15000
     SEED = 666

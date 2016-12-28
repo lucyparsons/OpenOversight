@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}OpenOversight - Confirm Your Account{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+<div class="page-header">
+    <h1>Please Confirm Your Account</h1>
+</div>
+<div class="col-md-6">
+  <h3>You have not confirmed your account yet.</h3>
+  <p>
+      Before you can access this site you need to confirm your account.
+      Check your inbox, you should have received an email with a confirmation link.
+  </p>
+  <p>
+      Need another confirmation email?
+      <a href="{{ url_for('auth.resend_confirmation') }}">Click here</a>
+  </p></div>
+
+</div>
+{% endblock %}

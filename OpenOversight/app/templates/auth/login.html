@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}OpenOversight - Volunteer Login{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+<div class="page-header">
+    <h1>Login</h1>
+</div>
+<div class="col-md-6">
+    {{ wtf.quick_form(form, button_map={'submit':'primary'}) }}
+    <br>
+    <p>Forgot your password? <a href="{{ url_for('auth.password_reset_request') }}">Click here to reset it</a>.</p>
+    <p>New user? <a href="{{ url_for('auth.register') }}">Click here to register</a>.</p>
+</div>
+
+</div>
+{% endblock %}

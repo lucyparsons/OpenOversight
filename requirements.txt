@@ -1,11 +1,14 @@
 flask>=0.11.1
 python-dotenv
 werkzeug>=0.11.1
-flask-WTF>=0.13.1
+Flask-WTF>=0.13.1
+Flask-Login
+Flask-Mail
 psycopg2>=2.6.2
 sqlalchemy
 sqlalchemy-migrate
 flask-sqlalchemy>=2.1
+flask-bootstrap
 nose>=1.3.1
 gunicorn==17.5
 fabric
@@ -13,3 +16,4 @@ pytest==3.0.3
 faker==0.7.3
 pytest-cov==2.4.0
 pytest-pep8==1.0.6
+itsdangerous

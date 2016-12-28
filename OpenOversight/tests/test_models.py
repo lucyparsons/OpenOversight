@@ -1,4 +1,5 @@
-from OpenOversight.app.models import Officer, Assignment, Face, Image, Unit
+from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
+                                      User)
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
@@ -19,3 +20,20 @@ def test_face_repr(mockdata):
 def test_unit(mockdata):
     unit = Unit.query.first()
     assert unit.__repr__() == '<Unit ID {}: {}>'.format(unit.id, unit.descrip)
+
+def test_password_set_success(mockdata):
+    u = User(password='bacon')
+    assert u.password_hash is not None
+
+def test_password_verification_success(mockdata):
+    u = User(password='bacon')
+    assert u.verify_password('bacon') is True
+
+def test_password_verification_failure(mockdata):
+    u = User(password='bacon')
+    assert u.verify_password('vegan bacon') is False
+
+def test_password_salting(mockdata):
+    u1 = User(password='bacon')
+    u2 = User(password='bacon')
+    assert u1.password_hash != u2.password_hash

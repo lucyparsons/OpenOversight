@@ -1,7 +1,10 @@
 import os
 from flask import (render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
+from flask_login import (LoginManager, login_user, logout_user,
+                         current_user, login_required)
 from werkzeug import secure_filename
+
 from . import main
 from ..utils import allowed_file, grab_officers, roster_lookup
 from .forms import FindOfficerForm, FindOfficerIDForm
