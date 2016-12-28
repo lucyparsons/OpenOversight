@@ -7,6 +7,14 @@ from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
 import pdb
 
+
+def upload_file():
+    file = request.files['file']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UNLABELLED_UPLOADS'], filename))
+
+
 def filter_by_form(form, officer_query):
     if form['name']:
         officer_query = officer_query.filter(
