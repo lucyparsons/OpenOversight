@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import (StringField, BooleanField, DecimalField,
-		     SelectField, IntegerField, FileField)
+		     SelectField, IntegerField, SubmitField)
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 				Length, Optional)
-from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 
 # Choices are a list of (value, label) tuples
@@ -26,11 +26,10 @@ def allowed_values(choices):
 
 
 class HumintContribution(Form):
-    photo = FileField('image', validators=[
-	DataRequired(),
-	FileAllowed(['png', 'jpg', 'jpeg', 'mpg', 'mpeg', 'mp4', 'mov'],
-		    'Images and movies only!')
-    ])
+    photo = FileField('image', validators=[FileRequired(message='There was no file!'),
+	                                       FileAllowed(['png', 'jpg', 'jpeg'],
+		                                                message='Images only!')])
+    submit = SubmitField(label='Upload')
 
 
 class FindOfficerForm(Form):
