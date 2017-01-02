@@ -1,18 +1,29 @@
+import boto3
 import config
 import datetime
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
+import hashlib
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
-import pdb
 
 
-def upload_file():
-    file = request.files['file']
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UNLABELLED_UPLOADS'], filename))
+def hash_file(file_to_hash):
+    return hashlib.sha256(file_to_hash).hexdigest()
+
+
+def upload_file(dest_filename):
+    s3_client = boto3.client('s3')
+    s3_client.upload_file('/tmp/{}'.format(dest_filename),
+                          current_app.config['S3_BUCKET_NAME'],
+                          dest_filename,
+                          ExtraArgs={'ACL': 'public-read'})
+
+    url = "https://s3-{}.amazonaws.com/{}/{}".format(
+               current_app.config['AWS_DEFAULT_REGION'],
+               current_app.config['S3_BUCKET_NAME'], dest_filename)
+    return url
 
 
 def filter_by_form(form, officer_query):
@@ -84,8 +95,3 @@ def roster_lookup(form):
 
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
-
-
-def allowed_file(filename):
-    return '.' in filename and \
-	filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
