@@ -1,3 +1,4 @@
+import datetime
 import os
 from flask import (abort, render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
@@ -6,8 +7,9 @@ from flask_login import (LoginManager, login_user, logout_user,
 from werkzeug import secure_filename
 
 from . import main
-from ..utils import allowed_file, grab_officers, roster_lookup, upload_file
+from ..utils import grab_officers, roster_lookup, upload_file, hash_file
 from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
+from ..models import db, Image
 
 
 @main.route('/')
@@ -74,12 +76,34 @@ def submit_complaint():
                            officer_image=request.args.get('officer_image'))
 
 
-@main.route('/submit')
+@main.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit_data():
     form = HumintContribution()
-    if form.validate_on_submit():
-        upload_file()  # No arg needed because it is stored in the request
-        flash('File successfully uploaded!')
+    if request.method == 'POST' and form.validate_on_submit():
+        filename = secure_filename(request.files[form.photo.name].filename)
+        image_data = request.files[form.photo.name].read()
+
+        # See if there is a matching photo already in the db
+        hash_img = hash_file(image_data)
+        hash_found = Image.query.filter_by(hash_img=hash_img).first()
+
+        if not hash_found:
+            open(os.path.join('/tmp', filename), 'w').write(image_data)
+            url = upload_file(filename)
+
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now())
+            db.session.add(new_image)
+            db.session.commit()
+
+            flash('File {} successfully uploaded!'.format(filename))
+        else:
+            flash('This photograph has already been uploaded to OpenOversight.')
+    elif request.method == 'POST':
+        flash('File unable to be uploaded. Try again...')
     return render_template('submit.html', form=form)
 
 
