@@ -90,7 +90,9 @@ def submit_data():
 
         if not hash_found:
             open(os.path.join('/tmp', filename), 'w').write(image_data)
-            url = upload_file(filename)
+            file_extension = filename.split('.')[-1]
+            url = upload_file(filename, '{}.{}'.format(hash_img,
+                                                       file_extension))
 
             new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
                               date_image_inserted=datetime.datetime.now(),

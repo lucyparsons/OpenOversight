@@ -13,9 +13,9 @@ def hash_file(file_to_hash):
     return hashlib.sha256(file_to_hash).hexdigest()
 
 
-def upload_file(dest_filename):
+def upload_file(src_filename, dest_filename):
     s3_client = boto3.client('s3')
-    s3_client.upload_file('/tmp/{}'.format(dest_filename),
+    s3_client.upload_file('/tmp/{}'.format(src_filename),
                           current_app.config['S3_BUCKET_NAME'],
                           dest_filename,
                           ExtraArgs={'ACL': 'public-read'})
