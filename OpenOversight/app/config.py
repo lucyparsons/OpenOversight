@@ -34,7 +34,6 @@ class BaseConfig(object):
     OO_MAIL_SENDER = 'OpenOversight <OpenOversight@gmail.com>'
     # OO_ADMIN = os.environ.get('OO_ADMIN')
 
-    NUM_OFFICERS = 15000
     SEED = 666
 
     @staticmethod
@@ -45,12 +44,14 @@ class BaseConfig(object):
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    NUM_OFFICERS = 15000
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    NUM_OFFICERS = 120
 
 
 class ProductionConfig(BaseConfig):
