@@ -1,3 +1,4 @@
+from pytest import raises
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User)
 
@@ -17,21 +18,30 @@ def test_face_repr(mockdata):
     face = Face.query.first()
     assert face.__repr__() == '<Tag ID {}: {} - {}>'.format(face.id, face.officer_id, face.img_id)
 
-def test_unit(mockdata):
+def test_unit_repr(mockdata):
     unit = Unit.query.first()
     assert unit.__repr__() == '<Unit ID {}: {}>'.format(unit.id, unit.descrip)
 
+def test_user_repr(mockdata):
+    user = User(username='bacon')
+    assert user.__repr__() == "<User '{}'>".format(user.username)
+
+def test_password_not_printed(mockdata):
+    user = User(password='bacon')
+    with raises(AttributeError):
+        user.password
+
 def test_password_set_success(mockdata):
-    u = User(password='bacon')
-    assert u.password_hash is not None
+    user = User(password='bacon')
+    assert user.password_hash is not None
 
 def test_password_verification_success(mockdata):
-    u = User(password='bacon')
-    assert u.verify_password('bacon') is True
+    user = User(password='bacon')
+    assert user.verify_password('bacon') is True
 
 def test_password_verification_failure(mockdata):
-    u = User(password='bacon')
-    assert u.verify_password('vegan bacon') is False
+    user = User(password='bacon')
+    assert user.verify_password('vegan bacon') is False
 
 def test_password_salting(mockdata):
     u1 = User(password='bacon')
