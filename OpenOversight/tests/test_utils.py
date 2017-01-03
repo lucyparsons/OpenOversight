@@ -51,15 +51,3 @@ def test_filter_by_badge_no(mockdata):
     for element in results:
         assignment = element.assignments.first()
         assert '12' in str(assignment.star_no)
-
-
-def test_allowed_filenames(app):
-    extension = ['png', 'jpg', 'jpeg', 'mpeg', 'mp4']
-    for e in extension:
-        test_filename = 'test.{}'.format(e)
-	assert OpenOversight.app.utils.allowed_file(test_filename) == True
-
-
-def test_not_allowed_filenames(app):
-    test_filename = 'test.gif'
-    assert OpenOversight.app.utils.allowed_file(test_filename) == False
