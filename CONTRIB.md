@@ -53,11 +53,9 @@ or
 
 ## Running Unit Tests
 
- Run tests with `nose`:
+ Run tests with `pytest`:
 
-```~/oovirtenv/bin/python ~/oovirtenv/bin/nosetests```
-
-Note: One could put `test_data.populate()` into `setUp` and `test_data.cleanup()` into `tearDown` but in this case we want the data to stay in the database so that we can play with the web application so we should just have vagrant run that during the provisioning of the development VM.
+```~/oovirtenv/bin/pytest```
 
 ## Migrating the Database
 
