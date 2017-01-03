@@ -15,7 +15,8 @@ from urlparse import urlparse
     ('/label'),
     ('/auth/login'),
     ('/auth/register'),
-    ('/auth/reset')
+    ('/auth/reset'),
+    ('/complaint?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png')
 ])
 def test_routes_ok(route, client):
     rv = client.get(route)
@@ -24,6 +25,7 @@ def test_routes_ok(route, client):
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route", [
+    ('/submit'),
     ('/auth/unconfirmed'),
     ('/auth/logout'),
     ('/auth/confirm/abcd1234'),
