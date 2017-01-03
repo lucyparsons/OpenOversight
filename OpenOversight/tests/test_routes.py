@@ -12,19 +12,29 @@ from urlparse import urlparse
     ('/about'),
     ('/contact'),
     ('/privacy'),
-    ('/label')
+    ('/label'),
+    ('/auth/login'),
+    ('/auth/register'),
+    ('/auth/reset')
 ])
 def test_routes_ok(route, client):
     rv = client.get(route)
     assert rv.status_code == 200
 
 
+# All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route", [
-    ('/upload')
+    ('/auth/unconfirmed'),
+    ('/auth/logout'),
+    ('/auth/confirm/abcd1234'),
+    ('/auth/confirm'),
+    ('/auth/change-password'),
+    ('/auth/change-email'),
+    ('/auth/change-email/abcd1234')
 ])
-def test_route_method_not_allowd(route, client):
+def test_route_login_required(route, client):
     rv = client.get(route)
-    assert rv.status_code == 405
+    assert rv.status_code == 302
 
 #
 # def test_find_form_submission(client, mockdata):
