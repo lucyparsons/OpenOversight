@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from fabric.api import env, local, run, sudo, cd, hosts, get
 from fabric.context_managers import prefix
+from fabric.contrib.console import confirm
 import datetime
 
 env.use_ssh_config = False
@@ -12,7 +13,7 @@ env.use_ssh_config = False
 def staging():
     env.hosts=['162.243.156.49']
     env.user='root'
-    env.host='staging.openoversight'
+    env.host='staging.openoversight.lucyparsonslabs.com'
 
 def production():
     env.hosts=['45.55.11.175']
@@ -21,9 +22,14 @@ def production():
 
 def deploy():
     if env.host=='openoversight.lucyparsonslabs.com':
-        code_dir='/home/nginx/oovirtenv/OpenOversight/OpenOversight'
+        venv_dir='/home/nginx/oovirtenv'
+        code_dir='/home/nginx/oovirtenv/OpenOversight'
     else:
-	code_dir='/home/nginx/oovirtenv/venv/OpenOversight/OpenOversight'
+	venv_dir='/home/nginx/oovirtenv/venv'
+        code_dir='/home/nginx/oovirtenv/venv/OpenOversight'
     with cd(code_dir):
-        sudo("git pull", user="nginx", pty=False)
-        run('sudo systemctl restart openoversight')
+        run('su nginx -c "git status"')
+        confirm("Update to latest commit in this branch?")
+        run('su nginx -c "git pull"')
+        run('su nginx -c "%s/bin/pip install -r requirements.txt"' % venv_dir)
+        run('systemctl restart openoversight')
