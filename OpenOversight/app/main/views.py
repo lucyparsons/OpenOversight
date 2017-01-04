@@ -31,11 +31,26 @@ def get_officer():
 
 
 @main.route('/label', methods=['GET', 'POST'])
-def label_data():
+def get_started_labeling():
     form = FindOfficerIDForm()
     if form.validate_on_submit():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     return render_template('label_data.html', form=form)
+
+
+@main.route('/tutorial')
+@login_required
+def get_tutorial():
+    return render_template('tutorial.html')
+
+
+@main.route('/cop_face', methods=['GET', 'POST'])
+@login_required
+def label_data():
+    #form = FindOfficerIDForm()
+    #if form.validate_on_submit():
+    #    return redirect(url_for('main.get_tagger_gallery'), code=307)
+    return render_template('cop_face.html')  #, form=form)
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])

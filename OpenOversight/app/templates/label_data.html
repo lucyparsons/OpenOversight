@@ -1,52 +1,41 @@
 {% extends "base.html" %}
+
 {% block content %}
+<link href="{{ url_for('static', filename='css/cropper.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/cropper.js') }}"></script>
 
 <div class="container theme-showcase" role="main">
-    <h1>Label Officer Images</h1>
 
     {% if current_user and current_user.is_authenticated %}
-      <div class="page-header">
-        <h2>How OpenOversight Labeling Works</h2>
+    <div class="row">
+      <div class="col-md-9">
+        <h1>OpenOversight Volunteer Image Sorting</h1>
       </div>
-        <p>We want you to help us go through images submitted by activists
-        and our social media monitoring to find faces of police officers.
-        We want you to click on each officer face in the image, and then try to
-        find them in our database using the search form below.</p>
-        <p>If you don't see any police officers in the image, just click
-          "No police officers" to advance to the next image.</p>
-
-      <div class="page-header">
-        <h2>Find an Officer's OpenOversight ID</h2>
+      <div class="col-md-3">
+        <div class="panel panel-primary">
+          <div class="panel-heading"><span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span></div>
+          <div class="panel-body">
+          New to working on images for OpenOversight? Or just need a refresher?  <a href="{{ url_for('main.get_tutorial') }}"><button type="button" class="btn btn-sm btn-primary">Launch Tutorial</button></a>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <p>To link a submitted face with a given officer in the database, first you
-         need to find the Officer's OpenOversight ID.</p>
-      <p>Use the following form to put in the details you can see in the image:</p>
-      <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
-        {{ form.hidden_tag() }}
-      <h4>Department: {{ form.dept }}</h4>
-        {% for error in form.dept.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-      <h4>What is visible from the officer's name tag?</h4>
-        {{ form.name }}
-        {% for error in form.name.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-      <h4>What is visible from the badge number?</h4>
-        {{ form.badge }}
-        {% for error in form.badge.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-        <br><br>
-        <p>
-          <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
+    <div class="row">
+      <div class="col-md-6">
+        <div>
+          <img class="img-responsive" src="{{ url_for('static', filename='images/test_cop1.png') }}" alt="Picture to be sorter">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h3>Do you see at least one face of a police officer with at least a badge number OR name visible on their uniform?</h3>
+        <p><a href="{{ url_for('main.label_data') }}"><button type="button" class="btn btn-lg btn-primary">Police officers are clearly
+        visible with badge numbers or names</button></a><a href="{{ url_for('main.get_started_labeling') }}"><button type="button" class="btn btn-lg btn-primary">No police officers with badge numbers or names</button></a>
         </p>
-      </form>
+      </div>
+    </div>
     {% else %}
+      <h1>OpenOversight Volunteer Sign Up</h1>
       <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up:</p>
 
       <a href="{{ url_for('auth.register') }}"><button type="button" class="btn btn-lg btn-primary">Register</button></a>
@@ -56,6 +45,6 @@
 
       <a href="{{ url_for('auth.login') }}"><button type="button" class="btn btn-lg btn-primary">Login</button></a>
     {% endif %}
-</div>
 
+</div>
 {% endblock %}
