@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+    <h1>OpenOversight Labeling Tutorial</h1>
+
+        <p>We want you to help us go through images submitted by activists
+        and Lucy Parsons Labs' social media monitoring of law enforcement
+        to find faces of police officers and match them to officers in our
+        roster.</p>
+
+        <h2>Step 1: Find Police Officers</h2>
+        <p>When an image is first displayed, see if you see any faces
+          of police officers. If you do, see if you can make out anything
+          about their badge number or name. If you can even see a few letters or
+          numbers, proceed to Step 2 by clicking "Police officers are clearly
+          visible with badge numbers or names".</p>
+        <p>If you don't see any clear faces of police officers in the image
+          with names or badge numbers, just click
+          "No police officers with badge numbers or names" to advance to the next
+          image. However, if you do then you will proceed to Step 2.
+          </p>
+
+        <h2>Step 2: Map Police Faces to Entries in the Roster</h2>
+        <p>We want you to use the cropper to first select an officer face in the
+          image, and then use the search box to try to find them in our roster.</p>
+        <p>If you can't find them in the roster, click "Can't find this officer".</p>
+        <p>If you can, select them and click "Add officer face to OpenOversight".</p>
+        <p>Once you've added every officer from the image, click
+          "I have selected each visible face in this image. Done!". Important:
+          only then will your work be saved, so make sure to click this to save
+          your tags.</p>
+
+      <h2>Ready to get started?</h2>
+
+      <a href="{{ url_for('main.get_started_labeling') }}"><button type="button" class="btn btn-lg btn-primary">Proceed to Label</button></a>
+    </div>
+
+{% endblock %}
