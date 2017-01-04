@@ -33,3 +33,8 @@ body {
     max-height:80%;
     max-width:80%;
 }
+
+/* Limit image width to avoid overflow the cropper container */
+img {
+  max-width: 100%;
+}
