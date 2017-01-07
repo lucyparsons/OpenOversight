@@ -18,7 +18,14 @@ This creates a new, pristine virtual machine and provisions it to be an almost-c
 
 `vagrant ssh`
 
-The app, as provisoined, is running under gunicorn, which means that it does not dynamically reload your changes.
+The provisioning step creates a virtual environment (venv) in `~/oovirtenv`. If you will be running lots of python-related commands, you can 'activate' the virtual environment (override the built-in python and pip commands and add pytest and fab to your path) by activating it:
+```
+vagrant@vagrant-ubuntu-trusty-64:~$ source /home/vagrant/oovirtenv/bin/activate
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$
+```
+When this is done, you no longer need to preface python commands (as below) with `~/oovirtenv/bin`.
+
+The app, as provisioned, is running under gunicorn, which means that it does not dynamically reload your changes.
 
 If you run the app in debug mode, you can see these changes take effect on every update, but certain changes will kill the server in a way some of us find really irritating. To do this:
 
@@ -42,29 +49,29 @@ with the password `terriblepassword`.
 
 The provisioning step already does this, but in case you need it, in the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
-`python create_db.py`
+`~/oovirtenv/bin/python create_db.py`
 
-If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. 
+If the database doesn't already exist, `create_db.py` will set it up.
 
 In the event that you need to create or delete the test data, you can do that with
-`python test_data.py --populate`
+`~/oovirtenv/bin/python test_data.py --populate` to create the data
 or
-`python test_data.py --cleanup`
+`~/oovirtenv/bin/python test_data.py --cleanup` to delete the data
 
 ## Running Unit Tests
 
  Run tests with `pytest`:
 
-```~/oovirtenv/bin/pytest```
+`~/oovirtenv/bin/pytest`
 
 ## Migrating the Database
 
 If you e.g. add a new column or table, you'll need to migrate the database. You can use:
 
-`python migrate_db.py`
+`~/oovirtenv/bin/python migrate_db.py`
 
 to do this.
-`python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+`~/oovirtenv/bin/python upgrade_db.py` and `~/oovirtenv/bin/python downgrade_db.py` can also be used as necessary. Note that we followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
 
 ## Changing the Development Environment
 

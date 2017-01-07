@@ -14,9 +14,13 @@
       $system_user = 'vagrant'
     }
   }
+  $development = true
+
+  $geckodriver_version = 'v0.13.0'
+  $geckodriver_url = "https://github.com/mozilla/geckodriver/releases/download/${geckodriver_version}/geckodriver-${geckodriver_version}-linux64.tar.gz"
 
   $virtualenv = "/home/${system_user}/oovirtenv"
-
+  $source_path = '/vagrant'
   $database_name     = 'openoversight-dev'
   $database_server   = 'localhost'
   $database_user     = 'openoversight'
@@ -43,7 +47,7 @@
     virtualenv => present,
   }
 
-  python::dotfile {'/vagrant/OpenOversight/.env':
+  python::dotfile {"${source_path}/OpenOversight/.env":
     ensure  => present,
     owner   => $system_user,
     mode    => '0644',
@@ -56,35 +60,50 @@
     notify  => Python::Gunicorn['oo'],
   }
 
-  python::virtualenv {'/vagrant':
+  python::virtualenv {$virtualenv:
     ensure       => present,
-    requirements => '/vagrant/requirements.txt',
+    requirements => "${source_path}/requirements.txt",
     venv_dir     => $virtualenv,
     owner        => $system_user,
     require      => Package['libpq-dev'],
   }
 
+  if $development {
+    python::requirements { "${source_path}/dev-requirements.txt":
+      virtualenv => $virtualenv,
+      owner      => $system_user,
+      require    => [ Package['firefox'], Python::Virtualenv[$virtualenv] ],
+    }
+
+    package {['firefox', 'Xvfb']: }
+
+    exec {'download and install geckodriver': # This is ugly but I'm not going to pull in an archive module for one file
+      command => "/usr/bin/wget ${geckodriver_url} && tar zxvf geckodriver-* && mv geckodriver bin",
+      cwd     => "/usr/local",
+    }
+  }
+
   python::gunicorn {'oo':
     ensure     => present,
     virtualenv => $virtualenv,
-    dir        => '/vagrant/OpenOversight',
+    dir        => "${source_path}/OpenOversight",
     bind       => '0.0.0.0:3000',
-    require    => [ File['/vagrant/OpenOversight/.env'], Postgresql::Server::Db['openoversight-dev'] ]
+    require    => [ File["${source_path}/OpenOversight/.env"], Postgresql::Server::Db['openoversight-dev'] ]
   }
 
   package {['libpq-dev', 'libffi-dev']: }
 
   exec{'set up database':
     command     => "python create_db.py",
-    cwd         => '/vagrant',
+    cwd         => $source_path,
     path        => "${virtualenv}/bin",
     user        => $system_user,
-    require     => [ File['/vagrant/OpenOversight/.env'], Python::Virtualenv['/vagrant'], Postgresql::Server::Db[$database_name]  ]
+    require     => [ File["${source_path}/OpenOversight/.env"], Python::Virtualenv[$virtualenv], Postgresql::Server::Db[$database_name]  ]
   }
 
   exec{'create test data':
     command     => "python test_data.py -p",
-    cwd         => '/vagrant',
+    cwd         => $source_path,
     path        => "${virtualenv}/bin",
     user        => $system_user,
     require     => Exec['set up database'],
