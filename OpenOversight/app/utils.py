@@ -13,17 +13,26 @@ def compute_hash(data_to_hash):
     return hashlib.sha256(data_to_hash).hexdigest()
 
 
+def generate_s3_url(dest_filename):
+    url = "https://s3-{}.amazonaws.com/{}/{}".format(
+                   current_app.config['AWS_DEFAULT_REGION'],
+                   current_app.config['S3_BUCKET_NAME'], dest_filename)
+    return url
+
+
 def upload_file(src_filename, dest_filename):
     s3_client = boto3.client('s3')
+
+    # Folder to store files in on S3 is first two chars of dest_filename
+    s3_folder = dest_filename[0:2]
+    s3_filename = dest_filename[2:]
+    s3_path = '{}/{}'.format(s3_folder, s3_filename)
     s3_client.upload_file('/tmp/{}'.format(dest_filename),
                           current_app.config['S3_BUCKET_NAME'],
-                          dest_filename,
+                          s3_path,
                           ExtraArgs={'ACL': 'public-read'})
 
-    url = "https://s3-{}.amazonaws.com/{}/{}".format(
-               current_app.config['AWS_DEFAULT_REGION'],
-               current_app.config['S3_BUCKET_NAME'], dest_filename)
-    return url
+    return generate_s3_url(s3_path)
 
 
 def filter_by_form(form, officer_query):
