@@ -1,5 +1,5 @@
 import os
-from flask import (render_template, request, redirect, url_for,
+from flask import (abort, render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
 from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
@@ -109,3 +109,14 @@ def contact_oo():
 @main.route('/privacy')
 def privacy_oo():
     return render_template('privacy.html')
+
+
+@main.route('/shutdown')
+def server_shutdown():
+    if not current_app.testing:
+        abort(404)
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if not shutdown:
+        abort(500)
+    shutdown()
+    return 'Shutting down...'
