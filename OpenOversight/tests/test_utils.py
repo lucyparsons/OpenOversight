@@ -1,3 +1,5 @@
+from mock import patch, Mock
+
 import OpenOversight
 
 
@@ -57,3 +59,15 @@ def test_compute_hash(mockdata):
     hash_result = OpenOversight.app.utils.compute_hash('bacon')
     expected_hash = '9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4'
     assert hash_result == expected_hash
+
+
+def test_s3_url(mockdata):
+    local_path = 'OpenOversight/app/static/images/test_cop1.png'
+
+    mocked_connection = Mock()
+    with patch('boto3.client', Mock(return_value=mocked_connection)):
+        url = OpenOversight.app.utils.upload_file(local_path, 'doesntmatter.png',
+                                                  'test_cop1.png')
+    assert 'https' in url
+    # url should show folder structure with first two chars as folder name
+    assert 'te/st' in url
