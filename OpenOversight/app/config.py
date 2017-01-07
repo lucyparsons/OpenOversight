@@ -33,8 +33,8 @@ class BaseConfig(object):
     # AWS Settings
     AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    AWS_DEFAULT_REGION = 'us-west-2'
-    S3_BUCKET_NAME = 'openoversight'
+    AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 
     # Upload Settings
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
