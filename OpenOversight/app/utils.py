@@ -15,7 +15,7 @@ def compute_hash(data_to_hash):
 
 def upload_file(src_filename, dest_filename):
     s3_client = boto3.client('s3')
-    s3_client.upload_file('/tmp/{}'.format(src_filename),
+    s3_client.upload_file('/tmp/{}'.format(dest_filename),
                           current_app.config['S3_BUCKET_NAME'],
                           dest_filename,
                           ExtraArgs={'ACL': 'public-read'})

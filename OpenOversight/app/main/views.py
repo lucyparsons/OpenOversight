@@ -81,18 +81,18 @@ def submit_complaint():
 def submit_data():
     form = HumintContribution()
     if request.method == 'POST' and form.validate_on_submit():
-        filename = secure_filename(request.files[form.photo.name].filename)
+        original_filename = secure_filename(request.files[form.photo.name].filename)
         image_data = request.files[form.photo.name].read()
 
         # See if there is a matching photo already in the db
-        hash_img = hash_file(image_data)
+        hash_img = compute_hash(image_data)
         hash_found = Image.query.filter_by(hash_img=hash_img).first()
 
         if not hash_found:
-            open(os.path.join('/tmp', filename), 'w').write(image_data)
-            file_extension = filename.split('.')[-1]
-            url = upload_file(filename, '{}.{}'.format(hash_img,
-                                                       file_extension))
+            file_extension = original_filename.split('.')[-1]
+            new_filename = '{}.{}'.format(hash_img, file_extension)
+            open(os.path.join('/tmp', new_filename), 'w').write(image_data)
+            url = upload_file(original_filename, new_filename)
 
             new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
                               date_image_inserted=datetime.datetime.now(),
@@ -101,7 +101,7 @@ def submit_data():
             db.session.add(new_image)
             db.session.commit()
 
-            flash('File {} successfully uploaded!'.format(filename))
+            flash('File {} successfully uploaded!'.format(original_filename))
         else:
             flash('This photograph has already been uploaded to OpenOversight.')
     elif request.method == 'POST':
