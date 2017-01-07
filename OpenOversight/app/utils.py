@@ -9,8 +9,8 @@ from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
 
 
-def hash_file(file_to_hash):
-    return hashlib.sha256(file_to_hash).hexdigest()
+def compute_hash(data_to_hash):
+    return hashlib.sha256(data_to_hash).hexdigest()
 
 
 def upload_file(src_filename, dest_filename):

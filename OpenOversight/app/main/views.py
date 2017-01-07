@@ -7,7 +7,7 @@ from flask_login import (LoginManager, login_user, logout_user,
 from werkzeug import secure_filename
 
 from . import main
-from ..utils import grab_officers, roster_lookup, upload_file, hash_file
+from ..utils import grab_officers, roster_lookup, upload_file, compute_hash
 from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
 from ..models import db, Image
 
