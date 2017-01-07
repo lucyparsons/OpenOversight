@@ -4,6 +4,7 @@ import datetime
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
+import os
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
@@ -20,14 +21,14 @@ def generate_s3_url(dest_filename):
     return url
 
 
-def upload_file(src_filename, dest_filename):
+def upload_file(safe_local_path, src_filename, dest_filename):
     s3_client = boto3.client('s3')
 
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
     s3_path = '{}/{}'.format(s3_folder, s3_filename)
-    s3_client.upload_file('/tmp/{}'.format(dest_filename),
+    s3_client.upload_file(safe_local_path,
                           current_app.config['S3_BUCKET_NAME'],
                           s3_path,
                           ExtraArgs={'ACL': 'public-read'})

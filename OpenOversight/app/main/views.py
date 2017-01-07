@@ -4,12 +4,16 @@ from flask import (abort, render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
 from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
+import tempfile
 from werkzeug import secure_filename
 
 from . import main
 from ..utils import grab_officers, roster_lookup, upload_file, compute_hash
 from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
 from ..models import db, Image
+
+# Ensure the file is read/write by the creator only
+SAVED_UMASK = os.umask(0077)
 
 
 @main.route('/')
@@ -89,11 +93,23 @@ def submit_data():
         hash_found = Image.query.filter_by(hash_img=hash_img).first()
 
         if not hash_found:
+            # Generate new filename
             file_extension = original_filename.split('.')[-1]
             new_filename = '{}.{}'.format(hash_img, file_extension)
-            open(os.path.join('/tmp', new_filename), 'w').write(image_data)
-            url = upload_file(original_filename, new_filename)
 
+            # Save temporarily on local filesystem
+            tmpdir = tempfile.mkdtemp()
+            safe_local_path = os.path.join(tmpdir, new_filename)
+            with open(safe_local_path, 'w') as tmp:
+                tmp.write(image_data)
+            os.umask(SAVED_UMASK)
+
+            # Upload file from local filesystem to S3 bucket and delete locally
+            url = upload_file(safe_local_path, original_filename, new_filename)
+            os.remove(safe_local_path)
+            os.rmdir(tmpdir)
+
+            # Update the database to add the image
             new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
                               date_image_inserted=datetime.datetime.now(),
                               # TODO: Get the following field from exif data
