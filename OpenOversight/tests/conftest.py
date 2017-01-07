@@ -162,7 +162,13 @@ def browser(app, request):
     vdisplay = Xvfb()
     vdisplay.start()
     driver = webdriver.Firefox()
+    # wait for browser to start up
+    time.sleep(3)
     yield driver
+
+    # shutdown server
+    driver.get("http://localhost:5000/shutdown")
+    time.sleep(3)
 
     # shutdown headless webdriver
     driver.quit()
