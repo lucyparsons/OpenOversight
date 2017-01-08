@@ -105,7 +105,11 @@ def submit_data():
             os.umask(SAVED_UMASK)
 
             # Upload file from local filesystem to S3 bucket and delete locally
-            url = upload_file(safe_local_path, original_filename, new_filename)
+            try:
+                 url = upload_file(safe_local_path, original_filename,
+                                   new_filename)
+            except:
+                flash("Your file could not be uploaded at this time due to a server problem. Please retry again later.")
             os.remove(safe_local_path)
             os.rmdir(tmpdir)
 
