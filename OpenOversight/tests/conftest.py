@@ -1,10 +1,16 @@
-import pytest
+from datetime import datetime
 from flask import current_app
+import pytest
+import random
+from selenium import webdriver
+import time
+import threading
+from xvfbwrapper import Xvfb
+
 from OpenOversight.app import create_app
 from OpenOversight.app import models
 from OpenOversight.app.models import db as _db
-from datetime import datetime
-import random
+
 
 OFFICERS = [('IVANA', '', 'TINKLE'),
             ('SEYMOUR', '', 'BUTZ'),
@@ -144,3 +150,26 @@ def client(app, request):
         pass
     request.addfinalizer(teardown)
     return client
+
+@pytest.fixture
+def browser(app, request):
+    # start server
+    threading.Thread(target=app.run).start()
+    # give the server a few seconds to ensure it is up
+    time.sleep(10)
+
+    # start headless webdriver
+    vdisplay = Xvfb()
+    vdisplay.start()
+    driver = webdriver.Firefox()
+    # wait for browser to start up
+    time.sleep(3)
+    yield driver
+
+    # shutdown server
+    driver.get("http://localhost:5000/shutdown")
+    time.sleep(3)
+
+    # shutdown headless webdriver
+    driver.quit()
+    vdisplay.stop()

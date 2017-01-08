@@ -27,7 +27,7 @@
                            officer_middle_initial=officer.middle_initial,
                            officer_star=assignment.star_no,
                            officer_image=officer_image) }}">
-          <button type="button" class="btn btn-info btn-sm">That's the officer!</button></a></center>
+          <button type="button" class="btn btn-info btn-sm" id="officer-found-{{ loop.index }}">That's the officer!</button></a></center>
         </div>
       </div>
   {% endfor %}
