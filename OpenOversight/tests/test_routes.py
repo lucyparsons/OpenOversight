@@ -1,8 +1,11 @@
 # Routing and view tests
 import pytest
 from flask import url_for, current_app
-from OpenOversight.app.main.forms import FindOfficerForm, FindOfficerIDForm
+from flask_login import current_user
 from urlparse import urlparse
+
+from OpenOversight.app.main.forms import FindOfficerForm, FindOfficerIDForm
+from OpenOversight.app.auth.forms import LoginForm
 
 
 @pytest.mark.parametrize("route", [
@@ -69,7 +72,8 @@ def test_tagger_lookup(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm()
         assert form.validate() == True
-        rv = client.post(url_for('main.label_data'), data=form.data, follow_redirects=False)
+        rv = client.post(url_for('main.label_data'), data=form.data,
+                         follow_redirects=False)
         assert rv.status_code == 307
         assert urlparse(rv.location).path == '/tagger_gallery'
 
@@ -86,6 +90,33 @@ def test_tagger_gallery_bad_form(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm(dept='')
         assert form.validate() == False
-        rv = client.post(url_for('main.get_tagger_gallery'), data=form.data, follow_redirects=False)
+        rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
+                         follow_redirects=False)
         assert rv.status_code == 307
         assert urlparse(rv.location).path == '/label'
+
+
+def test_valid_user_can_login(mockdata, client, session):
+    with current_app.test_request_context():
+        form = LoginForm(email='jen@example.org',
+                         password='dog',
+                         remember_me=True)
+        rv = client.post(
+            url_for('auth.login'),
+            data=form.data,
+            follow_redirects=False
+            )
+        assert rv.status_code == 302
+        assert urlparse(rv.location).path == '/index'
+
+
+def test_invalid_user_cannot_login(mockdata, client, session):
+    with current_app.test_request_context():
+        form = LoginForm(email='freddy@example.org',
+                         password='bruteforce',
+                         remember_me=True)
+        rv = client.post(
+            url_for('auth.login'),
+            data=form.data
+            )
+        assert 'Invalid username or password.' in rv.data

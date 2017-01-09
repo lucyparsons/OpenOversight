@@ -148,7 +148,8 @@ def mockdata(session, request):
 
     test_user = models.User(email='jen@example.org',
                             username='test_user',
-                            password='dog')
+                            password='dog',
+                            confirmed=True)
     session.add(test_user)
     session.commit()
     return assignments[0].star_no
