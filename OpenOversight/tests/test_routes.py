@@ -2,9 +2,11 @@
 import pytest
 from flask import url_for, current_app
 from flask_login import current_user
+import os
 from urlparse import urlparse
 
-from OpenOversight.app.main.forms import FindOfficerForm, FindOfficerIDForm
+from OpenOversight.app.main.forms import (FindOfficerForm, FindOfficerIDForm,
+                                          HumintContribution)
 from OpenOversight.app.auth.forms import LoginForm
 
 
@@ -120,3 +122,47 @@ def test_invalid_user_cannot_login(mockdata, client, session):
             data=form.data
             )
         assert 'Invalid username or password.' in rv.data
+
+
+def login_user(client):
+    form = LoginForm(email='jen@example.org',
+                     password='dog',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+        )
+
+
+def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        with open('tests/test_models.py', "rb") as test_file:
+            form = HumintContribution(photo=test_file,
+                submit=True)
+            rv = client.post(
+                url_for('main.submit_data'),
+                data=form.data,
+                follow_redirects=False
+            )
+        assert rv.status_code == 200
+        assert 'File unable to be uploaded.' in rv.data
+
+
+def test_user_cannot_submit_malicious_file(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        os.system('touch passwd')
+        with open('passwd', "rb") as test_file:
+            form = HumintContribution(photo=test_file,
+                submit=True)
+            rv = client.post(
+                url_for('main.submit_data'),
+                data=form.data,
+                follow_redirects=False
+            )
+        assert rv.status_code == 200
+        assert 'File unable to be uploaded.' in rv.data
