@@ -98,16 +98,20 @@ def test_tagger_gallery_bad_form(client, session):
         assert urlparse(rv.location).path == '/label'
 
 
+def login_user(client):
+    form = LoginForm(email='jen@example.org',
+                     password='dog',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+        )
+
+
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
-        form = LoginForm(email='jen@example.org',
-                         password='dog',
-                         remember_me=True)
-        rv = client.post(
-            url_for('auth.login'),
-            data=form.data,
-            follow_redirects=False
-            )
+        login_user(client)
         assert rv.status_code == 302
         assert urlparse(rv.location).path == '/index'
 
@@ -122,17 +126,6 @@ def test_invalid_user_cannot_login(mockdata, client, session):
             data=form.data
             )
         assert 'Invalid username or password.' in rv.data
-
-
-def login_user(client):
-    form = LoginForm(email='jen@example.org',
-                     password='dog',
-                     remember_me=True)
-    rv = client.post(
-        url_for('auth.login'),
-        data=form.data,
-        follow_redirects=False
-        )
 
 
 def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
