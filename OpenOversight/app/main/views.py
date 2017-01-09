@@ -108,20 +108,19 @@ def submit_data():
             try:
                  url = upload_file(safe_local_path, original_filename,
                                    new_filename)
+                 # Update the database to add the image
+                 new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                                   date_image_inserted=datetime.datetime.now(),
+                                   # TODO: Get the following field from exif data
+                                   date_image_taken=datetime.datetime.now())
+                 db.session.add(new_image)
+                 db.session.commit()
+
+                 flash('File {} successfully uploaded!'.format(original_filename))
             except:
                 flash("Your file could not be uploaded at this time due to a server problem. Please retry again later.")
             os.remove(safe_local_path)
             os.rmdir(tmpdir)
-
-            # Update the database to add the image
-            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                              date_image_inserted=datetime.datetime.now(),
-                              # TODO: Get the following field from exif data
-                              date_image_taken=datetime.datetime.now())
-            db.session.add(new_image)
-            db.session.commit()
-
-            flash('File {} successfully uploaded!'.format(original_filename))
         else:
             flash('This photograph has already been uploaded to OpenOversight.')
     elif request.method == 'POST':
