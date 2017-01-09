@@ -107,11 +107,12 @@ def login_user(client):
         data=form.data,
         follow_redirects=False
         )
+    return rv
 
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
-        login_user(client)
+        rv = login_user(client)
         assert rv.status_code == 302
         assert urlparse(rv.location).path == '/index'
 
@@ -126,6 +127,17 @@ def test_invalid_user_cannot_login(mockdata, client, session):
             data=form.data
             )
         assert 'Invalid username or password.' in rv.data
+
+
+def test_user_can_logout(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('auth.logout'),
+            follow_redirects=True
+            )
+        assert 'You have been logged out.' in rv.data
 
 
 def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
