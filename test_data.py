@@ -115,6 +115,13 @@ def populate():
     db.session.add_all(faces)
     db.session.commit()
 
+    test_user = models.User(email='test@example.org',
+                            username='test_user',
+                            password='testtest',
+                            confirmed=True)
+    db.session.add(test_user)
+    db.session.commit()
+
 
 def cleanup():
     """ Cleanup database"""
@@ -135,6 +142,9 @@ def cleanup():
     for face in faces:
         db.session.delete(face)
 
+    users = models.User.query.all()
+    for user in users:
+        db.session.delete(user)
     # TODO: Reset primary keys on all these tables
     db.session.commit()
 
