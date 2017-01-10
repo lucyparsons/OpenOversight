@@ -1,18 +1,29 @@
 {% extends "base.html" %}
+<!--{% import "bootstrap/wtf.html" as wtf %}-->
 {% block content %}
 
 <div class="container theme-showcase" role="main">
    <div class="page-header">
-        <h1>Submit Images/Videos <small>containing faces/badge numbers of uniformed police officers</small></h1>
+        <h1>Submit Image <small>containing faces/badge numbers of uniformed police officers</small></h1>
    </div>
-
    <div class="input-group input-group-lg">
-   <form action="upload" method="post" enctype="multipart/form-data">
+   <form action="submit" method="post" enctype="multipart/form-data">
      {{ form.hidden_tag() }}
-     <input type="file" name="file"><br><br>
-     <input type="submit" value="Upload">
+     <label class="control-label">Select a photograph containing a picture of the face of 1 or more police officers with their badge number and/or name clearly displayed.</label>
+     {{ form.photo }}
+
+     <script>
+     $(document).ready(function(){
+        $("#user-notification").on("click", function(){
+           $("#loader").show();
+        });
+     });
+     </script>
+
+     <input type="submit" class="btn btn-primary"  value="Go!" id="user-notification" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
    </form>
-   </div>
+ </div>
+ <!--{{ wtf.quick_form(form) }}-->
 
 </div>
 

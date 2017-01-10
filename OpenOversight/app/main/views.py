@@ -1,13 +1,19 @@
+import datetime
 import os
 from flask import (abort, render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
 from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
+import tempfile
 from werkzeug import secure_filename
 
 from . import main
-from ..utils import allowed_file, grab_officers, roster_lookup
-from .forms import FindOfficerForm, FindOfficerIDForm
+from ..utils import grab_officers, roster_lookup, upload_file, compute_hash
+from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
+from ..models import db, Image
+
+# Ensure the file is read/write by the creator only
+SAVED_UMASK = os.umask(0077)
 
 
 @main.route('/')
@@ -74,26 +80,52 @@ def submit_complaint():
                            officer_image=request.args.get('officer_image'))
 
 
-@main.route('/submit')
+@main.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit_data():
-    return render_template('submit.html')
+    form = HumintContribution()
+    if request.method == 'POST' and form.validate_on_submit():
+        original_filename = secure_filename(request.files[form.photo.name].filename)
+        image_data = request.files[form.photo.name].read()
 
+        # See if there is a matching photo already in the db
+        hash_img = compute_hash(image_data)
+        hash_found = Image.query.filter_by(hash_img=hash_img).first()
 
-@main.route('/upload', methods=['POST'])
-def upload_file():
-    file = request.files['file']
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UNLABELLED_UPLOADS'], filename))
-        return redirect(url_for('main.show_upload',
-                                filename=filename))
+        if not hash_found:
+            # Generate new filename
+            file_extension = original_filename.split('.')[-1]
+            new_filename = '{}.{}'.format(hash_img, file_extension)
 
+            # Save temporarily on local filesystem
+            tmpdir = tempfile.mkdtemp()
+            safe_local_path = os.path.join(tmpdir, new_filename)
+            with open(safe_local_path, 'w') as tmp:
+                tmp.write(image_data)
+            os.umask(SAVED_UMASK)
 
-@main.route('/show_upload/<filename>')
-def show_upload(filename):
-    # return send_from_directory('../'+config.UNLABELLED_UPLOADS,
-    #                           filename)
-    return 'Successfully uploaded: {}'.format(filename)
+            # Upload file from local filesystem to S3 bucket and delete locally
+            try:
+                 url = upload_file(safe_local_path, original_filename,
+                                   new_filename)
+                 # Update the database to add the image
+                 new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                                   date_image_inserted=datetime.datetime.now(),
+                                   # TODO: Get the following field from exif data
+                                   date_image_taken=datetime.datetime.now())
+                 db.session.add(new_image)
+                 db.session.commit()
+
+                 flash('File {} successfully uploaded!'.format(original_filename))
+            except:
+                flash("Your file could not be uploaded at this time due to a server problem. Please retry again later.")
+            os.remove(safe_local_path)
+            os.rmdir(tmpdir)
+        else:
+            flash('This photograph has already been uploaded to OpenOversight.')
+    elif request.method == 'POST':
+        flash('File unable to be uploaded. Try again...')
+    return render_template('submit.html', form=form)
 
 
 @main.route('/about')

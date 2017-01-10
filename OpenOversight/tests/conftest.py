@@ -66,7 +66,8 @@ def build_assignment(officer, unit):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        return models.Face(officer_id=officer.id, img_id=random.choice(images).id)
+        return models.Face(officer_id=officer.id,
+                           img_id=random.choice(images).id)
     else:
         return False
 
@@ -114,6 +115,10 @@ def session(db, request):
         connection.close()
         session.remove()
 
+        # Cleanup users table
+        models.User.query.delete()
+        session.commit()
+
     request.addfinalizer(teardown)
     return session
 
@@ -140,6 +145,12 @@ def mockdata(session, request):
     session.add_all(officers)
     session.add_all(assignments)
     session.add_all(faces)
+
+    test_user = models.User(email='jen@example.org',
+                            username='test_user',
+                            password='dog',
+                            confirmed=True)
+    session.add(test_user)
     session.commit()
     return assignments[0].star_no
 

@@ -13,10 +13,6 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
-    # File Upload Settings
-    UNLABELLED_UPLOADS = 'uploads/'
-    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'mpeg', 'mp4'])
-
     # pagination
     OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)
 
@@ -33,6 +29,15 @@ class BaseConfig(object):
     OO_MAIL_SUBJECT_PREFIX = '[OpenOversight]'
     OO_MAIL_SENDER = 'OpenOversight <OpenOversight@gmail.com>'
     # OO_ADMIN = os.environ.get('OO_ADMIN')
+
+    # AWS Settings
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
+
+    # Upload Settings
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
     SEED = 666
 

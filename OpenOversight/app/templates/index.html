@@ -25,7 +25,11 @@
         <h1>Contribute Images or Get Involved</h1>
       </div>
       <p>
-        <a href="https://script.google.com/macros/s/AKfycbyNg7oVOPSFBHZkncDn7Z23qbJFWQZM1QXcEE0TO2Txa6wB8tU/exec">
+        {% if current_user and current_user.is_authenticated %}
+            <a href="/submit">
+        {% else %}
+            <a href="https://script.google.com/macros/s/AKfycbyNg7oVOPSFBHZkncDn7Z23qbJFWQZM1QXcEE0TO2Txa6wB8tU/exec">
+        {% endif %}
             <button type="button" class="btn btn-lg btn-primary">Submit Images</button></a>
       </p>
       <p>

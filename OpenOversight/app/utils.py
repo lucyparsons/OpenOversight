@@ -1,11 +1,37 @@
+import boto3
 import config
 import datetime
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
+import hashlib
+import os
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
-import pdb
+
+
+def compute_hash(data_to_hash):
+    return hashlib.sha256(data_to_hash).hexdigest()
+
+
+def upload_file(safe_local_path, src_filename, dest_filename):
+    s3_client = boto3.client('s3')
+
+    # Folder to store files in on S3 is first two chars of dest_filename
+    s3_folder = dest_filename[0:2]
+    s3_filename = dest_filename[2:]
+    s3_path = '{}/{}'.format(s3_folder, s3_filename)
+    s3_client.upload_file(safe_local_path,
+                          current_app.config['S3_BUCKET_NAME'],
+                          s3_path,
+                          ExtraArgs={'ACL': 'public-read'})
+
+    url = "https://s3-{}.amazonaws.com/{}/{}".format(
+                   current_app.config['AWS_DEFAULT_REGION'],
+                   current_app.config['S3_BUCKET_NAME'], s3_path)
+
+    return url
+
 
 def filter_by_form(form, officer_query):
     if form['name']:
@@ -76,8 +102,3 @@ def roster_lookup(form):
 
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
-
-
-def allowed_file(filename):
-    return '.' in filename and \
-	filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
