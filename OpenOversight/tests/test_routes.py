@@ -7,7 +7,9 @@ from urlparse import urlparse
 
 from OpenOversight.app.main.forms import (FindOfficerForm, FindOfficerIDForm,
                                           HumintContribution)
-from OpenOversight.app.auth.forms import LoginForm
+from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
+                                          ChangePasswordForm)
+from OpenOversight.app.models import User
 
 
 @pytest.mark.parametrize("route", [
@@ -138,6 +140,87 @@ def test_user_can_logout(mockdata, client, session):
             follow_redirects=True
             )
         assert 'You have been logged out.' in rv.data
+
+
+def test_user_cannot_register_with_existing_email(mockdata, client, session):
+    with current_app.test_request_context():
+        form = RegistrationForm(email='jen@example.org',
+                                username='redshiftzero',
+                                password='dog',
+                                password2='dog')
+        rv = client.post(
+            url_for('auth.register'),
+            data=form.data,
+            follow_redirects=False
+            )
+
+        # Form will return 200 only if the form does not validate
+        assert rv.status_code == 200
+        assert 'Email already registered' in rv.data
+
+
+def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session):
+    with current_app.test_request_context():
+        form = RegistrationForm(email='freddy@example.org',
+                                username='b_meson',
+                                password='dog',
+                                password2='cat')
+        rv = client.post(
+            url_for('auth.register'),
+            data=form.data,
+            follow_redirects=False
+            )
+
+        # Form will return 200 only if the form does not validate
+        assert rv.status_code == 200
+        assert 'Passwords must match' in rv.data
+
+
+def login_unconfirmed_user(client):
+    form = LoginForm(email='freddy@example.org',
+                     password='dog',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+        )
+    return rv
+
+
+def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client,
+                                                        session):
+    with current_app.test_request_context():
+        test_user = User(email='freddy@example.org', username='b_meson',
+                         password='dog', confirmed=False)
+        session.add(test_user)
+        session.commit()
+
+        login_unconfirmed_user(client)
+
+        rv = client.get(
+            url_for('auth.unconfirmed'),
+            follow_redirects=False
+            )
+
+        assert 'Please Confirm Your Account' in rv.data
+
+
+def test_user_cannot_change_password_if_they_dont_match(mockdata, client,
+                                                        session):
+    with current_app.test_request_context():
+        login_user(client)
+        form = RegistrationForm(old_password='dog',
+                                password='cat',
+                                password2='butts')
+
+        rv = client.post(
+            url_for('auth.change_password'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'Passwords must match' in rv.data
 
 
 def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
