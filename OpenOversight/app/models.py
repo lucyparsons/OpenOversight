@@ -80,6 +80,8 @@ class Image(db.Model):
 
     # We might know when the image was taken e.g. through EXIF data
     date_image_taken = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    contains_cops = db.Column(db.Boolean, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
     def __repr__(self):
