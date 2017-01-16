@@ -60,7 +60,10 @@ class Face(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
     img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
-    face_position = db.Column(db.String(120), index=True, unique=False, nullable=True)  # No box dtype in SQLalchemy afaict
+    face_position_x = db.Column(db.Integer, unique=False)
+    face_position_y = db.Column(db.Integer, unique=False)
+    face_position_delta_x = db.Column(db.Integer, unique=False)  # Width of box
+    face_position_delta_y = db.Column(db.Integer, unique=False)  # Height of box
     image = db.relationship('Image', backref='face')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
