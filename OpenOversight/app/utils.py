@@ -1,13 +1,20 @@
 import boto3
 import config
 import datetime
-from flask import current_app
+from flask import current_app, url_for
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
 import os
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
 from .models import db, Officer, Assignment, Image, Face
+
+
+def serve_image(filepath):
+    if 'http' in filepath:
+        return proper_path
+    if 'static' in filepath:
+        return url_for('static', filename=filepath.replace('static/', ''))
 
 
 def compute_hash(data_to_hash):
