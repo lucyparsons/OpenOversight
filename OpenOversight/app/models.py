@@ -66,6 +66,7 @@ class Face(db.Model):
     face_position_delta_y = db.Column(db.Integer, unique=False)  # Height of box
     image = db.relationship('Image', backref='face')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user = db.relationship('User', backref='faces')
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
@@ -85,6 +86,8 @@ class Image(db.Model):
     date_image_taken = db.Column(db.DateTime, index=True, unique=False, nullable=True)
     contains_cops = db.Column(db.Boolean, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    user = db.relationship('User', backref='raw_images')
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
     def __repr__(self):
@@ -99,6 +102,10 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     is_administrator = db.Column(db.Boolean, default=False)
+    is_disabled = db.Column(db.Boolean, default=False)
+
+    classifications = db.relationship('Image', backref='users')
+    tags = db.relationship('Face', backref='users')
 
     @property
     def password(self):
