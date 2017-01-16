@@ -4,6 +4,7 @@ from flask import (abort, render_template, request, redirect, url_for,
                    send_from_directory, flash, session, current_app)
 from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
+from functools import wraps
 import tempfile
 from werkzeug import secure_filename
 
@@ -14,6 +15,15 @@ from ..models import db, Image
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0077)
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_administrator:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @main.route('/')
