@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" role="main">
+
+
+  <div class="page-header">
+    <h1>Tag {{ face.id }} Detail</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <img src="{{ path }}" alt="Submission">
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail">
+        <div class="caption">
+          <h3>Image Cutout</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>Image ID</b></td>
+                <td><a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">
+                    {{ face.image.id }}</a></td>
+              </tr>
+              <tr>
+                <td><b>(x,y) position of face in image</b></td>
+                <td>({{ face.face_position_x }}, {{ face.face_position_y }})</td>
+              </tr>
+              <tr>
+                <td><b>Height of face bounding box</b></td>
+                <td>{{ face.face_position_delta_y }}</td>
+              </tr>
+              <tr>
+                <td><b>Width of face bounding box</b></td>
+                <td>{{ face.face_position_delta_x }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Officer</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>OpenOversight ID</b></td>
+                <td>{{ face.officer_id }}</td>
+              </tr>
+              <tr>
+                <td><b>Tagged by user</b></td>
+                <td> <a href="{{ url_for('main.profile', username=face.user.username ) }}">
+                  {{ face.user.username }}</a> </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {% if current_user.is_administrator %}
+          <h3>Remove tag <small>Admin only</small></h3>
+          <p><a href="{{ url_for('main.delete_tag', tag_id=face.id) }}"
+                class="btn btn-primary" role="button">Delete tag</a></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
