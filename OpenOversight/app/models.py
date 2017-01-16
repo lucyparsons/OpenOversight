@@ -64,7 +64,7 @@ class Face(db.Model):
     face_position_y = db.Column(db.Integer, unique=False)
     face_position_delta_x = db.Column(db.Integer, unique=False)  # Width of box
     face_position_delta_y = db.Column(db.Integer, unique=False)  # Height of box
-    image = db.relationship('Image', backref='face')
+    image = db.relationship('Image', backref='faces')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
 
