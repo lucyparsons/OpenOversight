@@ -47,11 +47,10 @@ You can access your PostgreSQL development database via psql using:
 
 with the password `terriblepassword`.
 
+
 The provisioning step already does this, but in case you need it, in the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
 `~/oovirtenv/bin/python create_db.py`
-
-If the database doesn't already exist, `create_db.py` will set it up.
 
 In the event that you need to create or delete the test data, you can do that with
 `~/oovirtenv/bin/python test_data.py --populate` to create the data
@@ -64,16 +63,22 @@ In addition to running the development server, `manage.py` (OpenOversight's mana
 
 ```
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py
-usage: manage.py [-?] {make_admin_user,shell,runserver} ...
+usage: manage.py [-?]
+                 {shell,downgrade_db,runserver,upgrade_db,migrate_db,make_admin_user}
+                 ...
 
 positional arguments:
-  {make_admin_user,shell,runserver}
-    make_admin_user     Add confirmed administrator account
+  {shell,downgrade_db,runserver,upgrade_db,migrate_db,make_admin_user}
     shell               Runs a Python shell inside Flask application context.
+    downgrade_db        Downgrade the database
     runserver           Runs the Flask development server i.e. app.run()
+    upgrade_db          Upgrade the database
+    migrate_db          Migrate the database
+    make_admin_user     Add confirmed administrator account
 
 optional arguments:
   -?, --help            show this help message and exit
+
 ```
 
 In development, you can make an administrator account without having to confirm your email:
@@ -95,12 +100,17 @@ Administrator redshiftzero successfully added
 
 ## Migrating the Database
 
-If you e.g. add a new column or table, you'll need to migrate the database. You can use:
+If you e.g. add a new column or table, you'll need to migrate the database. You can use the management interface to do this:
 
-`(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python migrate_db.py`
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py migrate_db
+New migration saved as /vagrant/OpenOversight/app/db_repository/versions/002_migration.py
+Current database version: 2
+```
 
 to do this.
-`~/oovirtenv/bin/python upgrade_db.py` and `~/oovirtenv/bin/python downgrade_db.py` can also be used as necessary. Note that we followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+
+`python manage.py upgrade_db` and `python manage.py downgrade_db` can also be used as necessary. Note that we followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
 
 ## Changing the Development Environment
 
