@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" role="main">
+
+
+  <div class="page-header">
+    <h1>Profile: {{ user.username }}</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail">
+        <div class="caption">
+          <h3>User Data</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>Number of images classified</b></td>
+                <td>{{ user.classifications|length }}</td>
+              </tr>
+              <tr>
+                <td><b>Number of officers found</b></td>
+                <td>{{ user.tags|length }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {% if current_user.is_administrator and user.is_disabled == False %}
+          <h3>Disable User <small>Admin only</small></h3>
+          <p><a href="{{ url_for('main.toggle_user', username=user.username, toggle=1) }}"
+                class="btn btn-primary" role="button">Disable user</a></p>
+          {% elif current_user.is_administrator and user.is_disabled == True %}
+          <h3>Enable User<small>Admin only</small></h3>
+          <p><a href="{{ url_for('main.toggle_user', username=user.username, toggle=0) }}"
+                class="btn btn-primary" role="button">Enable user</a></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% if user.classifications %}
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+    <h2>Image classifications</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <td><b>Image ID</b></td>
+            <td><b>Did the user find officers in the image?</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for classification in user.classifications %}
+          <tr>
+            <td><a href="{{ url_for( 'main.display_submission', image_id=classification.id ) }}">
+                Image {{ classification.id }}</a></td>
+            <td>{{ classification.contains_cops }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+{% endif %}
+
+</div>
+
+{% endblock %}
