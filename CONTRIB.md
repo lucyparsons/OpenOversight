@@ -1,10 +1,10 @@
 # Contributing Guide
 
-First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback. 
+First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.
 
 ## Submitting a PR
 
-When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit. 
+When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
 
 ## Development Environment
 
@@ -34,8 +34,8 @@ If you run the app in debug mode, you can see these changes take effect on every
 $ sudo service gunicorn stop
  * Stopping Gunicorn workers
  [oo] *
-vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/
-vagrant@vagrant-ubuntu-trusty-64:/vagrant$ ~/oovirtenv/bin/python ./run.py
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver
  * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
@@ -58,17 +58,46 @@ In the event that you need to create or delete the test data, you can do that wi
 or
 `~/oovirtenv/bin/python test_data.py --cleanup` to delete the data
 
+## OpenOversight Management Interface
+
+In addition to running the development server, `manage.py` (OpenOversight's management interface) can be used to do the following:
+
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py
+usage: manage.py [-?] {make_admin_user,shell,runserver} ...
+
+positional arguments:
+  {make_admin_user,shell,runserver}
+    make_admin_user     Add confirmed administrator account
+    shell               Runs a Python shell inside Flask application context.
+    runserver           Runs the Flask development server i.e. app.run()
+
+optional arguments:
+  -?, --help            show this help message and exit
+```
+
+In development, you can make an administrator account without having to confirm your email:
+
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py make_admin_user
+Username: redshiftzero
+Email: jen@redshiftzero.com
+Password:
+Type your password again:
+Administrator redshiftzero successfully added
+```
+
 ## Running Unit Tests
 
  Run tests with `pytest`:
 
-`~/oovirtenv/bin/pytest`
+`(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ pytest`
 
 ## Migrating the Database
 
 If you e.g. add a new column or table, you'll need to migrate the database. You can use:
 
-`~/oovirtenv/bin/python migrate_db.py`
+`(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python migrate_db.py`
 
 to do this.
 `~/oovirtenv/bin/python upgrade_db.py` and `~/oovirtenv/bin/python downgrade_db.py` can also be used as necessary. Note that we followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
