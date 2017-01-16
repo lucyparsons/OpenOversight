@@ -9,9 +9,10 @@ import tempfile
 from werkzeug import secure_filename
 
 from . import main
-from ..utils import grab_officers, roster_lookup, upload_file, compute_hash
+from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
+                     serve_image)
 from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
-from ..models import db, Image
+from ..models import db, Image, User, Face
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0077)
@@ -54,13 +55,77 @@ def get_tutorial():
     return render_template('tutorial.html')
 
 
+@main.route('/user/<username>')
+def profile(username):
+    try:
+        user = User.query.filter_by(username=username).one()
+    except:
+        abort(404)
+    return render_template('profile.html', user=user)
+
+
+@main.route('/user/<username>/<int:toggle>')
+@admin_required
+def toggle_user(username, toggle):
+    try:
+        user = User.query.filter_by(username=username).one()
+        if toggle == 1:
+            user.is_disabled = True
+        elif toggle == 0:
+            user.is_disabled = False
+        db.session.commit()
+        flash('Updated user status')
+    except:
+        flash('Unknown error occurred')
+    return redirect(url_for('main.profile', username=username))
+
+
+@main.route('/image/<int:image_id>')
+@login_required
+def display_submission(image_id):
+    try:
+        image = Image.query.filter_by(id=image_id).one()
+        proper_path = serve_image(image.filepath)
+    except:
+        abort(404)
+    return render_template('image.html', image=image, path=proper_path)
+
+
+@main.route('/tag/<int:tag_id>')
+@login_required
+def display_tag(tag_id):
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+        proper_path = serve_image(image.filepath)
+    except:
+        abort(404)
+    return render_template('image.html', path=proper_path)
+
+
+@main.route('/image/classify/<int:image_id>/<int:contains_cops>')
+@admin_required
+def classify_submission(image_id, contains_cops):
+    try:
+        image = Image.query.filter_by(id=image_id).one()
+        image.user_id = current_user.id
+        if contains_cops == 1:
+            image.contains_cops = True
+        elif contains_cops == 0:
+            image.contains_cops = False
+        db.session.commit()
+        flash('Updated image classification')
+    except:
+        flash('Unknown error occurred')
+    return redirect(url_for('main.display_submission', image_id=image_id))
+
+
 @main.route('/cop_face', methods=['GET', 'POST'])
 @login_required
 def label_data():
-    #form = FindOfficerIDForm()
+    #image = utils.get_random_untagged_image()
     #if form.validate_on_submit():
     #    return redirect(url_for('main.get_tagger_gallery'), code=307)
-    return render_template('cop_face.html')  #, form=form)
+    return render_template('cop_face.html')  #, image=image)
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
