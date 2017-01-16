@@ -4,6 +4,7 @@ boto3
 werkzeug>=0.11.1
 Flask-WTF>=0.13.1
 Flask-Login
+Flask-Script
 Flask-Mail
 psycopg2>=2.6.2
 sqlalchemy
