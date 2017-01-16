@@ -96,10 +96,10 @@ def display_submission(image_id):
 def display_tag(tag_id):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
-        proper_path = serve_image(image.filepath)
+        proper_path = serve_image(tag.image.filepath)
     except:
         abort(404)
-    return render_template('image.html', path=proper_path)
+    return render_template('tag.html', face=tag, path=proper_path)
 
 
 @main.route('/image/classify/<int:image_id>/<int:contains_cops>')
@@ -117,6 +117,19 @@ def classify_submission(image_id, contains_cops):
     except:
         flash('Unknown error occurred')
     return redirect(url_for('main.display_submission', image_id=image_id))
+
+
+@main.route('/tag/delete/<int:tag_id>')
+@admin_required
+def delete_tag(tag_id):
+    try:
+        tag = Face.query.filter_by(id=tag_id).delete()
+        db.session.commit()
+        flash('Deleted this tag')
+    except:
+        flash('Unknown error occurred')
+    return redirect(url_for('main.index'))
+
 
 
 @main.route('/cop_face', methods=['GET', 'POST'])
