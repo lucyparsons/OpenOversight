@@ -1,15 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<link href="{{ url_for('static', filename='css/cropper.css') }}" rel="stylesheet">
-<script src="{{ url_for('static', filename='js/cropper.js') }}"></script>
 
 <div class="container theme-showcase" role="main">
 
     {% if current_user and current_user.is_authenticated %}
     <div class="row">
       <div class="col-md-9">
-        <h1>OpenOversight Volunteer Image Sorting</h1>
+        <div class="page-header">
+        <h1>OpenOversight Volunteer Portal</h1>
+        </div>
+        <h3>What would you like to do today?</h3>
+        <p><a href="{{ url_for('main.sort_images') }}"><button type="button" class="btn btn-lg btn-primary">Sort images</button></a></p>
+        <p><a href="{{ url_for('main.label_data') }}"><button type="button" class="btn btn-lg btn-primary">Identify police officers</button></a></p>
+
       </div>
       <div class="col-md-3">
         <div class="panel panel-primary">
@@ -21,19 +25,6 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-6">
-        <div>
-          <img class="img-responsive" src="{{ url_for('static', filename='images/test_cop1.png') }}" alt="Picture to be sorter">
-        </div>
-      </div>
-      <div class="col-md-6">
-        <h3>Do you see at least one face of a police officer with at least a badge number OR name visible on their uniform?</h3>
-        <p><a href="{{ url_for('main.label_data') }}"><button type="button" class="btn btn-lg btn-primary">Police officers are clearly
-        visible with badge numbers or names</button></a><a href="{{ url_for('main.get_started_labeling') }}"><button type="button" class="btn btn-lg btn-primary">No police officers with badge numbers or names</button></a>
-        </p>
-      </div>
-    </div>
     {% else %}
       <h1>OpenOversight Volunteer Sign Up</h1>
       <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up:</p>
