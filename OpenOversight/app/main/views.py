@@ -18,6 +18,12 @@ from ..models import db, Image, User, Face
 SAVED_UMASK = os.umask(0077)
 
 
+def redirect_url(default='index'):
+    return request.args.get('next') or \
+           request.referrer or \
+           url_for(default)
+
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -43,14 +49,22 @@ def get_officer():
 
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
-    form = FindOfficerIDForm()
-    if form.validate_on_submit():
-        return redirect(url_for('main.get_tagger_gallery'), code=307)
-    return render_template('label_data.html', form=form)
+    return render_template('label_data.html')
+
+
+@main.route('/sort', methods=['GET', 'POST'])
+@login_required
+def sort_images():
+    # Select a random unsorted image from the database
+    image = Image.query.filter_by(contains_cops=None).first()
+    if image:
+        proper_path = serve_image(image.filepath)
+    else:
+        proper_path = None
+    return render_template('sort.html', image=image, path=proper_path)
 
 
 @main.route('/tutorial')
-@login_required
 def get_tutorial():
     return render_template('tutorial.html')
 
@@ -117,7 +131,8 @@ def classify_submission(image_id, contains_cops):
         flash('Updated image classification')
     except:
         flash('Unknown error occurred')
-    return redirect(url_for('main.display_submission', image_id=image_id))
+    return redirect(redirect_url())
+    #return redirect(url_for('main.display_submission', image_id=image_id))
 
 
 @main.route('/tag/delete/<int:tag_id>')
@@ -160,10 +175,30 @@ def leaderboard():
 @main.route('/cop_face', methods=['GET', 'POST'])
 @login_required
 def label_data():
-    #image = utils.get_random_untagged_image()
-    #if form.validate_on_submit():
-    #    return redirect(url_for('main.get_tagger_gallery'), code=307)
-    return render_template('cop_face.html')  #, image=image)
+    # Select a random untagged image from the database
+    image = Image.query.filter_by(contains_cops=True) \
+                       .filter_by(is_tagged=False).first()
+    if image:
+        proper_path = serve_image(image.filepath)
+    else:
+        proper_path = None
+    return render_template('cop_face.html', image=image, path=proper_path)
+
+
+
+
+
+
+# Rate limiting / CAPTCHA on this route
+@main.route('/image/tagged/<int:image_id>')
+@login_required
+def complete_tagging(image_id):
+    # Select a random untagged image from the database
+    image = Image.query.filter_by(id=image_id).one()
+    image.is_tagged = True
+    db.session.commit()
+    flash('Marked image as completed.')
+    return redirect(url_for('main.label_data'))
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
