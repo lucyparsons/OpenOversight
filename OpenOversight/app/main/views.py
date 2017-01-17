@@ -10,7 +10,7 @@ from werkzeug import secure_filename
 
 from . import main
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
-                     serve_image)
+                     serve_image, compute_leaderboard_stats)
 from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
 from ..models import db, Image, User, Face
 
@@ -102,8 +102,9 @@ def display_tag(tag_id):
     return render_template('tag.html', face=tag, path=proper_path)
 
 
+# Rate limiting / CAPTCHA needed on this route
 @main.route('/image/classify/<int:image_id>/<int:contains_cops>')
-@admin_required
+@login_required
 def classify_submission(image_id, contains_cops):
     try:
         image = Image.query.filter_by(id=image_id).one()
@@ -130,6 +131,30 @@ def delete_tag(tag_id):
         flash('Unknown error occurred')
     return redirect(url_for('main.index'))
 
+
+# Rate limiting / CAPTCHA needed on this route
+@main.route('/tag/add/<int:officer_id>/<int:image_id>')
+@login_required
+def add_tag(tag_id):
+    try:
+        image = Image.query.filter_by(id=image_id).one()
+        image.user_id = current_user.id
+        # Should be done in form
+        db.session.commit()
+        #tag_id = Face.query.filter_by(image_id=image_id) \
+        #                   .filter_by(officer_id=officer_id).one()
+        flash('Tag added to database')
+        #return redirect(url_for('main.display_tag', tag_id=tag_id))
+    except:
+        flash('Unknown error occurred')
+    return redirect(url_for('main.index'))
+
+
+@main.route('/leaderboard')
+def leaderboard():
+    top_sorters, top_taggers = compute_leaderboard_stats()
+    return render_template('leaderboard.html', top_sorters=top_sorters,
+                           top_taggers=top_taggers)
 
 
 @main.route('/cop_face', methods=['GET', 'POST'])
