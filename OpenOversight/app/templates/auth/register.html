@@ -9,8 +9,76 @@
     <h1>Register as an OpenOversight Volunteer</h1>
 </div>
 <div class="col-md-4">
-    {{ wtf.quick_form(form, button_map={'submit':'primary'}) }}
+    <form class="form form-horizontal" method="post" role="form">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, hiddens="only") }}
+
+        {{ wtf.form_field(form.email) }}
+        {{ wtf.form_field(form.username) }}
+        <div class="form-group  required">
+            <label class="control-label" for="password">Password</label>
+            <input class="form-control" id="password" name="password" required="" type="password" value="">
+            <meter class="meter" max="5" id="password-strength-meter"></meter>
+            <p id="password-strength-text"></p>
+        </div>
+        <div class="form-group  required">
+            <label class="control-label" for="password2">Confirm password</label>
+            <input class="form-control" id="password2" name="password2" required="" type="password" value="">
+            <meter class="binmeter" max="5" id="password-confirmation-meter"></meter>
+        </div>
+        {{ wtf.form_field(form.submit, button_map={'submit':'primary'}) }}
+    </form>
 </div>
 
 </div>
+<script>
+$(document).ready(function() {
+    var strength = {
+        0: "Very Bad",
+        1: "Bad",
+        2: "Weak",
+        3: "Good",
+        4: "Strong"
+    }
+    var password = document.getElementById('password');
+    var password2 = document.getElementById('password2');
+    var meter = document.getElementById('password-strength-meter');
+    var meter2 = document.getElementById('password-confirmation-meter');
+    var text = document.getElementById('password-strength-text');
+
+    function check_confirmation() {
+        var val1 = password.value;
+        var val2 = password2.value;
+        console.log(val1);
+        console.log(val2);
+        if (val2 !== "") {
+            if (val1 == val2) {
+                meter2.value = 5;
+                $(meter2).removeClass("badmeter").addClass("goodmeter");
+            } else {
+                meter2.value = 5;
+                $(meter2).removeClass("goodmeter").addClass("badmeter");
+            }
+        } else {
+            meter2.value = 0;
+        }
+    }
+
+    password.addEventListener('input', function() {
+        var val = password.value;
+        var result = zxcvbn(val);
+        meter.value = result.score +1;
+        if (val !== "") {
+            text.innerHTML = "Strength: " + strength[result.score];
+        } else {
+            text.innerHTML = "";
+            meter.value = 0;
+        }
+        check_confirmation();
+    });
+    password2.addEventListener('input', function() {
+        check_confirmation();
+    });
+});
+</script>
 {% endblock %}
