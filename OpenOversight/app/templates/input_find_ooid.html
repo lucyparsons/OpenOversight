@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+    {% if current_user and current_user.is_authenticated %}
+      <div class="page-header">
+        <h2>Find an Officer's OpenOversight ID</h2>
+      </div>
+
+      <p>Use the following form to put in the details you can see in the image:</p>
+      <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
+        {{ form.hidden_tag() }}
+      <h4>Department: {{ form.dept }}</h4>
+        {% for error in form.dept.errors %}
+          <p><span style="color: red;">[{{ error }}]</span></p>
+        {% endfor %}
+
+      <h4>What is visible from the officer's name tag?</h4>
+        {{ form.name }}
+        {% for error in form.name.errors %}
+          <p><span style="color: red;">[{{ error }}]</span></p>
+        {% endfor %}
+
+      <h4>What is visible from the badge number?</h4>
+        {{ form.badge }}
+        {% for error in form.badge.errors %}
+          <p><span style="color: red;">[{{ error }}]</span></p>
+        {% endfor %}
+
+        <br><br>
+        <p>
+          <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
+        </p>
+      </form>
+    {% else %}
+      <p>Please register or sign up to view this form:</p>
+
+      <a href="{{ url_for('auth.register') }}"><button type="button" class="btn btn-lg btn-primary">Register</button></a>
+
+      <br><br>
+      <p>If you're already signed up:</p>
+
+      <a href="{{ url_for('auth.login') }}"><button type="button" class="btn btn-lg btn-primary">Login</button></a>
+    {% endif %}
+</div>
+
+{% endblock %}

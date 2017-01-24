@@ -64,6 +64,32 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+  </div>
+{% endif %}
+
+{% if user.tags %}
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+    <h2>Officer Face Tags</h2>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <td><b>Tag ID</b></td>
+            <td><b>Officer ID</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tag in user.tags %}
+          <tr>
+            <td><a href="{{ url_for( 'main.display_tag', tag_id=tag.id ) }}">
+                Tag {{ tag.id }}</a></td>
+            <td>{{ tag.officer_id }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 {% endif %}
 

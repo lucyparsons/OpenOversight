@@ -11,7 +11,8 @@ from werkzeug import secure_filename
 from . import main
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats)
-from .forms import FindOfficerForm, FindOfficerIDForm, HumintContribution
+from .forms import (FindOfficerForm, FindOfficerIDForm, HumintContribution,
+                    FaceTag)
 from ..models import db, Image, User, Face
 
 # Ensure the file is read/write by the creator only
@@ -45,6 +46,14 @@ def get_officer():
     if form.validate_on_submit():
         return redirect(url_for('main.get_gallery'), code=307)
     return render_template('input_find_officer.html', form=form)
+
+
+@main.route('/tagger_find', methods=['GET', 'POST'])
+def get_ooid():
+    form = FindOfficerIDForm()
+    if form.validate_on_submit():
+        return redirect(url_for('main.get_tagger_gallery'), code=307)
+    return render_template('input_find_ooid.html', form=form)
 
 
 @main.route('/label', methods=['GET', 'POST'])
@@ -147,24 +156,6 @@ def delete_tag(tag_id):
     return redirect(url_for('main.index'))
 
 
-# Rate limiting / CAPTCHA needed on this route
-@main.route('/tag/add/<int:officer_id>/<int:image_id>')
-@login_required
-def add_tag(tag_id):
-    try:
-        image = Image.query.filter_by(id=image_id).one()
-        image.user_id = current_user.id
-        # Should be done in form
-        db.session.commit()
-        #tag_id = Face.query.filter_by(image_id=image_id) \
-        #                   .filter_by(officer_id=officer_id).one()
-        flash('Tag added to database')
-        #return redirect(url_for('main.display_tag', tag_id=tag_id))
-    except:
-        flash('Unknown error occurred')
-    return redirect(url_for('main.index'))
-
-
 @main.route('/leaderboard')
 def leaderboard():
     top_sorters, top_taggers = compute_leaderboard_stats()
@@ -172,21 +163,38 @@ def leaderboard():
                            top_taggers=top_taggers)
 
 
+@main.route('/cop_face/<int:image_id>', methods=['GET', 'POST'])
 @main.route('/cop_face', methods=['GET', 'POST'])
 @login_required
-def label_data():
-    # Select a random untagged image from the database
-    image = Image.query.filter_by(contains_cops=True) \
-                       .filter_by(is_tagged=False).first()
+def label_data(image_id=None):
+    if image_id:
+        image = Image.query.filter_by(id=image_id).one()
+    else:
+        # Select a random untagged image from the database
+        image = Image.query.filter_by(contains_cops=True) \
+                           .filter_by(is_tagged=False).first()
+
     if image:
         proper_path = serve_image(image.filepath)
     else:
         proper_path = None
-    return render_template('cop_face.html', image=image, path=proper_path)
 
-
-
-
+    form = FaceTag()
+    if form.validate_on_submit():
+        try:
+            new_tag = Face(officer_id=form.officer_id.data,
+                           img_id=form.image_id.data,
+                           face_position_x=form.dataX.data,
+                           face_position_y=form.dataY.data,
+                           face_width=form.dataWidth.data,
+                           face_height=form.dataHeight.data,
+                           user_id=current_user.id)
+            db.session.add(new_tag)
+            flash('Tag added to database')
+        except:
+            flash('Unknown error occured, tag not added to database.')
+    return render_template('cop_face.html', form=form,
+                           image=image, path=proper_path)
 
 
 # Rate limiting / CAPTCHA on this route
@@ -214,7 +222,7 @@ def get_tagger_gallery(page=1):
                                form=form,
                                form_data=form_data)
     else:
-        return redirect(url_for('main.label_data'), code=307)
+        return redirect(url_for('main.get_ooid'), code=307)
 
 
 @main.route('/gallery/<int:page>', methods=['GET', 'POST'])

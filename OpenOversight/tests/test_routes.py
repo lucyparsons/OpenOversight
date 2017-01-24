@@ -76,7 +76,7 @@ def test_tagger_lookup(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm()
         assert form.validate() == True
-        rv = client.post(url_for('main.label_data'), data=form.data,
+        rv = client.post(url_for('main.get_ooid'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
         assert urlparse(rv.location).path == '/tagger_gallery'
@@ -97,7 +97,7 @@ def test_tagger_gallery_bad_form(client, session):
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
-        assert urlparse(rv.location).path == '/label'
+        assert urlparse(rv.location).path == '/tagger_find'
 
 
 def login_user(client):

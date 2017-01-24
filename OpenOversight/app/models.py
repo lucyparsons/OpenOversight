@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask_login import UserMixin
@@ -62,11 +63,14 @@ class Face(db.Model):
     img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
-    face_position_delta_x = db.Column(db.Integer, unique=False)  # Width of box
-    face_position_delta_y = db.Column(db.Integer, unique=False)  # Height of box
+    face_width = db.Column(db.Integer, unique=False)
+    face_height = db.Column(db.Integer, unique=False)
     image = db.relationship('Image', backref='faces')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
+
+    __table_args__ = (UniqueConstraint('officer_id', 'img_id',
+                      name='faces'), )
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
