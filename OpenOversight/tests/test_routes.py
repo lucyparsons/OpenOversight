@@ -17,15 +17,17 @@ from OpenOversight.app.models import User
     ('/index'),
     ('/find'),
     ('/about'),
+    ('/tagger_find'),
     ('/contact'),
     ('/privacy'),
     ('/label'),
+    ('/tutorial'),
     ('/auth/login'),
     ('/auth/register'),
     ('/auth/reset'),
     ('/complaint?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png')
 ])
-def test_routes_ok(route, client):
+def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 200
 
@@ -34,6 +36,14 @@ def test_routes_ok(route, client):
 @pytest.mark.parametrize("route", [
     ('/submit'),
     ('/auth/unconfirmed'),
+    ('/sort'),
+    ('/cop_face'),
+    ('/image/1'),
+    ('/image/tagged/1'),
+    ('/tag/1'),
+    ('/image/classify/1/1'),
+    ('/tag/delete/1'),
+    ('/leaderboard'),
     ('/auth/logout'),
     ('/auth/confirm/abcd1234'),
     ('/auth/confirm'),
@@ -41,7 +51,7 @@ def test_routes_ok(route, client):
     ('/auth/change-email'),
     ('/auth/change-email/abcd1234')
 ])
-def test_route_login_required(route, client):
+def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 302
 
