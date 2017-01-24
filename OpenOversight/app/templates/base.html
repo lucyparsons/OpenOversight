@@ -21,6 +21,10 @@
     <!-- jQuery -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 
+    {% for item in jsloads %}
+    <script src="{{ url_for('static', filename=item) }}"></script>
+    {% endfor %}
+
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
 
@@ -84,7 +88,10 @@
       {% for message in messages %}
          <div class="container">
          <div class="row">
-         <div class="alert alert-info" role="alert">{{ message }}</div>
+             <div class="alert alert-info alert-dismissible" role="alert">
+                   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                   {{ message }}
+             </div>
          </div>
          </div>
       {% endfor %}
