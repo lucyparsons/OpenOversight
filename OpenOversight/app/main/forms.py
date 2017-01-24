@@ -78,7 +78,7 @@ class FindOfficerIDForm(Form):
 
 
 class FaceTag(Form):
-	officer_id = IntegerField('officer_id', default=int(31337))
+	officer_id = IntegerField('officer_id', validators=[DataRequired()])
 	image_id = IntegerField('image_id', validators=[DataRequired()])
 	dataX = IntegerField('dataX', validators=[DataRequired()])
  	dataY = IntegerField('dataY', validators=[DataRequired()])
