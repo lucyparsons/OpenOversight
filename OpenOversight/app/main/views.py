@@ -88,6 +88,7 @@ def profile(username):
 
 
 @main.route('/user/<username>/<int:toggle>')
+@login_required
 @admin_required
 def toggle_user(username, toggle):
     try:
@@ -145,6 +146,7 @@ def classify_submission(image_id, contains_cops):
 
 
 @main.route('/tag/delete/<int:tag_id>')
+@login_required
 @admin_required
 def delete_tag(tag_id):
     try:
@@ -157,6 +159,7 @@ def delete_tag(tag_id):
 
 
 @main.route('/leaderboard')
+@login_required
 def leaderboard():
     top_sorters, top_taggers = compute_leaderboard_stats()
     return render_template('leaderboard.html', top_sorters=top_sorters,
