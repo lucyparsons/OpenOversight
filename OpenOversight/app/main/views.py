@@ -5,6 +5,7 @@ from flask import (abort, render_template, request, redirect, url_for,
 from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
 from functools import wraps
+import re
 import tempfile
 from werkzeug import secure_filename
 
@@ -80,9 +81,9 @@ def get_tutorial():
 
 @main.route('/user/<username>')
 def profile(username):
-    try:
+    if re.search('^[A-Za-z][A-Za-z0-9_.]*$', username):
         user = User.query.filter_by(username=username).one()
-    except:
+    else:
         abort(404)
     return render_template('profile.html', user=user)
 
