@@ -151,6 +151,13 @@ def mockdata(session, request):
                             password='dog',
                             confirmed=True)
     session.add(test_user)
+
+    test_admin = models.User(email='redshiftzero@example.org',
+                            username='test_admin',
+                            password='cat',
+                            confirmed=True,
+                            is_administrator=True)
+    session.add(test_admin)
     session.commit()
     return assignments[0].star_no
 
