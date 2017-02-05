@@ -87,16 +87,16 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
-@main.route('/user/<username>/<int:toggle>')
+@main.route('/user/<username>')
 @login_required
 @admin_required
-def toggle_user(username, toggle):
+def toggle_user(username):
     try:
         user = User.query.filter_by(username=username).one()
-        if toggle == 1:
-            user.is_disabled = True
-        elif toggle == 0:
+        if user.is_disabled:
             user.is_disabled = False
+        else:
+            user.is_disabled = True
         db.session.commit()
         flash('Updated user status')
     except:
@@ -145,6 +145,7 @@ def classify_submission(image_id, contains_cops):
     #return redirect(url_for('main.display_submission', image_id=image_id))
 
 
+# POST?
 @main.route('/tag/delete/<int:tag_id>')
 @login_required
 @admin_required

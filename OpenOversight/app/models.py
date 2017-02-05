@@ -70,7 +70,7 @@ class Face(db.Model):
     user = db.relationship('User', backref='faces')
 
     __table_args__ = (UniqueConstraint('officer_id', 'img_id',
-                      name='faces'), )
+                      name='unique_faces'), )
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
