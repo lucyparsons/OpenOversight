@@ -87,21 +87,21 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
-@main.route('/user/<username>')
+@main.route('/user/toggle/<int:uid>')
 @login_required
 @admin_required
-def toggle_user(username):
+def toggle_user(uid):
     try:
-        user = User.query.filter_by(username=username).one()
+        user = User.query.filter_by(id=uid).one()
         if user.is_disabled:
             user.is_disabled = False
-        else:
+        elif user.is_disabled == False:
             user.is_disabled = True
         db.session.commit()
         flash('Updated user status')
     except:
         flash('Unknown error occurred')
-    return redirect(url_for('main.profile', username=username))
+    return redirect(url_for('main.profile', username=user.username))
 
 
 @main.route('/image/<int:image_id>')

@@ -29,17 +29,17 @@
           <p><a href="{{ url_for('main.leaderboard') }}"
                 class="btn btn-primary" role="button">Show leaderboard</a></p>
 
-          <h3>Status</h3>
-          {% if user.is_disabled == True  %}
-            <p>Currently disabled.</p>
-          {% else %}
-            <p>Currently enabled.</p>
+          <h3>Account Status</h3>
+          {% if user.is_disabled %}
+            <p>Disabled</p>
+          {% elif user.is_disabled == False %}
+            <p>Enabled</p>
           {% endif %}
 
           {% if current_user.is_administrator and user.is_administrator == False %}
           <h3>Toggle (Disable/Enable) User <small>Admin only</small></h3>
-          <p><a href="{{ url_for('main.toggle_user', username=user.username) }}"
-                class="btn btn-primary" role="button">Disable user</a></p>
+          <p><a href="{{ url_for('main.toggle_user', uid=user.id) }}"
+                class="btn btn-primary" role="button">Toggle user</a></p>
           {% endif %}
         </div>
       </div>
