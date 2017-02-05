@@ -1,12 +1,14 @@
 import boto3
-import config
 import datetime
-from flask import current_app, url_for
-from flask_sqlalchemy import SQLAlchemy
 import hashlib
 import os
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
+
+from flask import current_app, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+import config
 from .models import db, Officer, Assignment, Image, Face, User
 
 
