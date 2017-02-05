@@ -87,7 +87,7 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
-@main.route('/user/toggle/<int:uid>')
+@main.route('/user/toggle/<int:uid>', methods=['POST'])
 @login_required
 @admin_required
 def toggle_user(uid):
@@ -127,7 +127,8 @@ def display_tag(tag_id):
 
 
 # Rate limiting / CAPTCHA needed on this route
-@main.route('/image/classify/<int:image_id>/<int:contains_cops>')
+@main.route('/image/classify/<int:image_id>/<int:contains_cops>',
+            methods=['POST'])
 @login_required
 def classify_submission(image_id, contains_cops):
     try:
@@ -145,8 +146,7 @@ def classify_submission(image_id, contains_cops):
     #return redirect(url_for('main.display_submission', image_id=image_id))
 
 
-# POST?
-@main.route('/tag/delete/<int:tag_id>')
+@main.route('/tag/delete/<int:tag_id>', methods=['POST'])
 @login_required
 @admin_required
 def delete_tag(tag_id):

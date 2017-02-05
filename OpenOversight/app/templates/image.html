@@ -66,10 +66,20 @@
 
           {% if current_user.is_administrator %}
           <h3>Classify <small>Admin only</small></h3>
-          <p><a href="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
-                class="btn btn-primary" role="button">No cops here</a></p>
-          <p><a href="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
-                class="btn btn-primary" role="button">Cops here</a></p>
+          <p>
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
+              <button type="submit" name="action" class="btn btn-primary">
+                No cops here
+              </button>
+            </form>
+          </p>
+          <p>
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
+              <button type="submit" name="action" class="btn btn-primary">
+                Cops here
+              </button>
+            </form>
+          </p>
           {% endif %}
         </div>
       </div>

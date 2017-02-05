@@ -55,8 +55,13 @@
 
           {% if current_user.is_administrator %}
           <h3>Remove tag <small>Admin only</small></h3>
-          <p><a href="{{ url_for('main.delete_tag', tag_id=face.id) }}"
-                class="btn btn-primary" role="button">Delete tag</a></p>
+          <p>
+            <form action="{{ url_for('main.delete_tag', tag_id=face.id) }}" method="post">
+              <button type="submit" name="action" class="btn btn-primary">
+                Delete tag
+              </button>
+            </form>
+          </p>
           {% endif %}
         </div>
       </div>
