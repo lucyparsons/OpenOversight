@@ -75,3 +75,12 @@ class FindOfficerIDForm(Form):
     dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
 		       validators=[DataRequired(),
 				   AnyOf(allowed_values(DEPT_CHOICES))])
+
+
+class FaceTag(Form):
+	officer_id = IntegerField('officer_id', validators=[DataRequired()])
+	image_id = IntegerField('image_id', validators=[DataRequired()])
+	dataX = IntegerField('dataX', validators=[DataRequired()])
+ 	dataY = IntegerField('dataY', validators=[DataRequired()])
+	dataWidth = IntegerField('dataWidth', validators=[DataRequired()])
+	dataHeight = IntegerField('dataHeight', validators=[DataRequired()])

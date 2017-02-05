@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask_login import UserMixin
@@ -60,9 +61,16 @@ class Face(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
     img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
-    face_position = db.Column(db.String(120), index=True, unique=False, nullable=True)  # No box dtype in SQLalchemy afaict
-    image = db.relationship('Image', backref='face')
+    face_position_x = db.Column(db.Integer, unique=False)
+    face_position_y = db.Column(db.Integer, unique=False)
+    face_width = db.Column(db.Integer, unique=False)
+    face_height = db.Column(db.Integer, unique=False)
+    image = db.relationship('Image', backref='faces')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user = db.relationship('User', backref='faces')
+
+    __table_args__ = (UniqueConstraint('officer_id', 'img_id',
+                      name='unique_faces'), )
 
     def __repr__(self):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
@@ -80,6 +88,10 @@ class Image(db.Model):
 
     # We might know when the image was taken e.g. through EXIF data
     date_image_taken = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    contains_cops = db.Column(db.Boolean, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    user = db.relationship('User', backref='raw_images')
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
     def __repr__(self):
@@ -94,6 +106,10 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     is_administrator = db.Column(db.Boolean, default=False)
+    is_disabled = db.Column(db.Boolean, default=False)
+
+    classifications = db.relationship('Image', backref='users')
+    tags = db.relationship('Face', backref='users')
 
     @property
     def password(self):

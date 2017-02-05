@@ -6,7 +6,7 @@ import os
 from urlparse import urlparse
 
 from OpenOversight.app.main.forms import (FindOfficerForm, FindOfficerIDForm,
-                                          HumintContribution)
+                                          HumintContribution, FaceTag)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm)
 from OpenOversight.app.models import User
@@ -17,15 +17,17 @@ from OpenOversight.app.models import User
     ('/index'),
     ('/find'),
     ('/about'),
+    ('/tagger_find'),
     ('/contact'),
     ('/privacy'),
     ('/label'),
+    ('/tutorial'),
     ('/auth/login'),
     ('/auth/register'),
     ('/auth/reset'),
     ('/complaint?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png')
 ])
-def test_routes_ok(route, client):
+def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 200
 
@@ -34,6 +36,12 @@ def test_routes_ok(route, client):
 @pytest.mark.parametrize("route", [
     ('/submit'),
     ('/auth/unconfirmed'),
+    ('/sort'),
+    ('/cop_face'),
+    ('/image/1'),
+    ('/image/tagged/1'),
+    ('/tag/1'),
+    ('/leaderboard'),
     ('/auth/logout'),
     ('/auth/confirm/abcd1234'),
     ('/auth/confirm'),
@@ -41,11 +49,21 @@ def test_routes_ok(route, client):
     ('/auth/change-email'),
     ('/auth/change-email/abcd1234')
 ])
-def test_route_login_required(route, client):
+def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 302
 
-#
+
+# POST-only routes
+@pytest.mark.parametrize("route", [
+    ('/tag/delete/1'),
+    ('/image/classify/1/1')
+])
+def test_route_login_required(route, client, mockdata):
+    rv = client.get(route)
+    assert rv.status_code == 405
+
+
 # def test_find_form_submission(client, mockdata):
 #     with current_app.test_request_context():
 #         form = FindOfficerForm()
@@ -76,7 +94,7 @@ def test_tagger_lookup(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm()
         assert form.validate() == True
-        rv = client.post(url_for('main.label_data'), data=form.data,
+        rv = client.post(url_for('main.get_ooid'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
         assert urlparse(rv.location).path == '/tagger_gallery'
@@ -97,12 +115,24 @@ def test_tagger_gallery_bad_form(client, session):
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
-        assert urlparse(rv.location).path == '/label'
+        assert urlparse(rv.location).path == '/tagger_find'
 
 
 def login_user(client):
     form = LoginForm(email='jen@example.org',
                      password='dog',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+        )
+    return rv
+
+
+def login_admin(client):
+    form = LoginForm(email='redshiftzero@example.org',
+                     password='cat',
                      remember_me=True)
     rv = client.post(
         url_for('auth.login'),
@@ -140,6 +170,127 @@ def test_user_can_logout(mockdata, client, session):
             follow_redirects=True
             )
         assert 'You have been logged out.' in rv.data
+
+
+def test_logged_in_user_can_access_sort_form(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.sort_images'),
+            follow_redirects=True
+            )
+        assert 'Do you see at least one face of a police officer' in rv.data
+
+
+def test_user_can_access_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.profile', username='test_user'),
+            follow_redirects=True
+            )
+        assert 'test_user' in rv.data
+        # Toggle button should not appear for this non-admin user
+        assert 'Toggle (Disable/Enable) User' not in rv.data
+
+
+def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for('main.profile', username='test_user'),
+            follow_redirects=True
+            )
+        assert 'test_user' in rv.data
+        # Admin should be able to see the Toggle button
+        assert 'Toggle (Disable/Enable) User' in rv.data
+
+
+def test_user_can_view_submission(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.display_submission', image_id=1),
+            follow_redirects=True
+            )
+        assert 'Image ID' in rv.data
+
+
+def test_user_can_view_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.display_tag', tag_id=1),
+            follow_redirects=True
+            )
+        assert 'Tag' in rv.data
+
+
+def test_admin_can_toggle_user(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for('main.toggle_user', uid=1),
+            follow_redirects=True
+            )
+        assert 'Disabled' in rv.data
+
+
+def test_admin_can_delete_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for('main.delete_tag', tag_id=1),
+            follow_redirects=True
+            )
+        assert 'Deleted this tag' in rv.data
+
+
+def test_user_can_add_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        form = FaceTag(officer_id=1,
+                       image_id=4,
+                       dataX=34,
+                       dataY=32,
+                       dataWidth=3,
+                       dataHeight=33)
+
+        rv = client.post(
+            url_for('main.label_data', image_id=4),
+            data=form.data,
+            follow_redirects=True
+            )
+        assert 'Tag added to database' in rv.data
+
+
+def test_user_can_finish_tagging(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.complete_tagging', image_id=4),
+            follow_redirects=True
+            )
+        assert 'Marked image as completed.' in rv.data
+
+
+def test_user_can_view_leaderboard(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('main.leaderboard'),
+            follow_redirects=True
+            )
+        assert 'Top Users by Number of Images Sorted' in rv.data
 
 
 def test_user_cannot_register_with_existing_email(mockdata, client, session):

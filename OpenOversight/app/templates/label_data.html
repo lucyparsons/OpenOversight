@@ -1,42 +1,32 @@
 {% extends "base.html" %}
+
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-    <h1>Label Officer Images</h1>
 
     {% if current_user and current_user.is_authenticated %}
-      <div class="page-header">
-        <h2>Find an Officer's OpenOversight ID</h2>
+    <div class="row">
+      <div class="col-md-9">
+        <div class="page-header">
+        <h1>OpenOversight Volunteer Portal</h1>
+        </div>
+        <h3>What would you like to do today?</h3>
+        <p><a href="{{ url_for('main.sort_images') }}"><button type="button" class="btn btn-lg btn-primary">Sort images</button></a></p>
+        <p><a href="{{ url_for('main.label_data') }}"><button type="button" class="btn btn-lg btn-primary">Identify police officers</button></a></p>
+
       </div>
+      <div class="col-md-3">
+        <div class="panel panel-primary">
+          <div class="panel-heading"><span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span></div>
+          <div class="panel-body">
+          New to working on images for OpenOversight? Or just need a refresher?  <a href="{{ url_for('main.get_tutorial') }}"><button type="button" class="btn btn-sm btn-primary">Launch Tutorial</button></a>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <p>To link a submitted face with a given officer in the database, first you
-         need to find the Officer's OpenOversight ID.</p>
-      <p>Use the following form to put in the details you can see in the image:</p>
-      <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
-        {{ form.hidden_tag() }}
-      <h4>Department: {{ form.dept }}</h4>
-        {% for error in form.dept.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-      <h4>What is visible from the officer's name tag?</h4>
-        {{ form.name }}
-        {% for error in form.name.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-      <h4>What is visible from the badge number?</h4>
-        {{ form.badge }}
-        {% for error in form.badge.errors %}
-          <p><span style="color: red;">[{{ error }}]</span></p>
-        {% endfor %}
-
-        <br><br>
-        <p>
-          <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
-        </p>
-      </form>
     {% else %}
+      <h1>OpenOversight Volunteer Sign Up</h1>
       <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up:</p>
 
       <a href="{{ url_for('auth.register') }}"><button type="button" class="btn btn-lg btn-primary">Register</button></a>
@@ -46,6 +36,6 @@
 
       <a href="{{ url_for('auth.login') }}"><button type="button" class="btn btn-lg btn-primary">Login</button></a>
     {% endif %}
-</div>
 
+</div>
 {% endblock %}

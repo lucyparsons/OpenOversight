@@ -1,13 +1,22 @@
 import boto3
-import config
 import datetime
-from flask import current_app
-from flask_sqlalchemy import SQLAlchemy
 import hashlib
 import os
 from sqlalchemy import desc, asc, func
 from sqlalchemy.sql.expression import cast
-from .models import db, Officer, Assignment, Image, Face
+
+from flask import current_app, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+import config
+from .models import db, Officer, Assignment, Image, Face, User
+
+
+def serve_image(filepath):
+    if 'http' in filepath:
+        return proper_path
+    if 'static' in filepath:
+        return url_for('static', filename=filepath.replace('static/', ''))
 
 
 def compute_hash(data_to_hash):
@@ -102,3 +111,17 @@ def roster_lookup(form):
 
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
+
+
+def compute_leaderboard_stats(select_top=25):
+    top_sorters = db.session.query(User, func.count(Image.user_id)) \
+                            .select_from(Image).join(User) \
+                            .group_by(User) \
+                            .order_by(func.count(Image.user_id).desc()) \
+                            .limit(select_top).all()
+    top_taggers = db.session.query(User, func.count(Face.user_id)) \
+                            .select_from(Face).join(User) \
+                            .group_by(User) \
+                            .order_by(func.count(Face.user_id).desc()) \
+                            .limit(select_top).all()
+    return top_sorters, top_taggers

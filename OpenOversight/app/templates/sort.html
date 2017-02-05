@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+
+    {% if current_user and current_user.is_authenticated %}
+      <div class="row">
+        <div class="col-md-9">
+          <div class="page-header">
+            <h1>OpenOversight Volunteer Portal <small>Image Classification</small></h1>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel panel-primary">
+            <div class="panel-heading"><span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span></div>
+            <div class="panel-body">
+            New to working on images for OpenOversight? Or just need a refresher?  <a href="{{ url_for('main.get_tutorial') }}"><button type="button" class="btn btn-sm btn-primary">Launch Tutorial</button></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if image and current_user.is_disabled == False %}
+        <div class="row">
+          <div class="col-md-6">
+            <div>
+              <img class="img-responsive" src="{{ path }}" alt="Picture to be sorted">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h3>Do you see at least one face of a police officer with a badge number or name visible on their uniform?</h3>
+            <p><a href="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                  class="btn btn-lg btn-primary" role="button">No police officers with badge numbers or names are visible</a></p>
+            <p><a href="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
+                  class="btn btn-lg btn-primary" role="button">Police officers are clearly
+                  visible with badge numbers or names</a></p>
+          </div>
+        </div>
+      {% elif current_user.is_disabled == True %}
+      <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+      <p><a href="mailto:info@lucyparsonslabs.com" class="btn btn-lg btn-primary" role="button">Mail us to get it enabled again</a></p>
+      {% else %}
+      <h3>All images have been classfied!</h3>
+      <p><a href="{{ url_for('main.submit_data')}}" class="btn btn-lg btn-primary" role="button">Submit officer pictures to us</a></p>
+      <p><a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">identify officers in the classified images</a></p>
+      {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

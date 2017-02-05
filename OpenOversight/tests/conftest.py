@@ -115,8 +115,11 @@ def session(db, request):
         connection.close()
         session.remove()
 
-        # Cleanup users table
+        # Cleanup tables
         models.User.query.delete()
+        models.Officer.query.delete()
+        models.Image.query.delete()
+        models.Face.query.delete()
         session.commit()
 
     request.addfinalizer(teardown)
@@ -137,12 +140,17 @@ def mockdata(session, request):
 
     test_images = [image1, image2, image3, image4]
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
+    session.add_all(officers)
+    session.add_all(test_images)
+    session.commit()
+
+    officers = models.Officer.query.all()
+    test_images = models.Image.query.all()
+
     assignments = [build_assignment(officer, unit1) for officer in officers]
     faces = [assign_faces(officer, test_images) for officer in officers]
     faces = [f for f in faces if f]
-    session.add_all(test_images)
     session.add(unit1)
-    session.add_all(officers)
     session.add_all(assignments)
     session.add_all(faces)
 
@@ -151,6 +159,13 @@ def mockdata(session, request):
                             password='dog',
                             confirmed=True)
     session.add(test_user)
+
+    test_admin = models.User(email='redshiftzero@example.org',
+                            username='test_admin',
+                            password='cat',
+                            confirmed=True,
+                            is_administrator=True)
+    session.add(test_admin)
     session.commit()
     return assignments[0].star_no
 

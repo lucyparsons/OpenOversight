@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="{{ url_for('static', filename='css/cropper.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/tagger.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/cropper.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tagger.js') }}"></script>
+<div class="container theme-showcase" role="main">
+
+    {% if current_user and current_user.is_authenticated %}
+      <div class="row">
+        <div class="col-md-9">
+          <div class="page-header">
+            <h1>OpenOversight Volunteer Portal <small>Officer Identification</small></h1>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="panel panel-primary">
+            <div class="panel-heading"><span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span></div>
+            <div class="panel-body">
+            New to working on images for OpenOversight? Or just need a refresher?  <a href="{{ url_for('main.get_tutorial') }}"><button type="button" class="btn btn-sm btn-primary">Launch Tutorial</button></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if image and current_user.is_disabled == False %}
+        <div class="row">
+          <div class="col-md-5">
+            <h3>Add a tag for each officer</h3>
+            <h4>1. Select the face of the officer</h4>
+            <div class="preview docs-preview clearfix">
+              <div class="img-preview preview-lg"></div>
+            </div>
+            <div class="docs-data">
+              <form action="{{ url_for('main.label_data') }}" method="post">
+                {{ form.hidden_tag() }}
+                <div class="input-group input-group-sm">
+                  <input type="text" class="hidden form-control" name="dataX" id="dataX" placeholder="x">
+                </div>
+                {% for error in form.dataX.errors %}
+                  <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+
+                <div class="input-group input-group-sm">
+                  <input type="text" class="hidden form-control" name="dataY" id="dataY" placeholder="y">
+                </div>
+                <div class="input-group input-group-sm">
+
+                </div>
+                {% for error in form.dataY.errors %}
+                  <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+
+                <div class="input-group input-group-sm">
+                  <input type="text" class="hidden form-control" name="dataWidth" id="dataWidth" placeholder="width">
+                </div>
+                {% for error in form.dataWidth.errors %}
+                  <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+
+                <div class="input-group input-group-sm">
+                  <input type="text" class="hidden form-control" name="dataHeight" id="dataHeight" placeholder="height">
+                </div>
+                {% for error in form.dataHeight.errors %}
+                  <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+
+                <h4>2. Find the officer in the roster</h4>
+                <p><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
+                  <button type="button" class="btn btn-sm">Launch OpenOversight ID search form in new tab</button></a></p>
+                <div class="input-group input-group-sm">
+                  <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
+                  <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="officer ID">
+                </div>
+                {% for error in form.officer_id.errors %}
+                  <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+
+                <input type="text" class="hidden form-control" name="image_id" id="image_id" placeholder="image ID" value="{{ image.id }}">
+                {% for error in form.image_id.errors %}
+                  <p><span style="color: red;">Image: [{{ error }}]</span></p>
+                {% endfor %}
+
+                <p><input type="submit" class="btn btn-sm btn-primary" value="Add face tag" /></p>
+            </div>
+            <h3>Done with this image?</h3>
+            <p><a href="{{ url_for('main.complete_tagging', image_id=image.id, contains_cops=0) }}" class="btn btn-sm btn-primary">
+               I have tagged all officers I can find identifications for in the image.</a></p>
+          </div>
+          <div class="col-md-7">
+            <div>
+              <img class="img-responsive" id="image" src="{{ path }}" alt="Picture">
+            </div>
+          </div>
+        </div>
+
+      {% elif current_user.is_disabled == True %}
+      <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+      <p><a href="mailto:info@lucyparsonslabs.com" class="btn btn-lg btn-primary" role="button">Mail us to get it enabled again</a></p>
+      {% else %}
+      <h3>All images have been tagged!</h3>
+      <p><a href="{{ url_for('main.submit_data')}}" class="btn btn-lg btn-primary" role="button">Submit officer pictures to us</a></p>
+      {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}
