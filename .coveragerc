@@ -1,2 +1,2 @@
-[report]
+[run]
 omit = */db_repository/*
