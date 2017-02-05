@@ -1,11 +1,11 @@
-from sqlalchemy import *
-from migrate import *
+from sqlalchemy import *  # pragma: no cover
+from migrate import *  # pragma: no cover
 
 
-from migrate.changeset import schema
-pre_meta = MetaData()
-post_meta = MetaData()
-users = Table('users', post_meta,
+from migrate.changeset import schema  # pragma: no cover
+pre_meta = MetaData()  # pragma: no cover
+post_meta = MetaData()  # pragma: no cover
+users = Table('users', post_meta,  # pragma: no cover
     Column('id', Integer, primary_key=True, nullable=False),
     Column('email', String(length=64)),
     Column('username', String(length=64)),
@@ -15,7 +15,7 @@ users = Table('users', post_meta,
     Column('is_disabled', Boolean, default=ColumnDefault(False)),
 )
 
-raw_images = Table('raw_images', post_meta,
+raw_images = Table('raw_images', post_meta,  # pragma: no cover
     Column('id', Integer, primary_key=True, nullable=False),
     Column('filepath', String(length=120)),
     Column('hash_img', String(length=120)),
@@ -26,14 +26,14 @@ raw_images = Table('raw_images', post_meta,
     Column('is_tagged', Boolean, default=ColumnDefault(False)),
 )
 
-faces = Table('faces', pre_meta,
+faces = Table('faces', pre_meta,  # pragma: no cover
     Column('id', INTEGER, primary_key=True, nullable=False),
     Column('officer_id', INTEGER),
     Column('img_id', INTEGER),
     Column('face_position', VARCHAR(length=120)),
 )
 
-faces = Table('faces', post_meta,
+faces = Table('faces', post_meta,  # pragma: no cover
     Column('id', Integer, primary_key=True, nullable=False),
     Column('officer_id', Integer),
     Column('img_id', Integer),
@@ -45,7 +45,7 @@ faces = Table('faces', post_meta,
 )
 
 
-def upgrade(migrate_engine):
+def upgrade(migrate_engine):  # pragma: no cover
     # Upgrade operations go here. Don't create your own engine; bind
     # migrate_engine to your metadata
     pre_meta.bind = migrate_engine
@@ -61,7 +61,7 @@ def upgrade(migrate_engine):
     post_meta.tables['faces'].columns['user_id'].create()
 
 
-def downgrade(migrate_engine):
+def downgrade(migrate_engine):  # pragma: no cover
     # Operations to reverse the above upgrade go here.
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine

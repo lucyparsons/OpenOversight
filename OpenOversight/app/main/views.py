@@ -319,8 +319,8 @@ def privacy_oo():
     return render_template('privacy.html')
 
 
-@main.route('/shutdown')
-def server_shutdown():
+@main.route('/shutdown')    # pragma: no cover
+def server_shutdown():      # pragma: no cover
     if not current_app.testing:
         abort(404)
     shutdown = request.environ.get('werkzeug.server.shutdown')
