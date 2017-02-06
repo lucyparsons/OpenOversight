@@ -101,13 +101,13 @@ def test_valid_email_change_token(mockdata):
 
 def test_invalid_email_change_token(mockdata):
     user1 = User(email='jen@example.com', password='cat')
-    user2 = User(email='freddy@example.org', password='dog')
+    user2 = User(email='freddy@example.com', password='dog')
     db.session.add(user1)
     db.session.add(user2)
     db.session.commit()
     token = user1.generate_email_change_token('mason@example.net')
     assert user2.change_email(token) is False
-    assert user2.email == 'freddy@example.org'
+    assert user2.email == 'freddy@example.com'
 
 def test_duplicate_email_change_token(mockdata):
     user1 = User(email='alice@example.com', password='cat')
