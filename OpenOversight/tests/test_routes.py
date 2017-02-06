@@ -8,7 +8,9 @@ from urlparse import urlparse
 from OpenOversight.app.main.forms import (FindOfficerForm, FindOfficerIDForm,
                                           HumintContribution, FaceTag)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
-                                          ChangePasswordForm)
+                                          ChangePasswordForm, PasswordResetForm,
+                                          PasswordResetRequestForm,
+                                          ChangeEmailForm)
 from OpenOversight.app.models import User
 
 
@@ -327,6 +329,181 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
         assert 'Passwords must match' in rv.data
 
 
+def test_user_can_register_with_legit_credentials(mockdata, client, session):
+    with current_app.test_request_context():
+        form = RegistrationForm(email='jen@example.com',
+                                username='redshiftzero',
+                                password='dog',
+                                password2='dog')
+        rv = client.post(
+            url_for('auth.register'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'A confirmation email has been sent to you by email.' in rv.data
+
+
+def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('auth.resend_confirmation'),
+            follow_redirects=True
+            )
+
+        assert 'A new confirmation email has been sent to you by email.' in rv.data
+
+
+def test_user_can_get_password_reset_token_sent(mockdata, client, session):
+    with current_app.test_request_context():
+        form = PasswordResetRequestForm(email='jen@example.org')
+
+        rv = client.post(
+            url_for('auth.password_reset_request'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'An email with instructions to reset your password' in rv.data
+
+
+def test_user_can_get_reset_password_with_valid_token(mockdata, client, session):
+    with current_app.test_request_context():
+        form = PasswordResetForm(email='jen@example.org',
+                                 password='catdog',
+                                 password2='catdog')
+        user = User.query.filter_by(email='jen@example.org').one()
+        token = user.generate_reset_token()
+
+        rv = client.post(
+            url_for('auth.password_reset', token=token),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'Your password has been updated.' in rv.data
+
+
+def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session):
+    with current_app.test_request_context():
+        form = PasswordResetForm(email='jen@example.org',
+                                 password='catdog',
+                                 password2='catdog')
+        token = 'beepboopbeep'
+
+        rv = client.post(
+            url_for('auth.password_reset', token=token),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'Your password has been updated.' not in rv.data
+
+
+def test_user_cannot_get_email_reset_token_sent_without_valid_password(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        form = ChangeEmailForm(email='jen@example.org',
+                               password='dogdogdogdog')
+
+        rv = client.post(
+            url_for('auth.change_email_request'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'An email with instructions to confirm your new email' not in rv.data
+
+
+def test_user_can_get_email_reset_token_sent_with_password(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        form = ChangeEmailForm(email='alice@example.org',
+                               password='dog')
+
+        rv = client.post(
+            url_for('auth.change_email_request'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'An email with instructions to confirm your new email' in rv.data
+
+
+def test_user_can_change_email_with_valid_reset_token(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        user = User.query.filter_by(email='jen@example.org').one()
+        token = user.generate_email_change_token('alice@example.org')
+
+        rv = client.get(
+            url_for('auth.change_email', token=token),
+            follow_redirects=True
+            )
+
+        assert 'Your email address has been updated.' in rv.data
+
+
+def test_user_cannot_change_email_with_invalid_reset_token(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        token = 'beepboopbeep'
+
+        rv = client.get(
+            url_for('auth.change_email', token=token),
+            follow_redirects=True
+            )
+
+        assert 'Your email address has been updated.' not in rv.data
+
+
+def test_user_can_confirm_account_with_valid_token(mockdata, client, session):
+    with current_app.test_request_context():
+        login_unconfirmed_user(client)
+        user = User.query.filter_by(email='freddy@example.org').one()
+        token = user.generate_confirmation_token()
+
+        rv = client.get(
+            url_for('auth.confirm', token=token),
+            follow_redirects=True
+            )
+
+        assert 'You have confirmed your account.' in rv.data
+
+
+def test_user_can_not_confirm_account_with_invalid_token(mockdata, client,
+                                                         session):
+    with current_app.test_request_context():
+        login_unconfirmed_user(client)
+        user = User.query.filter_by(email='freddy@example.org').one()
+        token = 'beepboopbeep'
+
+        rv = client.get(
+            url_for('auth.confirm', token=token),
+            follow_redirects=True
+            )
+
+        assert 'The confirmation link is invalid or has expired.' in rv.data
+
+
+def test_user_can_change_password_if_they_match(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        form = ChangePasswordForm(old_password='dog',
+                                password='validpasswd',
+                                password2='validpasswd')
+
+        rv = client.post(
+            url_for('auth.change_password'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'Your password has been updated.' in rv.data
+
+
 def login_unconfirmed_user(client):
     form = LoginForm(email='freddy@example.org',
                      password='dog',
@@ -342,11 +519,6 @@ def login_unconfirmed_user(client):
 def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client,
                                                         session):
     with current_app.test_request_context():
-        test_user = User(email='freddy@example.org', username='b_meson',
-                         password='dog', confirmed=False)
-        session.add(test_user)
-        session.commit()
-
         login_unconfirmed_user(client)
 
         rv = client.get(
@@ -361,7 +533,7 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client,
                                                         session):
     with current_app.test_request_context():
         login_user(client)
-        form = RegistrationForm(old_password='dog',
+        form = ChangePasswordForm(old_password='dog',
                                 password='cat',
                                 password2='butts')
 

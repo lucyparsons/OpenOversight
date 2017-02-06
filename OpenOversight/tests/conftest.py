@@ -166,6 +166,11 @@ def mockdata(session, request):
                             confirmed=True,
                             is_administrator=True)
     session.add(test_admin)
+
+    test_unconfirmed_user = models.User(email='freddy@example.org',
+                                        username='b_meson',
+                                        password='dog', confirmed=False)
+    session.add(test_unconfirmed_user)
     session.commit()
     return assignments[0].star_no
 
