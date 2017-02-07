@@ -10,15 +10,19 @@ env.use_ssh_config = False
 # env.hosts list references aliases in ~/.ssh/config or IP address. When using .ssh/config,
 # fab will use the ssh keyfile referenced by the host alias, otherwise need to do what is
 # being done in dev to assign env a key_filename
+
+
 def staging():
     env.hosts=['162.243.156.49']
     env.user='root'
     env.host='staging.openoversight.lucyparsonslabs.com'
 
+
 def production():
     env.hosts=['45.55.11.175']
     env.user='root'
     env.host='openoversight.lucyparsonslabs.com'
+
 
 def deploy():
     if env.host=='openoversight.lucyparsonslabs.com':
@@ -33,3 +37,15 @@ def deploy():
         run('su nginx -c "git pull"')
         run('su nginx -c "%s/bin/pip install -r requirements.txt"' % venv_dir)
         run('systemctl restart openoversight')
+
+
+def backup():
+    if env.host == 'openoversight.lucyparsonslabs.com':
+        sqlalchemy_database_uri = 'PG_SQL_URI'
+    else:
+        sqlalchemy_database_uri = 'STAGING_PG_SQL_URI'
+    with cd('/home/nginx/OpenOversight_backup/'):
+        run('pg_dump %s -f backup.sql' % sqlalchemy_database_uri)
+        run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
+        run('find . -type f -mtime -5 -print0 | xargs tar czfv backup.tar.gz')
+        get(remote_path="/home/nginx/OpenOversight_backup/backup.tar.gz", local_path="~/backup")
