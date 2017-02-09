@@ -2,7 +2,12 @@ from __future__ import with_statement
 from fabric.api import env, local, run, sudo, cd, hosts, get
 from fabric.context_managers import prefix
 from fabric.contrib.console import confirm
-import datetime
+import datetime, os
+from os.path import expanduser
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 env.use_ssh_config = False
 
@@ -40,12 +45,9 @@ def deploy():
 
 
 def backup():
-    if env.host == 'openoversight.lucyparsonslabs.com':
-        sqlalchemy_database_uri = 'PG_SQL_URI'
-    else:
-        sqlalchemy_database_uri = 'STAGING_PG_SQL_URI'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     with cd('/home/nginx/OpenOversight_backup/'):
-        run('pg_dump %s -f backup.sql' % sqlalchemy_database_uri)
+        run('pg_dump %s -f backup.sql' % SQLALCHEMY_DATABASE_URI)
         run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
         run('find . -type f -mtime -5 -print0 | xargs tar czfv backup.tar.gz')
         get(remote_path="/home/nginx/OpenOversight_backup/backup.tar.gz", local_path="~/backup")
