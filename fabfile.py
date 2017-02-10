@@ -17,30 +17,33 @@ env.use_ssh_config = False
 # being done in dev to assign env a key_filename
 
 def development():
-    env.hosts=['127.0.0.1']
+    env.environment = 'dev'
+    env.hosts = '127.0.0.1'
     env.port = 2222
     env.user = 'vagrant'
     env.host = 'openoversight-dev'
-    env.unprivileged_user='vagrant'
-    env.venv_dir='/home/vagrant/oovirtenv'
-    env.code_dir='/vagrant/OpenOversight'
-    env.backup_dir='/home/vagrant/openoversight_backup'
+    env.unprivileged_user = 'vagrant'
+    env.venv_dir = '/home/vagrant/oovirtenv'
+    env.code_dir = '/vagrant/OpenOversight'
+    env.backup_dir = '/home/vagrant/openoversight_backup'
 
 def staging():
-    env.user='root'
-    env.hosts='staging.openoversight.lucyparsonslabs.com'
-    env.unprivileged_user='nginx'
-    env.venv_dir='/home/nginx/oovirtenv/venv'
-    env.code_dir='/home/nginx/oovirtenv/venv/OpenOversight'
-    env.backup_dir='/home/nginx/openoversight_backup'
+    env.environment = 'staging'
+    env.user = 'root'
+    env.hosts = 'staging.openoversight.lucyparsonslabs.com'
+    env.unprivileged_user = 'nginx'
+    env.venv_dir = '/home/nginx/oovirtenv/venv'
+    env.code_dir = '/home/nginx/oovirtenv/venv/OpenOversight'
+    env.backup_dir = '/home/nginx/openoversight_backup'
 
 def production():
-    env.user='root'
-    env.hosts='openoversight.lucyparsonslabs.com'
-    env.unprivileged_user='nginx'
-    env.venv_dir='/home/nginx/oovirtenv'
-    env.code_dir='/home/nginx/oovirtenv/OpenOversight'
-    env.backup_dir='/home/nginx/openoversight_backup'
+    env.environment = 'production'
+    env.user = 'root'
+    env.hosts = 'openoversight.lucyparsonslabs.com'
+    env.unprivileged_user = 'nginx'
+    env.venv_dir = '/home/nginx/oovirtenv'
+    env.code_dir = '/home/nginx/oovirtenv/OpenOversight'
+    env.backup_dir = '/home/nginx/openoversight_backup'
 
 def deploy():
     with cd(env.code_dir):
@@ -57,4 +60,4 @@ def backup():
         run('%s/bin/python %s/db_backup.py' % (env.venv_dir, env.code_dir))
         run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
         run('tar czfv backup.tar.gz backup.sql*')
-        get(remote_path="backup.tar.gz", local_path="./backup/backup-%s.tar.gz" % datetime.datetime.now().strftime('%Y%m%d-%H%m%d'))
+        get(remote_path="backup.tar.gz", local_path="./backup/backup-%s-%s.tar.gz" % (env.environment, datetime.datetime.now().strftime('%Y%m%d-%H%m%d')))
