@@ -6,6 +6,8 @@
 # Credentials
 dbcred*
 
+# Local database backups
+backup/*
 # Local environment files
 **/.env
 
