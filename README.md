@@ -42,3 +42,4 @@ Please see the `DEPLOY.md` file for installation instructions.
 * Linking dataset: In order to provide identities of officers, we need the roster of all police officers as well as their star number history (if star numbers change upon promotion). 
 * Solicitation from our users: Get users to submit images of police officers they take or find online to augment our training data.
 * Officer activity information: TODO acquire through FOIA
+
