@@ -24,7 +24,7 @@ def development():
     env.host = 'openoversight-dev'
     env.unprivileged_user = 'vagrant'
     env.venv_dir = '/home/vagrant/oovirtenv'
-    env.code_dir = '/vagrant/OpenOversight'
+    env.code_dir = '/vagrant'
     env.backup_dir = '/home/vagrant/openoversight_backup'
 
 def staging():
@@ -57,7 +57,7 @@ def deploy():
 def backup():
     run("su %s -c 'mkdir -p %s'" % (env.unprivileged_user, env.backup_dir))
     with cd(env.backup_dir):
-        run('%s/bin/python %s/db_backup.py' % (env.venv_dir, env.code_dir))
+        run('%s/bin/python %s/OpenOversight/db_backup.py' % (env.venv_dir, env.code_dir))
         run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
         run('tar czfv backup.tar.gz backup.sql*')
         get(remote_path="backup.tar.gz", local_path="./backup/backup-%s-%s.tar.gz" % (env.environment, datetime.datetime.now().strftime('%Y%m%d-%H%m%d')))
