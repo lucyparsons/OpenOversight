@@ -331,10 +331,11 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
 
 def test_user_can_register_with_legit_credentials(mockdata, client, session):
     with current_app.test_request_context():
+        diceware_password = 'operative hamster perservere verbalize curling'
         form = RegistrationForm(email='jen@example.com',
                                 username='redshiftzero',
-                                password='dog',
-                                password2='dog')
+                                password=diceware_password,
+                                password2=diceware_password)
         rv = client.post(
             url_for('auth.register'),
             data=form.data,
