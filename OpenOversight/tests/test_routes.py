@@ -345,6 +345,21 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
         assert 'A confirmation email has been sent to you by email.' in rv.data
 
 
+def test_user_cannot_register_with_weak_password(mockdata, client, session):
+    with current_app.test_request_context():
+        form = RegistrationForm(email='jen@example.com',
+                                username='redshiftzero',
+                                password='weak',
+                                password2='weak')
+        rv = client.post(
+            url_for('auth.register'),
+            data=form.data,
+            follow_redirects=True
+            )
+
+        assert 'A confirmation email has been sent to you by email.' not in rv.data
+
+
 def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
