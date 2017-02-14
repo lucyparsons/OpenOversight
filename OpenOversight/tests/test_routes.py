@@ -11,7 +11,7 @@ from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm)
-from OpenOversight.app.models import User
+from OpenOversight.app.models import User, Face
 
 
 @pytest.mark.parametrize("route", [
@@ -271,6 +271,25 @@ def test_user_can_add_tag(mockdata, client, session):
             follow_redirects=True
             )
         assert 'Tag added to database' in rv.data
+
+
+def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        tag = Face.query.first()
+        form = FaceTag(officer_id=tag.officer_id,
+                       image_id=tag.img_id,
+                       dataX=34,
+                       dataY=32,
+                       dataWidth=3,
+                       dataHeight=33)
+
+        rv = client.post(
+            url_for('main.label_data', image_id=tag.img_id),
+            data=form.data,
+            follow_redirects=True
+            )
+        assert 'Tag already exists between this officer and image! Tag not added.' in rv.data
 
 
 def test_user_can_finish_tagging(mockdata, client, session):
