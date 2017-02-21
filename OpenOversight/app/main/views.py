@@ -6,6 +6,7 @@ from flask_login import (LoginManager, login_user, logout_user,
                          current_user, login_required)
 from functools import wraps
 import re
+from sqlalchemy.exc import IntegrityError
 import tempfile
 from werkzeug import secure_filename
 
@@ -195,9 +196,11 @@ def label_data(image_id=None):
                            face_height=form.dataHeight.data,
                            user_id=current_user.id)
             db.session.add(new_tag)
+            db.session.commit()
             flash('Tag added to database')
-        except:
-            flash('Unknown error occured, tag not added to database.')
+        except IntegrityError:
+            db.session.rollback()
+            flash('Tag already exists between this officer and image! Tag not added.')
     return render_template('cop_face.html', form=form,
                            image=image, path=proper_path)
 
