@@ -9,6 +9,7 @@ import re
 from sqlalchemy.exc import IntegrityError
 import sys
 import tempfile
+from traceback import format_exc
 from werkzeug import secure_filename
 
 from . import main
@@ -298,8 +299,10 @@ def submit_data():
 
                  flash('File {} successfully uploaded!'.format(original_filename))
             except:
+                exception_type, value, full_tback = sys.exc_info()
                 current_app.logger.error('Error uploading to S3: {}'.format(
-                    sys.exc_info()
+                    ' '.join([str(exception_type), str(value),
+                              format_exc(full_tback)])
                 ))
                 flash("Your file could not be uploaded at this time due to a server problem. Please retry again later.")
             os.remove(safe_local_path)
