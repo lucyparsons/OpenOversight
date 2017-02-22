@@ -7,6 +7,7 @@ from flask_login import (LoginManager, login_user, logout_user,
 from functools import wraps
 import re
 from sqlalchemy.exc import IntegrityError
+import sys
 import tempfile
 from werkzeug import secure_filename
 
@@ -297,6 +298,9 @@ def submit_data():
 
                  flash('File {} successfully uploaded!'.format(original_filename))
             except:
+                current_app.logger.error('Error uploading to S3: {}'.format(
+                    sys.exc_info()
+                ))
                 flash("Your file could not be uploaded at this time due to a server problem. Please retry again later.")
             os.remove(safe_local_path)
             os.rmdir(tmpdir)
