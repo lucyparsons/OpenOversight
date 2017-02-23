@@ -94,6 +94,8 @@ def make_admin_user():
     db.session.add(u)
     db.session.commit()
     print "Administrator {} successfully added".format(username)
+    app.logger.info('Administrator {} added with email {}'.format(username,
+                                                                  email))
 
 
 if __name__ == "__main__":
