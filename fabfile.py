@@ -50,7 +50,7 @@ def deploy():
         run('su %s -c "git fetch && git status"' % env.unprivileged_user)
         if confirm("Update to latest commit in this branch?", default=False):
             run('su %s -c "git pull"' % env.unprivileged_user)
-            run('su %s -c "%s/bin/pip install -r requirements.txt"' % env.unprivileged_user, venv_dir)
+            run('su %s -c "%s/bin/pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
             run('sudo systemctl restart openoversight')
 
 
