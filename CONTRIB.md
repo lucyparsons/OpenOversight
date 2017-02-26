@@ -64,16 +64,16 @@ In addition to running the development server, `manage.py` (OpenOversight's mana
 ```
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py
 usage: manage.py [-?]
-                 {shell,downgrade_db,runserver,upgrade_db,migrate_db,make_admin_user}
+                 {shell,makemigrations,migrate,downgrade_db,runserver,make_admin_user}
                  ...
 
 positional arguments:
-  {shell,downgrade_db,runserver,upgrade_db,migrate_db,make_admin_user}
+  {shell,makemigrations,migrate,downgrade_db,runserver,make_admin_user}
     shell               Runs a Python shell inside Flask application context.
+    makemigrations      Make database migrations
+    migrate             Migrate/upgrade the database
     downgrade_db        Downgrade the database
     runserver           Runs the Flask development server i.e. app.run()
-    upgrade_db          Upgrade the database
-    migrate_db          Migrate the database
     make_admin_user     Add confirmed administrator account
 
 optional arguments:
@@ -100,17 +100,22 @@ Administrator redshiftzero successfully added
 
 ## Migrating the Database
 
-If you e.g. add a new column or table, you'll need to migrate the database. You can use the management interface to do this:
+If you e.g. add a new column or table, you'll need to migrate the database.
+
+You can use the management interface to first generate migrations:
 
 ```
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py migrate_db
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py makemigrations
 New migration saved as /vagrant/OpenOversight/app/db_repository/versions/002_migration.py
-Current database version: 2
 ```
 
-to do this.
+And then you should inspect/edit the migrations. You can then apply the migrations:
 
-`python manage.py upgrade_db` and `python manage.py downgrade_db` can also be used as necessary. Note that we followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py migrate
+```
+
+You can also downgrade the database using `python manage.py downgrade_db`.
 
 ## Changing the Development Environment
 

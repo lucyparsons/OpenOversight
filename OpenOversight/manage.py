@@ -20,8 +20,8 @@ def make_shell_context():
 manager.add_command("shell", Shell(make_context=make_shell_context))
 
 @manager.command
-def migrate_db(config_name="default"):
-    """Migrate the database"""
+def makemigrations(config_name="default"):
+    """Make database migrations"""
 
     SQLALCHEMY_MIGRATE_REPO = config['default'].SQLALCHEMY_MIGRATE_REPO
     SQLALCHEMY_DATABASE_URI = config['default'].SQLALCHEMY_DATABASE_URI
@@ -33,16 +33,13 @@ def migrate_db(config_name="default"):
     exec(old_model, tmp_module.__dict__)
     script = api.make_update_script_for_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, tmp_module.meta, db.metadata)
     open(migration, "wt").write(script)
-    api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-    v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
 
     print('New migration saved as ' + migration)
-    print('Current database version: ' + str(v))
-
+    print('Run python manage.py upgrade_db to upgrade the database')
 
 @manager.command
-def upgrade_db(config_name="default"):
-    """Upgrade the database"""
+def migrate(config_name="default"):
+    """Migrate/upgrade the database"""
 
     SQLALCHEMY_MIGRATE_REPO = config['default'].SQLALCHEMY_MIGRATE_REPO
     SQLALCHEMY_DATABASE_URI = config['default'].SQLALCHEMY_DATABASE_URI
