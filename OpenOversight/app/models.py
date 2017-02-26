@@ -80,7 +80,7 @@ class Image(db.Model):
     __tablename__ = 'raw_images'
 
     id = db.Column(db.Integer, primary_key=True)
-    filepath = db.Column(db.String(120), unique=False)
+    filepath = db.Column(db.String(255), unique=False)
     hash_img = db.Column(db.String(120), unique=False, nullable=True)
 
     # Track when the image was put into our database
