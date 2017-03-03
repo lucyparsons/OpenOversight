@@ -14,7 +14,7 @@ from .models import db, Officer, Assignment, Image, Face, User
 
 def serve_image(filepath):
     if 'http' in filepath:
-        return proper_path
+        return filepath
     if 'static' in filepath:
         return url_for('static', filename=filepath.replace('static/', ''))
 
