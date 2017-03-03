@@ -116,10 +116,14 @@ def session(db, request):
         session.remove()
 
         # Cleanup tables
-        models.User.query.delete()
-        models.Officer.query.delete()
-        models.Image.query.delete()
-        models.Face.query.delete()
+        if models.User.query:
+            models.User.query.delete()
+        if models.Officer.query:
+            models.Officer.query.delete()
+        if models.Image.query:
+            models.Image.query.delete()
+        if models.Face.query:
+            models.Face.query.delete()
         session.commit()
 
     request.addfinalizer(teardown)
