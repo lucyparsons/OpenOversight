@@ -111,16 +111,18 @@ def session(db, request):
     db.session = session
 
     def teardown():
+        transaction.rollback()
+        session.remove()
+
         # Cleanup tables
         models.User.query.delete()
         models.Officer.query.delete()
         models.Image.query.delete()
         models.Face.query.delete()
         session.commit()
+        session.flush()
 
-        transaction.rollback()
         connection.close()
-        session.remove()
 
     request.addfinalizer(teardown)
     return session
