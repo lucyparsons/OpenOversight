@@ -70,7 +70,7 @@ server {
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                
                 proxy_connect_timeout 300s;
                 proxy_read_timeout 300s;
-                client_max_body_size 10M;
+                client_max_body_size 20M;
         }
 }
 ```
