@@ -115,13 +115,6 @@ def session(db, request):
         connection.close()
         session.remove()
 
-        # Cleanup tables
-        models.User.query.delete()
-        models.Officer.query.delete()
-        models.Image.query.delete()
-        models.Face.query.delete()
-        session.commit()
-
     request.addfinalizer(teardown)
     return session
 
@@ -172,6 +165,15 @@ def mockdata(session, request):
                                         password='dog', confirmed=False)
     session.add(test_unconfirmed_user)
     session.commit()
+    def teardown():
+        # Cleanup tables
+        models.User.query.delete()
+        models.Officer.query.delete()
+        models.Image.query.delete()
+        models.Face.query.delete()
+        session.commit()
+        session.flush()
+
     return assignments[0].star_no
 
 @pytest.fixture
