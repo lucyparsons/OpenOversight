@@ -189,7 +189,10 @@ def label_data(image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
-        try:
+        existing_tag = db.session.query(Face) \
+                         .filter(Face.officer_id==form.officer_id.data) \
+                         .filter(Face.img_id==form.image_id.data).first()
+        if not existing_tag:
             new_tag = Face(officer_id=form.officer_id.data,
                            img_id=form.image_id.data,
                            face_position_x=form.dataX.data,
@@ -200,9 +203,9 @@ def label_data(image_id=None):
             db.session.add(new_tag)
             db.session.commit()
             flash('Tag added to database')
-        except IntegrityError:
-            db.session.rollback()
+        else:
             flash('Tag already exists between this officer and image! Tag not added.')
+
     return render_template('cop_face.html', form=form,
                            image=image, path=proper_path)
 
