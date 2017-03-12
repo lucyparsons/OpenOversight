@@ -1,12 +1,10 @@
 import datetime
 import os
 from flask import (abort, render_template, request, redirect, url_for,
-                   send_from_directory, flash, session, current_app)
-from flask_login import (LoginManager, login_user, logout_user,
-                         current_user, login_required)
+                   flash, current_app)
+from flask_login import current_user, login_required
 from functools import wraps
 import re
-from sqlalchemy.exc import IntegrityError
 import sys
 import tempfile
 from traceback import format_exc
@@ -24,9 +22,7 @@ SAVED_UMASK = os.umask(0077)
 
 
 def redirect_url(default='index'):
-    return request.args.get('next') or \
-           request.referrer or \
-           url_for(default)
+    return request.args.get('next') or request.referrer or url_for(default)
 
 
 def admin_required(f):
@@ -99,7 +95,7 @@ def toggle_user(uid):
         user = User.query.filter_by(id=uid).one()
         if user.is_disabled:
             user.is_disabled = False
-        elif user.is_disabled == False:
+        elif not user.is_disabled:
             user.is_disabled = True
         db.session.commit()
         flash('Updated user status')
@@ -147,7 +143,7 @@ def classify_submission(image_id, contains_cops):
     except:
         flash('Unknown error occurred')
     return redirect(redirect_url())
-    #return redirect(url_for('main.display_submission', image_id=image_id))
+    # return redirect(url_for('main.display_submission', image_id=image_id))
 
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
@@ -155,7 +151,7 @@ def classify_submission(image_id, contains_cops):
 @admin_required
 def delete_tag(tag_id):
     try:
-        tag = Face.query.filter_by(id=tag_id).delete()
+        Face.query.filter_by(id=tag_id).delete()
         db.session.commit()
         flash('Deleted this tag')
     except:
@@ -190,8 +186,8 @@ def label_data(image_id=None):
     form = FaceTag()
     if form.validate_on_submit():
         existing_tag = db.session.query(Face) \
-                         .filter(Face.officer_id==form.officer_id.data) \
-                         .filter(Face.img_id==form.image_id.data).first()
+                         .filter(Face.officer_id == form.officer_id.data) \
+                         .filter(Face.img_id == form.image_id.data).first()
         if not existing_tag:
             new_tag = Face(officer_id=form.officer_id.data,
                            img_id=form.image_id.data,
@@ -239,7 +235,7 @@ def get_tagger_gallery(page=1):
 
 
 @main.route('/gallery/<int:page>', methods=['GET', 'POST'])
-@main.route('/gallery', methods=['GET','POST'])
+@main.route('/gallery', methods=['GET', 'POST'])
 def get_gallery(page=1):
     form = FindOfficerForm()
     if form.validate_on_submit():
@@ -290,17 +286,17 @@ def submit_data():
 
             # Upload file from local filesystem to S3 bucket and delete locally
             try:
-                 url = upload_file(safe_local_path, original_filename,
-                                   new_filename)
-                 # Update the database to add the image
-                 new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                                   date_image_inserted=datetime.datetime.now(),
-                                   # TODO: Get the following field from exif data
-                                   date_image_taken=datetime.datetime.now())
-                 db.session.add(new_image)
-                 db.session.commit()
+                url = upload_file(safe_local_path, original_filename,
+                                  new_filename)
+                # Update the database to add the image
+                new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                                  date_image_inserted=datetime.datetime.now(),
+                                  # TODO: Get the following field from exif data
+                                  date_image_taken=datetime.datetime.now())
+                db.session.add(new_image)
+                db.session.commit()
 
-                 flash('File {} successfully uploaded!'.format(original_filename))
+                flash('File {} successfully uploaded!'.format(original_filename))
             except:
                 exception_type, value, full_tback = sys.exc_info()
                 current_app.logger.error('Error uploading to S3: {}'.format(

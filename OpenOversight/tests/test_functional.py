@@ -11,15 +11,15 @@ def wait_for_page_load(browser, timeout=10):
     old_page = browser.find_element_by_tag_name('html')
     yield
     WebDriverWait(browser, timeout).until(
-		expected_conditions.staleness_of(old_page)
-	)
+        expected_conditions.staleness_of(old_page)
+    )
 
 
 def wait_for_element(browser, locator, text, timeout=10):
     try:
         element_present = expected_conditions.presence_of_element_located(
             (locator, text)
-            )
+        )
         WebDriverWait(browser, timeout).until(element_present)
     except TimeoutException:
         pytest.fail("Timed out while waiting for element to appear")

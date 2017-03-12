@@ -7,11 +7,13 @@ import random
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.models import db
+
 app = create_app('development')
 db.app = app
 
 NUM_OFFICERS = app.config['NUM_OFFICERS']
 random.seed(app.config['SEED'])
+
 
 OFFICERS = [('IVANA', '', 'TINKLE'),
             ('SEYMOUR', '', 'BUTZ'),
@@ -28,7 +30,7 @@ def pick_birth_date():
 
 def pick_race():
     return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
-             'PACIFIC ISLANDER'])
+                          'PACIFIC ISLANDER'])
 
 
 def pick_gender():
@@ -69,7 +71,7 @@ def generate_officer():
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
         pd_id=1
-        )
+    )
 
 
 def build_assignment(officer):
@@ -149,29 +151,29 @@ def cleanup():
     db.session.commit()
 
 
-if __name__=="__main__":
-   parser = argparse.ArgumentParser()
-   parser.add_argument("-p", "--populate", action='store_true',
-               help="populate the database with test data")
-   parser.add_argument("-c", "--cleanup", action='store_true',
-               help="delete all test data from the database")
-   args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--populate", action='store_true',
+                        help="populate the database with test data")
+    parser.add_argument("-c", "--cleanup", action='store_true',
+                        help="delete all test data from the database")
+    args = parser.parse_args()
 
-   if args.populate:
-       print("[*] Populating database with test data...")
-       try:
-           populate()
-           print("[*] Completed successfully!")
-       except Exception as e:
-           print("[!] Encountered an unknown issue, exiting.")
-           print(e)
-           sys.exit(1)
+    if args.populate:
+        print("[*] Populating database with test data...")
+        try:
+            populate()
+            print("[*] Completed successfully!")
+        except Exception as e:
+            print("[!] Encountered an unknown issue, exiting.")
+            print(e)
+            sys.exit(1)
 
-   if args.cleanup:
-       print("[*] Cleaning up database...")
-       try:
-           cleanup()
-           print("[*] Completed successfully!")
-       except:
-           print("[!] Encountered an unknown issue, exiting.")
-           sys.exit(1)
+    if args.cleanup:
+        print("[*] Cleaning up database...")
+        try:
+            cleanup()
+            print("[*] Completed successfully!")
+        except:
+            print("[!] Encountered an unknown issue, exiting.")
+            sys.exit(1)

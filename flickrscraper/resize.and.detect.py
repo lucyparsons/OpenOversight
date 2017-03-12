@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#Change the target directory below to point to the dir containing photos
-#Files will be resized to less than 4MB for Google Vision and analyzed for presence of faces. Non-face images are deleted.
-#Needs google auth .json file env var
+# Change the target directory below to point to the dir containing photos
+# Files will be resized to less than 4MB for Google Vision and analyzed for presence of faces. Non-face images are deleted.
+# Needs google auth .json file env var
 
 
 import os
@@ -30,6 +30,7 @@ import glob
 import PIL
 
 target = "/path/to/target/folder/"
+
 
 # [START get_vision_service]
 def get_vision_service():
@@ -51,17 +52,17 @@ def detect_face(face_file, max_results=4):
     batch_request = [{
         'image': {
             'content': base64.b64encode(image_content).decode('utf-8')
-            },
+        },
         'features': [{
             'type': 'FACE_DETECTION',
             'maxResults': max_results,
-            }]
         }]
+    }]
 
     service = get_vision_service()
     request = service.images().annotate(body={
         'requests': batch_request,
-        })
+    })
     response = request.execute()
 
     return response['responses'][0]['faceAnnotations']
@@ -78,14 +79,14 @@ def highlight_faces(image, faces, output_filename):
           faces have polygons drawn around them.
     """
     im = Image.open(image)
-    draw = ImageDraw.Draw(im)
+    draw = ImageDraw.Draw(im)  # noqa
 
     for face in faces:
-        box = [(v.get('x', 0.0), v.get('y', 0.0))
+        box = [(v.get('x', 0.0), v.get('y', 0.0))  # noqa
         for v in face['fdBoundingPoly']['vertices']]
-        #draw.line(box + [box[0]], width=5, fill='#00ff00')
-#removed the boxes, maybe they're useful later - josh
-    #im.save(output_filename)
+        # draw.line(box + [box[0]], width=5, fill='#00ff00')
+# removed the boxes, maybe they're useful later - josh
+    # im.save(output_filename)
 
 
 def main(input_filename, output_filename, max_results):
@@ -97,8 +98,9 @@ def main(input_filename, output_filename, max_results):
         print('Writing to file {}'.format(output_filename))
         # Reset the file pointer, so we can read the file again
         image.seek(0)
-        #highlight_faces(image, faces, output_filename)
-    
+        # highlight_faces(image, faces, output_filename)
+
+
 if __name__ == '__main__':
     os.chdir(target)
     for file in glob.glob("*.jpg"):
@@ -122,7 +124,7 @@ if __name__ == '__main__':
             hsize = int((float(img.size[1]) * float(wpercent)))
             img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
             img.save(file)
-        output=file
+        output = file
         max_results = '4'
         try:
             main(file, output, max_results)

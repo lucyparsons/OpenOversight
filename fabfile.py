@@ -1,11 +1,10 @@
 from __future__ import with_statement
-from fabric.api import env, local, run, sudo, cd, hosts, get
-from fabric.context_managers import prefix
+from fabric.api import env, run, cd, get
 from fabric.contrib.console import confirm
-import datetime, os
-from os.path import expanduser
-#from dotenv import load_dotenv, find_dotenv
-#load_dotenv(find_dotenv())
+import datetime
+import os
+# from dotenv import load_dotenv, find_dotenv
+# load_dotenv(find_dotenv())
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -15,6 +14,7 @@ env.use_ssh_config = False
 # env.hosts list references aliases in ~/.ssh/config or IP address. When using .ssh/config,
 # fab will use the ssh keyfile referenced by the host alias, otherwise need to do what is
 # being done in dev to assign env a key_filename
+
 
 def development():
     env.environment = 'dev'
@@ -27,6 +27,7 @@ def development():
     env.code_dir = '/vagrant'
     env.backup_dir = '/home/vagrant/openoversight_backup'
 
+
 def staging():
     env.environment = 'staging'
     env.user = 'root'
@@ -36,6 +37,7 @@ def staging():
     env.code_dir = '/home/nginx/oovirtenv/venv/OpenOversight'
     env.backup_dir = '/home/nginx/openoversight_backup'
 
+
 def production():
     env.environment = 'production'
     env.user = 'root'
@@ -44,6 +46,7 @@ def production():
     env.venv_dir = '/home/nginx/oovirtenv'
     env.code_dir = '/home/nginx/oovirtenv/OpenOversight'
     env.backup_dir = '/home/nginx/openoversight_backup'
+
 
 def deploy():
     with cd(env.code_dir):
@@ -59,6 +62,7 @@ def migrate():
         if confirm("Apply any outstanding database migrations?", default=False):
             run('su %s -c "%s/bin/python OpenOversight/manage.py migrate"' % (env.unprivileged_user, env.venv_dir))
             run('sudo systemctl restart openoversight')
+
 
 def backup():
     run("su %s -c 'mkdir -p %s'" % (env.unprivileged_user, env.backup_dir))

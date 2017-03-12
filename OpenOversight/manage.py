@@ -1,5 +1,4 @@
 from getpass import getpass
-from sqlalchemy.orm.exc import NoResultFound
 import imp
 from migrate.versioning import api
 
@@ -17,7 +16,9 @@ manager.add_command("runserver", Server(host="0.0.0.0", port=3000))
 def make_shell_context():
     return dict(app=app, db=db)
 
+
 manager.add_command("shell", Shell(make_context=make_shell_context))
+
 
 @manager.command
 def makemigrations(config_name="default"):
@@ -27,7 +28,7 @@ def makemigrations(config_name="default"):
     SQLALCHEMY_DATABASE_URI = config['default'].SQLALCHEMY_DATABASE_URI
 
     v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
-    migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v+1))
+    migration = SQLALCHEMY_MIGRATE_REPO + ('/versions/%03d_migration.py' % (v + 1))
     tmp_module = imp.new_module('old_model')
     old_model = api.create_model(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     exec(old_model, tmp_module.__dict__)
@@ -36,6 +37,7 @@ def makemigrations(config_name="default"):
 
     print('New migration saved as ' + migration)
     print('Run python manage.py upgrade_db to upgrade the database')
+
 
 @manager.command
 def migrate(config_name="default"):
@@ -46,6 +48,7 @@ def migrate(config_name="default"):
     api.upgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     print('Current database version: ' + str(v))
+
 
 @manager.command
 def downgrade_db(config_name="default"):
@@ -58,6 +61,7 @@ def downgrade_db(config_name="default"):
     api.downgrade(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, v - 1)
     v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     print('Current database version: ' + str(v))
+
 
 @manager.command
 def make_admin_user():
@@ -87,7 +91,7 @@ def make_admin_user():
         print "Passwords did not match"
 
     u = User(username=username, email=email, password=password,
-            confirmed=True, is_administrator=True)
+             confirmed=True, is_administrator=True)
     db.session.add(u)
     db.session.commit()
     print "Administrator {} successfully added".format(username)
