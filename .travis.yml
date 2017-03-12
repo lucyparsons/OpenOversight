@@ -17,5 +17,6 @@ before_script:
   - cd OpenOversight
 script:
   - py.test -v --cov=app
+  - flake8
 after_success:
   - coveralls
