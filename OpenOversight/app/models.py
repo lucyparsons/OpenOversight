@@ -8,6 +8,7 @@ from . import login_manager
 
 db = SQLAlchemy()
 
+
 class Officer(db.Model):
     __tablename__ = 'officers'
 
@@ -22,6 +23,7 @@ class Officer(db.Model):
     pd_id = db.Column(db.Integer, index=True, unique=False)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
+
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
                                                   self.first_name,

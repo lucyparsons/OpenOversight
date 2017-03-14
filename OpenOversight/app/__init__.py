@@ -4,7 +4,6 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
 from config import config
@@ -22,17 +21,17 @@ def create_app(config_name='default'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
-    from .models import db
+    from .models import db  # noqa
 
     bootstrap.init_app(app)
     mail.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
 
-    from .main import main as main_blueprint
+    from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
+    from .auth import auth as auth_blueprint  # noqa
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     max_log_size = 10 * 1024 * 1024  # start new log file after 10 MB
@@ -43,8 +42,8 @@ def create_app(config_name='default'):
     file_handler.setFormatter(
         logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-            )
         )
+    )
 
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
@@ -64,5 +63,6 @@ def create_app(config_name='default'):
         return render_template('500.html'), 500
 
     return app
+
 
 app = create_app()

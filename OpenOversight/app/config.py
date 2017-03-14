@@ -1,5 +1,4 @@
 import os
-from os.path import expanduser
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -63,8 +62,8 @@ class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
 
     @classmethod
-    def init_app(cls, app): # pragma: no cover
-        Config.init_app(app)
+    def init_app(cls, app):  # pragma: no cover
+        config.init_app(app)
 
 
 config = {

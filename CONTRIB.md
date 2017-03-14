@@ -98,6 +98,10 @@ Administrator redshiftzero successfully added
 
 `(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ pytest`
 
+## Linting / Style Checks
+
+ `flake8` is a tool for automated linting and style checks. Be sure to run `flake8` and fix any errors before submitting a PR.
+
 ## Migrating the Database
 
 If you e.g. add a new column or table, you'll need to migrate the database.

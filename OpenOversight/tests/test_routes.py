@@ -1,11 +1,10 @@
 # Routing and view tests
 import pytest
 from flask import url_for, current_app
-from flask_login import current_user
 import os
 from urlparse import urlparse
 
-from OpenOversight.app.main.forms import (FindOfficerForm, FindOfficerIDForm,
+from OpenOversight.app.main.forms import (FindOfficerIDForm,
                                           HumintContribution, FaceTag)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
@@ -61,7 +60,7 @@ def test_route_login_required(route, client, mockdata):
     ('/tag/delete/1'),
     ('/image/classify/1/1')
 ])
-def test_route_login_required(route, client, mockdata):
+def test_route_post_only(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 405
 
@@ -95,7 +94,7 @@ def test_route_login_required(route, client, mockdata):
 def test_tagger_lookup(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm()
-        assert form.validate() == True
+        assert form.validate() is True
         rv = client.post(url_for('main.get_ooid'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
@@ -105,7 +104,7 @@ def test_tagger_lookup(client, session):
 def test_tagger_gallery(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm()
-        assert form.validate() == True
+        assert form.validate() is True
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data)
         assert rv.status_code == 200
 
@@ -113,7 +112,7 @@ def test_tagger_gallery(client, session):
 def test_tagger_gallery_bad_form(client, session):
     with current_app.test_request_context():
         form = FindOfficerIDForm(dept='')
-        assert form.validate() == False
+        assert form.validate() is False
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
                          follow_redirects=False)
         assert rv.status_code == 307
@@ -128,7 +127,7 @@ def login_user(client):
         url_for('auth.login'),
         data=form.data,
         follow_redirects=False
-        )
+    )
     return rv
 
 
@@ -140,7 +139,7 @@ def login_admin(client):
         url_for('auth.login'),
         data=form.data,
         follow_redirects=False
-        )
+    )
     return rv
 
 
@@ -159,7 +158,7 @@ def test_invalid_user_cannot_login(mockdata, client, session):
         rv = client.post(
             url_for('auth.login'),
             data=form.data
-            )
+        )
         assert 'Invalid username or password.' in rv.data
 
 
@@ -170,7 +169,7 @@ def test_user_can_logout(mockdata, client, session):
         rv = client.get(
             url_for('auth.logout'),
             follow_redirects=True
-            )
+        )
         assert 'You have been logged out.' in rv.data
 
 
@@ -181,7 +180,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
         rv = client.get(
             url_for('main.sort_images'),
             follow_redirects=True
-            )
+        )
         assert 'Do you see at least one face of a police officer' in rv.data
 
 
@@ -192,7 +191,7 @@ def test_user_can_access_profile(mockdata, client, session):
         rv = client.get(
             url_for('main.profile', username='test_user'),
             follow_redirects=True
-            )
+        )
         assert 'test_user' in rv.data
         # Toggle button should not appear for this non-admin user
         assert 'Toggle (Disable/Enable) User' not in rv.data
@@ -205,7 +204,7 @@ def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
         rv = client.get(
             url_for('main.profile', username='test_user'),
             follow_redirects=True
-            )
+        )
         assert 'test_user' in rv.data
         # Admin should be able to see the Toggle button
         assert 'Toggle (Disable/Enable) User' in rv.data
@@ -218,7 +217,7 @@ def test_user_can_view_submission(mockdata, client, session):
         rv = client.get(
             url_for('main.display_submission', image_id=1),
             follow_redirects=True
-            )
+        )
         assert 'Image ID' in rv.data
 
 
@@ -229,7 +228,7 @@ def test_user_can_view_tag(mockdata, client, session):
         rv = client.get(
             url_for('main.display_tag', tag_id=1),
             follow_redirects=True
-            )
+        )
         assert 'Tag' in rv.data
 
 
@@ -240,7 +239,7 @@ def test_admin_can_toggle_user(mockdata, client, session):
         rv = client.post(
             url_for('main.toggle_user', uid=1),
             follow_redirects=True
-            )
+        )
         assert 'Disabled' in rv.data
 
 
@@ -251,7 +250,7 @@ def test_admin_can_delete_tag(mockdata, client, session):
         rv = client.post(
             url_for('main.delete_tag', tag_id=1),
             follow_redirects=True
-            )
+        )
         assert 'Deleted this tag' in rv.data
 
 
@@ -269,7 +268,7 @@ def test_user_can_add_tag(mockdata, client, session):
             url_for('main.label_data', image_id=4),
             data=form.data,
             follow_redirects=True
-            )
+        )
         assert 'Tag added to database' in rv.data
 
 
@@ -288,7 +287,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
             url_for('main.label_data', image_id=tag.img_id),
             data=form.data,
             follow_redirects=True
-            )
+        )
         assert 'Tag already exists between this officer and image! Tag not added.' in rv.data
 
 
@@ -299,7 +298,7 @@ def test_user_can_finish_tagging(mockdata, client, session):
         rv = client.get(
             url_for('main.complete_tagging', image_id=4),
             follow_redirects=True
-            )
+        )
         assert 'Marked image as completed.' in rv.data
 
 
@@ -310,7 +309,7 @@ def test_user_can_view_leaderboard(mockdata, client, session):
         rv = client.get(
             url_for('main.leaderboard'),
             follow_redirects=True
-            )
+        )
         assert 'Top Users by Number of Images Sorted' in rv.data
 
 
@@ -324,7 +323,7 @@ def test_user_cannot_register_with_existing_email(mockdata, client, session):
             url_for('auth.register'),
             data=form.data,
             follow_redirects=False
-            )
+        )
 
         # Form will return 200 only if the form does not validate
         assert rv.status_code == 200
@@ -341,7 +340,7 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
             url_for('auth.register'),
             data=form.data,
             follow_redirects=False
-            )
+        )
 
         # Form will return 200 only if the form does not validate
         assert rv.status_code == 200
@@ -359,7 +358,7 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
             url_for('auth.register'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'A confirmation email has been sent to you by email.' in rv.data
 
@@ -374,7 +373,7 @@ def test_user_cannot_register_with_weak_password(mockdata, client, session):
             url_for('auth.register'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'A confirmation email has been sent to you by email.' not in rv.data
 
@@ -386,7 +385,7 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
         rv = client.get(
             url_for('auth.resend_confirmation'),
             follow_redirects=True
-            )
+        )
 
         assert 'A new confirmation email has been sent to you by email.' in rv.data
 
@@ -399,7 +398,7 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
             url_for('auth.password_reset_request'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'An email with instructions to reset your password' in rv.data
 
@@ -416,7 +415,7 @@ def test_user_can_get_reset_password_with_valid_token(mockdata, client, session)
             url_for('auth.password_reset', token=token),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'Your password has been updated.' in rv.data
 
@@ -432,7 +431,7 @@ def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session
             url_for('auth.password_reset', token=token),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'Your password has been updated.' not in rv.data
 
@@ -447,7 +446,7 @@ def test_user_cannot_get_email_reset_token_sent_without_valid_password(mockdata,
             url_for('auth.change_email_request'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'An email with instructions to confirm your new email' not in rv.data
 
@@ -462,7 +461,7 @@ def test_user_can_get_email_reset_token_sent_with_password(mockdata, client, ses
             url_for('auth.change_email_request'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'An email with instructions to confirm your new email' in rv.data
 
@@ -476,7 +475,7 @@ def test_user_can_change_email_with_valid_reset_token(mockdata, client, session)
         rv = client.get(
             url_for('auth.change_email', token=token),
             follow_redirects=True
-            )
+        )
 
         assert 'Your email address has been updated.' in rv.data
 
@@ -489,7 +488,7 @@ def test_user_cannot_change_email_with_invalid_reset_token(mockdata, client, ses
         rv = client.get(
             url_for('auth.change_email', token=token),
             follow_redirects=True
-            )
+        )
 
         assert 'Your email address has been updated.' not in rv.data
 
@@ -503,7 +502,7 @@ def test_user_can_confirm_account_with_valid_token(mockdata, client, session):
         rv = client.get(
             url_for('auth.confirm', token=token),
             follow_redirects=True
-            )
+        )
 
         assert 'You have confirmed your account.' in rv.data
 
@@ -512,13 +511,12 @@ def test_user_can_not_confirm_account_with_invalid_token(mockdata, client,
                                                          session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
-        user = User.query.filter_by(email='freddy@example.org').one()
         token = 'beepboopbeep'
 
         rv = client.get(
             url_for('auth.confirm', token=token),
             follow_redirects=True
-            )
+        )
 
         assert 'The confirmation link is invalid or has expired.' in rv.data
 
@@ -527,14 +525,14 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         form = ChangePasswordForm(old_password='dog',
-                                password='validpasswd',
-                                password2='validpasswd')
+                                  password='validpasswd',
+                                  password2='validpasswd')
 
         rv = client.post(
             url_for('auth.change_password'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'Your password has been updated.' in rv.data
 
@@ -547,7 +545,7 @@ def login_unconfirmed_user(client):
         url_for('auth.login'),
         data=form.data,
         follow_redirects=False
-        )
+    )
     return rv
 
 
@@ -559,7 +557,7 @@ def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client,
         rv = client.get(
             url_for('auth.unconfirmed'),
             follow_redirects=False
-            )
+        )
 
         assert 'Please Confirm Your Account' in rv.data
 
@@ -569,14 +567,14 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client,
     with current_app.test_request_context():
         login_user(client)
         form = ChangePasswordForm(old_password='dog',
-                                password='cat',
-                                password2='butts')
+                                  password='cat',
+                                  password2='butts')
 
         rv = client.post(
             url_for('auth.change_password'),
             data=form.data,
             follow_redirects=True
-            )
+        )
 
         assert 'Passwords must match' in rv.data
 
@@ -586,8 +584,7 @@ def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
         login_user(client)
 
         with open('tests/test_models.py', "rb") as test_file:
-            form = HumintContribution(photo=test_file,
-                submit=True)
+            form = HumintContribution(photo=test_file, submit=True)
             rv = client.post(
                 url_for('main.submit_data'),
                 data=form.data,
@@ -603,8 +600,7 @@ def test_user_cannot_submit_malicious_file(mockdata, client, session):
 
         os.system('touch passwd')
         with open('passwd', "rb") as test_file:
-            form = HumintContribution(photo=test_file,
-                submit=True)
+            form = HumintContribution(photo=test_file, submit=True)
             rv = client.post(
                 url_for('main.submit_data'),
                 data=form.data,
