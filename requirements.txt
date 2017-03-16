@@ -3,6 +3,7 @@ python-dotenv
 boto3
 werkzeug>=0.11.1
 Flask-WTF>=0.13.1
+Flask-Limiter
 Flask-Login
 Flask-Script
 Flask-Mail

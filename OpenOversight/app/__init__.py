@@ -3,8 +3,10 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
-from flask_mail import Mail
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
+from flask_mail import Mail
 
 from config import config
 
@@ -27,6 +29,11 @@ def create_app(config_name='default'):
     mail.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
+
+    limiter = Limiter(app,
+        key_func=get_remote_address,
+        global_limits=["100 per minute", "5 per second"],
+    )
 
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
