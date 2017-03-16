@@ -30,10 +30,9 @@ def create_app(config_name='default'):
     db.init_app(app)
     login_manager.init_app(app)
 
-    limiter = Limiter(app,
-        key_func=get_remote_address,
-        global_limits=["100 per minute", "5 per second"],
-    )
+    Limiter(app,
+            key_func=get_remote_address,
+            global_limits=["100 per minute", "5 per second"])
 
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
