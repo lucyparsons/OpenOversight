@@ -35,6 +35,21 @@ You'll need to create an AWS account, if you don't already have one. Then, you'l
 }
 ```
 
+For the officer identification UI to work, you'll need to create a CORS policy for the S3 bucket used with OpenOversight. In the AWS UI, this is done by navigating to the listing of buckets, clicking on the name of your bucket, and choosing the Permissions tab, and then "CORS configuration". Since we're not doing anything fancier than making a web browser GET it, we can just use the default policy:
+
+```
+<CORSConfiguration>
+	<CORSRule>
+		<AllowedOrigin>*</AllowedOrigin>
+		<AllowedMethod>GET</AllowedMethod>
+		<MaxAgeSeconds>3000</MaxAgeSeconds>
+		<AllowedHeader>Authorization</AllowedHeader>
+	</CORSRule>
+</CORSConfiguration>
+```
+
+If you don't click "Save" on that policy, however, the policy will not actually be applied.
+
 # Webserver Configuration
 
 The anonymity and security of your users is extremely important. Therefore we *highly* recommend using HTTPS on your entire application (you can use Let's Encrypt for free certificates) and you should test your application using the Tor Browser Bundle. Since nginx will run as a reverse proxy, you will need to add additional rules for the proxy headers to reach gunicorn. An example configuration is below but you should note that your relative paths will be different (especially the `snippets/` files).
