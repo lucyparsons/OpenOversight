@@ -4,7 +4,6 @@ from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app)
 from flask_login import current_user, login_required
 from functools import wraps
-import random
 import re
 import sys
 import tempfile
