@@ -43,6 +43,8 @@
               </button>
             </form></p>
 
+            <p><a href="{{ url_for('main.label_data') }}" class="btn btn-lg btn-primary" role="button">Skip this picture</a></p>
+
           </div>
         </div>
       {% elif current_user.is_disabled == True %}
