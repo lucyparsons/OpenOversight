@@ -1,12 +1,21 @@
 import boto3
 import datetime
 import hashlib
+import random
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 
 from flask import current_app, url_for
 
 from .models import db, Officer, Assignment, Image, Face, User
+
+
+def get_random_image(image_query):
+    if image_query.count() > 0:
+        rand = random.randrange(0, image_query.count())
+        return image_query[rand]
+    else:
+        return None
 
 
 def serve_image(filepath):

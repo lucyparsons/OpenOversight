@@ -12,7 +12,7 @@ from werkzeug import secure_filename
 
 from . import main
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
-                     serve_image, compute_leaderboard_stats)
+                     serve_image, compute_leaderboard_stats, get_random_image)
 from .forms import (FindOfficerForm, FindOfficerIDForm, HumintContribution,
                     FaceTag)
 from ..models import db, Image, User, Face
@@ -65,7 +65,9 @@ def get_started_labeling():
 @login_required
 def sort_images():
     # Select a random unsorted image from the database
-    image = Image.query.filter_by(contains_cops=None).first()
+    image_query = Image.query.filter_by(contains_cops=None)
+    image = get_random_image(image_query)
+
     if image:
         proper_path = serve_image(image.filepath)
     else:
@@ -175,8 +177,9 @@ def label_data(image_id=None):
         image = Image.query.filter_by(id=image_id).one()
     else:
         # Select a random untagged image from the database
-        image = Image.query.filter_by(contains_cops=True) \
-                           .filter_by(is_tagged=False).first()
+        image_query = Image.query.filter_by(contains_cops=True) \
+                           .filter_by(is_tagged=False)
+        image = get_random_image(image_query)
 
     if image:
         proper_path = serve_image(image.filepath)
