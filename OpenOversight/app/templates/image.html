@@ -80,6 +80,15 @@
               </button>
             </form>
           </p>
+          <h3>Identify <small>Admin only</small></h3>
+          <p>
+              <a href="{{ url_for('main.label_data', image_id=image.id) }}">
+                <button class="btn btn-primary">
+                  Tag this image
+                </button>
+              </a>
+            </form>
+          </p>
           {% endif %}
         </div>
       </div>
