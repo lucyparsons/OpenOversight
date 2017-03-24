@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" role="main">
+
+
+  <div class="page-header">
+    <h1>Officer Detail: {{ officer.first_name }} {{ officer.middle_initial }} {{ officer.last_name }}</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-6">
+    </div>
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail">
+        <div class="caption">
+          <h3>Information</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>Race</b></td>
+                <td>{{ officer.race }}</td>
+              </tr>
+              <tr>
+                <td><b>Gender</b></td>
+                <td>{{ officer.gender }}</td>
+              </tr>
+              <tr>
+                <td><b>Birth Year</b></td>
+                <td>{{ officer.birth_year }}</td>
+              </tr>
+              <tr>
+                <td><b>Employment Date</b></td>
+                <td>{{ officer.employment_date }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {% if current_user.is_administrator %}
+          <h3>Add Badge Number <small>Admin only</small></h3>
+          <p>
+            Admin only stuff will go here
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
