@@ -34,7 +34,7 @@
               <div class="img-preview preview-lg"></div>
             </div>
             <div class="docs-data">
-              <form action="{{ url_for('main.label_data') }}" method="post">
+              <form action="{{ url_for('main.label_data', image_id=image.id) }}" method="post">
                 {{ form.hidden_tag() }}
                 <div class="input-group input-group-sm">
                   <input type="text" class="hidden form-control" name="dataX" id="dataX" placeholder="x">
