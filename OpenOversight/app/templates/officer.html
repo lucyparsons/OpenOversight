@@ -3,20 +3,24 @@
 
 <div class="container" role="main">
 
-
   <div class="page-header">
-    <h1>Officer Detail: {{ officer.first_name }} {{ officer.middle_initial }} {{ officer.last_name }}</h1>
+    <h1>Officer Detail: <b>{{ officer.first_name|title }} {{ officer.middle_initial }} {{ officer.last_name|title }}</b></h1>
   </div>
 
   <div class="row">
     <div class="col-sm-6">
+      <img src="{{ path }}" alt="Submission">
     </div>
     <div class="col-sm-6 col-md-4">
       <div class="thumbnail">
         <div class="caption">
-          <h3>Information</h3>
+          <h3>General Information</h3>
           <table class="table table-hover">
             <tbody>
+              <tr>
+                <td><b>OpenOversight ID</b></td>
+                <td>{{ officer.id }}</td>
+              </tr>
               <tr>
                 <td><b>Race</b></td>
                 <td>{{ officer.race }}</td>
@@ -30,19 +34,51 @@
                 <td>{{ officer.birth_year }}</td>
               </tr>
               <tr>
-                <td><b>Employment Date</b></td>
+                <td><b>First Employment Date</b></td>
                 <td>{{ officer.employment_date }}</td>
               </tr>
             </tbody>
           </table>
-
-          {% if current_user.is_administrator %}
-          <h3>Add Badge Number <small>Admin only</small></h3>
-          <p>
-            Admin only stuff will go here
-          </p>
-          {% endif %}
         </div>
+      </div>
+
+    <div class="thumbnail">
+      <div class="caption">
+        <h3>Assignment History</h3>
+        <table class="table table-hover">
+            <tr>
+              <th><b>Rank</b></th>
+              <th><b>Badge No.</b></th>
+              <th><b>Unit</b></th>
+              <th><b>End Date</b></th>
+            </tr>
+          <tbody>
+            {% for assignment in assignments %}
+            <tr>
+              <td>{{ assignment.rank }}
+              <td>{{ assignment.star_no }}</td>
+              <td>{% if assignment.unit: %}
+                  {{ assignment.unit }}
+                  {% else %}
+                  Unknown
+                  {% endif %}
+              </td>
+              <td>{% if assignment.resign_date: %}
+                  {{ assignment.resign_date }}
+                  {% else %}
+                  Unknown
+                  {% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if current_user.is_administrator %}
+        <h3>Add Assignment<small> Admin only</small></h3>
+        <p>
+          Admin only stuff will go here
+        </p>
+        {% endif %}
       </div>
     </div>
   </div>

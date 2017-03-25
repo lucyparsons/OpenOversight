@@ -17,7 +17,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image)
 from .forms import (FindOfficerForm, FindOfficerIDForm, HumintContribution,
                     FaceTag)
-from ..models import db, Image, User, Face, Officer
+from ..models import db, Image, User, Face, Officer, Assignment
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0077)
@@ -95,9 +95,13 @@ def profile(username):
 def officer_profile(officer_id):
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
-    except NoResultsFound:
+        face = Face.query.filter_by(id=officer_id).first()
+        assignments = Assignment.query.filter_by(id=officer_id).all()
+        proper_path = serve_image(face.image.filepath)
+    except NoResultFound:
         abort(404)
-    return render_template('officer.html', officer=officer)
+    return render_template('officer.html', officer=officer, path=proper_path,
+                           assignments=assignments)
 
 
 @main.route('/user/toggle/<int:uid>', methods=['POST'])

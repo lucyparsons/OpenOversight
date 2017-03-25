@@ -20,9 +20,9 @@
             <div class="col-md-3 col-sm-4 col-xs-12">
                 <div class="thumbnail_container">
                 <div class="row">
-                <h4>{{ officer.first_name.lower()|title }}
+                <h4><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">{{ officer.first_name.lower()|title }}
                 {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-                {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
+                {{ officer.last_name.lower()|title }}</a><small> #{{ assignment.star_no }}</small></h4>
                 <h5>OpenOversight ID: {{ officer.id }}</h5>
                 <h5>Race: {{ officer.race }}</h5>
                 <h5>Gender: {{ officer.gender }}</h5>
