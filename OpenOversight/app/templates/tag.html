@@ -43,7 +43,8 @@
             <tbody>
               <tr>
                 <td><b>OpenOversight ID</b></td>
-                <td>{{ face.officer_id }}</td>
+                <td> <a href="{{ url_for('main.officer_profile', officer_id=face.officer_id) }}">
+                  {{ face.officer_id }}</a> </td>
               </tr>
               <tr>
                 <td><b>Tagged by user</b></td>
