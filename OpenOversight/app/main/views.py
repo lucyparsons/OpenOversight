@@ -1,21 +1,23 @@
 import datetime
 import os
-from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app)
-from flask_login import current_user, login_required
 from functools import wraps
 import re
+from sqlalchemy.orm.exc import NoResultFound
 import sys
 import tempfile
 from traceback import format_exc
 from werkzeug import secure_filename
+
+from flask import (abort, render_template, request, redirect, url_for,
+                   flash, current_app)
+from flask_login import current_user, login_required
 
 from . import main
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image)
 from .forms import (FindOfficerForm, FindOfficerIDForm, HumintContribution,
                     FaceTag)
-from ..models import db, Image, User, Face
+from ..models import db, Image, User, Face, Officer, Assignment
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0077)
@@ -89,6 +91,19 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
+@main.route('/officer/<officer_id>')
+def officer_profile(officer_id):
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+        face = Face.query.filter_by(id=officer_id).first()
+        assignments = Assignment.query.filter_by(id=officer_id).all()
+        proper_path = serve_image(face.image.filepath)
+    except NoResultFound:
+        abort(404)
+    return render_template('officer.html', officer=officer, path=proper_path,
+                           assignments=assignments)
+
+
 @main.route('/user/toggle/<int:uid>', methods=['POST'])
 @login_required
 @admin_required
@@ -101,7 +116,7 @@ def toggle_user(uid):
             user.is_disabled = True
         db.session.commit()
         flash('Updated user status')
-    except:
+    except NoResultFound:
         flash('Unknown error occurred')
     return redirect(url_for('main.profile', username=user.username))
 
@@ -112,7 +127,7 @@ def display_submission(image_id):
     try:
         image = Image.query.filter_by(id=image_id).one()
         proper_path = serve_image(image.filepath)
-    except:
+    except NoResultFound:
         abort(404)
     return render_template('image.html', image=image, path=proper_path)
 
@@ -123,7 +138,7 @@ def display_tag(tag_id):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.image.filepath)
-    except:
+    except NoResultFound:
         abort(404)
     return render_template('tag.html', face=tag, path=proper_path)
 
