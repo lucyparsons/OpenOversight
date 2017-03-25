@@ -22,6 +22,7 @@ from OpenOversight.app.models import User, Face
     ('/contact'),
     ('/privacy'),
     ('/label'),
+    ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
     ('/auth/register'),
@@ -208,6 +209,15 @@ def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
         assert 'test_user' in rv.data
         # Admin should be able to see the Toggle button
         assert 'Toggle (Disable/Enable) User' in rv.data
+
+
+def test_user_can_access_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.officer_profile', officer_id=3),
+            follow_redirects=True
+        )
+        assert 'Officer Detail' in rv.data
 
 
 def test_user_can_view_submission(mockdata, client, session):
