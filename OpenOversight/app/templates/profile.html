@@ -20,7 +20,7 @@
                 <td>{{ user.classifications|length }}</td>
               </tr>
               <tr>
-                <td><b>Number of officers found</b></td>
+                <td><b>Number of officers identified</b></td>
                 <td>{{ user.tags|length }}</td>
               </tr>
             </tbody>
@@ -79,7 +79,7 @@
 {% if user.tags %}
   <div class="row">
     <div class="col-sm-12 col-md-12">
-    <h2>Officer Face Tags</h2>
+    <h2>Officer Identifications</h2>
       <table class="table table-hover">
         <thead>
           <tr>
@@ -92,7 +92,8 @@
           <tr>
             <td><a href="{{ url_for( 'main.display_tag', tag_id=tag.id ) }}">
                 Tag {{ tag.id }}</a></td>
-            <td>{{ tag.officer_id }}</td>
+            <td><a href="{{ url_for('main.officer_profile', officer_id=tag.officer_id) }}">
+                {{ tag.officer_id }}</a></td>
           </tr>
           {% endfor %}
         </tbody>
