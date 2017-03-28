@@ -19,7 +19,7 @@ login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'
 
 limiter = Limiter(key_func=get_remote_address,
-                 global_limits=["100 per minute", "5 per second"])
+                  global_limits=["100 per minute", "5 per second"])
 
 
 def create_app(config_name='default'):
