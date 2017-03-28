@@ -1,11 +1,9 @@
 # Routing and view tests
 import pytest
 from flask import url_for, current_app
-import os
 from urlparse import urlparse
 
-from OpenOversight.app.main.forms import (FindOfficerIDForm,
-                                          HumintContribution, FaceTag)
+from OpenOversight.app.main.forms import (FindOfficerIDForm, FaceTag)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
@@ -587,34 +585,3 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client,
         )
 
         assert 'Passwords must match' in rv.data
-
-
-def test_user_cannot_submit_invalid_file_extension(mockdata, client, session):
-    with current_app.test_request_context():
-        login_user(client)
-
-        with open('tests/test_models.py', "rb") as test_file:
-            form = HumintContribution(photo=test_file, submit=True)
-            rv = client.post(
-                url_for('main.submit_data'),
-                data=form.data,
-                follow_redirects=False
-            )
-        assert rv.status_code == 200
-        assert 'File unable to be uploaded.' in rv.data
-
-
-def test_user_cannot_submit_malicious_file(mockdata, client, session):
-    with current_app.test_request_context():
-        login_user(client)
-
-        os.system('touch passwd')
-        with open('passwd', "rb") as test_file:
-            form = HumintContribution(photo=test_file, submit=True)
-            rv = client.post(
-                url_for('main.submit_data'),
-                data=form.data,
-                follow_redirects=False
-            )
-        assert rv.status_code == 200
-        assert 'File unable to be uploaded.' in rv.data

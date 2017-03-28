@@ -1,33 +1,45 @@
 {% extends "base.html" %}
-<!--{% import "bootstrap/wtf.html" as wtf %}-->
 {% block content %}
+
+<link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
 
 <div class="container theme-showcase" role="main">
    <div class="page-header">
-        <h1>Submit Image <small>containing faces/badge numbers of uniformed police officers</small></h1>
+        <h1>Submit Images <small>containing faces/badge numbers of uniformed police officers</small></h1>
    </div>
-   <div class="input-group input-group-lg">
-   <form action="submit" method="post" enctype="multipart/form-data">
-     {{ form.hidden_tag() }}
-     <label class="control-label">Select a photograph containing a picture of the face of 1 or more police officers with their badge number and/or name clearly displayed.</label>
-     {{ form.photo }}
 
-     <script>
-     $(document).ready(function(){
-        $("#user-notification").on("click", function(){
-           $("#loader").show();
+  <h3>Drop images here to submit:</h3>
+
+  <form action="/upload" class="dropzone" id="my-cop-dropzone">
+  </form>
+
+  <script>
+  $(document).ready(function(){
+    Dropzone.options.myCopDropzone = {
+      url: "/upload",
+      method: "POST",
+      uploadMultiple: false,
+      parallelUploads: 50,
+      acceptedFiles: "image/png, image/jpeg, image/gif, image/jpg"
+      maxFiles: 50,
+      init: function() {
+        this.on("error", function(file, responseText) {
+          file.previewTemplate.appendChild(document.createTextNode(responseText));
         });
-     });
-     </script>
+      }
+    }
 
-     <input type="submit" class="btn btn-primary"  value="Go!" id="user-notification" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
-   </form>
-   </div>
+  });
+  </script>
+
    <h3>High Security Submissions</h3>
    <p>For very high security upload of photos or videos, you can use the Lucy Parsons Labs SecureDrop instance:</p>
    <p><a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a></p>
- <!--{{ wtf.quick_form(form) }}-->
 
 </div>
+
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+
 
 {% endblock %}

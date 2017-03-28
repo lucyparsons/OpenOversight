@@ -78,3 +78,13 @@ def test_s3_url(mockdata):
     assert 'https' in url
     # url should show folder structure with first two chars as folder name
     assert 'te/st' in url
+
+
+def test_user_cannot_submit_malicious_file(mockdata):
+    file_to_submit = 'passwd'
+    assert OpenOversight.app.utils.allowed_file(file_to_submit) is False
+
+
+def test_user_cannot_submit_invalid_file_extension(mockdata):
+    file_to_submit = 'tests/test_models.py'
+    assert OpenOversight.app.utils.allowed_file(file_to_submit) is False
