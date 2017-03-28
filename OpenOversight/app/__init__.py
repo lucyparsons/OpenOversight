@@ -56,6 +56,9 @@ def create_app(config_name='default'):
     app.logger.addHandler(file_handler)
     app.logger.info('OpenOversight startup')
 
+    # Also log when endpoints are getting hit hard
+    limiter.logger.addHandler(file_handler)
+
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('404.html'), 404
