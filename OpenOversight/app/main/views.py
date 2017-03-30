@@ -13,6 +13,7 @@ from flask import (abort, render_template, request, redirect, url_for,
 from flask_login import current_user, login_required
 
 from . import main
+from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file)
@@ -91,7 +92,7 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
-@main.route('/officer/<officer_id>')
+@main.route('/officer/<int:officer_id>')
 def officer_profile(officer_id):
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
@@ -143,7 +144,6 @@ def display_tag(tag_id):
     return render_template('tag.html', face=tag, path=proper_path)
 
 
-# Rate limiting / CAPTCHA needed on this route
 @main.route('/image/classify/<int:image_id>/<int:contains_cops>',
             methods=['POST'])
 @login_required
@@ -224,7 +224,6 @@ def label_data(image_id=None):
                            image=image, path=proper_path)
 
 
-# Rate limiting / CAPTCHA on this route
 @main.route('/image/tagged/<int:image_id>')
 @login_required
 def complete_tagging(image_id):
@@ -279,12 +278,13 @@ def submit_complaint():
 
 
 @main.route('/submit', methods=['GET', 'POST'])
-@login_required
+@limiter.limit('5/minute')
 def submit_data():
     return render_template('submit.html')
 
 
 @main.route('/upload', methods=['POST'])
+@limiter.limit('250/minute')
 def upload():
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):

@@ -19,6 +19,7 @@ from OpenOversight.app.models import User, Face
     ('/tagger_find'),
     ('/contact'),
     ('/privacy'),
+    ('/submit'),
     ('/label'),
     ('/officer/3'),
     ('/tutorial'),
@@ -34,7 +35,6 @@ def test_routes_ok(route, client, mockdata):
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route", [
-    ('/submit'),
     ('/auth/unconfirmed'),
     ('/sort'),
     ('/cop_face'),
