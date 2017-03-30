@@ -1,9 +1,14 @@
 from flask_wtf import FlaskForm as Form
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField,
                      SelectField, IntegerField, SubmitField)
+from wtforms.fields.html5 import DateField
+
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
                                 Length, Optional)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
+
+from ..utils import unit_choices
 
 
 # Choices are a list of (value, label) tuples
@@ -86,3 +91,12 @@ class FaceTag(Form):
     dataY = IntegerField('dataY', validators=[DataRequired()])
     dataWidth = IntegerField('dataWidth', validators=[DataRequired()])
     dataHeight = IntegerField('dataHeight', validators=[DataRequired()])
+
+
+class AssignmentForm(Form):
+    star_no = IntegerField('star_no')
+    rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
+                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    unit = QuerySelectField('unit', validators=[Optional()],
+                            query_factory=unit_choices)
+    star_date = DateField('star_date', validators=[Optional()])

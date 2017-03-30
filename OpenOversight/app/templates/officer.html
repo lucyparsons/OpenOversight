@@ -50,7 +50,7 @@
               <th><b>Rank</b></th>
               <th><b>Badge No.</b></th>
               <th><b>Unit</b></th>
-              <th><b>End Date</b></th>
+              <th><b>Assignment Date</b></th>
             </tr>
           <tbody>
             {% for assignment in assignments %}
@@ -63,8 +63,8 @@
                   Unknown
                   {% endif %}
               </td>
-              <td>{% if assignment.resign_date: %}
-                  {{ assignment.resign_date }}
+              <td>{% if assignment.star_date: %}
+                  {{ assignment.star_date }}
                   {% else %}
                   Unknown
                   {% endif %}</td>
@@ -75,14 +75,60 @@
 
         {% if current_user.is_administrator %}
         <h3>Add Assignment<small> Admin only</small></h3>
-        <p>
-          Admin only stuff will go here
-        </p>
+        <table class="table">
+          <tbody>
+          <form action="{{ url_for('main.officer_profile', officer_id=officer.id) }}" method="post">
+          {{ form.hidden_tag() }}
+
+          <tr>
+            <td><b>New badge number:</b></td>
+            <td>{{ form.star_no }}
+                  {% for error in form.star_no.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>New rank:</b></td>
+            <td>{{ form.rank }}
+                  {% for error in form.rank.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>New unit:</b></td>
+            <td>{{ form.unit }}
+                  {% for error in form.unit.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>Start date of new assignment:</b></td>
+            <td>{{ form.star_date }}
+                  {% for error in form.star_date.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <input type="submit" value="Add Assignment" name="add-assignment" class="btn-sm btn-primary"/>
+            </td>
+          </tr>
+
+          </form>
+          </tbody>
+        </table>
         {% endif %}
       </div>
     </div>
   </div>
 
 </div>
-
 {% endblock %}
