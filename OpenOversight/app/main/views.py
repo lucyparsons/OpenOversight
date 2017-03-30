@@ -284,6 +284,7 @@ def submit_data():
 
 
 @main.route('/upload', methods=['POST'])
+@limiter.limit('250/minute')
 def upload():
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
