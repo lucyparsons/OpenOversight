@@ -176,6 +176,19 @@ def delete_tag(tag_id):
     return redirect(url_for('main.index'))
 
 
+@main.route('/assignment/add/<int:officer_id>', methods=['POST'])
+@login_required
+@admin_required
+def add_assignment(officer_id):
+    try:
+        new_assignment = Assignment(officer_id=officer_id)
+        db.session.commit()
+        flash('Added this badge number')
+    except:
+        flash('Unknown error occurred')
+    return redirect(redirect_url())
+
+
 @main.route('/leaderboard')
 @login_required
 def leaderboard():
