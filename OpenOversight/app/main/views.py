@@ -17,14 +17,9 @@ from . import main
 from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
-<<<<<<< HEAD
-                     allowed_file)
-from .forms import (FindOfficerForm, FindOfficerIDForm, FaceTag)
-=======
-                     add_new_assignment)
-from .forms import (FindOfficerForm, FindOfficerIDForm, HumintContribution,
+                     allowed_file, add_new_assignment)
+from .forms import (FindOfficerForm, FindOfficerIDForm,
                     FaceTag, AssignmentForm)
->>>>>>> Enable addition of assignments by admins only
 from ..models import db, Image, User, Face, Officer, Assignment
 
 # Ensure the file is read/write by the creator only
