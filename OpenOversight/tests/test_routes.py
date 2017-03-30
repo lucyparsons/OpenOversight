@@ -3,7 +3,9 @@ import pytest
 from flask import url_for, current_app
 from urlparse import urlparse
 
-from OpenOversight.app.main.forms import (FindOfficerIDForm, FaceTag)
+
+from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
+                                          FaceTag)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
@@ -216,6 +218,22 @@ def test_user_can_access_officer_profile(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Officer Detail' in rv.data
+
+
+def test_user_can_add_officer_badge_number(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AssignmentForm(star_no='1234',
+                              rank='COMMANDER')
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new assignment' in rv.data
 
 
 def test_user_can_view_submission(mockdata, client, session):

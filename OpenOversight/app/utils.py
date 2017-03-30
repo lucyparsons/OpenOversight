@@ -16,10 +16,16 @@ def unit_choices():
 
 def add_new_assignment(officer_id, form):
     # Resign date should be null
+
+    if form.unit.data:
+        unit = form.unit.data.id
+    else:
+        unit = None
+
     new_assignment = Assignment(officer_id=officer_id,
                                 star_no=form.star_no.data,
                                 rank=form.rank.data,
-                                unit=form.unit.data.id,
+                                unit=unit,
                                 star_date=form.star_date.data)
     db.session.add(new_assignment)
     db.session.commit()
