@@ -2,6 +2,7 @@ import datetime
 import os
 from functools import wraps
 import re
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import sys
 import tempfile
@@ -16,8 +17,9 @@ from . import main
 from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
-                     allowed_file)
-from .forms import (FindOfficerForm, FindOfficerIDForm, FaceTag)
+                     allowed_file, add_new_assignment)
+from .forms import (FindOfficerForm, FindOfficerIDForm,
+                    FaceTag, AssignmentForm)
 from ..models import db, Image, User, Face, Officer, Assignment
 
 # Ensure the file is read/write by the creator only
@@ -92,17 +94,28 @@ def profile(username):
     return render_template('profile.html', user=user)
 
 
-@main.route('/officer/<int:officer_id>')
+@main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
 def officer_profile(officer_id):
+    form = AssignmentForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
-        face = Face.query.filter_by(id=officer_id).first()
-        assignments = Assignment.query.filter_by(id=officer_id).all()
-        proper_path = serve_image(face.image.filepath)
     except NoResultFound:
         abort(404)
+
+    face = Face.query.filter_by(id=officer_id).first()
+    assignments = Assignment.query.filter_by(officer_id=officer_id).all()
+    proper_path = serve_image(face.image.filepath)
+
+    if form.validate_on_submit() and current_user.is_administrator:
+        try:
+            add_new_assignment(officer_id, form)
+            flash('Added new assignment!')
+        except IntegrityError:
+            flash('Assignment already exists')
+        return redirect(url_for('main.officer_profile',
+                                officer_id=officer_id), code=302)
     return render_template('officer.html', officer=officer, path=proper_path,
-                           assignments=assignments)
+                           assignments=assignments, form=form)
 
 
 @main.route('/user/toggle/<int:uid>', methods=['POST'])
@@ -203,6 +216,8 @@ def label_data(image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
+        if not Officer.query.filter_by(id=form.officer_id.data).first():
+            flash('Invalid officer ID. Please select a valid OpenOversight ID!')
         existing_tag = db.session.query(Face) \
                          .filter(Face.officer_id == form.officer_id.data) \
                          .filter(Face.img_id == form.image_id.data).first()

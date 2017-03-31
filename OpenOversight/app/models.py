@@ -54,7 +54,7 @@ class Unit(db.Model):
     descrip = db.Column(db.String(120), index=True, unique=False)
 
     def __repr__(self):
-        return '<Unit ID {}: {}>'.format(self.id, self.descrip)
+        return 'Unit: {}'.format(self.descrip)
 
 
 class Face(db.Model):

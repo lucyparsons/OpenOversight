@@ -88,3 +88,8 @@ def test_user_cannot_submit_malicious_file(mockdata):
 def test_user_cannot_submit_invalid_file_extension(mockdata):
     file_to_submit = 'tests/test_models.py'
     assert OpenOversight.app.utils.allowed_file(file_to_submit) is False
+
+
+def test_unit_choices(mockdata):
+    unit_choices = [str(x) for x in OpenOversight.app.utils.unit_choices()]
+    assert 'Unit: Bureau of Organized Crime' in unit_choices

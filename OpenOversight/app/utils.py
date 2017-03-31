@@ -7,7 +7,28 @@ from sqlalchemy.sql.expression import cast
 
 from flask import current_app, url_for
 
-from .models import db, Officer, Assignment, Image, Face, User
+from .models import db, Officer, Assignment, Image, Face, User, Unit
+
+
+def unit_choices():
+    return db.session.query(Unit).all()
+
+
+def add_new_assignment(officer_id, form):
+    # Resign date should be null
+
+    if form.unit.data:
+        unit = form.unit.data.id
+    else:
+        unit = None
+
+    new_assignment = Assignment(officer_id=officer_id,
+                                star_no=form.star_no.data,
+                                rank=form.rank.data,
+                                unit=unit,
+                                star_date=form.star_date.data)
+    db.session.add(new_assignment)
+    db.session.commit()
 
 
 def allowed_file(filename):

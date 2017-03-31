@@ -184,12 +184,18 @@ def mockdata(session, request):
     session.add(test_unconfirmed_user)
     session.commit()
 
+    test_units = [models.Unit(descrip='District 13'),
+                  models.Unit(descrip='Bureau of Organized Crime')]
+    session.add_all(test_units)
+    session.commit()
+
     def teardown():
         # Cleanup tables
         models.User.query.delete()
         models.Officer.query.delete()
         models.Image.query.delete()
         models.Face.query.delete()
+        models.Unit.query.delete()
         session.commit()
         session.flush()
 

@@ -124,6 +124,11 @@ def populate():
     db.session.add(test_user)
     db.session.commit()
 
+    test_units = [models.Unit(descrip='District 13'),
+                  models.Unit(descrip='Bureau of Organized Crime')]
+    db.session.add_all(test_units)
+    db.session.commit()
+
 
 def cleanup():
     """ Cleanup database"""
@@ -147,6 +152,10 @@ def cleanup():
     users = models.User.query.all()
     for user in users:
         db.session.delete(user)
+
+    units = models.Unit.query.all()
+    for unit in units:
+        db.session.delete(unit)
     # TODO: Reset primary keys on all these tables
     db.session.commit()
 

@@ -26,7 +26,7 @@ def test_face_repr(mockdata):
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert unit.__repr__() == '<Unit ID {}: {}>'.format(unit.id, unit.descrip)
+    assert unit.__repr__() == 'Unit: {}'.format(unit.descrip)
 
 
 def test_user_repr(mockdata):
