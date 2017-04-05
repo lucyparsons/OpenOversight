@@ -1,7 +1,6 @@
+![](docs/img/lpl-logo.png)
+
 # OpenOversight [![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight) [![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop)
-
-![](docs/img/lpl_logo.jpg)
-
 
 OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and provide digital galleries of photographs to help people identify police officers they would like to file a complaint on.
 
@@ -23,9 +22,18 @@ To Illinois law enforcement: This project does not perform facial recognition an
 
 Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//issues/new) to submit issues or suggestions. 
 
-## Developer Setup
+## Developer Quickstart
 
-Please see the `CONTRIB.md` file for developer setup instructions.
+```
+git clone https://github.com/lucyparsons/OpenOversight.git
+cd OpenOversight
+vagrant up
+vagrant ssh
+```
+
+And open `http://localhost:3000` in your favorite browser!
+
+Please see `CONTRIB.md` for the full developer setup instructions.
 
 ## Deployment
 
