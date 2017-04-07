@@ -47,7 +47,7 @@
 
             {% if officers.items|length == 0 %}
             <div class="container">
-            <h4>Sorry, no officers found in the roster. <a href="/label">Try again</a></h4>
+            <h4>Sorry, no officers found in the roster. <a href="{{ url_for('main.get_ooid') }}">Try again</a></h4>
             </div>
             {% endif %}
 
