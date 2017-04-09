@@ -101,10 +101,23 @@ def officer_profile(officer_id):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(404)
+    except:
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error finding officer: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
 
-    face = Face.query.filter_by(id=officer_id).first()
-    assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-    proper_path = serve_image(face.image.filepath)
+    try:
+        face = Face.query.filter_by(id=officer_id).first()
+        assignments = Assignment.query.filter_by(officer_id=officer_id).all()
+        proper_path = serve_image(face.image.filepath)
+    except:
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error loading officer profile: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
 
     if form.validate_on_submit() and current_user.is_administrator:
         try:
