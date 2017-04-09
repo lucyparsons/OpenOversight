@@ -111,7 +111,10 @@ def officer_profile(officer_id):
     try:
         face = Face.query.filter_by(id=officer_id).first()
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-        proper_path = serve_image(face.image.filepath)
+        if face:
+            proper_path = serve_image(face.image.filepath)
+        else:
+            proper_path = None
     except:
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
