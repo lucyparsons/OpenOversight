@@ -101,6 +101,12 @@ def officer_profile(officer_id):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(404)
+    except:
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error finding officer: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
 
     try:
         face = Face.query.filter_by(id=officer_id).first()
