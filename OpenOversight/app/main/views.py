@@ -109,7 +109,7 @@ def officer_profile(officer_id):
         ))
 
     try:
-        faces = Face.query.filter_by(id=officer_id).all()
+        faces = Face.query.filter_by(officer_id=officer_id).all()
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
         face_paths = []
         for face in faces:
