@@ -1086,7 +1086,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: sans-serif, Georgia, "Times New Roman", Times, serif;
   font-size: 16px;
   line-height: 1.42857143;
   color: #333333;
