@@ -9,7 +9,9 @@
 
   <div class="row">
     <div class="col-sm-6">
+      {% for path in paths %}
       <img src="{{ path }}" alt="Submission">
+      {% endfor %}
     </div>
     <div class="col-sm-6 col-md-4">
       <div class="thumbnail">
