@@ -12,12 +12,6 @@ This project is written and maintained by [@lucyparsonslabs](https://twitter.com
 
 To Illinois law enforcement: This project does not perform facial recognition and is thus in compliance with the Biometric Information Privacy Act. Requests/questions regarding this project from those affiliated with law enforcement should be directed to our legal representation at [legal@lucyparsonslabs.com](mailto:legal@lucyparsonslabs.com). 
 
-## Screenshots
-
-![](docs/img/complaint_form.png)
-
-![](docs/img/updated_gallery.png)
-
 ## Issues
 
 Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//issues/new) to submit issues or suggestions. 
