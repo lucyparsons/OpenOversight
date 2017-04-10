@@ -109,12 +109,11 @@ def officer_profile(officer_id):
         ))
 
     try:
-        face = Face.query.filter_by(id=officer_id).first()
+        faces = Face.query.filter_by(id=officer_id).all()
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-        if face:
-            proper_path = serve_image(face.image.filepath)
-        else:
-            proper_path = None
+        face_paths = []
+        for face in faces:
+            face_paths.append(serve_image(face.image.filepath))
     except:
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
@@ -130,7 +129,7 @@ def officer_profile(officer_id):
             flash('Assignment already exists')
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
-    return render_template('officer.html', officer=officer, path=proper_path,
+    return render_template('officer.html', officer=officer, paths=face_paths,
                            assignments=assignments, form=form)
 
 
