@@ -3,86 +3,86 @@
 {% block content %}
 
 <div class="container theme-showcase" role="main">
-    <h1>OpenOversight Labeling Tutorial</h1>
+<h1>OpenOversight Labeling Tutorial</h1>
 
-        <p>We want you to help us go through images submitted by activists
-        and Lucy Parsons Labs' social media monitoring of law enforcement.
-        There are two tasks we need help with:
-          <ul>
-          <li><b>classifying</b> images: <b>sorting</b> images into those that contain officers and those that do not contain officers</li>
-          <li><b>tagging</b> images: <b>identifying</b> faces in the image and associating them with officers in our roster.</li>
-          </ul>
-        </p>
+  <p>We want you to help us go through images submitted by activists
+  and Lucy Parsons Labs' social media monitoring of law enforcement.
+  There are two tasks we need help with:
+    <ul>
+    <li><b>classifying</b> images: <b>sorting</b> images into those that contain officers and those that do not contain officers</li>
+    <li><b>tagging</b> images: <b>identifying</b> faces in the image and associating them with officers in our roster.</li>
+    </ul>
+  </p>
 
-        <div class="row">
-          <div class="col-sm-6 col-md-6">
-            <img src="{{ url_for('static', filename='images/pick_task.png') }}" class="img-thumbnail img-responsive">
-          </div>
-        </div>
-
-        <p>You can see links to the two tasks when logged <a href="{{ url_for('main.get_started_labeling') }}"> in this link</a>
-          , shown in the image above. </p>
-
-        <h2>Task 1: Classify Images</h2>
-        <p>When an image is displayed, look if you see any faces
-          of police officers. If you do, see if you can make out anything
-          about their badge number or name. If you can even see a few letters or
-          numbers, click "Police officers are clearly
-          visible with badge numbers or names". A message will display letting you know
-          that your classification has been saved.</p>
-
-        <div class="row">
-          <div class="col-sm-6 col-md-6">
-            <img src="{{ url_for('static', filename='images/sort.png') }}" class="img-thumbnail img-responsive">
-          </div>
-        </div>
-
-        <p>If you don't see any clear faces of police officers in the image
-          with names or badge numbers, just click
-          "No police officers with badge numbers or names are visible" to advance to the next
-          image. Again, a message will display letting you know that your
-          classification has been saved.
-          </p>
-
-        <h2>Task 2: Identify Officers</h2>
-        <p>In this task, you will map faces each image to an entry in our roster.</p>
-
-        <div class="row">
-          <div class="col-sm-6 col-md-6">
-            <img src="{{ url_for('static', filename='images/pick_face.png') }}" class="img-thumbnail img-responsive">
-          </div>
-        </div>
-
-        <p>An image that has been flagged by volunteers as containing police
-          officers will be displayed. We want you to use the tool to
-          select an officer face in the
-          image, and then use the search box to try to find them in our roster.
-          A preview of the area to be selected will be shown on the left.
-          Open the search tool by clicking "Launch OpenOversight ID search form in new tab".</p>
-
-          <div class="row">
-            <div class="col-sm-6 col-md-6">
-              <img src="{{ url_for('static', filename='images/tag_search.png') }}" class="img-thumbnail img-responsive">
-            </div>
-          </div>
-
-        <p>Once you find the officer, select them and click "Add face tag".
-        Follow this process for each officer in the image.</p>
-        <p>Once you've added every officer from the image, click
-          "I have tagged all officers I can find identifications for in the image.". Important:
-          only then will your work on the image be saved, so make sure to click this to save
-          your tags.</p>
-
-      <h2>Checking Your Progress</h2>
-      <p>As you contribute to OpenOversight, you can look at your classifications and tags
-        by going to <a href="{{ url_for('main.profile', username=current_user.username) }}">your profile</a>.</p>
-
-      <p>You can also see how you are doing compared to other volunteers by
-        <a href="{{ url_for('main.leaderboard') }}">checking out the leaderboard</a>.</p>
-
-      <h2>Ready to get started?</h2>
-
-      <a href="{{ url_for('main.get_started_labeling') }}"><button type="button" class="btn btn-lg btn-primary">Proceed</button></a>
+  <div class="row">
+    <div class="col-sm-6 col-md-6">
+      <img src="{{ url_for('static', filename='images/pick_task.png') }}" class="img-thumbnail img-responsive">
     </div>
+  </div>
+
+    <p>You can see links to the two tasks when logged <a href="{{ url_for('main.get_started_labeling') }}"> in this link</a>
+      , shown in the image above. </p>
+
+    <h2>Task 1: Classify Images</h2>
+    <p>When an image is displayed, look if you see any faces
+      of police officers. If you do, see if you can make out anything
+      about their badge number or name. If you can even see a few letters or
+      numbers, click "Police officers are clearly
+      visible with badge numbers or names". A message will display letting you know
+      that your classification has been saved.</p>
+
+    <div class="row">
+      <div class="col-sm-6 col-md-6">
+        <img src="{{ url_for('static', filename='images/sort.png') }}" class="img-thumbnail img-responsive">
+      </div>
+    </div>
+
+    <p>If you don't see any clear faces of police officers in the image
+      with names or badge numbers, just click
+      "No police officers with badge numbers or names are visible" to advance to the next
+      image. Again, a message will display letting you know that your
+      classification has been saved.
+      </p>
+
+    <h2>Task 2: Identify Officers</h2>
+    <p>In this task, you will map faces each image to an entry in our roster.</p>
+
+    <div class="row">
+      <div class="col-sm-6 col-md-6">
+        <img src="{{ url_for('static', filename='images/pick_face.png') }}" class="img-thumbnail img-responsive">
+      </div>
+    </div>
+
+    <p>An image that has been flagged by volunteers as containing police
+      officers will be displayed. We want you to use the tool to
+      select an officer face in the
+      image, and then use the search box to try to find them in our roster.
+      A preview of the area to be selected will be shown on the left.
+      Open the search tool by clicking "Launch OpenOversight ID search form in new tab".</p>
+
+      <div class="row">
+        <div class="col-sm-6 col-md-6">
+          <img src="{{ url_for('static', filename='images/tag_search.png') }}" class="img-thumbnail img-responsive">
+        </div>
+      </div>
+
+    <p>Once you find the officer, select them and click "Add face tag".
+    Follow this process for each officer in the image.</p>
+    <p>Once you've added every officer from the image, click
+      "I have tagged all officers I can find identifications for in the image.". Important:
+      only then will your work on the image be saved, so make sure to click this to save
+      your tags.</p>
+
+  <h2>Checking Your Progress</h2>
+  <p>As you contribute to OpenOversight, you can look at your classifications and tags
+    by going to <a href="{{ url_for('main.profile', username=current_user.username) }}">your profile</a>.</p>
+
+  <p>You can also see how you are doing compared to other volunteers by
+    <a href="{{ url_for('main.leaderboard') }}">checking out the leaderboard</a>.</p>
+
+  <h2>Ready to get started?</h2>
+
+  <a href="{{ url_for('main.get_started_labeling') }}"><button type="button" class="btn btn-lg btn-primary">Proceed</button></a>
+</div>
 
 {% endblock %}
