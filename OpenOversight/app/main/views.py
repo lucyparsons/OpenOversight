@@ -368,11 +368,6 @@ def about_oo():
     return render_template('about.html')
 
 
-@main.route('/contact')
-def contact_oo():
-    return render_template('contact.html')
-
-
 @main.route('/privacy')
 def privacy_oo():
     return render_template('privacy.html')

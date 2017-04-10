@@ -8,7 +8,7 @@
         <h1>Submit Images <small>containing faces/badge numbers of uniformed police officers</small></h1>
    </div>
 
-  <h3>Drop images here to submit:</h3>
+  <h3>Drop images here to submit</h3>
 
   <form action="/upload" class="dropzone" id="my-cop-dropzone">
   </form>
@@ -31,11 +31,12 @@
 
   });
   </script>
+</div>
 
+<div class="container">
    <h3>High Security Submissions</h3>
-   <p>For very high security upload of photos or videos, you can use the Lucy Parsons Labs SecureDrop instance:</p>
-   <p><a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a></p>
-
+   <p class="small">For very high security upload of photos or videos, you can use the Lucy Parsons Labs SecureDrop instance:</p>
+   <a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a>
 </div>
 
 <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>

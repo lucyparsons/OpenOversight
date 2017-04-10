@@ -31,7 +31,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     # Complainant loads homepage
     assert "OpenOversight" in browser.title
     with wait_for_page_load(browser):
-        browser.find_element_by_id("try-it").click()
+        browser.find_element_by_id("cpd").click()
 
     page_text = browser.find_element_by_tag_name("body").text
     assert "Find an Officer" in page_text

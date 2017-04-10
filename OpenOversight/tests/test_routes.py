@@ -19,7 +19,6 @@ from OpenOversight.app.models import User, Face
     ('/find'),
     ('/about'),
     ('/tagger_find'),
-    ('/contact'),
     ('/privacy'),
     ('/submit'),
     ('/label'),
