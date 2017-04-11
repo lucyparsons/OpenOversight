@@ -3,11 +3,11 @@ html {
   min-height: 100%;
 }
 body {
-  /* Margin bottom by footer height */
   margin-bottom: 100px;
   padding-top: 70px;
-  padding-bottom: 30px;
+  padding-bottom: 100px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -31,6 +31,16 @@ body {
      -moz-transition-duration: 0.5s;
      -o-transition-duration: 0.5s;
  }
+
+.frontpage-leads {
+  margin-top: 5%;
+  margin-bottom: 10%;
+}
+
+.subtle-pad {
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
 
 /*
     Multicoloured Hover Variations
@@ -90,6 +100,8 @@ body {
      width: 100%;
      height: 0.5em;
  }
+
+/* Password strength */
 
  meter[value="1"].meter::-webkit-meter-optimum-value { background: red; }
  meter[value="2"].meter::-webkit-meter-optimum-value { background: red; }
