@@ -4,70 +4,80 @@
 <div class="container theme-showcase" role="main">
 
   <h1 class="page-header">Digital Gallery <small>Do you see the officer here?</small></h1>
-  <a href="/find"><button type="button" class="btn btn-info btn-sm">Go Back to Search</button></a>
+  <a href="/find" class="btn btn-info btn-md">Go Back to Search</a>
 
   {% include 'partials/paginate.html' %}
-  <div class="row">
-  {% for officer in officers.items %}
-    {% if officer.face.first() is none %}
-      {% set officer_image = '/static/images/placeholder.png' %}
-    {% else %}
-      {% set officer_image = officer.face.first().image.filepath %}
-    {% endif %}
-    {% set assignment = officer.assignments.first() %}
-      <div class="col-md-4 col-sm-4 col-xs-12">
-        <div class="thumbnail_container">
-          <h4><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
-                {{ officer.first_name.lower()|title }}
-                {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-                {{ officer.last_name.lower()|title }}</a> <small>#{{ assignment.star_no }}</small></h4>
 
-          {% if officer.face.first().face_position_x %}
-          <div class="img-responsive thumbnail"
-               style="background-image: url({{ officer_image }});
-                      background-repeat: no-repeat;
-                      background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
-                      width: {{ officer.face.first().face_width }}px;
-                      height: {{ officer.face.first().face_height }}px;">
+  <div id="myCarousel" class="carousel slide" data-ride="carousel">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+          {% for officer in officers.items %}
+           {% if loop.index == 1 %}
+          <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+           {% else %}
+          <li data-target="#myCarousel" data-slide-to="{{ loop.index }}"></li>
+           {% endif %}
+          {% endfor %}
+        </ol>
+        <div class="carousel-inner" role="listbox">
+        {% for officer in officers.items %}
+
+        {% if officer.face.first() is none %}
+          {% set officer_image = '/static/images/placeholder.png' %}
+        {% else %}
+          {% set officer_image = officer.face.first().image.filepath %}
+        {% endif %}
+        {% set assignment = officer.assignments.first() %}
+
+        {% if loop.index == 1 %}
+          <div class="item active">
+        {% else %}
+          <div class="item">
+        {% endif %}
+          <div class="container">
+            <div class="carousel-caption">
+              <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+                    {{ officer.first_name.lower()|title }}
+                    {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
+                    {{ officer.last_name.lower()|title }}</a> <small>#{{ assignment.star_no }}</small></h1>
+
+              <div align="center">
+                {% if officer.face.first().face_position_x %}
+                <div class="img-responsive thumbnail text-center"
+                     style="background-image: url({{ officer_image }});
+                            background-repeat: no-repeat;
+                            background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
+                            width: {{ officer.face.first().face_width }}px;
+                            height: {{ officer.face.first().face_height }}px;">
+                </div>
+                {% else %}
+                <img src="{{ officer_image }}" class="img-responsive thumbnail">
+                {% endif %}
+              </div>
+
+              <a class="btn btn-md btn-primary" id="officer-found-{{ loop.index }}" role="button" href="{{ url_for('main.submit_complaint',
+                               officer_last_name=officer.last_name,
+                               officer_first_name=officer.first_name,
+                               officer_middle_initial=officer.middle_initial,
+                               officer_star=assignment.star_no,
+                               officer_image=officer_image) }}">That's the officer!</a>
+              </div>
+            </div>
           </div>
-          {% else %}
-          <img src="{{ officer_image }}" class="img-responsive thumbnail">
-          {% endif %}
-
-		      <center><a href="{{ url_for('main.submit_complaint',
-                           officer_last_name=officer.last_name,
-                           officer_first_name=officer.first_name,
-                           officer_middle_initial=officer.middle_initial,
-                           officer_star=assignment.star_no,
-                           officer_image=officer_image) }}">
-          <button type="button" class="btn btn-info btn-sm" id="officer-found-{{ loop.index }}">That's the officer!</button></a></center>
+          {% endfor %}
         </div>
-      </div>
-  {% endfor %}
+        <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+          <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+          <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
   </div>
-  {% include 'partials/paginate.html' %}
-
   {% if officers.items|length == 0 %}
     <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
   {% endif %}
-
-  <div class="jumbotron">
-    <span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span><br>
-    <b>See any errors?</b> OpenOversight is currently in public beta.
-    Please submit any issues or suggestions you have for us on <a href="https://github.com/lucyparsons/OpenOversight">GitHub</a>,
-    <a href="https://twitter.com/lucyparsonslabs">Twitter</a>, or by email to <a href="info@lucyparsonslabs.com">info@lucyparsonslabs.com</a>.
-    We are very interested in any data corrections or inaccuracies you would like to report and correct.
-  </div>
-
-  <div class="page-header">
-    <h1>Your Query</h1>
-  </div>
-  <p><b>Department</b>: {{ form_data['dept'] }}</p>
-  <p><b>Officer rank</b>: {{ form_data['rank'] }}</p>
-  <p><b>Officer race</b>: {{ form_data['race'] }}</p>
-  <p><b>Officer gender</b>: {{ form_data['gender'] }}</p>
-  <p><b>Officer age</b>: {{ form_data['min_age'] }} to {{ form_data['max_age'] }}</p>
-  <a href="/find"><button type="button" class="btn btn-info btn-sm">Search Again</button></a>
 
 </div>
 

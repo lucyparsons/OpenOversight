@@ -7,7 +7,7 @@
 	    </form>
 	{% endif %}
   {% if officers.total > 0 %}
-  Page {{ officers.page }} of {{ officers.pages }}
+	<h2><small>Gallery {{ officers.page }} of {{ officers.pages }}</small></h2>
   {% endif %}
 	{% if officers.has_next %}
 	    <form action="{{ url_for('main.get_tagger_gallery', page=officers.next_num) }}" method="post">

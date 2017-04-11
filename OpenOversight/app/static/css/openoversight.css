@@ -90,6 +90,30 @@ body {
      max-width:80%;
  }
 
+ /* Carousel base class */
+ .carousel {
+   min-height: 800px;
+   margin-bottom: 60px;
+ }
+ /* Since positioning the image, we need to help out the caption */
+ .carousel-caption {
+   z-index: 10;
+   text-shadow: none;
+ }
+
+ /* Declare heights because of positioning of img element */
+ .carousel .item {
+   min-height: 800px;
+   margin-bottom: 60px;
+ }
+ .carousel-inner > .item > img {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   min-height: 800px;
+ }
+
  /* Limit image width to avoid overflow the cropper container */
  img {
    max-width: 100%;
