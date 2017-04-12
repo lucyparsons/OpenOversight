@@ -36,6 +36,7 @@ def staging():
     env.venv_dir = '/home/nginx/oovirtenv/venv'
     env.code_dir = '/home/nginx/oovirtenv/venv/OpenOversight'
     env.backup_dir = '/home/nginx/openoversight_backup'
+    env.s3bucket = 'openoversight-staging'
 
 
 def production():
@@ -46,6 +47,7 @@ def production():
     env.venv_dir = '/home/nginx/oovirtenv'
     env.code_dir = '/home/nginx/oovirtenv/OpenOversight'
     env.backup_dir = '/home/nginx/openoversight_backup'
+    env.s3bucket = 'openoversight'
 
 
 def deploy():
@@ -65,9 +67,14 @@ def migrate():
 
 
 def backup():
-    run("su %s -c 'mkdir -p %s'" % (env.unprivileged_user, env.backup_dir))
     with cd(env.backup_dir):
         run('%s/bin/python %s/OpenOversight/db_backup.py' % (env.venv_dir, env.code_dir))
         run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
-        run('tar czfv backup.tar.gz backup.sql*')
-        get(remote_path="backup.tar.gz", local_path="./backup/backup-%s-%s.tar.gz" % (env.environment, datetime.datetime.now().strftime('%Y%m%d-%H%m%d')))
+        run('su %s -c "aws s3 sync s3://%s /home/nginx/openoversight_backup/s3/%s"'
+            % (env.unprivileged_user, env.s3bucket, env.s3bucket))
+        run('%s/bin/python %s/OpenOversight/db_backup.py' % (env.venv_dir, env.code_dir))
+        run('mv backup.sql backup.sql_`date +"%d-%m-%Y"`')
+        run('tar czfv backup.tar.gz s3/ backup.sql*')
+        get(remote_path="backup.tar.gz",
+            local_path="./backup/backup-%s-%s.tar.gz"
+                       % (env.environment, datetime.datetime.now().strftime('%Y%m%d-%H%m%d')))
