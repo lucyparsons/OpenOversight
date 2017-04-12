@@ -181,7 +181,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
             url_for('main.sort_images'),
             follow_redirects=True
         )
-        assert 'Do you see at least one face of a police officer' in rv.data
+        assert 'Do you see police officers in the photo' in rv.data
 
 
 def test_user_can_access_profile(mockdata, client, session):

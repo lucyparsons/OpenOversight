@@ -5,36 +5,67 @@
 <div class="container theme-showcase" role="main">
 
     {% if current_user and current_user.is_authenticated %}
-    <div class="row">
-      <div class="col-md-9">
-        <div class="page-header">
-        <h1>OpenOversight Volunteer Portal</h1>
-        </div>
-        <h3>What would you like to do today?</h3>
-        <p><a href="{{ url_for('main.sort_images') }}"><button type="button" class="btn btn-lg btn-primary">Sort images</button></a></p>
-        <p><a href="{{ url_for('main.label_data') }}"><button type="button" class="btn btn-lg btn-primary">Identify police officers</button></a></p>
+    <div class="text-center frontpage-leads">
+      <h1><small>Volunteer</small></h1>
+    </div>
 
-      </div>
-      <div class="col-md-3">
-        <div class="panel panel-primary">
-          <div class="panel-heading"><span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span></div>
-          <div class="panel-body">
-          New to working on images for OpenOversight? Or just need a refresher?  <a href="{{ url_for('main.get_tutorial') }}"><button type="button" class="btn btn-sm btn-primary">Launch Tutorial</button></a>
-          </div>
-        </div>
-      </div>
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images') }}">
+          <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+          Image classification
+        </a>
+      </p>
+      <p>
+        Sort submitted images into those with and without officers.
+      </p>
+    </div>
+
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data') }}">
+          <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+          Officer identification
+        </a>
+      </p>
+      <p>
+        Use our roster search to try and identify officers in submitted images.
+      </p>
+    </div>
+
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.get_tutorial') }}">
+          <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
+          Tutorial
+        </a>
+      </p>
+      <p>
+        New to working on images for OpenOversight? Or just need a refresher?
+      </p>
     </div>
 
     {% else %}
-      <h1>OpenOversight Volunteer Sign Up</h1>
-      <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up:</p>
 
-      <a href="{{ url_for('auth.register') }}"><button type="button" class="btn btn-lg btn-primary">Register</button></a>
+      <div class="text-center frontpage-leads">
+        <h1><small>Volunteer</small></h1>
+        <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up!</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.register') }}">
+            Register
+          </a>
+        </p>
+      </div>
 
-      <br><br>
-      <p>If you're already signed up:</p>
+      <div class="text-center frontpage-leads">
+        <p>If you're already a volunteer, log in:</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.login') }}">
+            Login
+          </a>
+        </p>
+      </div>
 
-      <a href="{{ url_for('auth.login') }}"><button type="button" class="btn btn-lg btn-primary">Login</button></a>
     {% endif %}
 
 </div>

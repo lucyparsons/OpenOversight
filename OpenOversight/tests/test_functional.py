@@ -40,7 +40,18 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
 def test_user_can_use_form_to_get_to_gallery(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
-    # Complainant submits default search params and gets list of officers
+    # Complainant selects department and proceeds to next step
+    browser.find_element_by_id("activate-step-2").click()
+
+    # Complainant puts in what they remember about name/badge number and
+    # proceeds to next step
+    browser.find_element_by_id("activate-step-3").click()
+
+    # Complainant selects the officer rank and proceeds to next step
+    browser.find_element_by_id("activate-step-4").click()
+
+    # Complainant fills out demographic information on officer
+    # Complainant clicks generate list and gets list of officers
     with wait_for_page_load(browser):
         browser.find_element_by_name("submit-officer-search-form").click()
 

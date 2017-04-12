@@ -3,11 +3,11 @@ html {
   min-height: 100%;
 }
 body {
-  /* Margin bottom by footer height */
   margin-bottom: 100px;
   padding-top: 70px;
-  padding-bottom: 30px;
+  padding-bottom: 100px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -31,6 +31,16 @@ body {
      -moz-transition-duration: 0.5s;
      -o-transition-duration: 0.5s;
  }
+
+.frontpage-leads {
+  margin-top: 5%;
+  margin-bottom: 10%;
+}
+
+.subtle-pad {
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
 
 /*
     Multicoloured Hover Variations
@@ -80,6 +90,34 @@ body {
      max-width:80%;
  }
 
+ /* Carousel base class */
+ .carousel {
+   min-height: 700px;
+   margin-bottom: 50px;
+ }
+ /* Since positioning the image, we need to help out the caption */
+ .carousel-caption {
+   display:block;
+   top: 0;
+   bottom: auto;
+   z-index: 10;
+   text-shadow: none;
+ }
+
+ /* Declare heights because of positioning of img element */
+ .carousel .item {
+   top: 0;
+   bottom: auto;
+   min-height: 700px;
+   margin-top: 50px;
+ }
+ .carousel-inner > .item > img {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+ }
+
  /* Limit image width to avoid overflow the cropper container */
  img {
    max-width: 100%;
@@ -90,6 +128,8 @@ body {
      width: 100%;
      height: 0.5em;
  }
+
+/* Password strength */
 
  meter[value="1"].meter::-webkit-meter-optimum-value { background: red; }
  meter[value="2"].meter::-webkit-meter-optimum-value { background: red; }
