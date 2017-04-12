@@ -92,26 +92,30 @@ body {
 
  /* Carousel base class */
  .carousel {
-   min-height: 800px;
-   margin-bottom: 60px;
+   min-height: 700px;
+   margin-bottom: 50px;
  }
  /* Since positioning the image, we need to help out the caption */
  .carousel-caption {
+   display:block;
+   top: 0;
+   bottom: auto;
    z-index: 10;
    text-shadow: none;
  }
 
  /* Declare heights because of positioning of img element */
  .carousel .item {
-   min-height: 800px;
-   margin-bottom: 60px;
+   top: 0;
+   bottom: auto;
+   min-height: 700px;
+   margin-top: 50px;
  }
  .carousel-inner > .item > img {
    position: absolute;
    top: 0;
    left: 0;
    width: 100%;
-   min-height: 800px;
  }
 
  /* Limit image width to avoid overflow the cropper container */
