@@ -11,24 +11,21 @@
     <title>OpenOversight - a Lucy Parsons Labs project</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <!-- Bootstrap theme -->
-    <link href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='theme.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/openoversight.css') }}" rel="stylesheet">
 
     <!-- jQuery -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 
-    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!-- Font Awesome -->
+    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="{{ url_for('static', filename='js/html5shiv.min.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/respond.min.js') }}"></script>
-    <![endif]-->
+    {% for item in jsloads %}
+    <script src="{{ url_for('static', filename=item) }}"></script>
+    {% endfor %}
+
   </head>
 
   <body role="document">
@@ -48,56 +45,66 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/">Home</a></li>
             <li><a href="/find">Find an Officer</a></li>
-            <li><a href="https://script.google.com/macros/s/AKfycbyNg7oVOPSFBHZkncDn7Z23qbJFWQZM1QXcEE0TO2Txa6wB8tU/exec">Submit Images</a></li>
-            <li><a href="/label">Get Involved</a></li>
+            <li><a href="/submit">Submit Images</a></li>
+            <li><a href="/label">Volunteer</a></li>
+            {% if current_user and current_user.is_authenticated %}
+              <li><a href="/leaderboard">Leaderboard</a></li>
+            {% endif %}
             <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="/privacy">Privacy Policy</a></li>
           </ul>
-        </div><!--/.nav-collapse -->
+          <ul class="nav navbar-nav navbar-right">
+            {% if current_user and current_user.is_authenticated %}
+            <li><a href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+                <li><a href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li><a href="{{ url_for('auth.register') }}"> Register</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+            {% endif %}
+          </ul>
+        </div>
       </div>
     </nav>
 
     {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      {% for message in messages %}
-         <div class="container">
-         <div class="row">
-         <div class="alert alert-info" role="alert">{{ message }}</div>
-         </div>
-         </div>
-      {% endfor %}
-      {% endif %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="container">
+      <div class="row">
+        <div class="alert alert-info alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+          {{ message }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
 
-    <hr>
     <footer class="footer">
-    <div class="container theme-showcase" role="main">
-      <div class="row">
-        <div class="col-xs-6 col-md-4">
-          <a class="text-muted" href="https://github.com/lucyparsons/OpenOversight"><img src="{{url_for('static', filename='images/github.ico')}}"/>OpenOversight is hosted on GitHub.</a>
-        </div>
-        <div class="col-xs-6 col-md-4">
-          <a class="text-muted" href="https://lucyparsonslabs.com"><img src="{{url_for('static', filename='images/lplfavicon.png')}}"/>A Lucy Parsons Labs project.</a>
-        </div>
-        <div class="pull-right col-xs-6 col-md-4">
-          <a class="text-muted" href="https://twitter.com/lucyparsonslabs"><img src="{{url_for('static', filename='images/twitterfavicon.ico')}}"/>Follow @lucyparsonslabs on Twitter.</a>
+      <div class="container text-muted">
+        <div class="text-center center-block">
+          <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
+          <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
+          <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
+          <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
         </div>
       </div>
-      <div class="row">
-        <div class="col-xs-6 col-md-3"></div>
-        <div class="col-xs-6 col-md-6"><a class="text-muted" href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/>Send us documents or messages anonymously using our SecureDrop server.</a></div>
-        <div class="col-xs-6 col-md-3"></div>
+      <div class="container text-muted">
+        <div class="text-center center-block">
+          <a href="/privacy" class="btn">Privacy Policy</a>
+        </div>
       </div>
-    </div>
     </footer>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='/assets/js/vendor/jquery.min.js') }}"><\/script>')</script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
   </body>
 </html>

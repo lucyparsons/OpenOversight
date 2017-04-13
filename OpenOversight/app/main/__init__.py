@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-main = Blueprint('main', __name__)
+main = Blueprint('main', __name__)  # noqa
 
-from . import views
+from . import views  # noqa

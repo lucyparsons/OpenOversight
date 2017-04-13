@@ -7,11 +7,13 @@ import random
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.models import db
+
 app = create_app('development')
 db.app = app
 
 NUM_OFFICERS = app.config['NUM_OFFICERS']
 random.seed(app.config['SEED'])
+
 
 OFFICERS = [('IVANA', '', 'TINKLE'),
             ('SEYMOUR', '', 'BUTZ'),
@@ -28,7 +30,7 @@ def pick_birth_date():
 
 def pick_race():
     return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
-             'PACIFIC ISLANDER'])
+                          'PACIFIC ISLANDER'])
 
 
 def pick_gender():
@@ -69,7 +71,7 @@ def generate_officer():
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
         pd_id=1
-        )
+    )
 
 
 def build_assignment(officer):
@@ -115,6 +117,18 @@ def populate():
     db.session.add_all(faces)
     db.session.commit()
 
+    test_user = models.User(email='test@example.org',
+                            username='test_user',
+                            password='testtest',
+                            confirmed=True)
+    db.session.add(test_user)
+    db.session.commit()
+
+    test_units = [models.Unit(descrip='District 13'),
+                  models.Unit(descrip='Bureau of Organized Crime')]
+    db.session.add_all(test_units)
+    db.session.commit()
+
 
 def cleanup():
     """ Cleanup database"""
@@ -135,33 +149,40 @@ def cleanup():
     for face in faces:
         db.session.delete(face)
 
+    users = models.User.query.all()
+    for user in users:
+        db.session.delete(user)
+
+    units = models.Unit.query.all()
+    for unit in units:
+        db.session.delete(unit)
     # TODO: Reset primary keys on all these tables
     db.session.commit()
 
 
-if __name__=="__main__":
-   parser = argparse.ArgumentParser()
-   parser.add_argument("-p", "--populate", action='store_true',
-               help="populate the database with test data")
-   parser.add_argument("-c", "--cleanup", action='store_true',
-               help="delete all test data from the database")
-   args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--populate", action='store_true',
+                        help="populate the database with test data")
+    parser.add_argument("-c", "--cleanup", action='store_true',
+                        help="delete all test data from the database")
+    args = parser.parse_args()
 
-   if args.populate:
-       print("[*] Populating database with test data...")
-       try:
-           populate()
-           print("[*] Completed successfully!")
-       except Exception as e:
-           print("[!] Encountered an unknown issue, exiting.")
-           print(e)
-           sys.exit(1)
+    if args.populate:
+        print("[*] Populating database with test data...")
+        try:
+            populate()
+            print("[*] Completed successfully!")
+        except Exception as e:
+            print("[!] Encountered an unknown issue, exiting.")
+            print(e)
+            sys.exit(1)
 
-   if args.cleanup:
-       print("[*] Cleaning up database...")
-       try:
-           cleanup()
-           print("[*] Completed successfully!")
-       except:
-           print("[!] Encountered an unknown issue, exiting.")
-           sys.exit(1)
+    if args.cleanup:
+        print("[*] Cleaning up database...")
+        try:
+            cleanup()
+            print("[*] Completed successfully!")
+        except:
+            print("[!] Encountered an unknown issue, exiting.")
+            sys.exit(1)

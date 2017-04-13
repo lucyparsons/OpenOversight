@@ -1,5 +1,4 @@
 import os
-from os.path import expanduser
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -11,10 +10,7 @@ class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    # File Upload Settings
-    UNLABELLED_UPLOADS = 'uploads/'
-    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'mpeg', 'mp4'])
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     # pagination
     OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)
@@ -23,7 +19,26 @@ class BaseConfig(object):
     WTF_CSRF_ENABLED = True
     SECRET_KEY = 'changemeplzorelsehax'
 
-    NUM_OFFICERS = 15000
+    # Mail Settings
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    OO_MAIL_SUBJECT_PREFIX = '[OpenOversight]'
+    OO_MAIL_SENDER = 'OpenOversight <OpenOversight@gmail.com>'
+    # OO_ADMIN = os.environ.get('OO_ADMIN')
+
+    # AWS Settings
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
+
+    # Upload Settings
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
     SEED = 666
 
     @staticmethod
@@ -34,20 +49,22 @@ class BaseConfig(object):
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    NUM_OFFICERS = 15000
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    NUM_OFFICERS = 120
 
 
 class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
 
     @classmethod
-    def init_app(cls, app): # pragma: no cover
-        Config.init_app(app)
+    def init_app(cls, app):  # pragma: no cover
+        config.init_app(app)
 
 
 config = {

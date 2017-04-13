@@ -1,54 +1,72 @@
 {% extends "base.html" %}
+
 {% block content %}
 
-    <div class="container theme-showcase" role="main">
-        <h1>Label Officer Images</h1>
+<div class="container theme-showcase" role="main">
 
-        <p>We're looking for volunteers to help us sort through images! Email <a href="mailto:info@lucyparsonslabs.com">info@lucyparsonslabs.com</a>
-            to find out how to get started.</p>
-
-        <div class="page-header">
-            <h1>Tools for Volunteers</h1>
-        </div>
-        <p>If you're already signed up to review, then you can use the tools below.</p>
-
-        <div class="page-header">
-            <h2>Find an Officer's OpenOversight ID</h2>
-        </div>
-
-        <p>To link a submitted face with a given officer in the database, first you
-            need to find the Officer's OpenOversight ID.</p>
-        <p>Use the following
-            form to put in the details you can see in the image:</p>
-
-        <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
-            {{ form.hidden_tag() }}
-            <h4>Department: {{ form.dept }}</h4>
-            {% for error in form.dept.errors %}
-                <p><span style="color: red;">[{{ error }}]</span></p>
-            {% endfor %}
-
-            <h4>What is visible from the officer's name tag?</h4>
-            {{ form.name }}
-            {% for error in form.name.errors %}
-                <p><span style="color: red;">[{{ error }}]</span></p>
-            {% endfor %}
-
-            <h4>What is visible from the badge number?</h4>
-            {{ form.badge }}
-            {% for error in form.badge.errors %}
-                <p><span style="color: red;">[{{ error }}]</span></p>
-            {% endfor %}
-
-            <br><br>
-            <p>
-                <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
-            </p>
-        </form>
-
+    {% if current_user and current_user.is_authenticated %}
+    <div class="text-center frontpage-leads">
+      <h1><small>Volunteer</small></h1>
     </div>
 
-
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images') }}">
+          <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+          Image classification
+        </a>
+      </p>
+      <p>
+        Sort submitted images into those with and without officers.
+      </p>
     </div>
 
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data') }}">
+          <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+          Officer identification
+        </a>
+      </p>
+      <p>
+        Use our roster search to try and identify officers in submitted images.
+      </p>
+    </div>
+
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.get_tutorial') }}">
+          <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
+          Tutorial
+        </a>
+      </p>
+      <p>
+        New to working on images for OpenOversight? Or just need a refresher?
+      </p>
+    </div>
+
+    {% else %}
+
+      <div class="text-center frontpage-leads">
+        <h1><small>Volunteer</small></h1>
+        <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up!</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.register') }}">
+            Register
+          </a>
+        </p>
+      </div>
+
+      <div class="text-center frontpage-leads">
+        <p>If you're already a volunteer, log in:</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.login') }}">
+            Login
+          </a>
+        </p>
+      </div>
+
+    {% endif %}
+
+</div>
 {% endblock %}

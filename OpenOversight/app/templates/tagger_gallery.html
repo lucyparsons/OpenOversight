@@ -3,46 +3,80 @@
 
 <div class="container theme-showcase" role="main">
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Matching Officers</h1>
-            </div>
-            <div class="container">
-            {% include 'partials/roster_paginate.html' %}
-            {% for officer in officers.items %}
-                {% if officer.face.first() is none %}
-                    {% set officer_image = '/static/images/placeholder.png' %}
+  <h1 class="page-header">Matching Officers</h1>
+
+  {% include 'partials/roster_paginate.html' %}
+
+  <div id="myCarousel" class="carousel slide" data-ride="carousel">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+          {% for officer in officers.items %}
+           {% if loop.index == 1 %}
+          <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+           {% else %}
+          <li data-target="#myCarousel" data-slide-to="{{ loop.index }}"></li>
+           {% endif %}
+          {% endfor %}
+        </ol>
+        <div class="carousel-inner" role="listbox">
+        {% for officer in officers.items %}
+
+        {% if officer.face.first() is none %}
+          {% set officer_image = '/static/images/placeholder.png' %}
+        {% else %}
+          {% set officer_image = officer.face.first().image.filepath %}
+        {% endif %}
+        {% set assignment = officer.assignments.first() %}
+
+        {% if loop.index == 1 %}
+          <div class="item active">
+        {% else %}
+          <div class="item">
+        {% endif %}
+          <div class="container">
+            <div class="carousel-caption">
+              <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+                    {{ officer.first_name.lower()|title }}
+                    {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
+                    {{ officer.last_name.lower()|title }}</a></h1>
+                  <h4 class="text-success"><b>OpenOversight ID: {{ officer.id }}</b></h4>
+                  <h5 class="text-muted">Race: {{ officer.race }}</h5>
+                  <h5 class="text-muted">Gender: {{ officer.gender }}</h5>
+                  <h5 class="text-muted">Current badge number: #{{ assignment.star_no }}</h5>
+
+
+              <div align="center">
+                {% if officer.face.first().face_position_x %}
+                <div class="img-responsive thumbnail text-center"
+                     style="background-image: url({{ officer_image }});
+                            background-repeat: no-repeat;
+                            background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
+                            width: {{ officer.face.first().face_width }}px;
+                            height: {{ officer.face.first().face_height }}px;">
+                </div>
                 {% else %}
-                    {% set officer_image = officer.face.first().image.filepath %}
+                <img src="{{ officer_image }}" class="img-responsive thumbnail">
                 {% endif %}
-            {% set assignment = officer.assignments.first() %}
-            <div class="col-md-3 col-sm-4 col-xs-12">
-                <div class="thumbnail_container">
-                <div class="row">
-                <h4>{{ officer.first_name.lower()|title }}
-                {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-                {{ officer.last_name.lower()|title }} <small>#{{ assignment.star_no }}</small></h4>
-                <h5>OpenOversight ID: {{ officer.id }}</h5>
-                <h5>Race: {{ officer.race }}</h5>
-                <h5>Gender: {{ officer.gender }}</h5>
+              </div>
 
-                </div>
-                <img class="img-responsive thumbnail" src="{{ officer_image }}" alt="Officer face">
-                </div>
-                <br><br><br><br>
+              </div>
             </div>
-            {% endfor %}
-            </div>
-
-            {% if officers.items|length == 0 %}
-            <div class="container">
-            <h4>Sorry, no officers found in the roster. <a href="/label">Try again</a></h4>
-            </div>
-            {% endif %}
-
+          </div>
+          {% endfor %}
         </div>
+        <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+          <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+          <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+  </div>
+  {% if officers.items|length == 0 %}
+    <h4>Sorry, no officers found in the roster. <a href="{{ url_for('main.get_ooid') }}">Try again</a></h4>
+  {% endif %}
 
 </div>
-</div>
+
 {% endblock %}

@@ -3,33 +3,31 @@
 
     <div class="container theme-showcase" role="main">
 
-      <!-- Main jumbotron for a primary marketing message or call to action -->
-      <div class="jumbotron">
-        <h1>OpenOversight</h1>
-        <p>OpenOversight is a Lucy Parsons Labs project to improve police accountability using public and crowdsourced data. We maintain a database of police officers and provide a digital gallery that allows the public to identify the name and badge number of a police officer they would like to file a complaint about. <a href="/find"><button type="button" class="btn btn-info"">Try it</button></a></p>
+      <div class="text-center frontpage-leads">
+        <h1><small>Find a Police Officer</small></h1>
+        <a href="/find" id="cpd" class="btn btn-lg btn-primary">
+            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+            Chicago Police Department</a>
+        <!--<a href="" class="btn btn-lg btn-primary">Add a Department</a>-->
       </div>
 
-      <div class="jumbotron">
-      <span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span><br>
-      <b>Note:</b> OpenOversight is currently in public beta. Please submit any issues or suggestions you have for us on <a href="https://github.com/lucyparsons/OpenOversight">GitHub</a>, <a href="https://twitter.com/lucyparsonslabs">Twitter</a>, or by email to <a href="info@lucyparsonslabs.com">info@lucyparsonslabs.com</a>. We are currently requesting pictures of Chicago Police Department officers in uniform with their name or badge number displayed for our database. We are also very interested in any data corrections or inaccuracies you would like to report and correct.</div>
+      <div class="text-center frontpage-leads">
+        <h1><small>Volunteer</small></h1>
 
+        <p>
+          <a class="btn btn-lg btn-primary" href="/submit">
+            <span class="glyphicon glyphicon-camera" aria-hidden="true"></span> Upload Officer Images
+          </a>
+        </p>
 
-      <div class="page-header">
-        <h1>Find an Officer</h1>
+        <p>
+          <a class="btn btn-lg btn-primary" href="/label">
+            <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Sort and Identify Officer Images
+          </a>
+        </p>
+
       </div>
-      <p>
-        <a href="/find"><button type="button" class="btn btn-lg btn-primary">Get Started</button></a>
-      </p>
-     
-      <div class="page-header">
-        <h1>Contribute Images or Get Involved</h1>
-      </div>
-      <p> 
-        <a href="https://script.google.com/macros/s/AKfycbyNg7oVOPSFBHZkncDn7Z23qbJFWQZM1QXcEE0TO2Txa6wB8tU/exec">
-            <button type="button" class="btn btn-lg btn-primary">Submit Images</button></a>
-      </p>
-      <p> 
-        <a href="/label"><button type="button" class="btn btn-lg btn-primary">Put me to Work!</button></a>
-      </p>
 
-    {% endblock %}
+    </div>
+
+{% endblock %}

@@ -8,6 +8,48 @@ We distribute a `requirements.txt` file listing the things the application depen
 
 You may also need the `libpq-dev` package if psycopg2 fails to install.
 
+# S3 Image Hosting
+
+We host images on S3, which allows for easy, access-controlled programmatic uploading.
+
+You'll need to create an AWS account, if you don't already have one. Then, you'll need to create an S3 bucket, and remember its name. Finally, you'll need to create an IAM user, and create access credentials (an IAM access key and its corresponding secret) that you'll populate in the .env file on the server. Finally, you'll need to create an IAM policy and attach it to the IAM user, giving it permission to upload to that S3 bucket:
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1486969693000",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::bucketname",
+                "arn:aws:s3:::bucketname/*"
+            ]
+        }
+    ]
+}
+```
+
+For the officer identification UI to work, you'll need to create a CORS policy for the S3 bucket used with OpenOversight. In the AWS UI, this is done by navigating to the listing of buckets, clicking on the name of your bucket, and choosing the Permissions tab, and then "CORS configuration". Since we're not doing anything fancier than making a web browser GET it, we can just use the default policy:
+
+```
+<CORSConfiguration>
+	<CORSRule>
+		<AllowedOrigin>*</AllowedOrigin>
+		<AllowedMethod>GET</AllowedMethod>
+		<MaxAgeSeconds>3000</MaxAgeSeconds>
+		<AllowedHeader>Authorization</AllowedHeader>
+	</CORSRule>
+</CORSConfiguration>
+```
+
+If you don't click "Save" on that policy, however, the policy will not actually be applied.
+
 # Webserver Configuration
 
 The anonymity and security of your users is extremely important. Therefore we *highly* recommend using HTTPS on your entire application (you can use Let's Encrypt for free certificates) and you should test your application using the Tor Browser Bundle. Since nginx will run as a reverse proxy, you will need to add additional rules for the proxy headers to reach gunicorn. An example configuration is below but you should note that your relative paths will be different (especially the `snippets/` files).
@@ -43,6 +85,7 @@ server {
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                
                 proxy_connect_timeout 300s;
                 proxy_read_timeout 300s;
+                client_max_body_size 20M;
         }
 }
 ```
@@ -56,9 +99,13 @@ We configure the database by setting a .env file in the OpenOversight directory 
 ```
 SQLALCHEMY_DATABASE_URI="postgresql://openoversight:terriblepassword@localhost/openoversight-dev"
 SECRET_KEY=terriblecsrftoken
+S3_BUCKET_NAME=bucketname-in-the-account-you-created
+AWS_ACCESS_KEY_ID=<access key from AWS>
+AWS_SECRET_ACCESS_KEY=<secret key from AWS>
 ```
 The parts of the database URI are the user, password, server, and database respectively used to connect to the application.
 The CSRF token should be a random string of reasonable length. 'terriblecsrftoken' is, of course, a terrible CSRF token.
+For more details about the S3 and AWS settings, see above. Please raise an issue on Github if you have any questions about the process.
 
 # Systemd
 

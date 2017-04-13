@@ -1,10 +1,10 @@
 # Contributing Guide
 
-First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback. 
+First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.
 
 ## Submitting a PR
 
-When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit. 
+When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
 
 ## Development Environment
 
@@ -18,7 +18,14 @@ This creates a new, pristine virtual machine and provisions it to be an almost-c
 
 `vagrant ssh`
 
-The app, as provisoined, is running under gunicorn, which means that it does not dynamically reload your changes.
+The provisioning step creates a virtual environment (venv) in `~/oovirtenv`. If you will be running lots of python-related commands, you can 'activate' the virtual environment (override the built-in python and pip commands and add pytest and fab to your path) by activating it:
+```
+vagrant@vagrant-ubuntu-trusty-64:~$ source /home/vagrant/oovirtenv/bin/activate
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$
+```
+When this is done, you no longer need to preface python commands (as below) with `~/oovirtenv/bin`.
+
+The app, as provisioned, is running under gunicorn, which means that it does not dynamically reload your changes.
 
 If you run the app in debug mode, you can see these changes take effect on every update, but certain changes will kill the server in a way some of us find really irritating. To do this:
 
@@ -27,8 +34,8 @@ If you run the app in debug mode, you can see these changes take effect on every
 $ sudo service gunicorn stop
  * Stopping Gunicorn workers
  [oo] *
-vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/
-vagrant@vagrant-ubuntu-trusty-64:/vagrant$ ~/oovirtenv/bin/python ./run.py
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver
  * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
@@ -40,33 +47,79 @@ You can access your PostgreSQL development database via psql using:
 
 with the password `terriblepassword`.
 
+
 The provisioning step already does this, but in case you need it, in the `/vagrant/OpenOversight` directory, there is a script to create the database:
 
-`python create_db.py`
-
-If the database doesn't already exist, `create_db.py` will set it up and store the version in a new folder `db_repository`. 
+`~/oovirtenv/bin/python create_db.py`
 
 In the event that you need to create or delete the test data, you can do that with
-`python test_data.py --populate`
+`~/oovirtenv/bin/python test_data.py --populate` to create the data
 or
-`python test_data.py --cleanup`
+`~/oovirtenv/bin/python test_data.py --cleanup` to delete the data
+
+## OpenOversight Management Interface
+
+In addition to running the development server, `manage.py` (OpenOversight's management interface) can be used to do the following:
+
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py
+usage: manage.py [-?]
+                 {shell,makemigrations,migrate,downgrade_db,runserver,make_admin_user}
+                 ...
+
+positional arguments:
+  {shell,makemigrations,migrate,downgrade_db,runserver,make_admin_user}
+    shell               Runs a Python shell inside Flask application context.
+    makemigrations      Make database migrations
+    migrate             Migrate/upgrade the database
+    downgrade_db        Downgrade the database
+    runserver           Runs the Flask development server i.e. app.run()
+    make_admin_user     Add confirmed administrator account
+
+optional arguments:
+  -?, --help            show this help message and exit
+
+```
+
+In development, you can make an administrator account without having to confirm your email:
+
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py make_admin_user
+Username: redshiftzero
+Email: jen@redshiftzero.com
+Password:
+Type your password again:
+Administrator redshiftzero successfully added
+```
 
 ## Running Unit Tests
 
- Run tests with `nose`:
+ Run tests with `pytest`:
 
-```~/oovirtenv/bin/python ~/oovirtenv/bin/nosetests```
+`(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ pytest`
 
-Note: One could put `test_data.populate()` into `setUp` and `test_data.cleanup()` into `tearDown` but in this case we want the data to stay in the database so that we can play with the web application so we should just have vagrant run that during the provisioning of the development VM.
+## Linting / Style Checks
+
+ `flake8` is a tool for automated linting and style checks. Be sure to run `flake8` and fix any errors before submitting a PR.
 
 ## Migrating the Database
 
-If you e.g. add a new column or table, you'll need to migrate the database. You can use:
+If you e.g. add a new column or table, you'll need to migrate the database.
 
-`python migrate_db.py`
+You can use the management interface to first generate migrations:
 
-to do this.
-`python upgrade_db.py` and `python downgrade_db.py` can also be used as necessary. Note that I followed [this tutorial](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database) to set this up.
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py makemigrations
+New migration saved as /vagrant/OpenOversight/app/db_repository/versions/002_migration.py
+```
+
+And then you should inspect/edit the migrations. You can then apply the migrations:
+
+```
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py migrate
+```
+
+You can also downgrade the database using `python manage.py downgrade_db`.
 
 ## Changing the Development Environment
 

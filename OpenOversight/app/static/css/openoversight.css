@@ -1,0 +1,154 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  margin-bottom: 100px;
+  padding-top: 70px;
+  padding-bottom: 100px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 100px;
+}
+
+.social:hover {
+     -webkit-transform: scale(1.1);
+     -moz-transform: scale(1.1);
+     -o-transform: scale(1.1);
+ }
+ .social {
+     -webkit-transform: scale(0.8);
+     /* Browser Variations: */
+
+     -moz-transform: scale(0.8);
+     -o-transform: scale(0.8);
+     -webkit-transition-duration: 0.5s;
+     -moz-transition-duration: 0.5s;
+     -o-transition-duration: 0.5s;
+ }
+
+.frontpage-leads {
+  margin-top: 5%;
+  margin-bottom: 10%;
+}
+
+.subtle-pad {
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+/*
+    Multicoloured Hover Variations
+*/
+
+ #social-fb:hover {
+     color: #3B5998;
+ }
+ #social-tw:hover {
+     color: #4099FF;
+ }
+ #social-gp:hover {
+     color: #d34836;
+ }
+ #social-em:hover {
+     color: #f39c12;
+ }
+
+ .theme-dropdown .dropdown-menu {
+     position: static;
+     display: block;
+     margin-bottom: 20px;
+ }
+
+ .theme-showcase > p > .btn {
+     margin: 5px 0;
+ }
+
+ .theme-showcase .navbar .container {
+     width: auto;
+ }
+
+ .glyphicon {
+     font-size: 30px;
+ }
+
+ .thumbnail_container {
+     float:left;
+     max-height:300px;
+     max-width:80%;
+     padding-bottom: 210%;
+     margin:25px;
+ }
+
+ .thumbnail img {
+     max-height:80%;
+     max-width:80%;
+ }
+
+ /* Carousel base class */
+ .carousel {
+   min-height: 700px;
+   margin-bottom: 50px;
+ }
+ /* Since positioning the image, we need to help out the caption */
+ .carousel-caption {
+   display:block;
+   top: 0;
+   bottom: auto;
+   z-index: 10;
+   text-shadow: none;
+ }
+
+ /* Declare heights because of positioning of img element */
+ .carousel .item {
+   top: 0;
+   bottom: auto;
+   min-height: 700px;
+   margin-top: 50px;
+ }
+ .carousel-inner > .item > img {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+ }
+
+ /* Limit image width to avoid overflow the cropper container */
+ img {
+   max-width: 100%;
+ }
+
+ meter {
+     margin: 0 auto 1em;
+     width: 100%;
+     height: 0.5em;
+ }
+
+/* Password strength */
+
+ meter[value="1"].meter::-webkit-meter-optimum-value { background: red; }
+ meter[value="2"].meter::-webkit-meter-optimum-value { background: red; }
+ meter[value="3"].meter::-webkit-meter-optimum-value { background: yellow; }
+ meter[value="4"].meter::-webkit-meter-optimum-value { background: orange; }
+ meter[value="5"].meter::-webkit-meter-optimum-value { background: green; }
+ meter[value="1"].meter::-moz-meter-bar { background: red; }
+ meter[value="2"].meter::-moz-meter-bar { background: red; }
+ meter[value="3"].meter::-moz-meter-bar { background: yellow; }
+ meter[value="4"].meter::-moz-meter-bar { background: orange; }
+ meter[value="5"].meter::-moz-meter-bar { background: green; }
+ meter.goodmeter::-webkit-meter-optimum-value { background: green; }
+ meter.goodmeter::-moz-meter-bar { background: green; }
+ meter.badmeter::-moz-meter-bar { background: red; }
+ meter.badmeter::-webkit-meter-optimum-value { background: red; }
+
+ .alert-info {
+     background-image:none;
+     background-repeat: repeat-x;
+     border-color: #5bc0de;
+     background-color: #5bc0de;
+ }

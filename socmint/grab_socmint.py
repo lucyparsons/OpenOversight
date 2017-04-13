@@ -1,6 +1,7 @@
 import subprocess
 from tqdm import tqdm
 
+
 def main():
     list_of_monitored_accts = ['ChicagoCAPS02', 'ChicagoCAPS03',
                                'Chicago_Police', 'ChicagoCAPS01',
@@ -19,9 +20,10 @@ def main():
     for account in tqdm(list_of_monitored_accts):
         print('[*] Scraping {}'.format(account))
         subprocess.call(['python3', 'src/run.py', '--num', '1000000',
-                      '--retweets', '--replies', account])
+                         '--retweets', '--replies', account])
 
     return None
+
 
 if __name__ == '__main__':
     main()

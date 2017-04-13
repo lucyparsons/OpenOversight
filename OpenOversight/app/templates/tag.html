@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" role="main">
+
+  <div class="page-header">
+    <h1>Tag {{ face.id }} Detail</h1>
+  </div>
+
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6 col-md-4">
+      <div style="background-image: url({{ path }});
+                  background-repeat: no-repeat;
+                  background-position: -{{ face.face_position_x }}px -{{ face.face_position_y }}px;
+                  width: {{ face.face_width }}px;
+                  height: {{ face.face_height }}px;">
+      </div>
+      <br>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail">
+        <div class="caption">
+          <h3>Image Cutout</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>Image ID</b></td>
+                <td><a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">
+                    {{ face.image.id }}</a></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Officer</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td><b>OpenOversight ID</b></td>
+                <td> <a href="{{ url_for('main.officer_profile', officer_id=face.officer_id) }}">
+                  {{ face.officer_id }}</a> </td>
+              </tr>
+              <tr>
+                <td><b>Tagged by user</b></td>
+                <td> <a href="{{ url_for('main.profile', username=face.user.username ) }}">
+                  {{ face.user.username }}</a> </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {% if current_user.is_administrator %}
+          <h3>Remove tag <small>Admin only</small></h3>
+          <p>
+            <form action="{{ url_for('main.delete_tag', tag_id=face.id) }}" method="post">
+              <button type="submit" name="action" class="btn btn-primary">
+                Delete tag
+              </button>
+            </form>
+          </p>
+          <h3>Add additional tags <small>Admin only</small></h3>
+          <p>
+              <a href="{{ url_for('main.label_data', image_id=face.image.id) }}">
+                <button class="btn btn-primary">
+                  Tag this image
+                </button>
+              </a>
+            </form>
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
