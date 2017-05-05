@@ -121,7 +121,7 @@ User=nginx
 Group=nginx
 WorkingDirectory=/home/nginx/oovirtenv/OpenOversight/OpenOversight
 Environment="PATH=/home/nginx/oovirtenv/bin"
-ExecStart=/usr/local/bin/gunicorn -w 4 -b 127.0.0.1:4000 --timeout 90 app:app 
+ExecStart=/home/nginx/oovirtenv/bin/gunicorn -w 4 -b 127.0.0.1:4000 --timeout 90 app:app
 
 [Install]
 WantedBy=multi-user.target
