@@ -4,41 +4,31 @@
 <div class="container" role="main">
 
 
-  <div class="page-header">
-    <h1>OpenOversight Volunteer Leaderboard</h1>
+  <div class="text-center">
+    <h1><small>Volunteer Leaderboard</small></h1>
   </div>
 
   <div class="row">
-    <div class="col-sm-6 col-md-6">
-    <h2>Top Users by Number of Images Sorted</h2>
-      <table class="table table-hover">
-        <tbody>
-          {% for sorter in top_sorters %}
-          <tr>
-            <td><a href="{{ url_for( 'main.profile', username=sorter[0].username ) }}">
-                 {{ sorter[0].username }}</a></td>
-            <td>{{ sorter[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="text-center">
+    <h2><small>Top Users by Number of Images Sorted</small></h2>
+      {% for sorter in top_sorters %}
+        {{ loop.index }}.
+        <a href="{{ url_for( 'main.profile', username=sorter[0].username ) }}">
+             {{ sorter[0].username }}</a>
+        - {{ sorter[1] }}
+      {% endfor %}
     </div>
   </div>
 
   <div class="row">
-    <div class="col-sm-6 col-md-6">
-    <h2>Top Users by Number of Officers Found</h2>
-      <table class="table table-hover">
-        <tbody>
-          {% for tagger in top_taggers %}
-          <tr>
-            <td><a href="{{ url_for( 'main.profile', username=tagger[0].username ) }}">
-                 {{ tagger[0].username }}</a></td>
-            <td>{{ tagger[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="text-center">
+    <h2><small>Top Users by Number of Officers Found</small></h2>
+      {% for tagger in top_taggers %}
+        {{ loop.index }}.
+        <a href="{{ url_for( 'main.profile', username=tagger[0].username ) }}">
+             {{ tagger[0].username }}</a>
+        - {{ tagger[1] }}
+      {% endfor %}
     </div>
   </div>
 
