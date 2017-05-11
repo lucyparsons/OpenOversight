@@ -39,19 +39,19 @@ $(document).bind('keydown', 's', function(){
           <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
             <button type="submit" name="action" id="answer-no" class="btn btn-lg btn-danger">
               <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
-              No
+              <u>N</u>o
             </button>
           </form>
         </div>
         <div class="col-sm-4 text-center">
           <a href="{{ url_for('main.sort_images') }}" id="answer-skip" class="btn btn-lg btn-primary" role="button">
-            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a>
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
         </div>
         <div class="col-sm-4 text-center">
           <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
             <button type="submit" name="action" id="answer-yes" class="btn btn-lg btn-success">
               <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-              Yes!
+              <u>Y</u>es!
             </button>
           </form>
         </div>
