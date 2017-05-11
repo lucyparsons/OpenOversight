@@ -13,7 +13,7 @@
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
 
-        {{ wtf.form_field(form.email) }}
+        {{ wtf.form_field(form.email, autofocus="autofocus") }}
         {{ wtf.form_field(form.password) }}
         {{ wtf.form_field(form.remember_me) }}
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
