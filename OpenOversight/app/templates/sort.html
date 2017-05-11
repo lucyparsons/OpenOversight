@@ -35,14 +35,6 @@ $(document).bind('keydown', 's', function(){
       </div>
 
       <div class="row">
-        <div class="frontpage-leads">
-          <div>
-            <img class="center-block img-responsive" src="{{ path }}" alt="Picture to be sorted">
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
         <div class="col-sm-4 text-center">
           <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
             <button type="submit" name="action" id="answer-no" class="btn btn-lg btn-danger">
@@ -62,6 +54,14 @@ $(document).bind('keydown', 's', function(){
               Yes!
             </button>
           </form>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="frontpage-leads">
+          <div>
+            <img class="center-block img-responsive" src="{{ path }}" alt="Picture to be sorted">
+          </div>
         </div>
       </div>
 
