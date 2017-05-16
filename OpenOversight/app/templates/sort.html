@@ -1,5 +1,27 @@
 {% extends "base.html" %}
 
+{% block head %}
+<script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>
+{% endblock %}
+
+
+{% block js_footer %}
+<script type="text/javascript">
+$(document).bind('keydown', 'y', function(){
+  $('#answer-yes').click();
+});
+
+$(document).bind('keydown', 'n', function(){
+  $('#answer-no').click();
+});
+
+$(document).bind('keydown', 's', function(){
+  window.location = $('#answer-skip').attr('href');
+});
+</script>
+{% endblock %}
+
+
 {% block content %}
 
 <div class="container theme-showcase" role="main">
@@ -13,33 +35,33 @@
       </div>
 
       <div class="row">
-        <div class="frontpage-leads">
-          <div>
-            <img class="center-block img-responsive" src="{{ path }}" alt="Picture to be sorted">
-          </div>
+        <div class="col-sm-4 text-center">
+          <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
+            <button type="submit" name="action" id="answer-no" class="btn btn-lg btn-danger">
+              <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
+              <u>N</u>o
+            </button>
+          </form>
+        </div>
+        <div class="col-sm-4 text-center">
+          <a href="{{ url_for('main.sort_images') }}" id="answer-skip" class="btn btn-lg btn-primary" role="button">
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
+        </div>
+        <div class="col-sm-4 text-center">
+          <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
+            <button type="submit" name="action" id="answer-yes" class="btn btn-lg btn-success">
+              <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
+              <u>Y</u>es!
+            </button>
+          </form>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-sm-4 text-center">
-          <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
-            <button type="submit" name="action" class="btn btn-lg btn-danger">
-              <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
-              No
-            </button>
-          </form>
-        </div>
-        <div class="col-sm-4 text-center">
-          <a href="{{ url_for('main.sort_images') }}" class="btn btn-lg btn-primary" role="button">
-            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a>
-        </div>
-        <div class="col-sm-4 text-center">
-          <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
-            <button type="submit" name="action" class="btn btn-lg btn-success">
-              <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-              Yes!
-            </button>
-          </form>
+        <div class="frontpage-leads">
+          <div>
+            <img class="center-block img-responsive" src="{{ path }}" alt="Picture to be sorted">
+          </div>
         </div>
       </div>
 

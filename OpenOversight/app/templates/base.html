@@ -26,6 +26,7 @@
     <script src="{{ url_for('static', filename=item) }}"></script>
     {% endfor %}
 
+    {% block head %}{% endblock %}
   </head>
 
   <body role="document">
@@ -106,5 +107,7 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+    {% block js_footer %}{% endblock %}
   </body>
 </html>
