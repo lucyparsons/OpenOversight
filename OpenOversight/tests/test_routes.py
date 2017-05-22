@@ -193,6 +193,8 @@ def test_user_can_access_profile(mockdata, client, session):
             follow_redirects=True
         )
         assert 'test_user' in rv.data
+        # User email should not appear
+        assert 'User Email' not in rv.data
         # Toggle button should not appear for this non-admin user
         assert 'Toggle (Disable/Enable) User' not in rv.data
 
@@ -206,6 +208,8 @@ def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
             follow_redirects=True
         )
         assert 'test_user' in rv.data
+        # User email should appear
+        assert 'User Email' in rv.data
         # Admin should be able to see the Toggle button
         assert 'Toggle (Disable/Enable) User' in rv.data
 
@@ -385,7 +389,7 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'A confirmation email has been sent to you by email.' in rv.data
+        assert 'A confirmation email has been sent to you.' in rv.data
 
 
 def test_user_cannot_register_with_weak_password(mockdata, client, session):
@@ -400,7 +404,7 @@ def test_user_cannot_register_with_weak_password(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'A confirmation email has been sent to you by email.' not in rv.data
+        assert 'A confirmation email has been sent to you.' not in rv.data
 
 
 def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
@@ -412,7 +416,7 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'A new confirmation email has been sent to you by email.' in rv.data
+        assert 'A new confirmation email has been sent to you.' in rv.data
 
 
 def test_user_can_get_password_reset_token_sent(mockdata, client, session):

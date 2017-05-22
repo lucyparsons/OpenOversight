@@ -10,7 +10,7 @@ This project is written and maintained by [@lucyparsonslabs](https://twitter.com
 
 ## Note to Law Enforcement
 
-To Illinois law enforcement: This project does not perform facial recognition and is thus in compliance with the Biometric Information Privacy Act. Requests/questions regarding this project from those affiliated with law enforcement should be directed to our legal representation at [legal@lucyparsonslabs.com](mailto:legal@lucyparsonslabs.com). 
+Please contact our legal representation with requests, questions, or concerns of a legal nature by emailing [legal@lucyparsonslabs.com](mailto:legal@lucyparsonslabs.com). 
 
 ## Issues
 
@@ -26,6 +26,14 @@ vagrant ssh
 ```
 
 And open `http://localhost:3000` in your favorite browser!
+
+If you need to log in, use the auto-generated test account
+credentials:
+
+```
+Email: test@example.org
+Password: testtest
+```
 
 Please see `CONTRIB.md` for the full developer setup instructions.
 

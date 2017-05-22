@@ -46,6 +46,13 @@
             </form>
           </p>
           {% endif %}
+
+          {% if current_user.is_administrator %}
+          <h3>User Email</h3>
+          <p>
+            <code>{{ user.email }}</code>
+          </p>
+          {% endif %}
         </div>
       </div>
     </div>
