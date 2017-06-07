@@ -109,5 +109,12 @@
     require     => Exec['set up database'],
   }
 
+  file {'/tmp/openoversight.log':
+    ensure  => present,
+    owner   => $system_user,
+    group   => $system_user,
+    mode    => '0644',
+  }
+
   exec{'/usr/bin/apt-get update': }
   Exec['/usr/bin/apt-get update'] -> Package <| |>
