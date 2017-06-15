@@ -16,6 +16,7 @@
         <a href="{{ url_for( 'main.profile', username=sorter[0].username ) }}">
              {{ sorter[0].username }}</a>
         - {{ sorter[1] }}
+        <br />
       {% endfor %}
     </div>
   </div>
@@ -28,6 +29,7 @@
         <a href="{{ url_for( 'main.profile', username=tagger[0].username ) }}">
              {{ tagger[0].username }}</a>
         - {{ tagger[1] }}
+        <br />
       {% endfor %}
     </div>
   </div>
