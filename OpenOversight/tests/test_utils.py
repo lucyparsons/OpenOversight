@@ -80,6 +80,10 @@ def test_s3_url(mockdata):
     assert 'te/st' in url
 
 
+def test_user_can_submit_allowed_file(mockdata):
+    for file_to_submit in ['valid_photo.png', 'valid_photo.jpg', 'valid.photo.jpg', 'valid_photo.PNG', 'valid_photo.JPG']: 
+        assert OpenOversight.app.utils.allowed_file(file_to_submit) is True
+
 def test_user_cannot_submit_malicious_file(mockdata):
     file_to_submit = 'passwd'
     assert OpenOversight.app.utils.allowed_file(file_to_submit) is False
