@@ -16,7 +16,7 @@
   }
   $development = true
 
-  $geckodriver_version = 'v0.13.0'
+  $geckodriver_version = 'v0.17.0'
   $geckodriver_url = "https://github.com/mozilla/geckodriver/releases/download/${geckodriver_version}/geckodriver-${geckodriver_version}-linux64.tar.gz"
 
   $virtualenv = "/home/${system_user}/oovirtenv"
@@ -107,6 +107,13 @@
     path        => "${virtualenv}/bin",
     user        => $system_user,
     require     => Exec['set up database'],
+  }
+
+  file {'/tmp/openoversight.log':
+    ensure  => present,
+    owner   => $system_user,
+    group   => $system_user,
+    mode    => '0644',
   }
 
   exec{'/usr/bin/apt-get update': }
