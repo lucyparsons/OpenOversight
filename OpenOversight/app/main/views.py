@@ -23,7 +23,7 @@ from .forms import (FindOfficerForm, FindOfficerIDForm,
 from ..models import db, Image, User, Face, Officer, Assignment
 
 # Ensure the file is read/write by the creator only
-SAVED_UMASK = os.umask(0077)
+SAVED_UMASK = os.umask(0o077)
 
 
 def redirect_url(default='index'):
