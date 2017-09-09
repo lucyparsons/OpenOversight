@@ -9,6 +9,15 @@ from . import login_manager
 db = SQLAlchemy()
 
 
+class Department(db.Model):
+    __tablename__ = 'departments'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), index=True)
+
+    def __repr__(self):
+        return '<Department ID {}: {}>'.format(self.id, self.name)
+
+
 class Officer(db.Model):
     __tablename__ = 'officers'
 
