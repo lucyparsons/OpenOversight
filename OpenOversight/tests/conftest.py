@@ -165,6 +165,11 @@ def mockdata(session, request):
     session.add_all(assignments)
     session.add_all(faces)
 
+    department = models.Department(name='Springfield Police Department',
+                                   short_name='SPD')
+    session.add(department)
+    session.commit()
+
     test_user = models.User(email='jen@example.org',
                             username='test_user',
                             password='dog',
@@ -196,6 +201,7 @@ def mockdata(session, request):
         models.Image.query.delete()
         models.Face.query.delete()
         models.Unit.query.delete()
+        models.Department.query.delete()
         session.commit()
         session.flush()
 
