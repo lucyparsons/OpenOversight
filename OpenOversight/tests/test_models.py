@@ -1,7 +1,11 @@
 from pytest import raises
 import time
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
-                                      User, db)
+                                      User, db, Department)
+
+def test_department_repr(mockdata):
+    department = Department.query.first()
+    assert department.__repr__() == '<Department ID {}: {}>'.format(department.id, department.name)
 
 
 def test_officer_repr(mockdata):
