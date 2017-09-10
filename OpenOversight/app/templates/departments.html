@@ -15,11 +15,13 @@
 
     {% endfor %}
 
+    {% if current_user.is_administrator %}
     <a href="{{ url_for('main.add_department') }}"
           class="btn btn-primary" role="button">
         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
         Add New Department
     </a>
+    {% endif %}
 
   </div>
 
