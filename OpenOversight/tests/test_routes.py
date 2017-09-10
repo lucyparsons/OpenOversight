@@ -5,7 +5,7 @@ from urlparse import urlparse
 
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
-                                          FaceTag)
+                                          FaceTag, DepartmentForm)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
@@ -22,6 +22,7 @@ from OpenOversight.app.models import User, Face
     ('/privacy'),
     ('/submit'),
     ('/label'),
+    ('/departments'),
     ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
@@ -43,6 +44,7 @@ def test_routes_ok(route, client, mockdata):
     ('/image/tagged/1'),
     ('/tag/1'),
     ('/leaderboard'),
+    ('/department/new'),
     ('/auth/logout'),
     ('/auth/confirm/abcd1234'),
     ('/auth/confirm'),
@@ -606,3 +608,55 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client,
         )
 
         assert 'Passwords must match' in rv.data
+
+
+def test_admin_can_add_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = DepartmentForm(name='Test Police Department',
+                              short_name='TPD')
+
+        rv = client.post(
+            url_for('main.add_department'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in rv.data
+
+
+def test_admin_cannot_add_duplicate_police_department(mockdata, client,
+                                                      session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = DepartmentForm(name='Chicago Police Department',
+                              short_name='CPD')
+
+        rv = client.post(
+            url_for('main.add_department'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        # Try to add the same police department again
+        rv = client.post(
+            url_for('main.add_department'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'already exists' in rv.data
+
+
+def test_admin_can_see_department_list(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for('main.department_overview'),
+            follow_redirects=True
+        )
+
+        assert 'Departments' in rv.data
