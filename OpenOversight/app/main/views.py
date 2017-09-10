@@ -204,14 +204,15 @@ def add_department():
     form = DepartmentForm()
     if form.validate_on_submit():
         departments = [x[0] for x in db.session.query(Department.name).all()]
-        department = Department(name=form.name.data,
-                                short_name=form.short_name.data)
-        db.session.add(department)
-        if department.name not in departments:
+
+        if form.name.data not in departments:
+            department = Department(name=form.name.data,
+                                    short_name=form.short_name.data)
+            db.session.add(department)
             db.session.commit()
             flash('New department {} added to OpenOversight'.format(department.name))
         else:
-            flash('Department {} already exists'.format(department.name))
+            flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.department_overview'))
     else:
         return render_template('add_department.html', form=form)
