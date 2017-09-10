@@ -12,7 +12,8 @@ db = SQLAlchemy()
 class Department(db.Model):
     __tablename__ = 'departments'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), index=True)
+    name = db.Column(db.String(255), index=True, unique=True, nullable=False)
+    short_name = db.Column(db.String(100), unique=False, nullable=False)
 
     def __repr__(self):
         return '<Department ID {}: {}>'.format(self.id, self.name)
