@@ -120,6 +120,7 @@ def populate():
     test_user = models.User(email='test@example.org',
                             username='test_user',
                             password='testtest',
+                            is_administrator=True,
                             confirmed=True)
     db.session.add(test_user)
     db.session.commit()
