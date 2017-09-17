@@ -10,7 +10,7 @@ from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm)
-from OpenOversight.app.models import User, Face
+from OpenOversight.app.models import User, Face, Department
 
 
 @pytest.mark.parametrize("route", [
@@ -625,6 +625,11 @@ def test_admin_can_add_police_department(mockdata, client, session):
 
         assert 'New department' in rv.data
 
+        # Check the department was added to the database
+        department = Department.query.filter_by(
+            name='Test Police Department').one()
+        assert department.short_name == 'TPD'
+
 
 def test_admin_cannot_add_duplicate_police_department(mockdata, client,
                                                       session):
@@ -648,6 +653,12 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         )
 
         assert 'already exists' in rv.data
+
+        # Check that only one department was added to the database
+        # one() method will throw exception if more than one department found
+        department = Department.query.filter_by(
+            name='Chicago Police Department').one()
+        assert department.short_name == 'CPD'
 
 
 def test_admin_can_see_department_list(mockdata, client, session):
