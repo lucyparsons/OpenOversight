@@ -93,11 +93,16 @@ def populate():
     """ Populate database with test data"""
 
     # Add images from Springfield Police Department
-    image1 = models.Image(filepath='static/images/test_cop1.png')
-    image2 = models.Image(filepath='static/images/test_cop2.png')
-    image3 = models.Image(filepath='static/images/test_cop3.png')
-    image4 = models.Image(filepath='static/images/test_cop4.png')
-    image5 = models.Image(filepath='static/images/test_cop5.jpg')
+    image1 = models.Image(filepath='static/images/test_cop1.png',
+                          department_id=1)
+    image2 = models.Image(filepath='static/images/test_cop2.png',
+                          department_id=1)
+    image3 = models.Image(filepath='static/images/test_cop3.png',
+                          department_id=1)
+    image4 = models.Image(filepath='static/images/test_cop4.png',
+                          department_id=1)
+    image5 = models.Image(filepath='static/images/test_cop5.jpg',
+                          department_id=1)
 
     test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
