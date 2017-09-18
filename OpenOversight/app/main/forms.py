@@ -100,3 +100,15 @@ class AssignmentForm(Form):
     unit = QuerySelectField('unit', validators=[Optional()],
                             query_factory=unit_choices)
     star_date = DateField('star_date', validators=[Optional()])
+
+
+class DepartmentForm(Form):
+    name = StringField(
+        'Full name of police department, e.g. Chicago Police Department',
+        default='', validators=[Regexp('\w*'), Length(max=255), DataRequired()]
+    )
+    short_name = StringField(
+        'Shortened acronym for police department, e.g. CPD',
+        default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
+    )
+    submit = SubmitField(label='Add')

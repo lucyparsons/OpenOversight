@@ -55,6 +55,9 @@
             <li><a href="/about">About</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            {% if current_user.is_administrator %}
+            <li><a href="{{ url_for('main.department_overview') }}">Departments</a></li>
+            {% endif %}
             {% if current_user and current_user.is_authenticated %}
             <li><a href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a></li>
             <li class="dropdown">
