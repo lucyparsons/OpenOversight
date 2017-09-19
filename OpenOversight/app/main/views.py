@@ -337,16 +337,23 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
-    return render_template('submit.html')
+    departments = Department.query.all()
+    return render_template('submit_deptselect.html', departments=departments)
 
 
-@main.route('/upload', methods=['POST'])
+@main.route('/submit/department/<int:department_id>', methods=['GET', 'POST'])
+@limiter.limit('5/minute')
+def submit_department_images(department_id=1):
+    department = Department.query.filter_by(id=department_id).one()
+    return render_template('submit_department.html', department=department)
+
+
+@main.route('/upload/department/<int:department_id>', methods=['POST'])
 @limiter.limit('250/minute')
-def upload():
+def upload(department_id):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-
     original_filename = secure_filename(file_to_upload.filename)
     image_data = file_to_upload.read()
 
@@ -374,6 +381,7 @@ def upload():
         # Update the database to add the image
         new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
                           date_image_inserted=datetime.datetime.now(),
+                          department_id=department_id,
                           # TODO: Get the following field from exif data
                           date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
