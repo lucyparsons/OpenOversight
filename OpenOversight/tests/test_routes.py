@@ -21,6 +21,7 @@ from OpenOversight.app.models import User, Face, Department
     ('/tagger_find'),
     ('/privacy'),
     ('/submit'),
+    ('/submit/department/1'),
     ('/label'),
     ('/departments'),
     ('/officer/3'),
@@ -671,3 +672,16 @@ def test_admin_can_see_department_list(mockdata, client, session):
         )
 
         assert 'Departments' in rv.data
+
+
+def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
+                                                            session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for('main.submit_data'),
+            follow_redirects=True
+        )
+
+        assert 'Springfield Police Department' in rv.data

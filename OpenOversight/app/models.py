@@ -106,6 +106,8 @@ class Image(db.Model):
     user = db.relationship('User', backref='raw_images')
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
+    department_id = db.Column(db.Integer)
+
     def __repr__(self):
         return '<Image ID {}: {}>'.format(self.id, self.filepath)
 

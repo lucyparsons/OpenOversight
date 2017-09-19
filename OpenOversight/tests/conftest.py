@@ -142,10 +142,14 @@ def mockdata(session, request):
     SEED = current_app.config['SEED']
     random.seed(SEED)
 
-    image1 = models.Image(filepath='static/images/test_cop1.png')
-    image2 = models.Image(filepath='static/images/test_cop2.png')
-    image3 = models.Image(filepath='static/images/test_cop3.png')
-    image4 = models.Image(filepath='static/images/test_cop4.png')
+    image1 = models.Image(filepath='static/images/test_cop1.png',
+                          department_id=1)
+    image2 = models.Image(filepath='static/images/test_cop2.png',
+                          department_id=1)
+    image3 = models.Image(filepath='static/images/test_cop3.png',
+                          department_id=1)
+    image4 = models.Image(filepath='static/images/test_cop4.png',
+                          department_id=1)
 
     unit1 = models.Unit(descrip="test")
 
