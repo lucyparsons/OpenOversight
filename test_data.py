@@ -103,6 +103,11 @@ def populate():
     db.session.add_all(test_images)
     db.session.commit()
 
+    department = models.Department(name='Springfield Police Department',
+                                   short_name='SPD')
+    db.session.add(department)
+    db.session.commit()
+
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
     db.session.add_all(officers)
     db.session.commit()
@@ -120,6 +125,7 @@ def populate():
     test_user = models.User(email='test@example.org',
                             username='test_user',
                             password='testtest',
+                            is_administrator=True,
                             confirmed=True)
     db.session.add(test_user)
     db.session.commit()
@@ -136,6 +142,10 @@ def cleanup():
     faces = models.Face.query.all()
     for face in faces:
         db.session.delete(face)
+
+    departments = models.Department.query.all()
+    for dept in departments:
+        db.session.delete(dept)
 
     officers = models.Officer.query.all()
     for po in officers:

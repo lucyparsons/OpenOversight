@@ -19,11 +19,11 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment)
 from .forms import (FindOfficerForm, FindOfficerIDForm,
-                    FaceTag, AssignmentForm)
-from ..models import db, Image, User, Face, Officer, Assignment
+                    FaceTag, AssignmentForm, DepartmentForm)
+from ..models import db, Image, User, Face, Officer, Assignment, Department
 
 # Ensure the file is read/write by the creator only
-SAVED_UMASK = os.umask(0077)
+SAVED_UMASK = os.umask(0o077)
 
 
 def redirect_url(default='index'):
@@ -189,6 +189,33 @@ def classify_submission(image_id, contains_cops):
         flash('Unknown error occurred')
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
+
+
+@main.route('/departments')
+def department_overview():
+    departments = Department.query.all()
+    return render_template('departments.html', departments=departments)
+
+
+@main.route('/department/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_department():
+    form = DepartmentForm()
+    if form.validate_on_submit():
+        departments = [x[0] for x in db.session.query(Department.name).all()]
+
+        if form.name.data not in departments:
+            department = Department(name=form.name.data,
+                                    short_name=form.short_name.data)
+            db.session.add(department)
+            db.session.commit()
+            flash('New department {} added to OpenOversight'.format(department.name))
+        else:
+            flash('Department {} already exists'.format(form.name.data))
+        return redirect(url_for('main.department_overview'))
+    else:
+        return render_template('add_department.html', form=form)
 
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
