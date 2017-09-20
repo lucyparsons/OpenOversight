@@ -99,5 +99,15 @@ def make_admin_user():
                                                                   email))
 
 
+@manager.command
+def link_images_to_department():
+    # Link existing images to first department
+    from app.models import Image, db
+    images = Image.query.all()
+    for image in images:
+        image.department_id = 1
+    db.session.commit()
+
+
 if __name__ == "__main__":
     manager.run()
