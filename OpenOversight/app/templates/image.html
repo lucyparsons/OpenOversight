@@ -23,6 +23,10 @@
                 <td>{{ image.id }}</td>
               </tr>
               <tr>
+                <td><b>Department</b></td>
+                <td>{{ image.department.name }}</td>
+              </tr>
+              <tr>
                 <td><b>Date image inserted</b></td>
                 <td>{% if image.date_image_inserted %}
                        {{ image.date_image_inserted }}
