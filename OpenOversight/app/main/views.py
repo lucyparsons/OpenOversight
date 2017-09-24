@@ -18,9 +18,10 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment)
-from .forms import (FindOfficerForm, FindOfficerIDForm,
-                    FaceTag, AssignmentForm, DepartmentForm)
-from ..models import db, Image, User, Face, Officer, Assignment, Department
+from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
+                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
+from ..models import (db, Image, User, Face, Officer, Assignment, Department,
+                      Unit)
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -219,6 +220,55 @@ def add_department():
         return redirect(url_for('main.department_overview'))
     else:
         return render_template('add_department.html', form=form)
+
+
+@main.route('/officer/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_officer():
+    first_department = Department.query.first()
+    first_unit = Unit.query.first()
+    form = AddOfficerForm(department=first_department, unit=first_unit)
+    if form.validate_on_submit():
+        officer = Officer(first_name=form.first_name.data,
+                          last_name=form.last_name.data,
+                          middle_initial=form.middle_initial.data,
+                          race=form.race.data,
+                          gender=form.gender.data,
+                          birth_year=form.birth_year.data,
+                          employment_date=form.employment_date.data,
+                          department_id=form.department.data.id)
+        db.session.add(officer)
+        db.session.commit()
+        assignment = Assignment(officer_id=officer.id,
+                                star_no=form.star_no.data,
+                                rank=form.rank.data,
+                                unit=form.unit.data.id,
+                                star_date=form.employment_date.data)
+        db.session.add(assignment)
+        db.session.commit()
+        flash('New Officer {} added to OpenOversight'.format(officer.last_name))
+        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+    else:
+        return render_template('add_officer.html', form=form)
+
+
+@main.route('/unit/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_unit():
+    first_department = Department.query.first()
+    form = AddUnitForm(department=first_department)
+
+    if form.validate_on_submit():
+        unit = Unit(descrip=form.descrip.data,
+                    department_id=form.department.data.id)
+        db.session.add(unit)
+        db.session.commit()
+        flash('New unit {} added to OpenOversight'.format(unit.descrip))
+        return redirect(url_for('main.department_overview'))
+    else:
+        return render_template('add_unit.html', form=form)
 
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
