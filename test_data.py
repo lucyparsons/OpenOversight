@@ -70,7 +70,7 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        pd_id=1
+        department_id=1
     )
 
 
@@ -135,8 +135,8 @@ def populate():
     db.session.add(test_user)
     db.session.commit()
 
-    test_units = [models.Unit(descrip='District 13'),
-                  models.Unit(descrip='Bureau of Organized Crime')]
+    test_units = [models.Unit(descrip='District 13', department_id=1),
+                  models.Unit(descrip='Bureau of Organized Crime', department_id=1)]
     db.session.add_all(test_units)
     db.session.commit()
 
