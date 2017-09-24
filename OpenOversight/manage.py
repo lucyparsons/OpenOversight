@@ -74,5 +74,23 @@ def link_images_to_department():
     db.session.commit()
 
 
+@manager.command
+def link_officers_to_department():
+    """Links officers and units to first department"""
+    from app.models import Officer, Unit, db
+
+    officers = Officer.query.all()
+    units = Unit.query.all()
+
+    print "Linking officers and units to first department:"
+    for item in officers + units:
+        if not item.department_id:
+            sys.stdout.write(".")
+            item.department_id = 1
+        else:
+            print "Skipped! Object already assigned to department!"
+    db.session.commit()
+
+
 if __name__ == "__main__":
     manager.run()
