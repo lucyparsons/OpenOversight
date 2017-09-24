@@ -7,11 +7,15 @@ from sqlalchemy.sql.expression import cast
 
 from flask import current_app, url_for
 
-from .models import db, Officer, Assignment, Image, Face, User, Unit
+from .models import db, Officer, Assignment, Image, Face, User, Unit, Department
 
 
 def unit_choices():
     return db.session.query(Unit).all()
+
+
+def dept_choices():
+    return db.session.query(Department).all()
 
 
 def add_new_assignment(officer_id, form):
