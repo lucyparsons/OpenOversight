@@ -112,8 +112,9 @@
   file {'/tmp/openoversight.log':
     ensure  => present,
     owner   => $system_user,
-    group   => $system_user,
-    mode    => '0644',
+    group   => "www-data",
+    mode    => '0664',
+    require => Python::Virtualenv[$virtualenv],
   }
 
   exec{'/usr/bin/apt-get update': }
