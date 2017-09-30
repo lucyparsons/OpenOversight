@@ -1,6 +1,7 @@
 from getpass import getpass
 import imp
 from migrate.versioning import api
+import sys
 
 from flask_script import Manager, Server, Shell
 
@@ -101,11 +102,16 @@ def make_admin_user():
 
 @manager.command
 def link_images_to_department():
-    # Link existing images to first department
+    """Link existing images to first department"""
     from app.models import Image, db
     images = Image.query.all()
+    print "Linking images to first department:"
     for image in images:
-        image.department_id = 1
+        if not image.department_id:
+            sys.stdout.write(".")
+            image.department_id = 1
+        else:
+            print "Skipped! Department already assigned"
     db.session.commit()
 
 

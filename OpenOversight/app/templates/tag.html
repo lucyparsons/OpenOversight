@@ -36,6 +36,10 @@
                 <td><a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">
                     {{ face.image.id }}</a></td>
               </tr>
+              <tr>
+                <td><b>Department</b></td>
+                <td>{{ face.image.department.name }}</td>
+              </tr>
             </tbody>
           </table>
 
