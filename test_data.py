@@ -92,6 +92,11 @@ def assign_faces(officer, images):
 def populate():
     """ Populate database with test data"""
 
+    department = models.Department(name='Springfield Police Department',
+                                   short_name='SPD')
+    db.session.add(department)
+    db.session.commit()
+
     # Add images from Springfield Police Department
     image1 = models.Image(filepath='static/images/test_cop1.png',
                           department_id=1)
@@ -106,11 +111,6 @@ def populate():
 
     test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
-    db.session.commit()
-
-    department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD')
-    db.session.add(department)
     db.session.commit()
 
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
