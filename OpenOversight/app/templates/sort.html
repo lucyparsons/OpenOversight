@@ -44,7 +44,7 @@ $(document).bind('keydown', 's', function(){
           </form>
         </div>
         <div class="col-sm-4 text-center">
-          <a href="{{ url_for('main.sort_images') }}" id="answer-skip" class="btn btn-lg btn-primary" role="button">
+          <a href="{{ url_for('main.sort_images', department_id=department_id) }}" id="answer-skip" class="btn btn-lg btn-primary" role="button">
             <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
         </div>
         <div class="col-sm-4 text-center">

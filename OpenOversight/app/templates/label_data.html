@@ -10,15 +10,18 @@
     </div>
 
     <div class="text-center frontpage-leads">
-      <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images') }}">
-          <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
-          Image classification
-        </a>
-      </p>
+      <h2><small>Image classification</small></h2>
       <p>
         Sort submitted images into those with and without officers.
       </p>
+      {% for department in departments %}
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images', department_id=department.id) }}">
+          <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+          {{ department.name }}
+        </a>
+      </p>
+      {% endfor %}
     </div>
 
     <div class="text-center frontpage-leads">

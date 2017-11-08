@@ -39,7 +39,7 @@ def test_routes_ok(route, client, mockdata):
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route", [
     ('/auth/unconfirmed'),
-    ('/sort'),
+    ('/sort/department/1'),
     ('/cop_face'),
     ('/image/1'),
     ('/image/tagged/1'),
@@ -181,7 +181,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
         login_user(client)
 
         rv = client.get(
-            url_for('main.sort_images'),
+            url_for('main.sort_images', department_id=1),
             follow_redirects=True
         )
         assert 'Do you see police officers in the photo' in rv.data
