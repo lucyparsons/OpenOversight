@@ -239,8 +239,7 @@ def add_officer():
                           employment_date=form.employment_date.data,
                           department_id=form.department.data.id)
         db.session.add(officer)
-        db.session.commit()
-        assignment = Assignment(officer_id=officer.id,
+        assignment = Assignment(baseofficer=officer,
                                 star_no=form.star_no.data,
                                 rank=form.rank.data,
                                 unit=form.unit.data.id,
