@@ -30,7 +30,6 @@ class Officer(db.Model):
     gender = db.Column(db.String(120), index=True, unique=False)
     employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    pd_id = db.Column(db.Integer, index=True, unique=False)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer)

@@ -66,7 +66,7 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        pd_id=1, department_id=1
+        department_id=1
     )
 
 

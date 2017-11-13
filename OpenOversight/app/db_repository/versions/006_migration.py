@@ -11,6 +11,18 @@ unit_types = Table('unit_types', post_meta,
     Column('department_id', Integer),
 )
 
+officers = Table('officers', pre_meta,
+    Column('id', INTEGER, primary_key=True, nullable=False),
+    Column('last_name', VARCHAR(length=120)),
+    Column('first_name', VARCHAR(length=120)),
+    Column('middle_initial', VARCHAR(length=120)),
+    Column('race', VARCHAR(length=120)),
+    Column('gender', VARCHAR(length=120)),
+    Column('employment_date', TIMESTAMP),
+    Column('birth_year', INTEGER),
+    Column('pd_id', INTEGER),
+)
+
 officers = Table('officers', post_meta,
     Column('id', Integer, primary_key=True, nullable=False),
     Column('last_name', String(length=120)),
@@ -20,7 +32,6 @@ officers = Table('officers', post_meta,
     Column('gender', String(length=120)),
     Column('employment_date', DateTime),
     Column('birth_year', Integer),
-    Column('pd_id', Integer),
     Column('department_id', Integer),
 )
 
@@ -31,6 +42,7 @@ def upgrade(migrate_engine):
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
     post_meta.tables['unit_types'].columns['department_id'].create()
+    pre_meta.tables['officers'].columns['pd_id'].drop()
     post_meta.tables['officers'].columns['department_id'].create()
 
 
@@ -39,4 +51,5 @@ def downgrade(migrate_engine):
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
     post_meta.tables['unit_types'].columns['department_id'].drop()
+    pre_meta.tables['officers'].columns['pd_id'].create()
     post_meta.tables['officers'].columns['department_id'].drop()
