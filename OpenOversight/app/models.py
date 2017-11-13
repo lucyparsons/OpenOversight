@@ -32,7 +32,8 @@ class Officer(db.Model):
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
-    department_id = db.Column(db.Integer)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='officers')
 
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
@@ -62,7 +63,8 @@ class Unit(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     descrip = db.Column(db.String(120), index=True, unique=False)
-    department_id = db.Column(db.Integer)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='unit_types')
 
     def __repr__(self):
         return 'Unit: {}'.format(self.descrip)
