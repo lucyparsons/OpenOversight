@@ -63,21 +63,24 @@ def get_ooid():
 
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
-    return render_template('label_data.html')
+    departments = Department.query.all()
+    return render_template('label_data.html', departments=departments)
 
 
-@main.route('/sort', methods=['GET', 'POST'])
+@main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])
 @login_required
-def sort_images():
+def sort_images(department_id):
     # Select a random unsorted image from the database
-    image_query = Image.query.filter_by(contains_cops=None)
+    image_query = Image.query.filter_by(contains_cops=None) \
+                             .filter_by(department_id=department_id)
     image = get_random_image(image_query)
 
     if image:
         proper_path = serve_image(image.filepath)
     else:
         proper_path = None
-    return render_template('sort.html', image=image, path=proper_path)
+    return render_template('sort.html', image=image, path=proper_path,
+                           department_id=department_id)
 
 
 @main.route('/tutorial')
