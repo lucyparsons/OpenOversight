@@ -105,7 +105,7 @@ def officer_profile(officer_id):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(404)
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error finding officer: {}'.format(
             ' '.join([str(exception_type), str(value),
@@ -118,7 +118,7 @@ def officer_profile(officer_id):
         face_paths = []
         for face in faces:
             face_paths.append(serve_image(face.image.filepath))
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
             ' '.join([str(exception_type), str(value),
@@ -189,8 +189,13 @@ def classify_submission(image_id, contains_cops):
             image.contains_cops = False
         db.session.commit()
         flash('Updated image classification')
-    except:
+    except:  # noqa
         flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error classifying image: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
 
@@ -278,8 +283,13 @@ def delete_tag(tag_id):
         Face.query.filter_by(id=tag_id).delete()
         db.session.commit()
         flash('Deleted this tag')
-    except:
+    except:  # noqa
         flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error classifying image: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
     return redirect(url_for('main.index'))
 
 
@@ -439,7 +449,7 @@ def upload(department_id):
         db.session.add(new_image)
         db.session.commit()
         return jsonify(success="Success!"), 200
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),

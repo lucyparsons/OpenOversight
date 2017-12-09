@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import BadSignature, BadData
 from flask_login import UserMixin
 from flask import current_app
 from . import login_manager
@@ -150,7 +151,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('confirm') != self.id:
             return False
@@ -166,7 +167,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('reset') != self.id:
             return False
@@ -182,7 +183,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('change_email') != self.id:
             return False
