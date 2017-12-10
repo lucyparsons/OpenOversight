@@ -79,7 +79,7 @@ class FindOfficerIDForm(Form):
     badge = StringField(
         'badge', default='', validators=[Regexp('\w*'), Length(max=10)]
     )
-    dept = QuerySelectField('dept', validators=[DataRequired()],
+    dept = QuerySelectField('dept', validators=[Optional()],
                             query_factory=dept_choices, get_label='name')
 
 

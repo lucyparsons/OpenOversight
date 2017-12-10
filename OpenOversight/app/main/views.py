@@ -200,12 +200,6 @@ def classify_submission(image_id, contains_cops):
     # return redirect(url_for('main.display_submission', image_id=image_id))
 
 
-@main.route('/departments')
-def department_overview():
-    departments = Department.query.all()
-    return render_template('departments.html', departments=departments)
-
-
 @main.route('/department/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -222,7 +216,7 @@ def add_department():
             flash('New department {} added to OpenOversight'.format(department.name))
         else:
             flash('Department {} already exists'.format(form.name.data))
-        return redirect(url_for('main.department_overview'))
+        return redirect(url_for('main.get_started_labeling'))
     else:
         return render_template('add_department.html', form=form)
 
@@ -270,7 +264,7 @@ def add_unit():
         db.session.add(unit)
         db.session.commit()
         flash('New unit {} added to OpenOversight'.format(unit.descrip))
-        return redirect(url_for('main.department_overview'))
+        return redirect(url_for('main.get_started_labeling'))
     else:
         return render_template('add_unit.html', form=form)
 
@@ -319,15 +313,19 @@ def label_data(department_id=None, image_id=None):
                                .filter_by(is_tagged=False)
             image = get_random_image(image_query)
     else:
+        department = None
         if image_id:
             image = Image.query.filter_by(id=image_id).one()
-            department = None
         else:  # Select a random untagged image from the entire database
             image_query = Image.query.filter_by(contains_cops=True) \
                                .filter_by(is_tagged=False)
             image = get_random_image(image_query)
 
-    proper_path = serve_image(image.filepath)
+    if image:
+        proper_path = serve_image(image.filepath)
+    else:
+        proper_path = None
+
     form = FaceTag()
     if form.validate_on_submit():
         if not Officer.query.filter_by(id=form.officer_id.data).first():
