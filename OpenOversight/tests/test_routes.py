@@ -5,12 +5,13 @@ from urlparse import urlparse
 
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
-                                          FaceTag, DepartmentForm)
+                                          FaceTag, DepartmentForm,
+                                          AddOfficerForm, AddUnitForm)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm)
-from OpenOversight.app.models import User, Face, Department
+from OpenOversight.app.models import User, Face, Department, Unit, Officer
 
 
 @pytest.mark.parametrize("route", [
@@ -23,7 +24,6 @@ from OpenOversight.app.models import User, Face, Department
     ('/submit'),
     ('/submit/department/1'),
     ('/label'),
-    ('/departments'),
     ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
@@ -39,13 +39,15 @@ def test_routes_ok(route, client, mockdata):
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route", [
     ('/auth/unconfirmed'),
-    ('/sort'),
-    ('/cop_face'),
+    ('/sort/department/1'),
+    ('/cop_face/department/1'),
     ('/image/1'),
     ('/image/tagged/1'),
     ('/tag/1'),
     ('/leaderboard'),
     ('/department/new'),
+    ('/officer/new'),
+    ('/unit/new'),
     ('/auth/logout'),
     ('/auth/confirm/abcd1234'),
     ('/auth/confirm'),
@@ -96,7 +98,7 @@ def test_route_post_only(route, client, mockdata):
 
 def test_tagger_lookup(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm()
+        form = FindOfficerIDForm(dept='')
         assert form.validate() is True
         rv = client.post(url_for('main.get_ooid'), data=form.data,
                          follow_redirects=False)
@@ -106,7 +108,7 @@ def test_tagger_lookup(client, session):
 
 def test_tagger_gallery(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm()
+        form = FindOfficerIDForm(dept='')
         assert form.validate() is True
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data)
         assert rv.status_code == 200
@@ -114,7 +116,7 @@ def test_tagger_gallery(client, session):
 
 def test_tagger_gallery_bad_form(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm(dept='')
+        form = FindOfficerIDForm(badge='THIS IS NOT VALID')
         assert form.validate() is False
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
                          follow_redirects=False)
@@ -181,7 +183,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
         login_user(client)
 
         rv = client.get(
-            url_for('main.sort_images'),
+            url_for('main.sort_images', department_id=1),
             follow_redirects=True
         )
         assert 'Do you see police officers in the photo' in rv.data
@@ -662,18 +664,6 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         assert department.short_name == 'CPD'
 
 
-def test_admin_can_see_department_list(mockdata, client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-
-        rv = client.get(
-            url_for('main.department_overview'),
-            follow_redirects=True
-        )
-
-        assert 'Departments' in rv.data
-
-
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
                                                             session):
     with current_app.test_request_context():
@@ -685,3 +675,54 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
         )
 
         assert 'Springfield Police Department' in rv.data
+
+
+def test_admin_can_add_new_officer(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='McTesterson',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'McTesterson' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesterson').one()
+        assert officer.first_name == 'Test'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+
+
+def test_admin_can_add_new_unit(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        department = Department.query.filter_by(
+            name='Springfield Police Department').first()
+        form = AddUnitForm(descrip='Test')
+
+        rv = client.post(
+            url_for('main.add_unit'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'New unit' in rv.data
+
+        # Check the unit was added to the database
+        unit = Unit.query.filter_by(
+            descrip='Test').one()
+        assert unit.department_id == department.id

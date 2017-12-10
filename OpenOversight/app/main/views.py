@@ -18,9 +18,10 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment)
-from .forms import (FindOfficerForm, FindOfficerIDForm,
-                    FaceTag, AssignmentForm, DepartmentForm)
-from ..models import db, Image, User, Face, Officer, Assignment, Department
+from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
+                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
+from ..models import (db, Image, User, Face, Officer, Assignment, Department,
+                      Unit)
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -63,21 +64,24 @@ def get_ooid():
 
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
-    return render_template('label_data.html')
+    departments = Department.query.all()
+    return render_template('label_data.html', departments=departments)
 
 
-@main.route('/sort', methods=['GET', 'POST'])
+@main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])
 @login_required
-def sort_images():
+def sort_images(department_id):
     # Select a random unsorted image from the database
-    image_query = Image.query.filter_by(contains_cops=None)
+    image_query = Image.query.filter_by(contains_cops=None) \
+                             .filter_by(department_id=department_id)
     image = get_random_image(image_query)
 
     if image:
         proper_path = serve_image(image.filepath)
     else:
         proper_path = None
-    return render_template('sort.html', image=image, path=proper_path)
+    return render_template('sort.html', image=image, path=proper_path,
+                           department_id=department_id)
 
 
 @main.route('/tutorial')
@@ -101,7 +105,7 @@ def officer_profile(officer_id):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(404)
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error finding officer: {}'.format(
             ' '.join([str(exception_type), str(value),
@@ -114,7 +118,7 @@ def officer_profile(officer_id):
         face_paths = []
         for face in faces:
             face_paths.append(serve_image(face.image.filepath))
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
             ' '.join([str(exception_type), str(value),
@@ -185,16 +189,15 @@ def classify_submission(image_id, contains_cops):
             image.contains_cops = False
         db.session.commit()
         flash('Updated image classification')
-    except:
+    except:  # noqa
         flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error classifying image: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
-
-
-@main.route('/departments')
-def department_overview():
-    departments = Department.query.all()
-    return render_template('departments.html', departments=departments)
 
 
 @main.route('/department/new', methods=['GET', 'POST'])
@@ -213,9 +216,57 @@ def add_department():
             flash('New department {} added to OpenOversight'.format(department.name))
         else:
             flash('Department {} already exists'.format(form.name.data))
-        return redirect(url_for('main.department_overview'))
+        return redirect(url_for('main.get_started_labeling'))
     else:
         return render_template('add_department.html', form=form)
+
+
+@main.route('/officer/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_officer():
+    first_department = Department.query.first()
+    first_unit = Unit.query.first()
+    form = AddOfficerForm(department=first_department, unit=first_unit)
+    if form.validate_on_submit():
+        officer = Officer(first_name=form.first_name.data,
+                          last_name=form.last_name.data,
+                          middle_initial=form.middle_initial.data,
+                          race=form.race.data,
+                          gender=form.gender.data,
+                          birth_year=form.birth_year.data,
+                          employment_date=form.employment_date.data,
+                          department_id=form.department.data.id)
+        db.session.add(officer)
+        assignment = Assignment(baseofficer=officer,
+                                star_no=form.star_no.data,
+                                rank=form.rank.data,
+                                unit=form.unit.data.id,
+                                star_date=form.employment_date.data)
+        db.session.add(assignment)
+        db.session.commit()
+        flash('New Officer {} added to OpenOversight'.format(officer.last_name))
+        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+    else:
+        return render_template('add_officer.html', form=form)
+
+
+@main.route('/unit/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_unit():
+    first_department = Department.query.first()
+    form = AddUnitForm(department=first_department)
+
+    if form.validate_on_submit():
+        unit = Unit(descrip=form.descrip.data,
+                    department_id=form.department.data.id)
+        db.session.add(unit)
+        db.session.commit()
+        flash('New unit {} added to OpenOversight'.format(unit.descrip))
+        return redirect(url_for('main.get_started_labeling'))
+    else:
+        return render_template('add_unit.html', form=form)
 
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
@@ -226,8 +277,13 @@ def delete_tag(tag_id):
         Face.query.filter_by(id=tag_id).delete()
         db.session.commit()
         flash('Deleted this tag')
-    except:
+    except:  # noqa
         flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error classifying image: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
     return redirect(url_for('main.index'))
 
 
@@ -239,17 +295,31 @@ def leaderboard():
                            top_taggers=top_taggers)
 
 
-@main.route('/cop_face/<int:image_id>', methods=['GET', 'POST'])
-@main.route('/cop_face', methods=['GET', 'POST'])
+@main.route('/cop_face/department/<int:department_id>/image/<int:image_id>',
+            methods=['GET', 'POST'])
+@main.route('/cop_face/image/<int:image_id>', methods=['GET', 'POST'])
+@main.route('/cop_face/department/<int:department_id>', methods=['GET', 'POST'])
+@main.route('/cop_face/', methods=['GET', 'POST'])
 @login_required
-def label_data(image_id=None):
-    if image_id:
-        image = Image.query.filter_by(id=image_id).one()
+def label_data(department_id=None, image_id=None):
+    if department_id:
+        department = Department.query.filter_by(id=department_id).one()
+        if image_id:
+            image = Image.query.filter_by(id=image_id) \
+                               .filter_by(department_id=department_id).one()
+        else:  # Get a random image from that department
+            image_query = Image.query.filter_by(contains_cops=True) \
+                               .filter_by(department_id=department_id) \
+                               .filter_by(is_tagged=False)
+            image = get_random_image(image_query)
     else:
-        # Select a random untagged image from the database
-        image_query = Image.query.filter_by(contains_cops=True) \
-                           .filter_by(is_tagged=False)
-        image = get_random_image(image_query)
+        department = None
+        if image_id:
+            image = Image.query.filter_by(id=image_id).one()
+        else:  # Select a random untagged image from the entire database
+            image_query = Image.query.filter_by(contains_cops=True) \
+                               .filter_by(is_tagged=False)
+            image = get_random_image(image_query)
 
     if image:
         proper_path = serve_image(image.filepath)
@@ -278,7 +348,8 @@ def label_data(image_id=None):
             flash('Tag already exists between this officer and image! Tag not added.')
 
     return render_template('cop_face.html', form=form,
-                           image=image, path=proper_path)
+                           image=image, path=proper_path,
+                           department=department)
 
 
 @main.route('/image/tagged/<int:image_id>')
@@ -387,7 +458,7 @@ def upload(department_id):
         db.session.add(new_image)
         db.session.commit()
         return jsonify(success="Success!"), 200
-    except:
+    except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),

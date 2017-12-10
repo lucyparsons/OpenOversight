@@ -33,7 +33,11 @@
         </div>
         <div class="col-sm-3 text-center">
           <div class="docs-data">
+            {% if department %}
+            <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id) }}" method="post">
+            {% else %}
             <form action="{{ url_for('main.label_data', image_id=image.id) }}" method="post">
+            {% endif %}
               {{ form.hidden_tag() }}
               <div class="input-group input-group-sm">
                 <input type="text" class="hidden form-control" name="dataX" id="dataX" placeholder="x">
@@ -88,7 +92,11 @@
 
         </div>
         <div class="col-sm-2 text-center">
+          {% if department %}
+          <a href="{{ url_for('main.label_data', department_id=department.id)}}" class="btn btn-lg btn-primary" role="button">
+          {% else %}
           <a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">
+          {% endif %}
             <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a></p>
         </div>
         <div class="col-sm-2 text-center">

@@ -17,6 +17,6 @@ before_script:
   - cd OpenOversight
 script:
   - py.test -v --cov=app
-  - flake8
+  - flake8 --ignore=E501,E722
 after_success:
   - coveralls

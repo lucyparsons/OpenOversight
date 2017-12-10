@@ -7,9 +7,9 @@ Flask-Limiter
 Flask-Login
 Flask-Script
 Flask-Mail
+Flask-Migrate
 psycopg2>=2.6.2
 sqlalchemy
-sqlalchemy-migrate
 flask-sqlalchemy>=2.1
 flask-bootstrap
 gunicorn==17.5

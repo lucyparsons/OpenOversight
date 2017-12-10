@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import BadSignature, BadData
 from flask_login import UserMixin
 from flask import current_app
 from . import login_manager
@@ -30,9 +31,10 @@ class Officer(db.Model):
     gender = db.Column(db.String(120), index=True, unique=False)
     employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    pd_id = db.Column(db.Integer, index=True, unique=False)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='officers')
 
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
@@ -46,6 +48,7 @@ class Assignment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
+    baseofficer = db.relationship('Officer')
     star_no = db.Column(db.Integer, index=True, unique=False)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
@@ -62,6 +65,8 @@ class Unit(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     descrip = db.Column(db.String(120), index=True, unique=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='unit_types')
 
     def __repr__(self):
         return 'Unit: {}'.format(self.descrip)
@@ -146,7 +151,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('confirm') != self.id:
             return False
@@ -162,7 +167,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('reset') != self.id:
             return False
@@ -178,7 +183,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except (BadSignature, BadData):
             return False
         if data.get('change_email') != self.id:
             return False

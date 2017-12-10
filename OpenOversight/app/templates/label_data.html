@@ -9,29 +9,21 @@
       <h1><small>Volunteer</small></h1>
     </div>
 
+    {% for department in departments %}
     <div class="text-center frontpage-leads">
+      <h2><small>{{ department.name }} ({{department.short_name}})</small></h2>
       <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images') }}">
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images', department_id=department.id) }}">
           <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
           Image classification
         </a>
-      </p>
-      <p>
-        Sort submitted images into those with and without officers.
-      </p>
-    </div>
-
-    <div class="text-center frontpage-leads">
-      <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data') }}">
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data', department_id=department.id) }}">
           <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
           Officer identification
         </a>
       </p>
-      <p>
-        Use our roster search to try and identify officers in submitted images.
-      </p>
     </div>
+    {% endfor %}
 
     <div class="text-center frontpage-leads">
       <p>
@@ -44,6 +36,28 @@
         New to working on images for OpenOversight? Or just need a refresher?
       </p>
     </div>
+
+        {% if current_user.is_administrator %}
+        <div class="text-center frontpage-leads">
+          <a href="{{ url_for('main.add_department') }}"
+                class="btn btn-primary" role="button">
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+              Add New Department
+          </a>
+
+          <a href="{{ url_for('main.add_officer') }}"
+                class="btn btn-primary" role="button">
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+              Add New Officer
+          </a>
+
+          <a href="{{ url_for('main.add_unit') }}"
+                class="btn btn-primary" role="button">
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+              Add New Unit
+          </a>
+        </div>
+        {% endif %}
 
     {% else %}
 
