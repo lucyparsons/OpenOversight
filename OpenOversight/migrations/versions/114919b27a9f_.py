@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: 114919b27a9f
-Revises: 
+Revises:
 Create Date: 2017-12-10 05:20:45.748342
 
 """
@@ -41,5 +41,5 @@ def downgrade():
     sa.Column('repository_path', sa.TEXT(), autoincrement=False, nullable=True),
     sa.Column('version', sa.INTEGER(), autoincrement=False, nullable=True),
     sa.PrimaryKeyConstraint('repository_id', name=u'migrate_version_pkey')
-    )
+    )  # noqa
     # ### end Alembic commands ###

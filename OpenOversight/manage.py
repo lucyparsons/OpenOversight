@@ -1,5 +1,4 @@
 from getpass import getpass
-import imp
 import sys
 
 from flask_script import Manager, Server, Shell
@@ -7,7 +6,6 @@ from flask_migrate import Migrate, MigrateCommand
 
 from app import app
 from app.models import db, User
-from app.config import config
 
 
 migrate = Migrate(app, db)
