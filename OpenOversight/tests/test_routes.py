@@ -24,7 +24,6 @@ from OpenOversight.app.models import User, Face, Department, Unit, Officer
     ('/submit'),
     ('/submit/department/1'),
     ('/label'),
-    ('/departments'),
     ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
@@ -41,7 +40,7 @@ def test_routes_ok(route, client, mockdata):
 @pytest.mark.parametrize("route", [
     ('/auth/unconfirmed'),
     ('/sort/department/1'),
-    ('/cop_face'),
+    ('/cop_face/department/1'),
     ('/image/1'),
     ('/image/tagged/1'),
     ('/tag/1'),
@@ -99,7 +98,7 @@ def test_route_post_only(route, client, mockdata):
 
 def test_tagger_lookup(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm()
+        form = FindOfficerIDForm(dept='')
         assert form.validate() is True
         rv = client.post(url_for('main.get_ooid'), data=form.data,
                          follow_redirects=False)
@@ -109,7 +108,7 @@ def test_tagger_lookup(client, session):
 
 def test_tagger_gallery(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm()
+        form = FindOfficerIDForm(dept='')
         assert form.validate() is True
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data)
         assert rv.status_code == 200
@@ -117,7 +116,7 @@ def test_tagger_gallery(client, session):
 
 def test_tagger_gallery_bad_form(client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm(dept='')
+        form = FindOfficerIDForm(badge='THIS IS NOT VALID')
         assert form.validate() is False
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data,
                          follow_redirects=False)
@@ -663,18 +662,6 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         department = Department.query.filter_by(
             name='Chicago Police Department').one()
         assert department.short_name == 'CPD'
-
-
-def test_admin_can_see_department_list(mockdata, client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-
-        rv = client.get(
-            url_for('main.department_overview'),
-            follow_redirects=True
-        )
-
-        assert 'Departments' in rv.data
 
 
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,

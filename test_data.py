@@ -61,6 +61,11 @@ def pick_star():
     return random.randint(1, 9999)
 
 
+def pick_department():
+    departments = models.Department.query.all()
+    return random.choice(departments)
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -70,7 +75,7 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=1
+        department_id=pick_department().id
     )
 
 
@@ -92,22 +97,25 @@ def assign_faces(officer, images):
 def populate():
     """ Populate database with test data"""
 
-    department = models.Department(name='Springfield Police Department',
+    department1 = models.Department(name='Springfield Police Department',
                                    short_name='SPD')
-    db.session.add(department)
+    db.session.add(department1)
+    department2 = models.Department(name='Gotham Police Department',
+                                   short_name='GPD')
+    db.session.add(department2)
     db.session.commit()
 
     # Add images from Springfield Police Department
     image1 = models.Image(filepath='static/images/test_cop1.png',
-                          department_id=department.id)
+                          department_id=department1.id)
     image2 = models.Image(filepath='static/images/test_cop2.png',
-                          department_id=department.id)
+                          department_id=department1.id)
     image3 = models.Image(filepath='static/images/test_cop3.png',
-                          department_id=department.id)
+                          department_id=department2.id)
     image4 = models.Image(filepath='static/images/test_cop4.png',
-                          department_id=department.id)
+                          department_id=department2.id)
     image5 = models.Image(filepath='static/images/test_cop5.jpg',
-                          department_id=department.id)
+                          department_id=department2.id)
 
     test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
