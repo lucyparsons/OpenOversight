@@ -79,9 +79,8 @@ class FindOfficerIDForm(Form):
     badge = StringField(
         'badge', default='', validators=[Regexp('\w*'), Length(max=10)]
     )
-    dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
-                       validators=[DataRequired(),
-                                   AnyOf(allowed_values(DEPT_CHOICES))])
+    dept = QuerySelectField('dept', validators=[DataRequired()],
+                            query_factory=dept_choices, get_label='name')
 
 
 class FaceTag(Form):

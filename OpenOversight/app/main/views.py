@@ -301,23 +301,33 @@ def leaderboard():
                            top_taggers=top_taggers)
 
 
-@main.route('/cop_face/<int:image_id>', methods=['GET', 'POST'])
-@main.route('/cop_face', methods=['GET', 'POST'])
+@main.route('/cop_face/department/<int:department_id>/image/<int:image_id>',
+            methods=['GET', 'POST'])
+@main.route('/cop_face/image/<int:image_id>', methods=['GET', 'POST'])
+@main.route('/cop_face/department/<int:department_id>', methods=['GET', 'POST'])
+@main.route('/cop_face/', methods=['GET', 'POST'])
 @login_required
-def label_data(image_id=None):
-    if image_id:
-        image = Image.query.filter_by(id=image_id).one()
+def label_data(department_id=None, image_id=None):
+    if department_id:
+        department = Department.query.filter_by(id=department_id).one()
+        if image_id:
+            image = Image.query.filter_by(id=image_id) \
+                               .filter_by(department_id=department_id).one()
+        else:  # Get a random image from that department
+            image_query = Image.query.filter_by(contains_cops=True) \
+                               .filter_by(department_id=department_id) \
+                               .filter_by(is_tagged=False)
+            image = get_random_image(image_query)
     else:
-        # Select a random untagged image from the database
-        image_query = Image.query.filter_by(contains_cops=True) \
-                           .filter_by(is_tagged=False)
-        image = get_random_image(image_query)
+        if image_id:
+            image = Image.query.filter_by(id=image_id).one()
+            department = None
+        else:  # Select a random untagged image from the entire database
+            image_query = Image.query.filter_by(contains_cops=True) \
+                               .filter_by(is_tagged=False)
+            image = get_random_image(image_query)
 
-    if image:
-        proper_path = serve_image(image.filepath)
-    else:
-        proper_path = None
-
+    proper_path = serve_image(image.filepath)
     form = FaceTag()
     if form.validate_on_submit():
         if not Officer.query.filter_by(id=form.officer_id.data).first():
@@ -340,7 +350,8 @@ def label_data(image_id=None):
             flash('Tag already exists between this officer and image! Tag not added.')
 
     return render_template('cop_face.html', form=form,
-                           image=image, path=proper_path)
+                           image=image, path=proper_path,
+                           department=department)
 
 
 @main.route('/image/tagged/<int:image_id>')
