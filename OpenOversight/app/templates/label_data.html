@@ -17,14 +17,10 @@
           <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
           Image classification
         </a>
-        Sort submitted images into those with and without officers.
-      </p>
-      <p>
         <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data', department_id=department.id) }}">
           <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
           Officer identification
         </a>
-        Use our roster search to try and identify officers in submitted images.
       </p>
     </div>
     {% endfor %}
