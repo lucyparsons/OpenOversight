@@ -8,7 +8,7 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
                                 Length, Optional)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
-from ..utils import unit_choices
+from ..utils import unit_choices, dept_choices
 
 
 # Choices are a list of (value, label) tuples
@@ -98,7 +98,7 @@ class AssignmentForm(Form):
     rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('unit', validators=[Optional()],
-                            query_factory=unit_choices)
+                            query_factory=unit_choices, get_label='descrip')
     star_date = DateField('star_date', validators=[Optional()])
 
 
@@ -111,4 +111,35 @@ class DepartmentForm(Form):
         'Shortened acronym for police department, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
+    submit = SubmitField(label='Add')
+
+
+class AddOfficerForm(Form):
+    first_name = StringField('First name', default='', validators=[
+        Regexp('\w*'), Length(max=50), DataRequired()])
+    last_name = StringField('Last name', default='', validators=[
+        Regexp('\w*'), Length(max=50), DataRequired()])
+    middle_initial = StringField('Middle initial', default='', validators=[
+        Regexp('\w*'), Length(max=50), DataRequired()])
+    race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
+                       validators=[AnyOf(allowed_values(RACE_CHOICES))])
+    gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
+                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    star_no = IntegerField('Badge Number')
+    rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
+                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    unit = QuerySelectField('Unit', validators=[Optional()],
+                            query_factory=unit_choices, get_label='descrip')
+    employment_date = DateField('Employment Date', validators=[Optional()])
+    birth_year = IntegerField('Birth Year', validators=[Optional()])
+    department = QuerySelectField('Department', validators=[Optional()],
+                                  query_factory=dept_choices, get_label='name')
+    submit = SubmitField(label='Add')
+
+
+class AddUnitForm(Form):
+    descrip = StringField('Unit name or description', default='', validators=[
+        Regexp('\w*'), Length(max=120), DataRequired()])
+    department = QuerySelectField('Department', validators=[Optional()],
+                                  query_factory=dept_choices, get_label='name')
     submit = SubmitField(label='Add')

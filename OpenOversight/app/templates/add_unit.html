@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}OpenOversight Admin - Add New Unit{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+<div class="page-header">
+    <h1>Add Unit</h1>
+</div>
+<div class="col-md-6">
+    <form class="form" method="post" role="form">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, hiddens="only") }}
+        {{ wtf.form_field(form.descrip, autofocus="autofocus") }}
+        {{ wtf.form_field(form.department) }}
+        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+    </form>
+    <br>
+</div>
+
+</div>
+{% endblock %}

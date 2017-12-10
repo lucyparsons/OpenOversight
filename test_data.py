@@ -70,7 +70,7 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        pd_id=1
+        department_id=1
     )
 
 
@@ -99,15 +99,15 @@ def populate():
 
     # Add images from Springfield Police Department
     image1 = models.Image(filepath='static/images/test_cop1.png',
-                          department_id=1)
+                          department_id=department.id)
     image2 = models.Image(filepath='static/images/test_cop2.png',
-                          department_id=1)
+                          department_id=department.id)
     image3 = models.Image(filepath='static/images/test_cop3.png',
-                          department_id=1)
+                          department_id=department.id)
     image4 = models.Image(filepath='static/images/test_cop4.png',
-                          department_id=1)
+                          department_id=department.id)
     image5 = models.Image(filepath='static/images/test_cop5.jpg',
-                          department_id=1)
+                          department_id=department.id)
 
     test_images = [image1, image2, image3, image4, image5]
     db.session.add_all(test_images)
@@ -135,8 +135,8 @@ def populate():
     db.session.add(test_user)
     db.session.commit()
 
-    test_units = [models.Unit(descrip='District 13'),
-                  models.Unit(descrip='Bureau of Organized Crime')]
+    test_units = [models.Unit(descrip='District 13', department_id=1),
+                  models.Unit(descrip='Bureau of Organized Crime', department_id=1)]
     db.session.add_all(test_units)
     db.session.commit()
 
