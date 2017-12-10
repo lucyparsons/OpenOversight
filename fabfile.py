@@ -62,7 +62,7 @@ def deploy():
 def migrate():
     with cd(env.code_dir):
         if confirm("Apply any outstanding database migrations?", default=False):
-            run('su %s -c "%s/bin/python OpenOversight/manage.py migrate"' % (env.unprivileged_user, env.venv_dir))
+            run('su %s -c "%s/bin/python OpenOversight/manage.py db upgrade"' % (env.unprivileged_user, env.venv_dir))
             run('sudo systemctl restart openoversight')
 
 
