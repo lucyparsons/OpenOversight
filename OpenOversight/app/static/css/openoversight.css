@@ -232,12 +232,18 @@ body {
     color: white;
 }
 
-.text-gray-lighter {
-    color: #D3D3D3;
+.btn-callout {
+    background: #0000ff;
+    color: white;
+    border: none;
 }
 
-.text-align-left {
-    text-align: left;
+.btn-callout:hover {
+    background: #1e90ff;
+}
+
+.text-gray-lighter {
+    color: #D3D3D3;
 }
 
 .bg-light-gray {
@@ -261,4 +267,8 @@ body {
 
 .display-flex {
     display: flex;
+}
+
+.pb-90 {
+    padding-bottom: 90px;
 }

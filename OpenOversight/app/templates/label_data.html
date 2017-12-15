@@ -61,24 +61,81 @@
 
     {% else %}
 
-      <div class="text-center frontpage-leads">
-        <h1><small>Volunteer</small></h1>
-        <p>We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up!</p>
-        <p>
-          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.register') }}">
-            Register
-          </a>
-        </p>
-      </div>
 
-      <div class="text-center frontpage-leads">
-        <p>If you're already a volunteer, log in:</p>
-        <p>
-          <a class="btn btn-lg btn-primary" href="{{ url_for('auth.login') }}">
-            Login
-          </a>
-        </p>
-      </div>
+    <div class="text-center frontpage-leads">
+        <div class="hero-section">
+            <div class="text-left">
+            <div class="hero">
+                Volunteer
+            </div>
+            <div class="subhero">
+                Help OpenOversight create transparency with the first public, searchable
+                database of CPD officers.
+            </div>
+            </div>
+        </div>
+        <h2>
+            <small>How you can help</small>
+        </h2>
+        <div class="row pb-90">
+            <div class="col-lg-4">
+                <h1>
+                    <small>Sort Images</small>
+                </h1>
+                <small>
+                    Sort submitted images into those with and without officers.
+                </small>
+            </div>
+            <div class="col-lg-4">
+                <h1>
+                    <small>Identify Officers</small>
+                </h1>
+                <small>
+                    Have a photo containing faces and/or badge numbers of uniformed police officers?
+                </small>
+            </div>
+            <div class="col-lg-4">
+                <h1>
+                    <small>Contact Us</small>
+                </h1>
+                <!--TODO need copy-->
+                <small>
+                    Reach out with any questions, concerns, or ways you'd like to get involved.
+                </small>
+            </div>
+        </div>
+
+
+        <div class="row display-flex">
+            <div class="col-lg-6 col-half-no-border bg-blue-gray">
+                <div class="text-center">
+                    <h1>
+                        <small>Log In</small>
+                    </h1>
+                    <a class="btn btn-lg btn-secondary" href="{{ url_for('auth.login') }}">
+                        Login
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 col-half-no-border bg-blue-gray">
+                <div class="text-center">
+                    <h1>
+                        <small>Interested in volunteering?</small>
+                    </h1>
+                    <a class="btn btn-lg btn-callout" href="{{ url_for('auth.register') }}">
+                        Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+
+
 
     {% endif %}
 
