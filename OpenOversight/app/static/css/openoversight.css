@@ -4,7 +4,6 @@ html {
 }
 body {
   margin-bottom: 100px;
-  padding-top: 70px;
   padding-bottom: 100px;
 }
 
@@ -17,11 +16,13 @@ body {
 }
 
 .social:hover {
+    color: #000000;
      -webkit-transform: scale(1.1);
      -moz-transform: scale(1.1);
      -o-transform: scale(1.1);
  }
  .social {
+     color: #333333;
      -webkit-transform: scale(0.8);
      /* Browser Variations: */
 
@@ -34,7 +35,6 @@ body {
 
 .frontpage-leads {
   margin-top: 5%;
-  margin-bottom: 10%;
 }
 
 .subtle-pad {
@@ -152,3 +152,113 @@ body {
      border-color: #5bc0de;
      background-color: #5bc0de;
  }
+
+ .hero-section {
+     /*TODO: get background image- using color as standin for now*/
+     background-color: #d3d3d3;
+     text-align: center;
+     padding: 120px;
+ }
+
+.hero {
+    color:white;
+    font-size:40px;
+    text-shadow: 1px 1px 1px #999;
+}
+
+.subhero {
+    color: #333;
+    font-family: Courier, sans-serif;
+}
+
+ .hr-banner {
+     padding: 90px;
+     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+     font-weight: 300;
+     background-color: #333333;
+     color: white;
+     text-align: center;
+     font-size: 28px;
+ }
+
+ h1 small {
+     color: #333333;
+     margin-bottom: 0px;
+ }
+
+
+ p {
+     margin: 20px auto;
+ }
+
+ .btn {
+     color: #555555;
+ }
+
+.btn:hover {
+    color: #333333;
+}
+
+ .btn-lg {
+     border-color:black;
+     border-width: 2px;
+     border-radius: 50px;
+     text-transform: uppercase;
+     font-size: 14px;
+     padding: 14px 28px;
+ }
+
+.btn-primary {
+    background: white;
+    color: black;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    border-color: #555555;
+    background: white;
+    color: #555555;
+}
+
+.btn-secondary {
+    background: black;
+    color: white;
+    font-size: 12px;
+    padding: 14px 28px;
+}
+
+.btn-secondary:hover {
+    background: #333333;
+    color: white;
+}
+
+.text-gray-lighter {
+    color: #D3D3D3;
+}
+
+.text-align-left {
+    text-align: left;
+}
+
+.bg-light-gray {
+    background-color: #eeeeee;
+}
+
+.bg-blue-gray {
+    background-color: #dce1e5;
+}
+
+.col-half-border {
+    padding: 70px 120px;
+    text-align: left;
+}
+
+.col-half-no-border {
+    height: inherit;
+    padding: 70px 120px;
+    text-align: left;
+}
+
+.display-flex {
+    display: flex;
+}
