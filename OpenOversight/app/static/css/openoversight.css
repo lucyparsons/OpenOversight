@@ -7,6 +7,10 @@ body {
   padding-bottom: 100px;
 }
 
+.page-header {
+    padding-top: 50px;
+}
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -232,14 +236,15 @@ body {
     color: white;
 }
 
-.btn-callout {
+.btn-info {
     background: #0000ff;
     color: white;
     border: none;
 }
 
-.btn-callout:hover {
+.btn-info:hover {
     background: #1e90ff;
+    color: white;
 }
 
 .text-gray-lighter {

@@ -5,7 +5,7 @@
 <div class="container theme-showcase" role="main">
 
     {% if current_user and current_user.is_authenticated %}
-    <div class="text-center frontpage-leads">
+    <div class="text-center frontpage-leads page-header">
       <h1><small>Volunteer</small></h1>
     </div>
 
@@ -122,7 +122,7 @@
                     <h1>
                         <small>Interested in volunteering?</small>
                     </h1>
-                    <a class="btn btn-lg btn-callout" href="{{ url_for('auth.register') }}">
+                    <a class="btn btn-lg btn-info" href="{{ url_for('auth.register') }}">
                         Sign Up
                     </a>
                 </div>

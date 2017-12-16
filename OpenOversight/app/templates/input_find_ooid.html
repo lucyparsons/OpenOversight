@@ -33,7 +33,9 @@
         </p>
       </form>
     {% else %}
-      <p>Please register or sign up to view this form:</p>
+    <div class="page-header">
+        <p>Please register or sign up to view this form:</p>
+    </div>
 
       <a href="{{ url_for('auth.register') }}"><button type="button" class="btn btn-lg btn-primary">Register</button></a>
 
