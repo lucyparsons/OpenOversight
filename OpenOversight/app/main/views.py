@@ -11,7 +11,7 @@ from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify)
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
