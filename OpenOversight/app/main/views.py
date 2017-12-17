@@ -63,6 +63,7 @@ def get_ooid():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     return render_template('input_find_ooid.html', form=form)
 
+
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
     form = LoginForm()
