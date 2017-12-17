@@ -2,10 +2,9 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 
-<div role="main">
-
-    {% if current_user and current_user.is_authenticated %}
-    <div class="text-center frontpage-leads page-header">
+{% if current_user and current_user.is_authenticated %}
+<div class="container theme-showcase" role="main">
+    <div class="text-center frontpage-leads">
       <h1><small>Volunteer</small></h1>
     </div>
 
@@ -58,10 +57,10 @@
           </a>
         </div>
         {% endif %}
+</div>
+{% else %}
 
-    {% else %}
-
-
+<div role="main">
     <div class="text-center">
         <div class="hero-section">
             <div class="text-left">
@@ -145,8 +144,7 @@
             </div>
         </div>
     </div>
-
-    {% endif %}
-
 </div>
+{% endif %}
+
 {% endblock %}
