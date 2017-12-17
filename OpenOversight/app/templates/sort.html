@@ -29,7 +29,7 @@ $(document).bind('keydown', 's', function(){
     {% if current_user and current_user.is_authenticated %}
       {% if image and current_user.is_disabled == False %}
       <div class="row">
-        <div class="text-center page-header">
+        <div class="text-center">
           <h1><small>Do you see police officers in the photo?</small></h1>
         </div>
       </div>
@@ -66,9 +66,7 @@ $(document).bind('keydown', 's', function(){
       </div>
 
       {% elif current_user.is_disabled == True %}
-      <div class="page-header">
-          <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
-      </div>
+      <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
       <p><a href="mailto:info@lucyparsonslabs.com" class="btn btn-lg btn-primary" role="button">Email us to get it enabled again</a></p>
       {% else %}
       <h3>All images have been classfied!</h3>

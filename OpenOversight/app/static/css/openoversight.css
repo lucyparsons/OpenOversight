@@ -4,11 +4,8 @@ html {
 }
 body {
   margin-bottom: 100px;
+  padding-top: 65px;
   padding-bottom: 100px;
-}
-
-.page-header {
-    padding-top: 50px;
 }
 
 .footer {
@@ -38,7 +35,7 @@ body {
  }
 
 .frontpage-leads {
-  margin-top: 65px;
+
 }
 
 .subtle-pad {
@@ -155,7 +152,6 @@ body {
      background-repeat: repeat-x;
      border-color: #5bc0de;
      background-color: #5bc0de;
-     margin-top: 65px;
      position: absolute;
      width: 90%;
  }
