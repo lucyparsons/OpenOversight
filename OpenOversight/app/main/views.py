@@ -23,6 +23,8 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
+from ..auth.forms import LoginForm
+
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
 
@@ -61,11 +63,17 @@ def get_ooid():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     return render_template('input_find_ooid.html', form=form)
 
-
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            return redirect(request.args.get('next') or url_for('main.index'))
+        flash('Invalid username or password', 'error')
     departments = Department.query.all()
-    return render_template('label_data.html', departments=departments)
+    return render_template('label_data.html', departments=departments, form=form)
 
 
 @main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])

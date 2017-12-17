@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-
+{% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 
-<div class="container theme-showcase" role="main">
+<div role="main">
 
     {% if current_user and current_user.is_authenticated %}
     <div class="text-center frontpage-leads page-header">
@@ -74,68 +74,77 @@
             </div>
             </div>
         </div>
-        <h2>
-            <small>How you can help</small>
-        </h2>
-        <div class="row pb-90">
-            <div class="col-lg-4">
-                <h1>
-                    <small>Sort Images</small>
-                </h1>
-                <small>
-                    Sort submitted images into those with and without officers.
-                </small>
-            </div>
-            <div class="col-lg-4">
-                <h1>
-                    <small>Identify Officers</small>
-                </h1>
-                <small>
-                    Have a photo containing faces and/or badge numbers of uniformed police officers?
-                </small>
-            </div>
-            <div class="col-lg-4">
-                <h1>
-                    <small>Contact Us</small>
-                </h1>
-                <!--TODO need copy-->
-                <small>
-                    Reach out with any questions, concerns, or ways you'd like to get involved.
-                </small>
-            </div>
-        </div>
-
-
-        <div class="row display-flex">
-            <div class="col-lg-6 col-half-no-border bg-blue-gray">
-                <div class="text-center">
+        <div class="container">
+            <h2>
+                <small>How you can help</small>
+            </h2>
+            <div class="row pb-90">
+                <div class="col-lg-4">
                     <h1>
-                        <small>Log In</small>
+                        <small>Sort Images</small>
                     </h1>
-                    <a class="btn btn-lg btn-secondary" href="{{ url_for('auth.login') }}">
-                        Login
-                    </a>
+                    <small>
+                        Sort submitted images into those with and without officers.
+                    </small>
+                </div>
+                <div class="col-lg-4">
+                    <h1>
+                        <small>Identify Officers</small>
+                    </h1>
+                    <small>
+                        Have a photo containing faces and/or badge numbers of uniformed police officers?
+                    </small>
+                </div>
+                <div class="col-lg-4">
+                    <h1>
+                        <small>Contact Us</small>
+                    </h1>
+                    <!--TODO need copy-->
+                    <small>
+                        Reach out with any questions, concerns, or ways you'd like to get involved.
+                    </small>
                 </div>
             </div>
-            <div class="col-lg-6 col-half-no-border bg-blue-gray">
-                <div class="text-center">
-                    <h1>
-                        <small>Interested in volunteering?</small>
-                    </h1>
-                    <a class="btn btn-lg btn-info" href="{{ url_for('auth.register') }}">
-                        Sign Up
-                    </a>
+
+            <div class="row display-flex">
+                <div class="col-lg-6 col-half-no-border bg-blue-gray">
+                    <div class="text-center">
+                        <h1>
+                            <small>Log In</small>
+                        </h1>
+                    </div>
+                    <div>
+                        <form class="form" method="post" role="form">
+                            {{ form.hidden_tag() }}
+                            {{ wtf.form_errors(form, hiddens="only") }}
+
+                            {{ wtf.form_field(form.email, autofocus="autofocus") }}
+                            {{ wtf.form_field(form.password) }}
+                            <div class="text-center">
+                                {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
+                                {% if error %}
+                                    {{ error }}
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('auth.password_reset_request') }}">Forgot Password</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-half-no-border bg-blue-gray">
+                    <div class="text-center">
+                        <h1>
+                            <small>Interested in volunteering?</small>
+                        </h1>
+                        <a class="btn btn-lg btn-info" href="{{ url_for('auth.register') }}">
+                            Sign Up
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-
-
-
-
-
-
 
     {% endif %}
 

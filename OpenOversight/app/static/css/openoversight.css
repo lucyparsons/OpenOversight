@@ -38,7 +38,7 @@ body {
  }
 
 .frontpage-leads {
-  margin-top: 5%;
+  margin-top: 65px;
 }
 
 .subtle-pad {
@@ -155,6 +155,9 @@ body {
      background-repeat: repeat-x;
      border-color: #5bc0de;
      background-color: #5bc0de;
+     margin-top: 65px;
+     position: absolute;
+     width: 90%;
  }
 
  .hero-section {
@@ -245,6 +248,12 @@ body {
 .btn-info:hover {
     background: #1e90ff;
     color: white;
+}
+
+.control-label {
+    text-transform: uppercase;
+    color: #555555;
+    font-size: smaller;
 }
 
 .text-gray-lighter {
