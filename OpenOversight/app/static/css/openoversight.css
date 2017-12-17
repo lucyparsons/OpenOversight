@@ -272,10 +272,18 @@ body {
     height: inherit;
     padding: 70px 120px;
     text-align: left;
+    width: 100%;
 }
 
 .display-flex {
     display: flex;
+}
+
+@media (max-width: 750px) {
+    .display-flex {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 
 .pb-90 {
