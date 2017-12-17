@@ -31,12 +31,12 @@
                 </h1>
                 <div class="text-gray-lighter">Contribute to the database</div>
                 <p>
-                    <!--TODO link for securedrop-->
+                    <!--TODO double check on link for securedrop-->
                     Have a photo containing faces and/or badge numbers of uniformed police officers? Drop them here.
                     Alternatively, for very high security uploads of photos or videos, you can use our
-                    <a href="">SecureDrop</a> tool.
+                    <a href="https://lucyparsonslabs.com/securedrop/">SecureDrop</a> tool.
                 </p>
-                <a class="btn btn-lg btn-primary" href="/submit">
+                <a class="btn btn-lg btn-primary" href="{{ url_for('main.submit_data') }}">
                     Submit Image
                 </a>
             </div>
@@ -56,7 +56,7 @@
                 We're looking for volunteers to help us sort through images. If you're interested in helping out, please
                 sign up!
             </p>
-            <a class="btn btn-lg btn-secondary" href="/label">
+            <a class="btn btn-lg btn-secondary" href="{{ url_for('main.get_started_labeling') }}">
                 Put me to work
             </a>
         </div>
@@ -65,10 +65,13 @@
                 <small>Donate</small>
             </h1>
             <p>
-                <!--TODO get copy + link-->
-                Contributions are always appreciated!
+                <!--TODO check on link + copy-->
+                We are entirely volunteer funded and directed. Donations are greatly appreciated, and can be funded
+                through PayPal, YouCaring, or Bitcoin.
+                <br>
+                Note: We are an IRS 501(c)3 not-for-profit and all donations are tax deductible!
             </p>
-            <a class="btn btn-lg btn-secondary" href="">
+            <a class="btn btn-lg btn-secondary" href="https://lucyparsonslabs.com/support/">
                 Donate
             </a>
         </div>
