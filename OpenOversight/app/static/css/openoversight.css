@@ -159,7 +159,7 @@ body {
      /*TODO: get background image- using color as standin for now*/
      background-color: #d3d3d3;
      text-align: center;
-     padding: 120px;
+     padding: 150px;
  }
 
 .hero {
@@ -263,9 +263,15 @@ body {
     background-color: #dce1e5;
 }
 
+.bg-white {
+    background-color: #ffffff;
+}
+
 .col-half-border {
-    padding: 70px 120px;
+    padding: 60px;
     text-align: left;
+    border: 1px solid #d3d3d3;
+    margin: 12px;
 }
 
 .col-half-no-border {
@@ -284,6 +290,15 @@ body {
         flex-wrap: wrap;
         justify-content: center;
     }
+}
+
+.padded-row {
+    padding: 25px 50px;
+}
+
+.sink-row {
+    position: relative;
+    margin-top: -70px;
 }
 
 .pb-90 {
