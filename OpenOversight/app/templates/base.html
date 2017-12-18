@@ -46,8 +46,8 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/find">Find</a></li>
-            <li><a href="/submit">Submit</a></li>
+            <li><a href="/find">Find an Officer</a></li>
+            <li><a href="/submit">Submit Images</a></li>
             <li><a href="/label">Volunteer</a></li>
             {% if current_user and current_user.is_authenticated %}
               <li><a href="/leaderboard">Leaderboard</a></li>
@@ -91,6 +91,7 @@
     {% block content %}{% endblock %}
 
     <footer class="footer">
+      <hr>
       <div class="container text-muted">
         <div class="text-center center-block">
           <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>

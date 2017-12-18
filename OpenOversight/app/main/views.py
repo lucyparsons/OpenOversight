@@ -11,7 +11,7 @@ from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify)
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
@@ -22,6 +22,8 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
+
+from ..auth.forms import LoginForm
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -64,8 +66,15 @@ def get_ooid():
 
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            return redirect(request.args.get('next') or url_for('main.index'))
+        flash('Invalid username or password.')
     departments = Department.query.all()
-    return render_template('label_data.html', departments=departments)
+    return render_template('label_data.html', departments=departments, form=form)
 
 
 @main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])
