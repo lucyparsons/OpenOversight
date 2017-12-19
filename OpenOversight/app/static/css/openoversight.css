@@ -251,6 +251,16 @@ body {
     color: white;
 }
 
+.btn-unstyled {
+    padding: 0;
+    color: #666666;
+}
+
+.btn-unstyled:hover {
+    color: #333333;
+    text-decoration: none;
+}
+
 .control-label {
     text-transform: uppercase;
     color: #555555;
@@ -298,8 +308,9 @@ body {
     }
 }
 
-.padded-row {
-    padding: 25px 50px;
+.horizontal-padding {
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .sink-row {
