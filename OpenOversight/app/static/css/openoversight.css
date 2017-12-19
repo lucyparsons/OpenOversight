@@ -182,13 +182,17 @@ body {
 
  .hr-banner {
      padding: 90px;
-     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
      font-weight: 300;
      background-color: #333333;
      color: white;
      text-align: center;
      font-size: 28px;
  }
+
+.hr-banner p {
+    text-align: left;
+    font-size: 20px;
+}
 
  h1 small {
      color: #333333;
