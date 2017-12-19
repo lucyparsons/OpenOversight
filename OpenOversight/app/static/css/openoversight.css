@@ -75,6 +75,12 @@ body {
      width: auto;
  }
 
+ #navbar li a:hover {
+     border: 0 solid black;
+     border-bottom-width: 2px;
+     border-radius: 0;
+ }
+
  .glyphicon {
      font-size: 30px;
  }
