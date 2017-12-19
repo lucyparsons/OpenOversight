@@ -176,6 +176,7 @@ body {
 
 .subhero {
     color: #333;
+    font-size: 18px;
     font-family: Courier, sans-serif;
 }
 
@@ -301,11 +302,26 @@ body {
     display: flex;
 }
 
+.bordered-box {
+    border: 0 solid #999999;
+    border-right-width: 1px;
+}
+
 @media (max-width: 750px) {
     .display-flex {
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .bordered-box {
+        border-right-width: 0;
+        border-bottom-width: 1px;
+    }
+}
+
+.vertical-padding {
+    padding-left: 50px;
+    padding-right: 50px;
 }
 
 .horizontal-padding {
