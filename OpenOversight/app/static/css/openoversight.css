@@ -313,7 +313,6 @@ body {
 
 .col-half-border {
     padding: 60px;
-    text-align: left;
     border: 1px solid #d3d3d3;
     margin: 12px;
 }
@@ -321,7 +320,6 @@ body {
 .col-half-no-border {
     height: inherit;
     padding: 70px 120px;
-    text-align: left;
     width: 100%;
 }
 
