@@ -218,6 +218,11 @@ body {
      margin: 20px auto;
  }
 
+ .lead.margin-less {
+     margin-bottom: 0;
+     margin-top: 10px;
+ }
+
  .btn {
      color: #555555;
  }
