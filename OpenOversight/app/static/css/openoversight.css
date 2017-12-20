@@ -168,6 +168,13 @@ body {
      padding: 150px;
  }
 
+.hero-section-no-sub {
+    /*TODO: get background image- using color as standin for now*/
+    background-color: #bbbbbb;
+    text-align: center;
+    padding: 110px;
+}
+
 .hero {
     color:white;
     font-size:40px;
@@ -201,7 +208,7 @@ body {
 
 .hr-banner p {
     text-align: left;
-    font-size: 20px;
+    font-size: 18px;
 }
 
  h1 small {
@@ -294,6 +301,10 @@ body {
     background-color: #dce1e5;
 }
 
+.bg-light-blue {
+    background-color: #e8f0f9;
+}
+
 .bg-white {
     background-color: #ffffff;
 }
@@ -346,6 +357,18 @@ body {
 .sink-row {
     position: relative;
     margin-top: -70px;
+}
+
+.font-weight-300 {
+    font-weight: 300;
+}
+
+.i {
+    font-style: italic;
+}
+
+.pb-50 {
+    padding-bottom: 50px;
 }
 
 .pb-90 {
