@@ -168,10 +168,7 @@ body {
      padding: 150px;
  }
 
-.hero-section-no-sub {
-    /*TODO: get background image- using color as standin for now*/
-    background-color: #bbbbbb;
-    text-align: center;
+.hero-section.no-sub {
     padding: 110px;
 }
 
