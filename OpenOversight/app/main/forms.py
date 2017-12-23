@@ -115,11 +115,11 @@ class DepartmentForm(Form):
 
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     last_name = StringField('Last name', default='', validators=[
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
