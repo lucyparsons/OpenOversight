@@ -128,7 +128,8 @@ class AddOfficerForm(Form):
     rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
-                            query_factory=unit_choices, get_label='descrip')
+                            query_factory=unit_choices, get_label='descrip',
+                            allow_blank=True, blank_text=u'Unknown unit')
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     department = QuerySelectField('Department', validators=[Optional()],
