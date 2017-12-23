@@ -17,9 +17,11 @@ from . import main
 from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
-                     allowed_file, add_new_assignment, edit_existing_assignment)
+                     allowed_file, add_new_assignment, edit_existing_assignment,
+                     add_officer_profile, edit_officer_profile)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
-                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
+                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
+                    BasicOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
@@ -252,32 +254,25 @@ def add_officer():
     first_unit = Unit.query.first()
     form = AddOfficerForm(department=first_department, unit=first_unit)
     if form.validate_on_submit():
-        officer = Officer(first_name=form.first_name.data,
-                          last_name=form.last_name.data,
-                          middle_initial=form.middle_initial.data,
-                          race=form.race.data,
-                          gender=form.gender.data,
-                          birth_year=form.birth_year.data,
-                          employment_date=form.employment_date.data,
-                          department_id=form.department.data.id)
-        db.session.add(officer)
-
-        if form.unit.data:
-            officer_unit = form.unit.data.id
-        else:
-            officer_unit = None
-
-        assignment = Assignment(baseofficer=officer,
-                                star_no=form.star_no.data,
-                                rank=form.rank.data,
-                                unit=officer_unit,
-                                star_date=form.employment_date.data)
-        db.session.add(assignment)
-        db.session.commit()
+        officer = add_officer_profile(form)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
         return render_template('add_officer.html', form=form)
+
+
+@main.route('/officer/<int:officer_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_officer(officer_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
+    form = BasicOfficerForm(obj=officer)
+    if form.validate_on_submit():
+        officer = edit_officer_profile(officer, form)
+        flash('Officer {} edited'.format(officer.last_name))
+        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+    else:
+        return render_template('edit_officer.html', form=form)
 
 
 @main.route('/unit/new', methods=['GET', 'POST'])

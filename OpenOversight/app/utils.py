@@ -20,7 +20,6 @@ def dept_choices():
 
 def add_new_assignment(officer_id, form):
     # Resign date should be null
-
     if form.unit.data:
         unit = form.unit.data.id
     else:
@@ -38,15 +37,57 @@ def add_new_assignment(officer_id, form):
 def edit_existing_assignment(assignment, form):
     assignment.star_no = form.star_no.data
     assignment.rank = form.rank.data
+
     if form.unit.data:
         officer_unit = form.unit.data.id
     else:
         officer_unit = None
+
     assignment.unit = officer_unit
     assignment.star_date = form.star_date.data
     db.session.add(assignment)
     db.session.commit()
     return assignment
+
+
+def add_officer_profile(form):
+    officer = Officer(first_name=form.first_name.data,
+                      last_name=form.last_name.data,
+                      middle_initial=form.middle_initial.data,
+                      race=form.race.data,
+                      gender=form.gender.data,
+                      birth_year=form.birth_year.data,
+                      employment_date=form.employment_date.data,
+                      department_id=form.department.data.id)
+    db.session.add(officer)
+
+    if form.unit.data:
+        officer_unit = form.unit.data.id
+    else:
+        officer_unit = None
+
+    assignment = Assignment(baseofficer=officer,
+                            star_no=form.star_no.data,
+                            rank=form.rank.data,
+                            unit=officer_unit,
+                            star_date=form.employment_date.data)
+    db.session.add(assignment)
+    db.session.commit()
+    return officer
+
+
+def edit_officer_profile(officer, form):
+    officer.first_name = form.first_name.data
+    officer.last_name = form.last_name.data
+    officer.middle_initial = form.middle_initial.data
+    officer.race = form.race.data
+    officer.gender = form.gender.data
+    officer.birth_year = form.birth_year.data
+    officer.employment_date = form.employment_date.data
+    officer.department_id = form.department.data.id
+    db.session.add(officer)
+    db.session.commit()
+    return officer
 
 
 def allowed_file(filename):
