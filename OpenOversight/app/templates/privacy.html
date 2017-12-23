@@ -1,23 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container theme-showcase" role="main">
+<div role="main">
+<div class="hero-section">
+    <div class="hero">Privacy Policy</div>
+    <div class="subhero">September 1, 2016</div>
+</div>
+    <div class="container">
+        <p class="lead">
+    <small>Lucy Parsons Labs takes your privacy and security very seriously. OpenOversight is hosted on its own subdomain
+        and web server, independent from the main Lucy Parsons Labs website. This Privacy Policy only applies to
+        OpenOversight.</small></p>
 
-<h1>Privacy Policy</h1>
-<h4>September 1, 2016</h4>
+    <h2>Logs and Security</h2>
+    <p>The Lucy Parsons Labs uses HTTPS on all of its web servers and on all of our subdomains. However, since
+        OpenOversight is hosted on its own subdomain and web server, it will be possible for employers, ISPs, or anyone
+        performing network-level traffic analysis to identify that you have visited OpenOversight. The Lucy Parsons Labs
+        <b>does not</b> maintain network logs on our web servers. We have explicitly disabled nginx from maintaining
+        access or error logs, an example configuration can be found <a
+                href="https://github.com/lucyparsons/OpenOversight/blob/master/DEPLOY.md">here</a>. We also do not block
+        incoming connections from any regions or IP block, so we welcome traffic from any anonymity network such as Tor.
+    </p>
 
-<p>Lucy Parsons Labs takes your privacy and security very seriously. OpenOversight is hosted on its own subdomain and web server, independent from the main Lucy Parsons Labs website. This Privacy Policy only applies to OpenOversight.</p>
+    <h2>What Is Collected</h2>
+    <p>OpenOversight has a form for volunteers to submit data to us using Google Docs. This data is <i>not</i> hosted by
+        Lucy Parsons Labs and is outside of this Privacy Policy. The Submission Form does not require you to provide a
+        name and we will not reject any submissions without names. Please note that Google and other third parties might
+        collect your IPs and other identifying information. Google's Privacy Policy can be found <a
+                href="https://www.google.com/intl/en_us/policies/">here</a> and Google Drive's Terms of Service may be
+        found <a href="https://support.google.com/drive/answer/2450387?hl=en">here</a>.</p>
 
-<h2>Logs and Security</h2> 
-<p>The Lucy Parsons Labs uses HTTPS on all of its web servers and on all of our subdomains. However, since OpenOversight is hosted on its own subdomain and web server, it will be possible for employers, ISPs, or anyone performing network-level traffic analysis to identify that you have visited OpenOversight. The Lucy Parsons Labs <b>does not</b> maintain network logs on our web servers. We have explicitly disabled nginx from maintaining access or error logs, an example configuration can be found <a href="https://github.com/lucyparsons/OpenOversight/blob/master/DEPLOY.md">here</a>. We also do not block incoming connections from any regions or IP block, so we welcome traffic from any anonymity network such as Tor.</p>
-
-<h2>What Is Collected</h2>
-<p>OpenOversight has a form for volunteers to submit data to us using Google Docs. This data is <i>not</i> hosted by Lucy Parsons Labs and is outside of this Privacy Policy. The Submission Form does not require you to provide a name and we will not reject any submissions without names. Please note that Google and other third parties might collect your IPs and other identifying information. Google's Privacy Policy can be found <a href="https://www.google.com/intl/en_us/policies/">here</a> and Google Drive's Terms of Service may be found <a href="https://support.google.com/drive/answer/2450387?hl=en">here</a>.</p>
-
-<h2>Legal Action</h2>
-<p><b>A note to Illinois law enforcement</b>: This project does not perform facial recognition and is thus in compliance with the Biometric Information Privacy Act. Requests or questions regarding this project from those affiliated with law enforcement must be directed to our <a href="mailto:legal@lucyparsonslabs.com">legal representation</a>. You may also review our <a href="https://lucyparsonslabs.com/canary/">Warrant Canary</a>.</p>
-
-<h2>Future Changes</h2> 
-<p>In the case that the Lucy Parsons Labs has to update this Privacy Policy, we will update the date at the top of this webpage.</p>
+    <h2>Legal Action</h2>
+    <p><b>A note to Illinois law enforcement</b>: This project does not perform facial recognition and is thus in
+        compliance with the Biometric Information Privacy Act. Requests or questions regarding this project from those
+        affiliated with law enforcement must be directed to our <a href="mailto:legal@lucyparsonslabs.com">legal
+            representation</a>. You may also review our <a href="https://lucyparsonslabs.com/about/canary/" target="_blank">
+            Warrant Canary</a>.
+    </p>
+</div>
+    <div class="hr-banner horizontal-padding">
+        Future Changes
+        <p>In the case that the Lucy Parsons Labs has to update this Privacy Policy, we will update the date at the top
+            of this webpage.</p>
+    </div>
 </div>
 {% endblock %}
