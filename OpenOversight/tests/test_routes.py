@@ -706,6 +706,65 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.gender == 'M'
 
 
+def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='McTesty',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'McTesty' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesty').one()
+        assert officer.first_name == 'Test'
+        assert officer.middle_initial == ''
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+
+
+def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='Testersly',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no='T666',
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Testersly' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='Testersly').one()
+        assert officer.first_name == 'Test'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert officer.assignments[0].star_no == 'T666'
+
+
 def test_admin_can_add_new_unit(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)

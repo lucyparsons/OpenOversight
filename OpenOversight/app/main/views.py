@@ -247,10 +247,16 @@ def add_officer():
                           employment_date=form.employment_date.data,
                           department_id=form.department.data.id)
         db.session.add(officer)
+
+        if form.unit.data:
+            officer_unit = form.unit.data.id
+        else:
+            officer_unit = None
+
         assignment = Assignment(baseofficer=officer,
                                 star_no=form.star_no.data,
                                 rank=form.rank.data,
-                                unit=form.unit.data.id,
+                                unit=officer_unit,
                                 star_date=form.employment_date.data)
         db.session.add(assignment)
         db.session.commit()

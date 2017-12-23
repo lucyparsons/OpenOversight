@@ -115,20 +115,22 @@ class DepartmentForm(Form):
 
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     last_name = StringField('Last name', default='', validators=[
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
-    star_no = IntegerField('Badge Number')
+    star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
-                            query_factory=unit_choices, get_label='descrip')
+                            query_factory=unit_choices, get_label='descrip',
+                            allow_blank=True, blank_text=u'Unknown unit')
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     department = QuerySelectField('Department', validators=[Optional()],
