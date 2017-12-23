@@ -124,7 +124,8 @@ class AddOfficerForm(Form):
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
-    star_no = IntegerField('Badge Number')
+    star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
