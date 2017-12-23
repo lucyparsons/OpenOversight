@@ -6,7 +6,8 @@ from urlparse import urlparse
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
-                                          AddOfficerForm, AddUnitForm)
+                                          AddOfficerForm, AddUnitForm,
+                                          BasicOfficerForm)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
@@ -732,6 +733,40 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.first_name == 'Test'
         assert officer.race == 'WHITE'
         assert officer.gender == 'M'
+
+
+def test_admin_can_edit_existing_officer(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='Testerinski',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        officer = Officer.query.filter_by(
+            last_name='Testerinski').one()
+
+        form = BasicOfficerForm(last_name='Changed')
+
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Changed' in rv.data
+        assert 'Testerinski' not in rv.data
 
 
 def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
