@@ -1,12 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container page-header" role="main">
-   <h1 id="page-title">Find an Officer <small>Use this form to generate a gallery of police officers</small></h1>
-   <p>Fill in the information you know about a police officer you interacted with. Don't worry if you don't know or have answers to every question. OpenOversight takes what you provide and generates a digital gallery of Chicago police officers who may be a match. </p>
+<div role="main">
+    <div class="hero-section no-sub">
+        <div class="hero">Find an Officer </div>
+    </div>
 </div>
 
 <div class="container" role="main">
+    <div class="horizontal-padding">
+        <div class="lead text-center">
+            Use this form to generate a gallery of police officers.
+        </div>
+        <p class="font-weight-300">
+            Fill in the information you know about a police officer you interacted with. Don't worry if you don't know or
+            have answers to every question. OpenOversight takes what you provide and generates a digital gallery of Chicago
+            police officers who may be a match.
+        </p>
+    </div>
   <form action="{{ url_for('main.get_officer') }}" method="post" class="form">
   {{ form.hidden_tag() }}
 	  <div class="row form-group">

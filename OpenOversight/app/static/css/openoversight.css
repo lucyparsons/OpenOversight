@@ -75,6 +75,12 @@ body {
      width: auto;
  }
 
+ #navbar li a:hover {
+     border: 0 solid black;
+     border-bottom-width: 2px;
+     border-radius: 0;
+ }
+
  .glyphicon {
      font-size: 30px;
  }
@@ -162,26 +168,45 @@ body {
      padding: 150px;
  }
 
+.hero-section.no-sub {
+    padding: 110px;
+}
+
 .hero {
     color:white;
     font-size:40px;
     text-shadow: 1px 1px 1px #999;
 }
 
+@media (max-width: 550px) {
+    .hero {
+        font-size: 28px;
+    }
+    .hero-section {
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+}
+
 .subhero {
     color: #333;
+    font-size: 18px;
     font-family: Courier, sans-serif;
 }
 
  .hr-banner {
      padding: 90px;
-     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
      font-weight: 300;
      background-color: #333333;
      color: white;
      text-align: center;
      font-size: 28px;
  }
+
+.hr-banner p {
+    text-align: left;
+    font-size: 18px;
+}
 
  h1 small {
      color: #333333;
@@ -191,6 +216,11 @@ body {
 
  p {
      margin: 20px auto;
+ }
+
+ .lead.margin-less {
+     margin-bottom: 0;
+     margin-top: 10px;
  }
 
  .btn {
@@ -245,6 +275,16 @@ body {
     color: white;
 }
 
+.btn-unstyled {
+    padding: 0;
+    color: #666666;
+}
+
+.btn-unstyled:hover {
+    color: #333333;
+    text-decoration: none;
+}
+
 .control-label {
     text-transform: uppercase;
     color: #555555;
@@ -263,13 +303,16 @@ body {
     background-color: #dce1e5;
 }
 
+.bg-light-blue {
+    background-color: #e8f0f9;
+}
+
 .bg-white {
     background-color: #ffffff;
 }
 
 .col-half-border {
     padding: 60px;
-    text-align: left;
     border: 1px solid #d3d3d3;
     margin: 12px;
 }
@@ -277,7 +320,6 @@ body {
 .col-half-no-border {
     height: inherit;
     padding: 70px 120px;
-    text-align: left;
     width: 100%;
 }
 
@@ -285,20 +327,48 @@ body {
     display: flex;
 }
 
+.bordered-box {
+    border: 0 solid #999999;
+    border-right-width: 1px;
+}
+
 @media (max-width: 750px) {
     .display-flex {
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .bordered-box {
+        border-right-width: 0;
+        border-bottom-width: 1px;
+    }
 }
 
-.padded-row {
-    padding: 25px 50px;
+.vertical-padding {
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.horizontal-padding {
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .sink-row {
     position: relative;
     margin-top: -70px;
+}
+
+.font-weight-300 {
+    font-weight: 300;
+}
+
+.i {
+    font-style: italic;
+}
+
+.pb-50 {
+    padding-bottom: 50px;
 }
 
 .pb-90 {

@@ -92,19 +92,39 @@
 
     <footer class="footer">
       <hr>
-      <div class="container text-muted">
-        <div class="text-center center-block">
-          <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
-          <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
-          <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
-          <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
+      <div class="row text-center horizontal-padding">
+
+        <div class="col-lg-4">
+          <h5>OpenOversight</h5>
+          <p class="font-weight-300">
+            A product of Lucy Parsons Labs in Chicago, IL. <br>
+            <a href="https://lucyparsonslabs.com/" target="_blank" class="btn-unstyled">Lucy Parsons Labs</a><br>
+            <a href="https://lucyparsonslabs.com/securedrop/" target="_blank" class="btn-unstyled">SecureDrop</a>
+          </p>
         </div>
-      </div>
-      <div class="container text-muted">
-        <div class="text-center center-block">
-          <a href="/privacy" class="btn">Privacy Policy</a>
+
+        <div class="col-lg-4">
+          <h5>Contact</h5>
+          <p>
+            <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
+            <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
+            <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
+            <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a><br>
+            <a href="/privacy" class="btn">Privacy Policy</a>
+          </p>
         </div>
+        <div class="col-lg-4">
+          <h5>Navigation</h5>
+          <p class="font-weight-300">
+            <a href="{{ url_for('main.get_officer') }}" class="btn-unstyled">Find an Officer</a><br>
+            <a href="{{ url_for('main.submit_data') }}" class="btn-unstyled">Submit Images</a><br>
+            <a href="{{ url_for('main.get_started_labeling') }}" class="btn-unstyled">Volunteer</a><br>
+            <a href="{{ url_for('main.about_oo') }}" class="btn-unstyled">About</a><br>
+          </p>
+        </div>
+
       </div>
+
     </footer>
 
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
