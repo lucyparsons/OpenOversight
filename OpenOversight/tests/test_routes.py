@@ -244,6 +244,34 @@ def test_user_can_add_officer_badge_number(mockdata, client, session):
         assert 'Added new assignment' in rv.data
 
 
+def test_user_can_edit_officer_badge_number(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AssignmentForm(star_no='1234',
+                              rank='COMMANDER')
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        form = AssignmentForm(star_no='12345')
+        officer = Officer.query.filter_by(id=3).one()
+
+        rv = client.post(
+            url_for('main.edit_assignment', officer_id=officer.id,
+                    assignment_id=officer.assignments[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer assignment' in rv.data
+        assert officer.assignments[0].star_no == '12345'
+
+
 def test_user_can_view_submission(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
