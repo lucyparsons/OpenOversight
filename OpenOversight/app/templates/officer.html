@@ -65,6 +65,9 @@
                 <th><b>Badge No.</b></th>
                 <th><b>Unit</b></th>
                 <th><b>Assignment Date</b></th>
+                {% if current_user.is_administrator %}
+                <th><b>Edit</b></th>
+                {% endif %}
               </tr>
             <tbody>
               {% for assignment in assignments %}
@@ -81,7 +84,16 @@
                     {{ assignment.star_date }}
                     {% else %}
                     Unknown
-                    {% endif %}</td>
+                    {% endif %}
+                </td>
+                <td>
+                  {% if current_user.is_administrator %}
+                  <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
+                              assignment_id=assignment.id) }}">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                  </a>
+                  {% endif %}
+                </td>
               </tr>
               {% endfor %}
             </tbody>

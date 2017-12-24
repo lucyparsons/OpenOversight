@@ -17,7 +17,7 @@ from . import main
 from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
-                     allowed_file, add_new_assignment)
+                     allowed_file, add_new_assignment, edit_existing_assignment)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -144,6 +144,20 @@ def officer_profile(officer_id):
                                 officer_id=officer_id), code=302)
     return render_template('officer.html', officer=officer, paths=face_paths,
                            assignments=assignments, form=form)
+
+
+@main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
+            methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_assignment(officer_id, assignment_id):
+    assignment = Assignment.query.filter_by(id=assignment_id).one()
+    form = AssignmentForm(obj=assignment)
+    if form.validate_on_submit():
+        assignment = edit_existing_assignment(assignment, form)
+        flash('Edited officer assignment ID {}'.format(assignment.id))
+        return redirect(url_for('main.officer_profile', officer_id=officer_id))
+    return render_template('edit_assignment.html', form=form)
 
 
 @main.route('/user/toggle/<int:uid>', methods=['POST'])
