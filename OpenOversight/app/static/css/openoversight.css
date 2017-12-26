@@ -75,10 +75,14 @@ body {
      width: auto;
  }
 
- #navbar li a:hover {
-     border: 0 solid black;
+  #navbar li a {
+     border: 0 solid rgba(0, 0, 0, 0);
      border-bottom-width: 2px;
      border-radius: 0;
+ }
+
+ #navbar li a:hover {
+     border-color: black;
  }
 
  .glyphicon {
@@ -204,7 +208,6 @@ body {
  }
 
 .hr-banner p {
-    text-align: left;
     font-size: 18px;
 }
 
