@@ -35,6 +35,20 @@ def add_new_assignment(officer_id, form):
     db.session.commit()
 
 
+def edit_existing_assignment(assignment, form):
+    assignment.star_no = form.star_no.data
+    assignment.rank = form.rank.data
+    if form.unit.data:
+        officer_unit = form.unit.data.id
+    else:
+        officer_unit = None
+    assignment.unit = officer_unit
+    assignment.star_date = form.star_date.data
+    db.session.add(assignment)
+    db.session.commit()
+    return assignment
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']

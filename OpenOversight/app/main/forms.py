@@ -93,12 +93,13 @@ class FaceTag(Form):
 
 
 class AssignmentForm(Form):
-    star_no = IntegerField('star_no')
-    rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
+    star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
+    rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
-    unit = QuerySelectField('unit', validators=[Optional()],
+    unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip')
-    star_date = DateField('star_date', validators=[Optional()])
+    star_date = DateField('Assignment start date', validators=[Optional()])
 
 
 class DepartmentForm(Form):
