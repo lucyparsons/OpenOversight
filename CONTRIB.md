@@ -14,6 +14,31 @@ Use `PULL_REQUEST_TEMPLATE.md` to create the description for your PR!
 
 ## Development Environment
 
+You can use our Docker or Vagrant/VirtualBox development environments.
+
+### Docker
+
+You will need to have Docker installed in order to use the Docker development environment.
+
+To build and run the development environment, simply `make dev`. Whenever you want to rebuild the containers, `make build` (you should need to do this rarely).
+
+To hop into the postgres container, you can do the following:
+
+```
+$ docker exec -it openoversight_postgres_1 /bin/bash
+# psql -d openoversight-dev -U openoversight
+```
+
+Similarly to hop into the web container:
+
+```
+$ docker exec -it openoversight_web_1 /bin/bash
+```
+
+Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
+
+### VirtualBox + Vagrant
+
 Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and VirtualBox installed to start out.
 
 * Install Vagrant: https://www.vagrantup.com/downloads.html
@@ -23,7 +48,7 @@ Make sure you've started VirtualBox, and then in your project directory, run:
 
 `vagrant up`
 
-This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine. 
+This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine.
 
 In addition, you can now SSH into it:
 

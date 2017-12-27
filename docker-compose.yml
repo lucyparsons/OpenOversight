@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+ postgres:
+   restart: always
+   image: postgres:latest
+   environment:
+     POSTGRES_USER: openoversight
+     POSTGRES_PASSWORD: terriblepassword
+     POSTGRES_DB: openoversight-dev
+
+ web:
+   restart: always
+   build:
+      context: .
+      dockerfile: ./dockerfiles/web/Dockerfile
+   volumes:
+     - ./OpenOversight/:/usr/src/app/OpenOversight/
+   links:
+     - postgres:postgres
+   expose:
+     - "3000"
+   command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:3000 app:app
+   ports:
+     - "3000:3000"
+     - "5432:5432"
