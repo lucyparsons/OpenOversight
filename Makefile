@@ -1,6 +1,6 @@
 .PHONY: default build run
 
-default: dev start build clean test stop
+default: dev build start clean test stop
 
 dev:
 	make build
@@ -22,7 +22,7 @@ clean:
 	docker rm openoversight_postgres_1
 
 test:
-	# Not Implemented
+	docker-compose run --rm web /usr/local/bin/pytest -v tests/
 
 stop:
 	docker-compose stop
