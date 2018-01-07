@@ -25,7 +25,6 @@ RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
                 ('CAPTAIN', 'Captain'), ('LIEUTENANT', 'Lieutenant'),
                 ('SERGEANT', 'Sergeant'), ('FIELD', 'Field Training Officer'),
                 ('PO', 'Police Officer')]
-DEPT_CHOICES = [('ChicagoPD', 'Chicago Police Department')]
 
 
 def allowed_values(choices):
@@ -48,9 +47,8 @@ class FindOfficerForm(Form):
     )
     badge = StringField('badge', default='', validators=[Regexp('\w*'),
                                                          Length(max=10)])
-    dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
-                       validators=[DataRequired(),
-                                   AnyOf(allowed_values(DEPT_CHOICES))])
+    dept = QuerySelectField('dept', validators=[DataRequired()],
+                            query_factory=dept_choices, get_label='name')
     rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     race = SelectField('race', default='WHITE', choices=RACE_CHOICES,

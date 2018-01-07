@@ -146,6 +146,10 @@ def filter_by_form(form, officer_query):
         )
     if form['gender'] in ('M', 'F'):
         officer_query = officer_query.filter(Officer.gender == form['gender'])
+    if form['dept']:
+        officer_query = officer_query.filter(
+            Officer.department_id == form['dept'].id
+        )
 
     current_year = datetime.datetime.now().year
     min_birth_year = current_year - int(form['min_age'])
