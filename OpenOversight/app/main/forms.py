@@ -14,6 +14,7 @@ from ..utils import unit_choices, dept_choices
 # Choices are a list of (value, label) tuples
 RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
                 ('HISPANIC', 'Hispanic'),
+                ('NATIVE AMERICAN', 'Native American'),
                 ('PACIFIC ISLANDER', 'Pacific Islander'),
                 ('Other', 'Other'), ('Not Sure', 'Not Sure')]
 GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
