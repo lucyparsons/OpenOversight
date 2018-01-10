@@ -12,7 +12,8 @@ from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm)
-from OpenOversight.app.models import User, Face, Department, Unit, Officer
+from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
+                                      Image)
 
 
 @pytest.mark.parametrize("route", [
@@ -320,15 +321,17 @@ def test_admin_can_delete_tag(mockdata, client, session):
 def test_user_can_add_tag(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        form = FaceTag(officer_id=1,
-                       image_id=4,
+        officer = Image.query.filter_by(department_id=1).first()
+        image = Image.query.filter_by(department_id=1).first()
+        form = FaceTag(officer_id=officer.id,
+                       image_id=image.id,
                        dataX=34,
                        dataY=32,
                        dataWidth=3,
                        dataHeight=33)
 
         rv = client.post(
-            url_for('main.label_data', image_id=4),
+            url_for('main.label_data', image_id=image.id),
             data=form.data,
             follow_redirects=True
         )

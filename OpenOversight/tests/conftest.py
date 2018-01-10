@@ -57,6 +57,11 @@ def pick_star():
     return random.randint(1, 9999)
 
 
+def pick_department():
+    departments = models.Department.query.all()
+    return random.choice(departments)
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -66,7 +71,7 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=1
+        department_id=pick_department().id
     )
 
 
@@ -137,6 +142,13 @@ def session(db, request):
 @pytest.fixture
 def mockdata(session, request):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
+    department = models.Department(name='Springfield Police Department',
+                                   short_name='SPD')
+    session.add(department)
+    department2 = models.Department(name='Chicago Police Department',
+                                    short_name='CPD')
+    session.add(department2)
+    session.commit()
 
     # Ensure test data is deterministic
     SEED = current_app.config['SEED']
@@ -168,11 +180,6 @@ def mockdata(session, request):
     session.add(unit1)
     session.add_all(assignments)
     session.add_all(faces)
-
-    department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD')
-    session.add(department)
-    session.commit()
 
     test_user = models.User(email='jen@example.org',
                             username='test_user',
