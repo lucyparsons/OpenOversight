@@ -14,6 +14,7 @@ from ..utils import unit_choices, dept_choices
 # Choices are a list of (value, label) tuples
 RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
                 ('HISPANIC', 'Hispanic'),
+                ('NATIVE AMERICAN', 'Native American'),
                 ('PACIFIC ISLANDER', 'Pacific Islander'),
                 ('Other', 'Other'), ('Not Sure', 'Not Sure')]
 GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
@@ -24,7 +25,6 @@ RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
                 ('CAPTAIN', 'Captain'), ('LIEUTENANT', 'Lieutenant'),
                 ('SERGEANT', 'Sergeant'), ('FIELD', 'Field Training Officer'),
                 ('PO', 'Police Officer')]
-DEPT_CHOICES = [('ChicagoPD', 'Chicago Police Department')]
 
 
 def allowed_values(choices):
@@ -47,9 +47,8 @@ class FindOfficerForm(Form):
     )
     badge = StringField('badge', default='', validators=[Regexp('\w*'),
                                                          Length(max=10)])
-    dept = SelectField('dept', default='ChicagoPD', choices=DEPT_CHOICES,
-                       validators=[DataRequired(),
-                                   AnyOf(allowed_values(DEPT_CHOICES))])
+    dept = QuerySelectField('dept', validators=[DataRequired()],
+                            query_factory=dept_choices, get_label='name')
     rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     race = SelectField('race', default='WHITE', choices=RACE_CHOICES,
@@ -93,12 +92,13 @@ class FaceTag(Form):
 
 
 class AssignmentForm(Form):
-    star_no = IntegerField('star_no')
-    rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
+    star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
+    rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
-    unit = QuerySelectField('unit', validators=[Optional()],
+    unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip')
-    star_date = DateField('star_date', validators=[Optional()])
+    star_date = DateField('Assignment start date', validators=[Optional()])
 
 
 class DepartmentForm(Form):
@@ -115,25 +115,48 @@ class DepartmentForm(Form):
 
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     last_name = StringField('Last name', default='', validators=[
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
-        Regexp('\w*'), Length(max=50), DataRequired()])
+        Regexp('\w*'), Length(max=50), Optional()])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
-    star_no = IntegerField('Badge Number')
+    star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
-                            query_factory=unit_choices, get_label='descrip')
+                            query_factory=unit_choices, get_label='descrip',
+                            allow_blank=True, blank_text=u'Unknown unit')
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     department = QuerySelectField('Department', validators=[Optional()],
                                   query_factory=dept_choices, get_label='name')
     submit = SubmitField(label='Add')
+
+
+class BasicOfficerForm(Form):
+    first_name = StringField('First name',
+                             validators=[Regexp('\w*'), Length(max=50),
+                                         Optional()])
+    last_name = StringField('Last name',
+                            validators=[Regexp('\w*'), Length(max=50),
+                                        DataRequired()])
+    middle_initial = StringField('Middle initial',
+                                 validators=[Regexp('\w*'), Length(max=50),
+                                             Optional()])
+    race = SelectField('Race', choices=RACE_CHOICES,
+                       validators=[AnyOf(allowed_values(RACE_CHOICES))])
+    gender = SelectField('Gender', choices=GENDER_CHOICES,
+                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    employment_date = DateField('Employment Date', validators=[Optional()])
+    birth_year = IntegerField('Birth Year', validators=[Optional()])
+    department = QuerySelectField('Department', validators=[Optional()],
+                                  query_factory=dept_choices, get_label='name')
+    submit = SubmitField(label='Update')
 
 
 class AddUnitForm(Form):

@@ -57,7 +57,7 @@ def test_user_can_use_form_to_get_to_gallery(mockdata, browser):
 
     page_text = browser.find_element_by_tag_name("body").text
     assert "Digital Gallery" in page_text
-    assert browser.find_element_by_id("officer-found-1")
+    assert browser.find_element_by_id("officer-profile-1")
 
 
 def test_user_can_get_to_complaint(mockdata, browser):

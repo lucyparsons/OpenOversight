@@ -6,12 +6,14 @@ from urlparse import urlparse
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
-                                          AddOfficerForm, AddUnitForm)
+                                          AddOfficerForm, AddUnitForm,
+                                          BasicOfficerForm)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm)
-from OpenOversight.app.models import User, Face, Department, Unit, Officer
+from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
+                                      Image)
 
 
 @pytest.mark.parametrize("route", [
@@ -244,6 +246,34 @@ def test_user_can_add_officer_badge_number(mockdata, client, session):
         assert 'Added new assignment' in rv.data
 
 
+def test_user_can_edit_officer_badge_number(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AssignmentForm(star_no='1234',
+                              rank='COMMANDER')
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        form = AssignmentForm(star_no='12345')
+        officer = Officer.query.filter_by(id=3).one()
+
+        rv = client.post(
+            url_for('main.edit_assignment', officer_id=officer.id,
+                    assignment_id=officer.assignments[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer assignment' in rv.data
+        assert officer.assignments[0].star_no == '12345'
+
+
 def test_user_can_view_submission(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
@@ -291,15 +321,17 @@ def test_admin_can_delete_tag(mockdata, client, session):
 def test_user_can_add_tag(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        form = FaceTag(officer_id=1,
-                       image_id=4,
+        officer = Image.query.filter_by(department_id=1).first()
+        image = Image.query.filter_by(department_id=1).first()
+        form = FaceTag(officer_id=officer.id,
+                       image_id=image.id,
                        dataX=34,
                        dataY=32,
                        dataWidth=3,
                        dataHeight=33)
 
         rv = client.post(
-            url_for('main.label_data', image_id=4),
+            url_for('main.label_data', image_id=image.id),
             data=form.data,
             follow_redirects=True
         )
@@ -704,6 +736,99 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.first_name == 'Test'
         assert officer.race == 'WHITE'
         assert officer.gender == 'M'
+
+
+def test_admin_can_edit_existing_officer(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='Testerinski',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        officer = Officer.query.filter_by(
+            last_name='Testerinski').one()
+
+        form = BasicOfficerForm(last_name='Changed')
+
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Changed' in rv.data
+        assert 'Testerinski' not in rv.data
+
+
+def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='McTesty',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'McTesty' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesty').one()
+        assert officer.first_name == 'Test'
+        assert officer.middle_initial == ''
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+
+
+def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = AddOfficerForm(first_name='Test',
+                              last_name='Testersly',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no='T666',
+                              rank='COMMANDER',
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Testersly' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='Testersly').one()
+        assert officer.first_name == 'Test'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert officer.assignments[0].star_no == 'T666'
 
 
 def test_admin_can_add_new_unit(mockdata, client, session):

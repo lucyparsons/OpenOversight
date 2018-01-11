@@ -11,17 +11,21 @@ from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify)
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
-                     allowed_file, add_new_assignment)
+                     allowed_file, add_new_assignment, edit_existing_assignment,
+                     add_officer_profile, edit_officer_profile)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
-                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm)
+                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
+                    BasicOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
+
+from ..auth.forms import LoginForm
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -64,8 +68,15 @@ def get_ooid():
 
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            return redirect(request.args.get('next') or url_for('main.index'))
+        flash('Invalid username or password.')
     departments = Department.query.all()
-    return render_template('label_data.html', departments=departments)
+    return render_template('label_data.html', departments=departments, form=form)
 
 
 @main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])
@@ -135,6 +146,20 @@ def officer_profile(officer_id):
                                 officer_id=officer_id), code=302)
     return render_template('officer.html', officer=officer, paths=face_paths,
                            assignments=assignments, form=form)
+
+
+@main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
+            methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_assignment(officer_id, assignment_id):
+    assignment = Assignment.query.filter_by(id=assignment_id).one()
+    form = AssignmentForm(obj=assignment)
+    if form.validate_on_submit():
+        assignment = edit_existing_assignment(assignment, form)
+        flash('Edited officer assignment ID {}'.format(assignment.id))
+        return redirect(url_for('main.officer_profile', officer_id=officer_id))
+    return render_template('edit_assignment.html', form=form)
 
 
 @main.route('/user/toggle/<int:uid>', methods=['POST'])
@@ -229,26 +254,25 @@ def add_officer():
     first_unit = Unit.query.first()
     form = AddOfficerForm(department=first_department, unit=first_unit)
     if form.validate_on_submit():
-        officer = Officer(first_name=form.first_name.data,
-                          last_name=form.last_name.data,
-                          middle_initial=form.middle_initial.data,
-                          race=form.race.data,
-                          gender=form.gender.data,
-                          birth_year=form.birth_year.data,
-                          employment_date=form.employment_date.data,
-                          department_id=form.department.data.id)
-        db.session.add(officer)
-        assignment = Assignment(baseofficer=officer,
-                                star_no=form.star_no.data,
-                                rank=form.rank.data,
-                                unit=form.unit.data.id,
-                                star_date=form.employment_date.data)
-        db.session.add(assignment)
-        db.session.commit()
+        officer = add_officer_profile(form)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
         return render_template('add_officer.html', form=form)
+
+
+@main.route('/officer/<int:officer_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_officer(officer_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
+    form = BasicOfficerForm(obj=officer)
+    if form.validate_on_submit():
+        officer = edit_officer_profile(officer, form)
+        flash('Officer {} edited'.format(officer.last_name))
+        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+    else:
+        return render_template('edit_officer.html', form=form)
 
 
 @main.route('/unit/new', methods=['GET', 'POST'])

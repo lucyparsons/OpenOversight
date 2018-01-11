@@ -36,7 +36,7 @@
         {% endif %}
           <div class="container">
             <div class="carousel-caption">
-              <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+              <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">
                     {{ officer.first_name.lower()|title }}
                     {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
                     {{ officer.last_name.lower()|title }}</a> <small>#{{ assignment.star_no }}</small></h1>
@@ -55,12 +55,14 @@
                 {% endif %}
               </div>
 
+              {% if officer.department.name == 'Chicago Police Department' %}
               <a class="btn btn-md btn-primary" id="officer-found-{{ loop.index }}" role="button" href="{{ url_for('main.submit_complaint',
                                officer_last_name=officer.last_name,
                                officer_first_name=officer.first_name,
                                officer_middle_initial=officer.middle_initial,
                                officer_star=assignment.star_no,
                                officer_image=officer_image) }}">That's the officer!</a>
+              {% endif %}
               </div>
             </div>
           </div>
