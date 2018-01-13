@@ -1,26 +1,17 @@
 import subprocess
 from tqdm import tqdm
-
+from sys import argv
 
 def main():
-    list_of_monitored_accts = ['ChicagoCAPS02', 'ChicagoCAPS03',
-                               'Chicago_Police', 'ChicagoCAPS01',
-                               'ChicagoCAPS04', 'ChicagoCAPS05',
-                               'ChicagoCAPS06', 'ChicagoCAPS07',
-                               'ChicagoCAPS08', 'ChicagoCAPS09',
-                               'ChicagoCAPS10', 'ChicagoCAPS11',
-                               'ChicagoCAPS12', 'ChicagoCAPS14',
-                               'ChicagoCAPS16', 'ChicagoCAPS17',
-                               'ChicagoCAPS18', 'ChicagoCAPS19',
-                               'ChicagoCAPS20', 'ChicagoCAPS22',
-                               'ChicagoCAPS24', 'ChicagoCAPS25',
-                               'ChicagoCAPSHQ', 'JoinCPD',
-                               'ChicagoPDAirSea', 'cpdmemorial']
+    accounts_file_location = 'chicago.txt'
+    if len(argv) == 2:
+        accounts_file_location = argv[1]
 
-    for account in tqdm(list_of_monitored_accts):
+    account_file = open(accounts_file_location, 'r')
+    accounts = account_file.readlines()
+    for account in tqdm(accounts):
         print('[*] Scraping {}'.format(account))
-        subprocess.call(['python3', 'src/run.py', '--num', '1000000',
-                         '--retweets', '--replies', account])
+        subprocess.call(['python3', './src/run.py', '--num', '1000000', '--retweets', '--replies', account])
 
     return None
 
