@@ -4,7 +4,7 @@ import hashlib
 import random
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
-
+import imghdr as imghdr
 from flask import current_app, url_for
 
 from .models import db, Officer, Assignment, Image, Face, User, Unit, Department
@@ -120,11 +120,12 @@ def upload_file(safe_local_path, src_filename, dest_filename):
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
+    s3_content_type = "image/%s" % imghdr.what(safe_local_path)
     s3_path = '{}/{}'.format(s3_folder, s3_filename)
     s3_client.upload_file(safe_local_path,
                           current_app.config['S3_BUCKET_NAME'],
                           s3_path,
-                          ExtraArgs={'ACL': 'public-read'})
+                          ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
     url = "https://s3-{}.amazonaws.com/{}/{}".format(
         current_app.config['AWS_DEFAULT_REGION'],
