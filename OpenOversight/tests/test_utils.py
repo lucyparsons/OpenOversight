@@ -1,5 +1,5 @@
 from mock import patch, Mock
-
+import os
 import OpenOversight
 
 
@@ -91,7 +91,8 @@ def test_compute_hash(mockdata):
 
 
 def test_s3_upload_png(mockdata):
-    local_path = 'OpenOversight/app/static/images/test_cop1.png'
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, '../app/static/images/test_cop1.png')
 
     mocked_connection = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
@@ -105,13 +106,14 @@ def test_s3_upload_png(mockdata):
 
 
 def test_s3_upload_jpeg(mockdata):
-    local_path = 'OpenOversight/app/static/images/test_cop5.jpg'
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, '../app/static/images/test_cop5.jpg')
 
     mocked_connection = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
         OpenOversight.app.utils.upload_file(local_path,
-                                            'doesntmatter.png',
-                                            'test_cop1.png')
+                                            'doesntmatter.jpg',
+                                            'test_cop5.jpg')
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/jpeg'
 
 
