@@ -2,12 +2,6 @@ FROM python:2
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r dev-requirements.txt
-
-COPY create_db.py test_data.py /usr/src/app/
-
 ENV DEBIAN-FRONTEND noninteractive
 RUN apt-get update && apt-get install -y xvfb firefox-esr
 
@@ -15,6 +9,11 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckod
 RUN mkdir geckodriver
 RUN tar -xzf geckodriver-v0.19.1-linux64.tar.gz -C geckodriver
 
+COPY requirements.txt dev-requirements.txt /usr/src/app/
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r dev-requirements.txt
+
+COPY create_db.py test_data.py /usr/src/app/
 EXPOSE 3000
 USER www-data
 
