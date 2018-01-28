@@ -2,19 +2,23 @@
 
 # OpenOversight [![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight) [![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop)
 
-OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and provide digital galleries of photographs to help people identify police officers they would like to file a complaint on.
+OpenOversight is a Lucy Parsons Labs project to improve police accountability through public and crowdsourced data. We maintain a database of police officer demographic information and provide digital galleries of photographs to help people identify police officers for filing complaints and in order to see public information about their local police force.
 
-As a proof of concept, OpenOversight currently uses the Chicago Police Department but this infrastructure will be used to extent the project to other cities where it is needed. Interested in helping bring OpenOversight to your city? Email us at [info@lucyparsonslabs.com](mailto:info@lucyparsonslabs.com).  
-
-This project is written and maintained by [@lucyparsonslabs](https://twitter.com/lucyparsonslabs) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. If you prefer to contribute in other ways, please submit images to our platform or talk to us about how to help sort and tag images. This project is in public beta, and we are currently soliciting photographs to add to the database.
+This project is written and maintained by [@lucyparsonslabs](https://twitter.com/lucyparsonslabs) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our contributing guide. You can get a tip for implementing important issues. If you prefer to contribute in other ways, please submit images to our platform or talk to us about how to help sort and tag images. This project is in public beta, and we are currently soliciting photographs to add to the database.
 
 ## Note to Law Enforcement
 
-Please contact our legal representation with requests, questions, or concerns of a legal nature by emailing [legal@lucyparsonslabs.com](mailto:legal@lucyparsonslabs.com). 
+Please contact our legal representation with requests, questions, or concerns of a legal nature by emailing [legal@lucyparsonslabs.com](mailto:legal@lucyparsonslabs.com).
 
 ## Issues
 
-Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//issues/new) to submit issues or suggestions. 
+Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//issues/new) to submit issues or suggestions.
+
+## Tips
+
+We offer financial tips as a thank you for certain issues being implemented. Please view [issues labeled tip](
+https://github.com/lucyparsons/OpenOversight/issues?q=is%3Aissue+is%3Aopen+label%3Atip) to see which contributions are eligible for tips. If you do not want a tip for that
+contribution, just include "#notip" in your PR description. The amount of the tip depends on the size of the ticket: S ($20), M ($50), and L ($100).
 
 ## Developer Quickstart
 
@@ -47,5 +51,5 @@ Please see the `DEPLOY.md` file for deployment instructions.
   * Roster of all police officers (names, badge numbers)
   * Badge/star number history (if badge/star numbers change upon promotion)
   * Demographic information - race, gender, etc.
-  * Assignments - what bureau, precinct/division and/or beat are they assigned to? When has this changed? 
+  * Assignments - what bureau, precinct/division and/or beat are they assigned to? When has this changed?
 * *Clear images of officers with badge numbers and/or names displayed*: Scrape through social media (as we have done) and/or solicit submissions.
