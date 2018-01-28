@@ -18,7 +18,7 @@ Please use [our issue tracker](https://github.com/lucyparsons/OpenOversight//iss
 
 We offer financial tips as a thank you for certain issues being implemented. Please view [issues labeled tip](
 https://github.com/lucyparsons/OpenOversight/issues?q=is%3Aissue+is%3Aopen+label%3Atip) to see which contributions are eligible for tips. If you do not want a tip for that
-contribution, just include "#notip" in your PR description. The amount of the tip depends on the size of the ticket: S ($20), M ($50), and L ($100).
+contribution, just include "#notip" in your PR description. The amount of the tip depends on the size of the ticket: S ($20), M ($50), and L ($100). Tips are provided once your contribution is merged in (i.e. contributions must have the appropriate unit tests).
 
 ## Developer Quickstart
 
