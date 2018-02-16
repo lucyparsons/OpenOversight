@@ -53,6 +53,12 @@
             <code>{{ user.email }}</code>
           </p>
           {% endif %}
+	  {% if department is defined %}
+	  <h3>Default Department</h3>
+          <p>
+            <code>{{ department }}</code>
+          </p>
+	  {% endif %}
         </div>
       </div>
     </div>

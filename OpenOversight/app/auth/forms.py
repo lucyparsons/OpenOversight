@@ -1,8 +1,11 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Email, Regexp, EqualTo
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms.validators import Required, Length, Email, Regexp, EqualTo, Optional
 from wtforms import ValidationError
+
 from ..models import User
+from ..utils import dept_choices
 
 
 class LoginForm(Form):
@@ -72,3 +75,9 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+
+class ChangeDefaultDepartmentForm(Form):
+    dept_pref = QuerySelectField('Default Department (Optional)', validators=[Optional()],
+                                 query_factory=dept_choices, get_label='name', allow_blank=True)
+    submit = SubmitField('Update Default')

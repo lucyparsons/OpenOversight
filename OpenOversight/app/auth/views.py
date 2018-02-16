@@ -5,7 +5,7 @@ from . import auth
 from ..models import User, db
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
-    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
+    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm
 
 
 @auth.before_app_request
@@ -163,3 +163,18 @@ def change_email(token):
     else:
         flash('Invalid request.')
     return redirect(url_for('main.index'))
+
+
+@auth.route('/change-dept/', methods=['GET', 'POST'])
+@login_required
+def change_dept():
+    form = ChangeDefaultDepartmentForm()
+    if form.validate_on_submit():
+        try:
+            current_user.dept_pref = form.dept_pref.data.id
+        except AttributeError:
+            current_user.dept_pref = None
+        db.session.add(current_user)
+        flash('Updated!')
+        return redirect(url_for('main.index'))
+    return render_template('auth/change_dept_pref.html', form=form)
