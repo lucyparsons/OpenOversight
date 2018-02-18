@@ -357,6 +357,25 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
         assert 'Tag already exists between this officer and image! Tag not added.' in rv.data
 
 
+def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        tag = Face.query.first()
+        form = FaceTag(officer_id=999999999999999999,
+                       image_id=tag.img_id,
+                       dataX=34,
+                       dataY=32,
+                       dataWidth=3,
+                       dataHeight=33)
+
+        rv = client.post(
+            url_for('main.label_data', image_id=tag.img_id),
+            data=form.data,
+            follow_redirects=True
+        )
+        assert 'Invalid officer ID' in rv.data
+
+
 def test_user_can_finish_tagging(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)

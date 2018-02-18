@@ -352,12 +352,13 @@ def label_data(department_id=None, image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
-        if not Officer.query.filter_by(id=form.officer_id.data).first():
-            flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+        officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
         existing_tag = db.session.query(Face) \
                          .filter(Face.officer_id == form.officer_id.data) \
                          .filter(Face.img_id == form.image_id.data).first()
-        if not existing_tag:
+        if not officer_exists:
+            flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+        elif not existing_tag:
             new_tag = Face(officer_id=form.officer_id.data,
                            img_id=form.image_id.data,
                            face_position_x=form.dataX.data,
