@@ -466,3 +466,11 @@ def get_uploaded_cropped_image(original_image, crop_data):
         ))
         rm_dirs()
         return None
+
+
+def badge_exists(star_no, department_id):
+    """badge_exists checks if a given badge number exists already for a department."""
+    for assignment in Assignment.query.filter_by(star_no=star_no).all():
+        if str(assignment.baseofficer.department_id) == str(department_id):
+            return True
+        return False
