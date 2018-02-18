@@ -1,11 +1,13 @@
 from getpass import getpass
 import sys
+import csv
 
 from flask_script import Manager, Server, Shell
 from flask_migrate import Migrate, MigrateCommand
 
 from app import app
-from app.models import db, User
+from app.models import db, Assignment, Department, Officer, User
+from app.utils import badge_exists
 
 
 migrate = Migrate(app, db)
@@ -88,6 +90,50 @@ def link_officers_to_department():
         else:
             print "Skipped! Object already assigned to department!"
     db.session.commit()
+
+
+@manager.command
+def bulk_add_officers(filename):
+    """Bulk adds officers."""
+    csvfile = csv.DictReader(open(filename))
+    departments = {}
+    n_created = 0
+    for line in csvfile:
+        department_id = line['department_id']
+        department = departments.get(department_id)
+        if line['department_id'] not in departments:
+            department = Department.query.filter_by(id=department_id).one_or_none()
+            if department:
+                departments[department_id] = department
+            else:
+                raise Exception('Department ID {} not found'.format(department_id))
+
+        # check for existing officer based on badge
+        if badge_exists(line['badge'], department_id):
+            print 'Skipping creation of existing badge id {} for department id {}'.format(line['badge'], department_id)
+            continue
+
+        # create officer
+        officer = Officer()
+        officer.department_id = department_id
+        officer.last_name = line['last_name']
+        officer.first_name = line['first_name']
+        officer.middle_initial = line['middle_initial']
+        officer.race = line['race']
+        officer.gender = line['gender']
+        officer.employment_date = line['employment_date']
+        officer.birth_year = line['birth_year']
+        db.session.add(officer)
+        db.session.commit()
+
+        assignment = Assignment()
+        assignment.officer_id = officer.id
+        assignment.star_no = line['badge']
+        assignment.rank = line['rank']
+        db.session.add(assignment)
+        db.session.commit()
+        n_created += 1
+    print 'created {} officers'.format(n_created)
 
 
 if __name__ == "__main__":
