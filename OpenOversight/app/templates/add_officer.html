@@ -15,6 +15,7 @@
         {{ wtf.form_field(form.first_name, autofocus="autofocus") }}
         {{ wtf.form_field(form.middle_initial) }}
         {{ wtf.form_field(form.last_name) }}
+        {{ wtf.form_field(form.suffix) }}
         {{ wtf.form_field(form.race) }}
         {{ wtf.form_field(form.gender) }}
         {{ wtf.form_field(form.star_no) }}
@@ -25,6 +26,7 @@
         {{ wtf.form_field(form.birth_year) }}
         {{ wtf.form_field(form.department) }}
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+
     </form>
     <br>
 </div>
