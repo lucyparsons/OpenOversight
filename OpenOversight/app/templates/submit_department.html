@@ -6,10 +6,10 @@
 <div class="container theme-showcase" role="main">
 
    <div class="page-header">
-        <h1>Submit Images <small>containing faces/badge numbers of uniformed police officers</small></h1>
+        <h1>Submit images <small>of officers in uniform. Police officer faces, and either a badge number or name, should be clearly visible in each photograph.</small></h1>
    </div>
 
-  <h3>Drop images here to submit photos of officers in {{ department.name }}</h3>
+  <h3>Drop images here to submit photos of officers in {{ department.name }}:</h3>
 
   <form action="/upload/department/{{ department.id }}" class="dropzone" id="my-cop-dropzone">
   </form>
@@ -37,7 +37,7 @@
 
 <div class="container">
    <h3>High Security Submissions</h3>
-   <p class="small">For very high security upload of photos or videos, you can use the Lucy Parsons Labs SecureDrop instance:</p>
+   <p class="small">We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a> For very high security submissions of photos or videos, you can use an anonymous dropbox called SecureDrop (launch instructions below). All files that we receive through SecureDrop are <a href="https://mat.boum.org/">scrubbed of metadata.</a></p>
    <a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a>
 </div>
 
