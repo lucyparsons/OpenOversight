@@ -23,7 +23,7 @@ Make sure you've started VirtualBox, and then in your project directory, run:
 
 `vagrant up`
 
-This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine. 
+This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine.
 
 In addition, you can now SSH into it:
 
@@ -44,6 +44,10 @@ In the VM instance, your code is copied to a folder inside of `/vagrant`, so you
 ```sh
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight
 ```
+
+*Note:* the photo upload functionality - which uses an S3 bucket - and the email functionality - which
+requires an email account - do not work in the development environment as they require some environment
+variables to be configured.
 
 ## Server commands
 
