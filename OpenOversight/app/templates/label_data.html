@@ -8,6 +8,18 @@
       <h1><small>Volunteer</small></h1>
     </div>
 
+    <div class="text-center frontpage-leads">
+      <p>
+        <a class="btn btn-lg btn-primary" href="{{ url_for('main.get_tutorial') }}">
+          <span class="glyphicon glyphicon-alert tutorial" aria-hidden="true"></span>
+          Tutorial
+        </a>
+      </p>
+      <p>
+        New to working on images for OpenOversight? Or just need a refresher?
+      </p>
+    </div>
+
     {% for department in departments %}
     <div class="text-center frontpage-leads">
       <h2><small>{{ department.name }} ({{department.short_name}})</small></h2>
@@ -23,18 +35,6 @@
       </p>
     </div>
     {% endfor %}
-
-    <div class="text-center frontpage-leads">
-      <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.get_tutorial') }}">
-          <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
-          Tutorial
-        </a>
-      </p>
-      <p>
-        New to working on images for OpenOversight? Or just need a refresher?
-      </p>
-    </div>
 
         {% if current_user.is_administrator %}
         <div class="text-center frontpage-leads">
