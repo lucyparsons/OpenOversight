@@ -9,11 +9,16 @@
         <h1>Submit images <small>of officers in uniform. Police officer faces, and either a badge number or name, should be clearly visible in each photograph.</small></h1>
    </div>
 
+<div class="header">
+    <h3>What happens when I submit a photograph?</h3>
+    <p class="small">The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
+</div>
+
   <h3>Drop images here to submit photos of officers in {{ department.name }}:</h3>
 
   <form action="/upload/department/{{ department.id }}" class="dropzone" id="my-cop-dropzone">
   </form>
-
+    <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
   <script>
   $(document).ready(function(){
     Dropzone.options.myCopDropzone = {
