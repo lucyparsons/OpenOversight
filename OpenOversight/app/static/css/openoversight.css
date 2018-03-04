@@ -89,6 +89,10 @@ body {
      font-size: 30px;
  }
 
+a > .tutorial{
+    color:red;
+    padding-right: 8px;
+ }
  .thumbnail_container {
      float:left;
      max-height:300px;
