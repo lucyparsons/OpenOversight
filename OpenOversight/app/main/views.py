@@ -448,11 +448,15 @@ def submit_department_images(department_id=1):
 @limiter.limit('250/minute')
 def upload(department_id):
     file_to_upload = request.files['file']
-    if not allowed_file(file_to_upload.filename):
+    if not allowed_file(file_to_upload.filename, 'ALLOWED_EXTENSIONS'):
         return jsonify(error="File type not allowed!"), 415
     original_filename = secure_filename(file_to_upload.filename)
     image_data = file_to_upload.read()
-
+    if allowed_file (file_to_upload.filename, 'REQUIRES_CONV'):
+         changeimage = Image.open(file_to_upload.filename)
+         basename = os.path.splitext(file_to_upload.filename)[0].split('.')
+         changeimage.save(basename + '.jpeg')
+         os.remove(file_to_upload.filename)
     # See if there is a matching photo already in the db
     hash_img = compute_hash(image_data)
     hash_found = Image.query.filter_by(hash_img=hash_img).first()

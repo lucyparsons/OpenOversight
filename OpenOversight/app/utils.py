@@ -2,6 +2,7 @@ import boto3
 import datetime
 import hashlib
 import random
+from PIL import Image
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
@@ -90,9 +91,9 @@ def edit_officer_profile(officer, form):
     return officer
 
 
-def allowed_file(filename):
+def allowed_file(filename, extensions):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+           filename.rsplit('.', 1)[1].lower() in current_app.config[extensions]
 
 
 def get_random_image(image_query):
