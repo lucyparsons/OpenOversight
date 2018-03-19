@@ -13,5 +13,6 @@ sqlalchemy==1.1.15
 flask-sqlalchemy>=2.1
 flask-bootstrap
 gunicorn==17.5
+Pillow
 fabric
 itsdangerous
