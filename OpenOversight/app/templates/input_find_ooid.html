@@ -7,7 +7,7 @@
         <h2>Find an Officer's OpenOversight ID</h2>
       </div>
 
-      <p>Use the following form to put in the details you can see in the image:</p>
+      <p>Use the following form to put in the details you can see in the image. (It's okay if you can only see a partial name or badge number.)</p>
       <form action="{{ url_for('main.get_tagger_gallery') }}" method="post">
         {{ form.hidden_tag() }}
       <h4>Department: {{ form.dept }}</h4>
@@ -15,13 +15,13 @@
           <p><span style="color: red;">[{{ error }}]</span></p>
         {% endfor %}
 
-      <h4>What is visible from the officer's name tag?</h4>
+      <h4>What part, if any, of the officer's last name is visible?</h4>
         {{ form.name }}
         {% for error in form.name.errors %}
           <p><span style="color: red;">[{{ error }}]</span></p>
         {% endfor %}
 
-      <h4>What is the officer's last name? (It may be visible on the name tag)</h4>
+      <h4>What part, if any, of the officer's badge number is visible?</h4>
         {{ form.badge }}
         {% for error in form.badge.errors %}
           <p><span style="color: red;">[{{ error }}]</span></p>
