@@ -6,14 +6,19 @@
 <div class="container theme-showcase" role="main">
 
    <div class="page-header">
-        <h1>Submit Images <small>containing faces/badge numbers of uniformed police officers</small></h1>
+        <h1>Submit images <small>of officers in uniform. Police officer faces, and either a badge number or name, should be clearly visible in each photograph.</small></h1>
    </div>
 
-  <h3>Drop images here to submit photos of officers in {{ department.name }}</h3>
+<div class="header">
+    <h3>What happens when I submit a photograph?</h3>
+    <p class="small">The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
+</div>
+
+  <h3>Drop images here to submit photos of officers in {{ department.name }}:</h3>
 
   <form action="/upload/department/{{ department.id }}" class="dropzone" id="my-cop-dropzone">
   </form>
-
+    <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
   <script>
   $(document).ready(function(){
     Dropzone.options.myCopDropzone = {
@@ -37,7 +42,7 @@
 
 <div class="container">
    <h3>High Security Submissions</h3>
-   <p class="small">For very high security upload of photos or videos, you can use the Lucy Parsons Labs SecureDrop instance:</p>
+   <p class="small">We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a> For very high security submissions of photos or videos, you can use an anonymous dropbox called SecureDrop (launch instructions below). All files that we receive through SecureDrop are <a href="https://mat.boum.org/">scrubbed of metadata.</a></p>
    <a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a>
 </div>
 
