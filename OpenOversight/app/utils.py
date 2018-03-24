@@ -2,6 +2,7 @@ import boto3
 import datetime
 import hashlib
 import random
+import os
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
@@ -93,6 +94,18 @@ def edit_officer_profile(officer, form):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+
+def requires_conversion(filename):
+    return '.' in filename and \
+        filename.split('.', 1)[1].lower() in current_app.config['REQUIRES_CONV']
+
+
+def convert_image():
+    changeimage = Image.open(file_to_upload.filename)
+    basename = os.path.splitext(file_to_upload.filename)[0].split('.')
+    changeimage.save(basename + '.jpeg')
+    os.remove(file_to_upload.filename)
 
 
 def get_random_image(image_query):

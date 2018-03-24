@@ -36,7 +36,8 @@ class BaseConfig(object):
 
     # Upload Settings
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
-    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'psd', 'tiff'])
+    REQUIRES_CONV = set(['tiff', 'psd'])
 
     SEED = 666
 

@@ -18,7 +18,8 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
-                     add_officer_profile, edit_officer_profile)
+                     add_officer_profile, edit_officer_profile, requires_conversion,
+                     convert_image)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     BasicOfficerForm)
@@ -450,6 +451,8 @@ def upload(department_id):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
+    if requires_conversion(file_to_upload.filename):
+        convert_image()
     original_filename = secure_filename(file_to_upload.filename)
     image_data = file_to_upload.read()
 
