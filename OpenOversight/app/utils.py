@@ -101,7 +101,7 @@ def requires_conversion(filename):
         filename.split('.', 1)[1].lower() in current_app.config['REQUIRES_CONV']
 
 
-def convert_image():
+def convert_image(file_to_upload):
     changeimage = Image.open(file_to_upload.filename)
     basename = os.path.splitext(file_to_upload.filename)[0].split('.')
     changeimage.save(basename + '.jpeg')
