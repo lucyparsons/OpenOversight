@@ -19,24 +19,46 @@
         {% endif %}
       {% set assignment = officer.assignments.first() %}
       <li class="list-group-item">
-        <div >
-          {% if officer.face.first().face_position_x %}
-          <div class="img-responsive thumbnail text-center"
-               style="background-image: url({{ officer_image }});
-                      background-repeat: no-repeat;
-                      background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
-                      width: {{ officer.face.first().face_width }}px;
-                      height: {{ officer.face.first().face_height }}px;">
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              {% if officer.face.first().face_position_x %}
+              <div class="img-responsive thumbnail"
+                   style="background-image: url({{ officer_image }});
+                          background-repeat: no-repeat;
+                          background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
+                          width: {{ officer.face.first().face_width }}px;
+                          height: {{ officer.face.first().face_height }}px;"
+                          alt="{% include 'partials/officer_name.html' %}">
+              </div>
+              {% else %}
+              <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+              {% endif %}
+            </div>
+            <div class="col-md-6 col-xs-12">
+              <h2>
+                <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{% include "partials/officer_name.html" %}</a>
+                <small>#{{ assignment.star_no }}</small>
+              </h2>
+              <div class="row">
+                <div class="col-md-6 col-xs-6">
+                  <dl>
+                    <dt>Rank</dt>
+                    <dd>{{ officer.rank|default('Unknown') }}</dd>
+                    <dt>Race</dt>
+                    <dd>{{ officer.race.lower()|title|default('Unknown') }}</dd>
+                  </dl>
+                </div>
+                <div class="col-md-6 col-xs-6">
+                  <dl>
+                    <dt>Gender</dt>
+                    <dd>{{ officer.gender|default('Unknown') }}</dd>
+                    <dt>Number of Photos</dt>
+                    <dd>{{ officer.face.count() }}</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
           </div>
-          {% else %}
-          <img src="{{ officer_image }}" class="img-responsive thumbnail">
-          {% endif %}
-        </div>
-
-        <h2><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">
-                    {{ officer.first_name.lower()|title }}
-                    {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-                    {{ officer.last_name.lower()|title }}</a> <small>#{{ assignment.star_no }}</small></h2>
       </li>
     {% endfor %}
   </ul>
