@@ -26,6 +26,7 @@ from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
     ('/submit'),
     ('/submit/department/1'),
     ('/label'),
+    ('/department/1'),
     ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
@@ -228,6 +229,14 @@ def test_user_can_access_officer_profile(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Officer Detail' in rv.data
+
+def test_user_can_access_officer_list(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.list_officer', department_id=2)
+        )
+
+        assert 'Officers' in rv.data
 
 
 def test_user_can_add_officer_badge_number(mockdata, client, session):
