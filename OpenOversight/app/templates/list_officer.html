@@ -64,38 +64,22 @@
   </ul>
 
   <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-      {% if not officers.page == 1 %}
-        <li class="page-item">
-          <a class="page-link" role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=1) }}">
-            <span aria-hidden="true">&laquo;&laquo;</span>
-            First
-          </a>
-        </li>
-      {% endif %}
+    <ul class="pager">
       {% if officers.has_prev %}
-        <li class="page-item">
-          <a class="page-link" role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num) }}">
-            <span aria-hidden="true">&laquo;</span>
+        <li class="previous">
+          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num) }}">
+            <span aria-hidden="true">&larr;</span>
             Previous
           </a>
         </li>
       {% endif %}
       {% if officers.has_next %}
-      <li class="page-item">
-        <a class="page-link" role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num) }}">
+      <li class="next">
+        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num) }}">
           Next
-          <span aria-hidden="true">&raquo;</span>
+          <span aria-hidden="true">&rarr;</span>
         </a>
       </li>
-      {% endif %}
-      {% if not officers.page == officers.pages %}
-        <li class="page-item">
-          <a class="page-link" role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.pages) }}">
-            Last
-            <span aria-hidden="true">&raquo;&raquo;</span>
-          </a>
-        </li>
       {% endif %}
     </ul>
   </nav>
