@@ -10,7 +10,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify)
+                   flash, current_app, jsonify, Markup)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -106,7 +106,12 @@ def profile(username):
         user = User.query.filter_by(username=username).one()
     else:
         abort(404)
-    return render_template('profile.html', user=user)
+    try:
+        pref = User.query.filter_by(id=current_user.id).one().dept_pref
+        department = Department.query.filter_by(id=pref).one().name
+    except NoResultFound:
+        department = None
+    return render_template('profile.html', user=user, department=department)
 
 
 @main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
@@ -433,8 +438,19 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
-    departments = Department.query.all()
-    return render_template('submit_deptselect.html', departments=departments)
+    # try to use preferred department if available
+    try:
+        if User.query.filter_by(id=current_user.id).one().dept_pref:
+            flash(Markup('Want to submit for another department? Change your <a href="/auth/change-dept/">default department</a>.'))
+            department = User.query.filter_by(id=current_user.id).one().dept_pref
+            return redirect(url_for('main.submit_department_images', department_id=department))
+        else:
+            departments = Department.query.all()
+            return render_template('submit_deptselect.html', departments=departments)
+    # that is, an anonymous user has no id attribute
+    except AttributeError:
+        departments = Department.query.all()
+        return render_template('submit_deptselect.html', departments=departments)
 
 
 @main.route('/submit/department/<int:department_id>', methods=['GET', 'POST'])

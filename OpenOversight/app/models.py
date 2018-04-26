@@ -127,6 +127,7 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
+    dept_pref = db.Column(db.Integer, db.ForeignKey('departments.id'))
 
     classifications = db.relationship('Image', backref='users')
     tags = db.relationship('Face', backref='users')
