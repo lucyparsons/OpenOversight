@@ -251,6 +251,17 @@ def add_department():
         return render_template('add_department.html', form=form)
 
 
+@main.route('/department/<int:department_id>')
+def list_officer(department_id, page=1):
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
+    department = Department.query.filter_by(id=department_id).one()
+    officers = Officer.query.filter(Officer.department_id == department_id) \
+                    .order_by(Officer.last_name) \
+                    .paginate(page, 10, False)
+    return render_template('list_officer.html', department=department, officers=officers)
+
+
 @main.route('/officer/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -417,6 +428,10 @@ def get_gallery(page=1):
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_data = form.data
         officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
+        # If no officers are found, go to a list of all department officers
+        if not officers.items:
+            return redirect(url_for('main.list_officer', department_id=form_data['dept'].id))
+
         return render_template('gallery.html',
                                officers=officers,
                                form=form,
