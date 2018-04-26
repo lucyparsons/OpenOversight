@@ -2,6 +2,11 @@
 
 {% block content %}
 <div class="container" role="main">
+  {% if from_search %}
+    <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
+  {% else %}
+    <h4><a href="/find">Search for officers</a></h4>
+  {% endif %}
   <h1>
     {{ department.name|title }} Officers
   </h1>
