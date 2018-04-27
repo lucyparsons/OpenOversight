@@ -3,7 +3,6 @@ import pytest
 from flask import url_for, current_app
 from urlparse import urlparse
 
-
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
@@ -229,6 +228,7 @@ def test_user_can_access_officer_profile(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Officer Detail' in rv.data
+
 
 def test_user_can_access_officer_list(mockdata, client, session):
     with current_app.test_request_context():

@@ -261,9 +261,13 @@ def list_officer(department_id, page=1, from_search=False):
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).one()
     officers = Officer.query.filter(Officer.department_id == department_id) \
-                    .order_by(Officer.last_name) \
-                    .paginate(page, OFFICERS_PER_PAGE, False)
-    return render_template('list_officer.html', department=department, officers=officers, from_search=from_search)
+        .order_by(Officer.last_name) \
+        .paginate(page, OFFICERS_PER_PAGE, False)
+    return render_template(
+        'list_officer.html',
+        department=department,
+        officers=officers,
+        from_search=from_search)
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])
