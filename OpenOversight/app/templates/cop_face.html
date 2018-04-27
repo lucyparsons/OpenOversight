@@ -12,6 +12,7 @@
       <div class="row">
         <div class="text-center">
           <h1><small>Select the face of each officer in the photo and identify them.</small></h1>
+          <h2><small class="muted">{{ department.name }}</small></h2>
         </div>
       </div>
 
@@ -113,6 +114,7 @@
       <p><a href="mailto:info@lucyparsonslabs.com" class="btn btn-lg btn-primary" role="button">Mail us to get it enabled again</a></p>
       {% else %}
       <h3>All images have been tagged!</h3>
+      <h4><small class="muted">{{ department.name }}</small></h4>
       <p><a href="{{ url_for('main.submit_data')}}" class="btn btn-lg btn-primary" role="button">Submit officer pictures to us</a></p>
       {% endif %}
     {% endif %}

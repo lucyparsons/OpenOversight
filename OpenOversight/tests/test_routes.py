@@ -338,6 +338,22 @@ def test_user_can_add_tag(mockdata, client, session):
         assert 'Tag added to database' in rv.data
 
 
+def test_user_is_redirected_to_correct_department_after_tagging(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        department_id = 2
+        image = Image.query.filter_by(department_id=department_id, faces=None).first()
+        print("FACES", image.faces)
+        rv = client.get(
+            url_for('main.complete_tagging', image_id=image.id, department_id=department_id),
+            follow_redirects=True
+        )
+        department = Department.query.get(department_id)
+
+        assert rv.status_code == 200
+        assert department.name in rv.data
+
+
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
