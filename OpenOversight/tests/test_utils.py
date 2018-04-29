@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from mock import patch, Mock
 import os
 import OpenOversight
@@ -135,3 +136,47 @@ def test_user_cannot_submit_invalid_file_extension(mockdata):
 def test_unit_choices(mockdata):
     unit_choices = [str(x) for x in OpenOversight.app.utils.unit_choices()]
     assert 'Unit: Bureau of Organized Crime' in unit_choices
+
+
+def test_get_timeline_sorted_list(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer = OpenOversight.app.models.Officer(
+        last_name='Timeline', first_name='Test',
+        middle_initial='T',
+        race='WHITE', gender='FEMALE',
+        birth_year=1960,
+        employment_date=datetime(1960 + 20, 4, 4, 1, 1, 1),
+        department_id=department.id)
+    OpenOversight.app.models.db.session.add(officer)
+    OpenOversight.app.models.db.session.commit()
+
+    time_now = datetime.now()
+    image1 = OpenOversight.app.models.Image(
+        filepath='beep',
+        department_id=department.id,
+        date_image_inserted=time_now - timedelta(days=1)
+    )
+    image2 = OpenOversight.app.models.Image(filepath='boop',
+                                            department_id=department.id,
+                                            date_image_inserted=time_now)
+    OpenOversight.app.models.db.session.add_all([image1, image2])
+    OpenOversight.app.models.db.session.commit()
+
+    face1 = OpenOversight.app.models.Face(officer_id=officer.id,
+                                          img_id=image1.id)
+    face2 = OpenOversight.app.models.Face(officer_id=officer.id,
+                                          img_id=image2.id)
+    OpenOversight.app.models.db.session.add_all([face1, face2])
+    OpenOversight.app.models.db.session.commit()
+
+    faces = OpenOversight.app.models.Face \
+                         .query.filter_by(officer_id=officer.id).all()
+
+    events = OpenOversight.app.utils.get_timeline(faces)
+
+    assert events[0]["date_image_inserted"] == time_now
+    assert events[0]["image_id"] == image2.id
+
+    # Older event should be second in the timeline
+    assert events[1]["date_image_inserted"] == time_now - timedelta(days=1)
+    assert events[1]["image_id"] == image1.id
