@@ -50,6 +50,12 @@ def index():
     return render_template('index.html')
 
 
+@main.route('/browse', methods=['GET'])
+def browse():
+    departments = Department.query.all()
+    return render_template('browse.html', departments=departments)
+
+
 @main.route('/find', methods=['GET', 'POST'])
 def get_officer():
     form = FindOfficerForm()
