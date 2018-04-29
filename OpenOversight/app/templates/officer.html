@@ -170,7 +170,9 @@
         {% if timeline_event["date_image_inserted"] %}
           <p>On {{ timeline_event["date_image_inserted"].strftime('%m/%d/%Y') }},
           <a href="{{ url_for('main.display_submission', image_id=timeline_event["image_id"]) }}">a new photo</a>
-          was added to OpenOversight containing this officer.</p>
+          was added to OpenOversight
+          <a href="{{ url_for('main.display_tag', tag_id=timeline_event["tag_id"]) }}">containing</a>
+          this officer.</p>
         {% endif %}
       {% endfor %}
     </div>

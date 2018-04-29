@@ -249,7 +249,8 @@ def get_timeline(faces):
                        reverse=True)
     for face in faces_w_dates:
         event = {"date_image_inserted": face.image.date_image_inserted,
-                 "image_id": face.image.id}
+                 "image_id": face.image.id,
+                 "tag_id": face.id}
         timeline_events.append(event)
 
     return timeline_events
