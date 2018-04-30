@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import abort, render_template, redirect, request, url_for, flash
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
@@ -8,6 +8,7 @@ from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm, \
     EditUserForm
+from .utils import admin_required
 
 
 @auth.before_app_request
@@ -183,6 +184,7 @@ def change_dept():
 
 
 class UserAPI(MethodView):
+    decorators = [admin_required]
 
     def get(self, user_id):
         if user_id is None:
@@ -191,23 +193,38 @@ class UserAPI(MethodView):
         else:
             user = User.query.get(user_id)
             if user:
-                form = EditUserForm(email=user.email)
+                form = EditUserForm(
+                    email=user.email,
+                    is_area_coordinator=user.is_area_coordinator,
+                    ac_department=user.ac_department,
+                    is_administrator=user.is_administrator)
                 return render_template('auth/user.html', user=user, form=form)
             else:
-                return render_template('404.html'), 404
+                return render_template('403.html'), 403
 
     def post(self, user_id):
-        # update a single user
-        pass
-
-
+        form = EditUserForm(data=request.form)
+        user = User.query.get(user_id)
+        if user and form.validate_on_submit():
+            user.email = form.email.data
+            user.is_area_coordinator = form.is_area_coordinator.data
+            user.ac_department = form.ac_department.data
+            user.is_administrator = form.is_administrator.data
+            db.session.add(user)
+            flash('{} has been updated!'.format(user.username))
+            return redirect(url_for('auth.user_api'))
+        elif not form.validate_on_submit():
+            flash('Invalid entry')
+            return render_template('auth/user.html', user=user, form=form)
+        else:
+            return render_template('403.html'), 403
 
     def delete(self, user_id):
-        # delete a single user
         pass
 
 user_view = UserAPI.as_view('user_api')
 auth.add_url_rule('/users/', defaults={'user_id': None},
                  view_func=user_view, methods=['GET',])
 auth.add_url_rule('/users/<int:user_id>', view_func=user_view,
-                 methods=['GET', 'POST', 'DELETE'])
+                 methods=['GET', 'POST'])
+
