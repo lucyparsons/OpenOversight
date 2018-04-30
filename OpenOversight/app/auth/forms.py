@@ -81,3 +81,16 @@ class ChangeDefaultDepartmentForm(Form):
     dept_pref = QuerySelectField('Default Department (Optional)', validators=[Optional()],
                                  query_factory=dept_choices, get_label='name', allow_blank=True)
     submit = SubmitField('Update Default')
+
+
+class EditUserForm(Form):
+    email = StringField('Email', validators=[Required(), Length(1, 64),
+                                             Email()])
+    is_area_coordinator = BooleanField('Is area coordinator?', validators=[Required()])
+    ac_department = QuerySelectField('Department', validators=[Required()],
+                                 query_factory=dept_choices, get_label='name', allow_blank=False)
+    submit = SubmitField(label='Update')
+
+    def validate_email(self, field):
+        if not User.query.filter_by(email=field.data).first():
+            raise ValidationError('Not a valid user.')
