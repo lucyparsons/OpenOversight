@@ -3,13 +3,15 @@
 {% block content %}
 <div class="container" role="main">
   {% if from_search %}
+    <h1>No Results Found</h1>
     <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
+    <h2>Other Offcers from {{ department.name|title }}</h2>
   {% else %}
     <h4><a href="/find">Search for officers</a></h4>
+    <h1>
+      {{ department.name|title }} Officers
+    </h1>
   {% endif %}
-  <h1>
-    {{ department.name|title }} Officers
-  </h1>
 
   <nav aria-label="Page navigation top">
     <ul class="pager">
