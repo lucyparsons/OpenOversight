@@ -18,6 +18,7 @@ from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
 @pytest.mark.parametrize("route", [
     ('/'),
     ('/index'),
+    ('/browse'),
     ('/find'),
     ('/about'),
     ('/tagger_find'),
