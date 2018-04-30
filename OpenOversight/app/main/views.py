@@ -1,6 +1,5 @@
 import datetime
 import os
-from functools import wraps
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -26,6 +25,7 @@ from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
 from ..auth.forms import LoginForm
+from ..auth.utils import admin_required
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -33,15 +33,6 @@ SAVED_UMASK = os.umask(0o077)
 
 def redirect_url(default='index'):
     return request.args.get('next') or request.referrer or url_for(default)
-
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_administrator:
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 @main.route('/')
