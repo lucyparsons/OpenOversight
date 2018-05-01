@@ -227,3 +227,8 @@ def compute_leaderboard_stats(select_top=25):
                             .order_by(func.count(Face.user_id).desc()) \
                             .limit(select_top).all()
     return top_sorters, top_taggers
+
+def ac_can_edit_officer(officer, ac):
+    if officer.department_id == ac.ac_department_id:
+        return True
+    return False

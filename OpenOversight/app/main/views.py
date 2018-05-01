@@ -17,7 +17,8 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
-                     add_officer_profile, edit_officer_profile)
+                     add_officer_profile, edit_officer_profile,
+                    ac_can_edit_officer)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     BasicOfficerForm)
@@ -25,7 +26,7 @@ from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
 from ..auth.forms import LoginForm
-from ..auth.utils import admin_required
+from ..auth.utils import admin_required, ac_or_admin_required
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -291,10 +292,19 @@ def add_officer():
 
 @main.route('/officer/<int:officer_id>/edit', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = BasicOfficerForm(obj=officer)
+    if current_user.is_area_coordinator and not current_user.is_administrator:
+        if not ac_can_edit_officer(officer, current_user):
+            abort(403)
+        form.department.query = Department.query\
+            .filter_by(id=current_user.ac_department_id)
+    else:
+        form.department.query = Department.query.all()
+
+
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
         flash('Officer {} edited'.format(officer.last_name))

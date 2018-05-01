@@ -154,8 +154,7 @@ class BasicOfficerForm(Form):
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
-    department = QuerySelectField('Department', validators=[Optional()],
-                                  query_factory=dept_choices, get_label='name')
+    department = QuerySelectField('Department', validators=[Optional()], get_label='name')
     submit = SubmitField(label='Update')
 
 
