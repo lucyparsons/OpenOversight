@@ -21,7 +21,8 @@
       <div class="thumbnail">
         <div class="caption">
           <h3>General Information
-            {% if current_user.is_administrator %}
+            {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
             <a href="{{ url_for('main.edit_officer', officer_id=officer.id) }}">
               <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
             </a>
@@ -71,7 +72,8 @@
                 <th><b>Badge No.</b></th>
                 <th><b>Unit</b></th>
                 <th><b>Assignment Date</b></th>
-                {% if current_user.is_administrator %}
+                {% if current_user.is_administrator
+                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
                 <th><b>Edit</b></th>
                 {% endif %}
               </tr>
@@ -93,7 +95,8 @@
                     {% endif %}
                 </td>
                 <td>
-                  {% if current_user.is_administrator %}
+                  {% if current_user.is_administrator
+                      or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
                   <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
                               assignment_id=assignment.id) }}">
                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
@@ -105,7 +108,8 @@
             </tbody>
           </table>
 
-          {% if current_user.is_administrator %}
+          {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
           <h3>Add Assignment<small> Admin only</small></h3>
           <table class="table">
             <tbody>

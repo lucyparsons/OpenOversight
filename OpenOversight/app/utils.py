@@ -232,3 +232,17 @@ def ac_can_edit_officer(officer, ac):
     if officer.department_id == ac.ac_department_id:
         return True
     return False
+
+def add_department_query(form, current_user):
+    if not current_user.is_administrator:
+        form.department.query = Department.query.filter_by(
+            id=current_user.ac_department_id)
+    else:
+        form.department.query = Department.query.all()
+
+def add_unit_query(form, current_user):
+    if not current_user.is_administrator:
+        form.unit.query = Unit.query.filter_by(
+            department_id=current_user.ac_department_id)
+    else:
+        form.unit.query = Unit.query.all()
