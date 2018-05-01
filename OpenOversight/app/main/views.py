@@ -21,7 +21,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                     ac_can_edit_officer, add_department_query, add_unit_query)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    BasicOfficerForm)
+                    EditOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
@@ -149,6 +149,8 @@ def officer_profile(officer_id):
             flash('Assignment already exists')
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
+    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id and request.method == 'POST':
+        abort(403)
     return render_template('officer.html', officer=officer, paths=face_paths,
                            assignments=assignments, form=form)
 
@@ -290,6 +292,8 @@ def add_officer():
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
 
+    if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
+            abort(403)
     if form.validate_on_submit():
         officer = add_officer_profile(form)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
@@ -303,7 +307,7 @@ def add_officer():
 @ac_or_admin_required
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
-    form = BasicOfficerForm(obj=officer)
+    form = EditOfficerForm(obj=officer)
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(403)

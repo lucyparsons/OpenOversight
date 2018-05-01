@@ -5,11 +5,12 @@ from flask import url_for, current_app
 from urlparse import urlparse
 from .conftest import AC_DEPT
 from ..app.utils import dept_choices
+from ..app.main.choices import RACE_CHOICES, GENDER_CHOICES
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
-                                          BasicOfficerForm)
+                                          EditOfficerForm)
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
@@ -285,8 +286,24 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
 
         assert 'Added new assignment' in rv.data
 
+def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
 
-def test_user_can_edit_officer_badge_number(mockdata, client, session):
+        form = AssignmentForm(star_no='1234',
+                              rank='COMMANDER')
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_edit_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -312,6 +329,66 @@ def test_user_can_edit_officer_badge_number(mockdata, client, session):
 
         assert 'Edited officer assignment' in rv.data
         assert officer.assignments[0].star_no == '12345'
+
+
+def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        star_no = '1234'
+        new_star_no = '12345'
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        form = AssignmentForm(star_no=star_no,
+                              rank='COMMANDER')
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        form = AssignmentForm(star_no=new_star_no)
+        officer = Officer.query.filter_by(id=officer.id).one()
+
+        rv = client.post(
+            url_for('main.edit_assignment', officer_id=officer.id,
+                    assignment_id=officer.assignments[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer assignment' in rv.data
+        assert officer.assignments[0].star_no == new_star_no
+
+def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        star_no = '1234'
+        new_star_no = '12345'
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        form = AssignmentForm(star_no=star_no,
+                              rank='COMMANDER')
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        form = AssignmentForm(star_no=new_star_no)
+        officer = Officer.query.filter_by(id=officer.id).one()
+
+        rv = client.post(
+            url_for('main.edit_assignment', officer_id=officer.id,
+                    assignment_id=officer.assignments[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
 
 
 def test_user_can_view_submission(mockdata, client, session):
@@ -345,6 +422,26 @@ def test_admin_can_toggle_user(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Disabled' in rv.data
+
+def test_ac_cannot_toggle_user(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        rv = client.post(
+            url_for('main.toggle_user', uid=1),
+            follow_redirects=True
+        )
+        assert rv.status_code == 403
+
+def test_user_cannot_toggle_user(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.post(
+            url_for('main.toggle_user', uid=1),
+            follow_redirects=True
+        )
+        assert rv.status_code == 403
 
 
 def test_admin_can_delete_tag(mockdata, client, session):
@@ -725,6 +822,22 @@ def test_admin_can_add_police_department(mockdata, client, session):
         assert department.short_name == 'TPD'
 
 
+def test_ac_cannot_add_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = DepartmentForm(name='Test Police Department',
+                              short_name='TPD')
+
+        rv = client.post(
+            url_for('main.add_department'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
 def test_admin_cannot_add_duplicate_police_department(mockdata, client,
                                                       session):
     with current_app.test_request_context():
@@ -798,6 +911,71 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.gender == 'M'
 
 
+def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        first_name = 'Testy'
+        last_name = 'OTester'
+        middle_initial = 'R'
+        race = random.choice(RACE_CHOICES)[0]
+        gender = random.choice(GENDER_CHOICES)[0]
+        form = AddOfficerForm(first_name=first_name,
+                              last_name=last_name,
+                              middle_initial=middle_initial,
+                              race=race,
+                              gender=gender,
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department.id,
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert last_name in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name=last_name).one()
+        assert officer.first_name == first_name
+        assert officer.race == race
+        assert officer.gender == gender
+
+
+def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
+        first_name = 'Sam'
+        last_name = 'Augustus'
+        middle_initial = 'H'
+        race = random.choice(RACE_CHOICES)[0]
+        gender = random.choice(GENDER_CHOICES)[0]
+        form = AddOfficerForm(first_name=first_name,
+                              last_name=last_name,
+                              middle_initial=middle_initial,
+                              race=race,
+                              gender=gender,
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department.id,
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        officer = Officer.query.filter_by(last_name=last_name).first()
+        assert officer == None
+
+
 def test_admin_can_edit_existing_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -821,7 +999,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
         officer = Officer.query.filter_by(
             last_name='Testerinski').one()
 
-        form = BasicOfficerForm(last_name='Changed')
+        form = EditOfficerForm(last_name='Changed')
 
         rv = client.post(
             url_for('main.edit_officer', officer_id=officer.id),
@@ -831,6 +1009,100 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
 
         assert 'Changed' in rv.data
         assert 'Testerinski' not in rv.data
+
+
+def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        officer = officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        old_last_name = officer.last_name
+
+        new_last_name = 'Shiny'
+        form = EditOfficerForm(
+            last_name=new_last_name,
+        )
+
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+        # Ensure changes were not made to database
+        officer = Officer.query.filter_by(
+            id=officer.id).one()
+        assert officer.last_name == old_last_name
+
+
+def test_ac_can_see_officer_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        officer =Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.get(
+            url_for('main.officer_profile', officer_id=officer.id),
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        # Testing names doesn't work bc the way we display them varies
+        assert str(officer.id) in rv.data
+
+
+def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        first_name = 'Testier'
+        last_name = 'OTester'
+        middle_initial = 'R'
+        race = random.choice(RACE_CHOICES)[0]
+        gender = random.choice(GENDER_CHOICES)[0]
+        form = AddOfficerForm(first_name=first_name,
+                              last_name=last_name,
+                              middle_initial=middle_initial,
+                              race=race,
+                              gender=gender,
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department.id,
+                              birth_year=1990)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        officer = Officer.query.filter_by(
+            last_name=last_name).one()
+
+        new_last_name = 'Shiny'
+        form = EditOfficerForm(
+            first_name=first_name,
+            last_name=new_last_name,
+            race=race,
+            gender=gender,
+            department=department.id
+        )
+
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert new_last_name in rv.data
+        assert last_name not in rv.data
+
+        # Check the changes were added to the database
+        officer = Officer.query.filter_by(
+            id=officer.id).one()
+        assert officer.last_name == new_last_name
 
 
 def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
@@ -916,6 +1188,47 @@ def test_admin_can_add_new_unit(mockdata, client, session):
         unit = Unit.query.filter_by(
             descrip='Test').one()
         assert unit.department_id == department.id
+
+
+def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        department = Department.query.filter_by(
+            id=AC_DEPT).first()
+        form = AddUnitForm(descrip='Test', department=department.id)
+
+        rv = client.post(
+            url_for('main.add_unit'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'New unit' in rv.data
+
+        # Check the unit was added to the database
+        unit = Unit.query.filter_by(
+            descrip='Test').one()
+        assert unit.department_id == department.id
+
+
+def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
+        form = AddUnitForm(descrip='Test', department=department.id)
+
+        rv = client.post(
+            url_for('main.add_unit'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        # Check the unit was not added to the database
+        unit = Unit.query.filter_by(
+                descrip='Test').first()
+        assert unit is None
 
 
 def test_user_can_change_dept_pref(mockdata, client, session):

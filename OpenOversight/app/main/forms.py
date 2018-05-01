@@ -123,7 +123,7 @@ class AddOfficerForm(Form):
     submit = SubmitField(label='Add')
 
 
-class BasicOfficerForm(Form):
+class EditOfficerForm(Form):
     first_name = StringField('First name',
                              validators=[Regexp('\w*'), Length(max=50),
                                          Optional()])
