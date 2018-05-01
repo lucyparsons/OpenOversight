@@ -139,7 +139,9 @@ def officer_profile(officer_id):
                       format_exc(full_tback)])
         ))
 
-    if form.validate_on_submit() and current_user.is_administrator:
+    # see if user is an administrator or area coordinator for this department
+    if form.validate_on_submit() and (current_user.is_administrator \
+        or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
         try:
             add_new_assignment(officer_id, form)
             flash('Added new assignment!')
@@ -287,6 +289,7 @@ def add_officer():
     form = AddOfficerForm()
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
+
     if form.validate_on_submit():
         officer = add_officer_profile(form)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))

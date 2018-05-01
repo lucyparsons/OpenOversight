@@ -153,6 +153,17 @@ def login_admin(client):
     )
     return rv
 
+def login_ac(client):
+    form = LoginForm(email='raq929@example.org',
+                     password='horse',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+    )
+    return rv
+
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
@@ -252,6 +263,22 @@ def test_admin_can_add_officer_badge_number(mockdata, client, session):
 
         rv = client.post(
             url_for('main.officer_profile', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new assignment' in rv.data
+
+def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = AssignmentForm(star_no='1234',
+                              rank='COMMANDER')
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        rv = client.post(
+            url_for('main.officer_profile', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )

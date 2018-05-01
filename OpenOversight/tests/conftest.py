@@ -196,6 +196,14 @@ def mockdata(session, request):
                              is_administrator=True)
     session.add(test_admin)
 
+    test_area_coordinator = models.User(email='raq929@example.org',
+                                        username='test_ac',
+                                        password='horse',
+                                        confirmed=True,
+                                        is_area_coordinator=True,
+                                        ac_department_id=AC_DEPT)
+    session.add(test_area_coordinator)
+
     test_unconfirmed_user = models.User(email='freddy@example.org',
                                         username='b_meson',
                                         password='dog', confirmed=False)
