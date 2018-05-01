@@ -1,7 +1,10 @@
 # Routing and view tests
 import pytest
+import random
 from flask import url_for, current_app
 from urlparse import urlparse
+from .conftest import AC_DEPT
+from ..app.utils import dept_choices
 
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
@@ -240,7 +243,7 @@ def test_user_can_access_officer_list(mockdata, client, session):
         assert 'Officers' in rv.data
 
 
-def test_user_can_add_officer_badge_number(mockdata, client, session):
+def test_admin_can_add_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -741,7 +744,7 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
 def test_admin_can_add_new_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-
+        department = random.choice(dept_choices())
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesterson',
                               middle_initial='T',
@@ -749,6 +752,7 @@ def test_admin_can_add_new_officer(mockdata, client, session):
                               gender='M',
                               star_no=666,
                               rank='COMMANDER',
+                              department=department.id,
                               birth_year=1990)
 
         rv = client.post(
@@ -770,7 +774,7 @@ def test_admin_can_add_new_officer(mockdata, client, session):
 def test_admin_can_edit_existing_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-
+        department = random.choice(dept_choices())
         form = AddOfficerForm(first_name='Test',
                               last_name='Testerinski',
                               middle_initial='T',
@@ -778,6 +782,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
                               gender='M',
                               star_no=666,
                               rank='COMMANDER',
+                              department=department.id,
                               birth_year=1990)
 
         rv = client.post(
@@ -805,12 +810,14 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
+        department = random.choice(dept_choices())
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesty',
                               race='WHITE',
                               gender='M',
                               star_no=666,
                               rank='COMMANDER',
+                              department=department.id,
                               birth_year=1990)
 
         rv = client.post(
@@ -834,6 +841,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
+        department = random.choice(dept_choices())
         form = AddOfficerForm(first_name='Test',
                               last_name='Testersly',
                               middle_initial='T',
@@ -841,6 +849,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
                               gender='M',
                               star_no='T666',
                               rank='COMMANDER',
+                              department=department.id,
                               birth_year=1990)
 
         rv = client.post(
@@ -866,7 +875,7 @@ def test_admin_can_add_new_unit(mockdata, client, session):
 
         department = Department.query.filter_by(
             name='Springfield Police Department').first()
-        form = AddUnitForm(descrip='Test')
+        form = AddUnitForm(descrip='Test', department=department.id)
 
         rv = client.post(
             url_for('main.add_unit'),

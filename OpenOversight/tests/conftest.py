@@ -19,6 +19,8 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
+AC_DEPT = 1
+
 
 def pick_birth_date():
     return random.randint(1950, 2000)
