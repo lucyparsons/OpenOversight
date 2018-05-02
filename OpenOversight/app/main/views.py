@@ -18,7 +18,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
-                    ac_can_edit_officer, add_department_query, add_unit_query)
+                     ac_can_edit_officer, add_department_query, add_unit_query)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm)
@@ -139,9 +139,22 @@ def officer_profile(officer_id):
                       format_exc(full_tback)])
         ))
 
-    # see if user is an administrator or area coordinator for this department
-    if form.validate_on_submit() and (current_user.is_administrator \
-        or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+    return render_template('officer.html', officer=officer, paths=face_paths,
+                           assignments=assignments, form=form)
+
+
+@main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
+@ac_or_admin_required
+def add_assignment(officer_id):
+    form = AssignmentForm()
+    officer = Officer.query.filter_by(id=officer_id).first()
+    if not officer:
+        flash('Officer not found')
+        abort(404)
+
+    if form.validate_on_submit() and (current_user.is_administrator or
+                                      (current_user.is_area_coordinator and
+                                       officer.department_id == current_user.ac_department_id)):
         try:
             add_new_assignment(officer_id, form)
             flash('Added new assignment!')
@@ -149,10 +162,10 @@ def officer_profile(officer_id):
             flash('Assignment already exists')
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
-    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id and request.method == 'POST':
+    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
         abort(403)
-    return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+
+    return redirect(url_for('main.officer_profile'), officer_id=officer_id)
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',

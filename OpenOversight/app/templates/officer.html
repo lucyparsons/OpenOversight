@@ -113,7 +113,7 @@
           <h3>Add Assignment<small> Admin only</small></h3>
           <table class="table">
             <tbody>
-            <form action="{{ url_for('main.officer_profile', officer_id=officer.id) }}" method="post">
+            <form action="{{ url_for('main.add_assignment', officer_id=officer.id) }}" method="post">
             {{ form.hidden_tag() }}
 
             <tr>

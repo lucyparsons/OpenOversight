@@ -69,6 +69,7 @@ def test_route_login_required(route, client, mockdata):
 
 # POST-only routes
 @pytest.mark.parametrize("route", [
+    ('/officer/3/assignment/new'),
     ('/tag/delete/1'),
     ('/image/classify/1/1')
 ])
@@ -287,28 +288,34 @@ def test_admin_can_add_officer_badge_number(mockdata, client, session):
                               rank='COMMANDER')
 
         rv = client.post(
-            url_for('main.officer_profile', officer_id=3),
+            url_for('main.add_assignment', officer_id=3),
             data=form.data,
             follow_redirects=True
         )
 
         assert 'Added new assignment' in rv.data
+
 
 def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = AssignmentForm(star_no='1234',
+        form = AssignmentForm(star_no='S1234',
                               rank='COMMANDER')
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
         rv = client.post(
-            url_for('main.officer_profile', officer_id=officer.id),
+            url_for('main.add_assignment', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
 
         assert 'Added new assignment' in rv.data
+
+        # test that assignment exists in database
+        assignment = Officer.query.filter(Officer.assignments.any(star_no='S1234'))
+        assert assignment is not None
+
 
 def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
     with current_app.test_request_context():
@@ -319,7 +326,7 @@ def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
 
         rv = client.post(
-            url_for('main.officer_profile', officer_id=officer.id),
+            url_for('main.add_assignment', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
