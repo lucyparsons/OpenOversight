@@ -340,10 +340,20 @@ def add_unit():
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def delete_tag(tag_id):
+    tag = Face.query.filter_by(id=tag_id).first()
+
+    if not tag:
+        flash('Tag not found')
+        return redirect(url_for('main.index'))
+
+    if not current_user.is_administrator and current_user.is_area_coordinator:
+        if current_user.ac_department_id != tag.officer.department_id:
+            abort(403)
+
     try:
-        Face.query.filter_by(id=tag_id).delete()
+        db.session.delete(tag)
         db.session.commit()
         flash('Deleted this tag')
     except:  # noqa

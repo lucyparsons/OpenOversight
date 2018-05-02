@@ -255,6 +255,30 @@ def test_user_can_access_officer_list(mockdata, client, session):
         assert 'Officers' in rv.data
 
 
+def test_ac_can_access_admin_on_dept_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        rv = client.get(
+            url_for('main.officer_profile', officer_id=officer.id),
+            follow_redirects=True
+        )
+        assert 'Admin only' in rv.data
+
+
+def test_ac_cannot_access_admin_on_non_dept_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.get(
+            url_for('main.officer_profile', officer_id=officer.id),
+            follow_redirects=True
+        )
+        assert 'Admin only' not in rv.data
+
+
 def test_admin_can_add_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -361,6 +385,7 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         assert 'Edited officer assignment' in rv.data
         assert officer.assignments[0].star_no == new_star_no
 
+
 def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -453,6 +478,43 @@ def test_admin_can_delete_tag(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Deleted this tag' in rv.data
+
+
+def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        tag = Face.query.filter(Face.officer.has(department_id=AC_DEPT)).first()
+        tag_id = tag.id
+
+        rv = client.post(
+            url_for('main.delete_tag', tag_id=tag_id),
+            follow_redirects=True
+        )
+        assert 'Deleted this tag' in rv.data
+
+        # test tag was deleted from database
+        deleted_tag = Face.query.filter_by(id=tag_id).first()
+        assert deleted_tag is None
+
+
+def test_ac_cannot_delete_tag_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        tag = Face.query.join(Face.officer, aliased=True).except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT))).first()
+
+        tag_id = tag.id
+
+        rv = client.post(
+            url_for('main.delete_tag', tag_id=tag_id),
+            follow_redirects=True
+        )
+        assert rv.status_code == 403
+
+        # test tag was not deleted from database
+        deleted_tag = Face.query.filter_by(id=tag_id).first()
+        assert deleted_tag is not None
 
 
 def test_user_can_add_tag(mockdata, client, session):
