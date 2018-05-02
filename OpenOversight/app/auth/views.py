@@ -1,4 +1,4 @@
-from flask import abort, render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
@@ -203,13 +203,13 @@ class UserAPI(MethodView):
                 return render_template('403.html'), 403
 
     def post(self, user_id):
-        form = EditUserForm(data=request.form)
+        form = EditUserForm()
         user = User.query.get(user_id)
+        # import pdb; pdb.set_trace()
         if user and form.validate_on_submit():
-            user.email = form.email.data
-            user.is_area_coordinator = form.is_area_coordinator.data
-            user.ac_department = form.ac_department.data
-            user.is_administrator = form.is_administrator.data
+            for field, data in form.data.iteritems():
+                setattr(user, field, data)
+
             db.session.add(user)
             flash('{} has been updated!'.format(user.username))
             return redirect(url_for('auth.user_api'))
@@ -222,9 +222,14 @@ class UserAPI(MethodView):
     def delete(self, user_id):
         pass
 
-user_view = UserAPI.as_view('user_api')
-auth.add_url_rule('/users/', defaults={'user_id': None},
-                 view_func=user_view, methods=['GET',])
-auth.add_url_rule('/users/<int:user_id>', view_func=user_view,
-                 methods=['GET', 'POST'])
 
+user_view = UserAPI.as_view('user_api')
+auth.add_url_rule(
+    '/users/',
+    defaults={'user_id': None},
+    view_func=user_view,
+    methods=['GET'])
+auth.add_url_rule(
+    '/users/<int:user_id>',
+    view_func=user_view,
+    methods=['GET', 'POST'])

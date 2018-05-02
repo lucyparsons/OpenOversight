@@ -14,7 +14,7 @@ from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
-                                          ChangeEmailForm, ChangeDefaultDepartmentForm)
+                                          ChangeEmailForm, ChangeDefaultDepartmentForm, EditUserForm)
 from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
                                       Image)
 
@@ -154,6 +154,7 @@ def login_admin(client):
         follow_redirects=False
     )
     return rv
+
 
 def login_ac(client):
     form = LoginForm(email='raq929@example.org',
@@ -455,6 +456,7 @@ def test_admin_can_toggle_user(mockdata, client, session):
         )
         assert 'Disabled' in rv.data
 
+
 def test_ac_cannot_toggle_user(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -464,6 +466,7 @@ def test_ac_cannot_toggle_user(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 403
+
 
 def test_user_cannot_toggle_user(mockdata, client, session):
     with current_app.test_request_context():
@@ -1035,14 +1038,14 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
                               department=department.id,
                               birth_year=1990)
 
-        rv = client.post(
+        client.post(
             url_for('main.add_officer'),
             data=form.data,
             follow_redirects=True
         )
 
         officer = Officer.query.filter_by(last_name=last_name).first()
-        assert officer == None
+        assert officer is None
 
 
 def test_admin_can_edit_existing_officer(mockdata, client, session):
@@ -1110,7 +1113,7 @@ def test_ac_can_see_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        officer =Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
 
         rv = client.get(
             url_for('main.officer_profile', officer_id=officer.id),
@@ -1288,7 +1291,7 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
         form = AddUnitForm(descrip='Test', department=department.id)
 
-        rv = client.post(
+        client.post(
             url_for('main.add_unit'),
             data=form.data,
             follow_redirects=True
@@ -1296,7 +1299,7 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
 
         # Check the unit was not added to the database
         unit = Unit.query.filter_by(
-                descrip='Test').first()
+            descrip='Test').first()
         assert unit is None
 
 
@@ -1318,3 +1321,65 @@ def test_user_can_change_dept_pref(mockdata, client, session):
 
         user = User.query.filter_by(email='jen@example.org').one()
         assert user.dept_pref == test_department_id
+
+
+def test_admin_can_update_users_to_ac(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+        user_id = user.id
+
+        form = EditUserForm(
+            is_area_coordinator=True,
+            ac_department=AC_DEPT)
+
+        rv = client.post(
+            url_for('auth.user_api', user_id=user_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'updated!' in rv.data
+        assert user.is_area_coordinator is True
+
+
+def test_admin_cannot_update_to_ac_without_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+        user_id = user.id
+
+        form = EditUserForm(is_area_coordinator=True)
+
+        rv = client.post(
+            url_for('auth.user_api', user_id=user_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'updated!' not in rv.data
+        assert user.is_area_coordinator is False
+
+
+# def test_admin_can_update_users_to_admin(mockdata, client, session):
+#     with current_app.test_request_context():
+#         login_admin(client)
+
+#         deparment = Department.query.get(AC_DEPT)
+#         user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+#         user_id = user.id
+
+#         form = EditUserForm(
+#             is_area_coordinator=False,
+#             is_administrator=True)
+
+#         rv = client.post(
+#             url_for('auth.user_api', user_id=user_id),
+#             data=form.data,
+#             follow_redirects=True
+#         )
+
+#         assert 'updated!' in rv.data
+#         assert user.is_administrator is True

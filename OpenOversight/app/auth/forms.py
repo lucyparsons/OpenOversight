@@ -84,24 +84,17 @@ class ChangeDefaultDepartmentForm(Form):
 
 
 class EditUserForm(Form):
-    email = StringField('Email', validators=[Required(), Length(1, 64),
-                                             Email()])
     is_area_coordinator = BooleanField('Is area coordinator?')
     ac_department = QuerySelectField('Department', validators=[Optional()],
-                                 query_factory=dept_choices, get_label='name', allow_blank=True)
+                                     query_factory=dept_choices, get_label='name', allow_blank=True)
     is_administrator = BooleanField('Is administrator?')
     submit = SubmitField(label='Update')
 
-    def validate_email(self, field):
-        if not User.query.filter_by(email=field.data).first():
-            raise ValidationError('Not a valid user.')
-
     def validate(self):
-        valid = True
+        success = super(EditUserForm, self).validate()
         if self.is_area_coordinator.data and not self.ac_department.data:
-            self.errors['ac_department'] = ['Area coordinators must have a department',]
-            # import pdb; pdb.set_trace()
-            valid = False
+            self.is_area_coordinator.errors = list(self.is_area_coordinator.errors)
+            self.is_area_coordinator.errors.append('Area coordinators must have a department')
+            success = False
 
-        return super(EditUserForm, self).validate() and valid
-
+        return success
