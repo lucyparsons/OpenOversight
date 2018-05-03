@@ -5,19 +5,19 @@
   {% if from_search %}
     <h1>No Results Found</h1>
     <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
-    <h2>Other Offcers from {{ department.name|title }}</h2>
+    <h2>Other Officers from {{ department.name|title }}</h2>
   {% else %}
     <h4><a href="/find">Search for officers</a></h4>
     <h1>
       {{ department.name|title }} Officers
     </h1>
   {% endif %}
-
   <nav aria-label="Page navigation top">
     <ul class="pager">
       {% if officers.has_prev %}
         <li class="previous">
-          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num) }}">
+          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
+          from_search=from_search) }}">
             <span aria-hidden="true">&larr;</span>
             Previous
           </a>
@@ -25,7 +25,8 @@
       {% endif %}
       {% if officers.has_next %}
       <li class="next">
-        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num) }}">
+        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num,
+        from_search=from_search) }}">
           Next
           <span aria-hidden="true">&rarr;</span>
         </a>
@@ -91,7 +92,7 @@
     <ul class="pager">
       {% if officers.has_prev %}
         <li class="previous">
-          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num) }}">
+          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num, from_search=from_search) }}">
             <span aria-hidden="true">&larr;</span>
             Previous
           </a>
@@ -99,7 +100,7 @@
       {% endif %}
       {% if officers.has_next %}
       <li class="next">
-        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num) }}">
+        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num, from_search=from_search) }}">
           Next
           <span aria-hidden="true">&rarr;</span>
         </a>
