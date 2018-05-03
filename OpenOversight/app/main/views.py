@@ -261,11 +261,15 @@ def add_department():
 def list_officer(department_id, page=1, from_search=False):
     if request.args.get('page'):
         page = int(request.args.get('page'))
+
     if request.args.get('from_search'):
         from_search = bool(request.args.get('from_search'))
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-    department = Department.query.filter_by(id=department_id).one()
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
     officers = Officer.query.filter(Officer.department_id == department_id) \
         .order_by(Officer.last_name) \
         .paginate(page, OFFICERS_PER_PAGE, False)
