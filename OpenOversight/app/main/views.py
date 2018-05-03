@@ -263,7 +263,10 @@ def list_officer(department_id, page=1, from_search=False):
         page = int(request.args.get('page'))
 
     if request.args.get('from_search'):
-        from_search = bool(request.args.get('from_search'))
+        if request.args.get('from_search') == 'True':
+            from_search = True
+        else:
+            from_search = False
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
