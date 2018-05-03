@@ -4,7 +4,7 @@
 <div class="container" role="main">
 
   <div class="page-header">
-    <h1>Officer Detail: <b>{{ officer.first_name|title }}
+    <h1>Officer Profile: <b>{{ officer.first_name|title }}
                            {% if officer.middle_initial %}
                            {{ officer.middle_initial }}
                            {% endif %}
@@ -13,11 +13,12 @@
 
   <div class="row">
     <div class="col-sm-6">
-      {% for path in paths %}
-      <img src="{{ path }}" alt="Submission">
-      {% endfor %}
+      {% if paths %}
+      <img src="{{ paths[0] }}" alt="Submission">
+      {% endif %}
     </div>
     <div class="col-sm-6 col-md-4">
+
       <div class="thumbnail">
         <div class="caption">
           <h3>General Information
@@ -55,12 +56,9 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="row">
     <div class="col-sm-6">
       <div class="thumbnail">
         <div class="caption">
@@ -158,8 +156,43 @@
             </tbody>
           </table>
           {% endif %}
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="page-header">
+    <h1>Recent Activity</h1>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      {% for timeline_event in timeline_events %}
+        {% if timeline_event["date_image_inserted"] %}
+          <p>On {{ timeline_event["date_image_inserted"].strftime('%m/%d/%Y') }},
+          <a href="{{ url_for('main.display_submission', image_id=timeline_event["image_id"]) }}">a new photo</a>
+          was added to OpenOversight
+          <a href="{{ url_for('main.display_tag', tag_id=timeline_event["tag_id"]) }}">containing</a>
+          this officer.</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if paths[1] %}
+  {% set paths = paths[1:] %}
+  <div class="page-header">
+    <h1>Additional Photographs</h1>
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      {% for path in paths %}
+      <div class="thumbnail">
+        <img src="{{ path }}" alt="Submission">
+      </div>
+      {% endfor %}
+    </div>
+  <div>
+  {% endif %}
+
 </div>
 {% endblock %}

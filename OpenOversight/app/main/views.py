@@ -18,7 +18,7 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
-                     add_officer_profile, edit_officer_profile)
+                     add_officer_profile, edit_officer_profile, get_timeline)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     BasicOfficerForm)
@@ -141,6 +141,8 @@ def officer_profile(officer_id):
                       format_exc(full_tback)])
         ))
 
+    timeline_events = get_timeline(faces)
+
     if form.validate_on_submit() and current_user.is_administrator:
         try:
             add_new_assignment(officer_id, form)
@@ -150,7 +152,8 @@ def officer_profile(officer_id):
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+                           assignments=assignments, form=form,
+                           timeline_events=timeline_events)
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
@@ -227,7 +230,6 @@ def classify_submission(image_id, contains_cops):
                       format_exc(full_tback)])
         ))
     return redirect(redirect_url())
-    # return redirect(url_for('main.display_submission', image_id=image_id))
 
 
 @main.route('/department/new', methods=['GET', 'POST'])

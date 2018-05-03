@@ -227,7 +227,7 @@ def test_user_can_access_officer_profile(mockdata, client, session):
             url_for('main.officer_profile', officer_id=3),
             follow_redirects=True
         )
-        assert 'Officer Detail' in rv.data
+        assert 'Officer Profile' in rv.data
 
 
 def test_user_can_add_officer_badge_number(mockdata, client, session):

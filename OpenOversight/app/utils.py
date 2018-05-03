@@ -227,3 +227,30 @@ def compute_leaderboard_stats(select_top=25):
                             .order_by(func.count(Face.user_id).desc()) \
                             .limit(select_top).all()
     return top_sorters, top_taggers
+
+
+def get_timeline(faces):
+    # Get the events we want to show in a time ordered area on the profile
+    # of the officer.
+    timeline_events = []
+
+    # If there are no faces for this officer, let's return
+    if not faces:
+        return timeline_events
+
+    # If no faces are associated with images with dates, let's return
+    faces_w_dates = [x for x in faces
+                     if x.image.date_image_inserted is not None]
+    if not faces_w_dates:
+        return timeline_events
+
+    # Sort list of faces with newest first
+    faces_w_dates.sort(key=lambda i: i.image.date_image_inserted,
+                       reverse=True)
+    for face in faces_w_dates:
+        event = {"date_image_inserted": face.image.date_image_inserted,
+                 "image_id": face.image.id,
+                 "tag_id": face.id}
+        timeline_events.append(event)
+
+    return timeline_events

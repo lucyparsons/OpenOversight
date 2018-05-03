@@ -155,13 +155,17 @@ def mockdata(session, request):
     random.seed(SEED)
 
     image1 = models.Image(filepath='static/images/test_cop1.png',
-                          department_id=1)
+                          department_id=1,
+                          date_image_inserted=datetime.now())
     image2 = models.Image(filepath='static/images/test_cop2.png',
-                          department_id=1)
+                          department_id=1,
+                          date_image_inserted=datetime.now())
     image3 = models.Image(filepath='static/images/test_cop3.png',
-                          department_id=1)
+                          department_id=1,
+                          date_image_inserted=datetime.now())
     image4 = models.Image(filepath='static/images/test_cop4.png',
-                          department_id=1)
+                          department_id=1,
+                          date_image_inserted=datetime.now())
 
     unit1 = models.Unit(descrip="test")
 
