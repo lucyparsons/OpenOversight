@@ -101,7 +101,7 @@
             <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a></p>
         </div>
         <div class="col-sm-2 text-center">
-          <a href="{{ url_for('main.complete_tagging', image_id=image.id, contains_cops=0) }}" class="btn btn-sm btn-success">
+          <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
             Done with this image!
           </a>
