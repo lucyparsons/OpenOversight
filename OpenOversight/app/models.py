@@ -186,7 +186,7 @@ class Incident(db.Model):
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
-    address = db.relationship('Address', backref='incidents')
+    address = db.relationship('Location', backref='incidents')
     license_plates = db.relationship('LicensePlate', secondary=incident_license_plates, lazy='subquery', backref=db.backref('incidents', lazy=True))
     links = db.relationship('Link', secondary=incident_links, lazy='subquery', backref=db.backref('incidents', lazy=True))
 
