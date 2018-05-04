@@ -1,4 +1,6 @@
+from urlparse import urlparse
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import validates
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -176,6 +178,14 @@ class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(255), nullable=False)
     link_type = db.Column(db.String(100), index=True)
+
+    @validates('url')
+    def validate_url(self, key, url):
+        parsed = urlparse(url)
+        if not parsed.scheme in ['http', 'https']:
+            raise ValueError('Not a valid URL')
+
+        return url
 
 
 class Incident(db.Model):
