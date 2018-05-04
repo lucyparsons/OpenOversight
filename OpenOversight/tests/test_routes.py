@@ -3,7 +3,6 @@ import pytest
 from flask import url_for, current_app
 from urlparse import urlparse
 
-
 from OpenOversight.app.main.forms import (FindOfficerIDForm, AssignmentForm,
                                           FaceTag, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
@@ -19,6 +18,7 @@ from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
 @pytest.mark.parametrize("route", [
     ('/'),
     ('/index'),
+    ('/browse'),
     ('/find'),
     ('/about'),
     ('/tagger_find'),
@@ -26,6 +26,7 @@ from OpenOversight.app.models import (User, Face, Department, Unit, Officer,
     ('/submit'),
     ('/submit/department/1'),
     ('/label'),
+    ('/department/1'),
     ('/officer/3'),
     ('/tutorial'),
     ('/auth/login'),
@@ -228,6 +229,15 @@ def test_user_can_access_officer_profile(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Officer Detail' in rv.data
+
+
+def test_user_can_access_officer_list(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.list_officer', department_id=2)
+        )
+
+        assert 'Officers' in rv.data
 
 
 def test_user_can_add_officer_badge_number(mockdata, client, session):

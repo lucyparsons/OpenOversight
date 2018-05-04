@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+
+<div class="container theme-showcase" role="main">
+  <div class="text-center frontpage-leads">
+    <h1><small>Browse a Department</small></h1>
+  </div>
+
+  <div class="text-center frontpage-leads">
+  {% for department in departments %}
+    <p>
+      <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
+         {{ department.name }}
+      </a>
+    </p>
+  {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

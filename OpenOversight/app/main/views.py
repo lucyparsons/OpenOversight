@@ -50,6 +50,12 @@ def index():
     return render_template('index.html')
 
 
+@main.route('/browse', methods=['GET'])
+def browse():
+    departments = Department.query.all()
+    return render_template('browse.html', departments=departments)
+
+
 @main.route('/find', methods=['GET', 'POST'])
 def get_officer():
     form = FindOfficerForm()
@@ -251,6 +257,32 @@ def add_department():
         return render_template('add_department.html', form=form)
 
 
+@main.route('/department/<int:department_id>')
+def list_officer(department_id, page=1, from_search=False):
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
+
+    if request.args.get('from_search'):
+        if request.args.get('from_search') == 'True':
+            from_search = True
+        else:
+            from_search = False
+
+    OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    officers = Officer.query.filter(Officer.department_id == department_id) \
+        .order_by(Officer.last_name) \
+        .paginate(page, OFFICERS_PER_PAGE, False)
+    return render_template(
+        'list_officer.html',
+        department=department,
+        officers=officers,
+        from_search=from_search)
+
+
 @main.route('/officer/new', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -417,6 +449,14 @@ def get_gallery(page=1):
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_data = form.data
         officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
+        # If no officers are found, go to a list of all department officers
+        if not officers.items:
+            return redirect(url_for(
+                'main.list_officer',
+                department_id=form_data['dept'].id,
+                from_search=True)
+            )
+
         return render_template('gallery.html',
                                officers=officers,
                                form=form,
