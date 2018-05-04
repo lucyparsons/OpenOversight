@@ -141,7 +141,12 @@ incident_links = db.Table('incident_links',
 
 incident_license_plates = db.Table('incident_license_plates',
     db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
-    db.Column('link_id', db.Integer, db.ForeignKey('license_plates.id'), primary_key=True)
+    db.Column('license_plate_id', db.Integer, db.ForeignKey('license_plates.id'), primary_key=True)
+)
+
+incident_officers = db.Table('incident_officers',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('officers_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True)
 )
 
 
@@ -162,7 +167,7 @@ class LicensePlate(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
-    state = state = db.Column(db.String(2), index=True)
+    state = db.Column(db.String(2), index=True)
 
 
 class Link(db.Model):
