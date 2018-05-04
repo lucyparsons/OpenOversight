@@ -1,4 +1,4 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, current_app
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
@@ -188,10 +188,18 @@ class UserAPI(MethodView):
 
     def get(self, user_id):
         if user_id is None:
-            users = User.query.all()
+            if request.args.get('page'):
+                page = int(request.args.get('page'))
+            else:
+                page = 1
+            USERS_PER_PAGE = int(current_app.config['USERS_PER_PAGE'])
+            users = User.query.order_by(User.email) \
+                .paginate(page, USERS_PER_PAGE, False)
+
             return render_template('auth/users.html', objects=users)
         else:
             user = User.query.get(user_id)
+
             if user:
                 form = EditUserForm(
                     email=user.email,
@@ -205,7 +213,7 @@ class UserAPI(MethodView):
     def post(self, user_id):
         form = EditUserForm()
         user = User.query.get(user_id)
-        # import pdb; pdb.set_trace()
+
         if user and form.validate_on_submit():
             for field, data in form.data.iteritems():
                 setattr(user, field, data)

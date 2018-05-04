@@ -9,6 +9,14 @@
 
 <div class="container" role="main">
 	<div class="horizontal-padding">
+		{% with paginate=objects,
+          next_url=url_for('auth.user_api', page=objects.next_num,
+        from_search=from_search),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num,
+          from_search=from_search),
+          location='top' %}
+	    {% include "partials/paginate_nav.html" %}
+	  {% endwith %}
 		<div class="table-responsive">
 			<table class="table table-hover">
 				<tr>
@@ -19,7 +27,7 @@
 					<th>Is Admin</th>
 
 				</tr>
-				{% for user in objects %}
+				{% for user in objects.items %}
 				<tr>
 					<td><a href="{{user.id}}">{{ user.email }}</a></td>
 					<td>{{ user.username }}</td>
@@ -45,6 +53,14 @@
 				{% endfor %}
 			</table>
 		</div>
+		{% with paginate=objects,
+          next_url=url_for('auth.user_api', page=objects.next_num,
+        from_search=from_search),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num,
+          from_search=from_search),
+          location='bottom' %}
+    {% include "partials/paginate_nav.html" %}
+  {% endwith %}
 	</div>
 </div>
 {% endblock content %}

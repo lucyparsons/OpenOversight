@@ -13,6 +13,7 @@ class BaseConfig(object):
 
     # pagination
     OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)
+    USERS_PER_PAGE = os.environ.get('USERS_PER_PAGE', 20)
 
     # Form Settings
     WTF_CSRF_ENABLED = True
