@@ -10,6 +10,17 @@ from . import login_manager
 db = SQLAlchemy()
 
 
+officer_links = db.Table('officer_links',
+    db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+    db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True)
+)
+
+officer_incidents = db.Table('officer_incidents',
+    db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True)
+)
+
+
 class Department(db.Model):
     __tablename__ = 'departments'
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +46,11 @@ class Officer(db.Model):
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
+    # we don't expect to pull up officers via link often so we make it lazy.
+    links = db.relationship('Link', secondary=officer_links, lazy='subquery',
+        backref=db.backref('officers', lazy=True))
+    incidents = db.relationship('Officer', secondary=officer_links, lazy='subquery',
+        backref=db.backref('officers'))
 
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
@@ -116,6 +132,58 @@ class Image(db.Model):
 
     def __repr__(self):
         return '<Image ID {}: {}>'.format(self.id, self.filepath)
+
+
+incident_links = db.Table('incident_links',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True)
+)
+
+incident_license_plates = db.Table('incident_license_plates',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('link_id', db.Integer, db.ForeignKey('license_plates.id'), primary_key=True)
+)
+
+
+class Location(db.Model):
+    __tablename__ = 'locations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    street_name = db.Column(db.String(100), index=True)
+    cross_street1 = db.Column(db.String(100), unique=False)
+    cross_street2 = db.Column(db.String(100), unique=False)
+    city = db.Column(db.String(100), unique=False, index=True)
+    state = db.Column(db.String(2), unique=False, index=True)
+    zip_code = db.Column(db.String(5), unique=False, index=True)
+
+
+class LicensePlate(db.Model):
+    __tablename__ = 'license_plates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(8), nullable=False, index=True)
+    state = state = db.Column(db.String(2), index=True)
+
+
+class Link(db.Model):
+    __tablename__ = 'links'
+
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(255), nullable=False)
+    link_type = db.Column(db.String(100), index=True)
+
+
+class Incident(db.Model):
+    __tablename__ = 'incidents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, unique=False, index=True)
+    report_number = db.Column(db.String(50), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    address_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    address = db.relationship('Address', backref='incidents')
+    license_plates = db.relationship('LicensePlate', secondary=incident_license_plates, lazy='subquery', backref=db.backref('incidents', lazy=True))
+    links = db.relationship('Link', secondary=incident_links, lazy='subquery', backref=db.backref('incidents', lazy=True))
 
 
 class User(UserMixin, db.Model):
