@@ -52,7 +52,7 @@ class Assignment(db.Model):
     star_no = db.Column(db.String(120), index=True, unique=False)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
-    star_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    start_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
 
     def __repr__(self):
