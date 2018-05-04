@@ -98,7 +98,7 @@ class AssignmentForm(Form):
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip')
-    star_date = DateField('Assignment start date', validators=[Optional()])
+    start_date = DateField('Assignment start date', validators=[Optional()])
 
 
 class DepartmentForm(Form):
