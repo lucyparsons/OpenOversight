@@ -81,3 +81,20 @@ class ChangeDefaultDepartmentForm(Form):
     dept_pref = QuerySelectField('Default Department (Optional)', validators=[Optional()],
                                  query_factory=dept_choices, get_label='name', allow_blank=True)
     submit = SubmitField('Update Default')
+
+
+class EditUserForm(Form):
+    is_area_coordinator = BooleanField('Is area coordinator?')
+    ac_department = QuerySelectField('Department', validators=[Optional()],
+                                     query_factory=dept_choices, get_label='name', allow_blank=True)
+    is_administrator = BooleanField('Is administrator?')
+    submit = SubmitField(label='Update')
+
+    def validate(self):
+        success = super(EditUserForm, self).validate()
+        if self.is_area_coordinator.data and not self.ac_department.data:
+            self.is_area_coordinator.errors = list(self.is_area_coordinator.errors)
+            self.is_area_coordinator.errors.append('Area coordinators must have a department')
+            success = False
+
+        return success

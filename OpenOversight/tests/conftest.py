@@ -19,6 +19,8 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
+AC_DEPT = 1
+
 
 def pick_birth_date():
     return random.randint(1950, 2000)
@@ -193,6 +195,14 @@ def mockdata(session, request):
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)
+
+    test_area_coordinator = models.User(email='raq929@example.org',
+                                        username='test_ac',
+                                        password='horse',
+                                        confirmed=True,
+                                        is_area_coordinator=True,
+                                        ac_department_id=AC_DEPT)
+    session.add(test_area_coordinator)
 
     test_unconfirmed_user = models.User(email='freddy@example.org',
                                         username='b_meson',

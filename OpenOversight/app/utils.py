@@ -77,14 +77,9 @@ def add_officer_profile(form):
 
 
 def edit_officer_profile(officer, form):
-    officer.first_name = form.first_name.data
-    officer.last_name = form.last_name.data
-    officer.middle_initial = form.middle_initial.data
-    officer.race = form.race.data
-    officer.gender = form.gender.data
-    officer.birth_year = form.birth_year.data
-    officer.employment_date = form.employment_date.data
-    officer.department_id = form.department.data.id
+    for field, data in form.data.iteritems():
+        setattr(officer, field, data)
+
     db.session.add(officer)
     db.session.commit()
     return officer
@@ -227,3 +222,25 @@ def compute_leaderboard_stats(select_top=25):
                             .order_by(func.count(Face.user_id).desc()) \
                             .limit(select_top).all()
     return top_sorters, top_taggers
+
+
+def ac_can_edit_officer(officer, ac):
+    if officer.department_id == ac.ac_department_id:
+        return True
+    return False
+
+
+def add_department_query(form, current_user):
+    if not current_user.is_administrator:
+        form.department.query = Department.query.filter_by(
+            id=current_user.ac_department_id)
+    else:
+        form.department.query = Department.query.all()
+
+
+def add_unit_query(form, current_user):
+    if not current_user.is_administrator:
+        form.unit.query = Unit.query.filter_by(
+            department_id=current_user.ac_department_id)
+    else:
+        form.unit.query = Unit.query.all()

@@ -41,28 +41,28 @@
       </p>
     </div>
     {% endfor %}
+    <div class="text-center frontpage-leads">
+      {% if current_user.is_administrator %}
+        <a href="{{ url_for('main.add_department') }}"
+              class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Add New Department
+        </a>
+      {% endif %}
+      {% if current_user.is_administrator or current_user.is_area_coordinator %}
+        <a href="{{ url_for('main.add_officer') }}"
+              class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Add New Officer
+        </a>
 
-        {% if current_user.is_administrator %}
-        <div class="text-center frontpage-leads">
-          <a href="{{ url_for('main.add_department') }}"
-                class="btn btn-primary" role="button">
-              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-              Add New Department
-          </a>
-
-          <a href="{{ url_for('main.add_officer') }}"
-                class="btn btn-primary" role="button">
-              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-              Add New Officer
-          </a>
-
-          <a href="{{ url_for('main.add_unit') }}"
-                class="btn btn-primary" role="button">
-              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-              Add New Unit
-          </a>
-        </div>
-        {% endif %}
+        <a href="{{ url_for('main.add_unit') }}"
+              class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Add New Unit
+        </a>
+      {% endif %}
+    </div>
 </div>
 {% else %}
 

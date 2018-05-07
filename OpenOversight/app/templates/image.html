@@ -68,7 +68,8 @@
             </tbody>
           </table>
 
-          {% if current_user.is_administrator %}
+          {% if current_user.is_administrator
+            or (current_user.is_area_coordinator and current_user.ac_department_id == image.department.id) %}
           <h3>Classify <small>Admin only</small></h3>
           <p>
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">

@@ -9,22 +9,7 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-
-
-# Choices are a list of (value, label) tuples
-RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
-                ('HISPANIC', 'Hispanic'),
-                ('NATIVE AMERICAN', 'Native American'),
-                ('PACIFIC ISLANDER', 'Pacific Islander'),
-                ('Other', 'Other'), ('Not Sure', 'Not Sure')]
-GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
-                  ('Not Sure', 'Not Sure')]
-RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
-                ('DEPUTY SUPT', 'Deputy Superintendent'), ('CHIEF', 'Chief'),
-                ('DEP CHIEF', 'Deputy Chief'), ('COMMANDER', 'Commander'),
-                ('CAPTAIN', 'Captain'), ('LIEUTENANT', 'Lieutenant'),
-                ('SERGEANT', 'Sergeant'), ('FIELD', 'Field Training Officer'),
-                ('PO', 'Police Officer')]
+from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES
 
 
 def allowed_values(choices):
@@ -138,7 +123,7 @@ class AddOfficerForm(Form):
     submit = SubmitField(label='Add')
 
 
-class BasicOfficerForm(Form):
+class EditOfficerForm(Form):
     first_name = StringField('First name',
                              validators=[Regexp('\w*'), Length(max=50),
                                          Optional()])
@@ -154,14 +139,16 @@ class BasicOfficerForm(Form):
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
-    department = QuerySelectField('Department', validators=[Optional()],
-                                  query_factory=dept_choices, get_label='name')
+    department = QuerySelectField(
+        'Department',
+        validators=[Optional()],
+        query_factory=dept_choices,
+        get_label='name')
     submit = SubmitField(label='Update')
 
 
 class AddUnitForm(Form):
     descrip = StringField('Unit name or description', default='', validators=[
         Regexp('\w*'), Length(max=120), DataRequired()])
-    department = QuerySelectField('Department', validators=[Optional()],
-                                  query_factory=dept_choices, get_label='name')
+    department = QuerySelectField('Department', validators=[Optional()], get_label='name')
     submit = SubmitField(label='Add')

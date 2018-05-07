@@ -1,11 +1,14 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, current_app
+from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
 from ..models import User, db
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
-    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm
+    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm, \
+    EditUserForm
+from .utils import admin_required
 
 
 @auth.before_app_request
@@ -178,3 +181,63 @@ def change_dept():
         flash('Updated!')
         return redirect(url_for('main.index'))
     return render_template('auth/change_dept_pref.html', form=form)
+
+
+class UserAPI(MethodView):
+    decorators = [admin_required]
+
+    def get(self, user_id):
+        if user_id is None:
+            if request.args.get('page'):
+                page = int(request.args.get('page'))
+            else:
+                page = 1
+            USERS_PER_PAGE = int(current_app.config['USERS_PER_PAGE'])
+            users = User.query.order_by(User.email) \
+                .paginate(page, USERS_PER_PAGE, False)
+
+            return render_template('auth/users.html', objects=users)
+        else:
+            user = User.query.get(user_id)
+
+            if user:
+                form = EditUserForm(
+                    email=user.email,
+                    is_area_coordinator=user.is_area_coordinator,
+                    ac_department=user.ac_department,
+                    is_administrator=user.is_administrator)
+                return render_template('auth/user.html', user=user, form=form)
+            else:
+                return render_template('403.html'), 403
+
+    def post(self, user_id):
+        form = EditUserForm()
+        user = User.query.get(user_id)
+
+        if user and form.validate_on_submit():
+            for field, data in form.data.iteritems():
+                setattr(user, field, data)
+
+            db.session.add(user)
+            flash('{} has been updated!'.format(user.username))
+            return redirect(url_for('auth.user_api'))
+        elif not form.validate_on_submit():
+            flash('Invalid entry')
+            return render_template('auth/user.html', user=user, form=form)
+        else:
+            return render_template('403.html'), 403
+
+    def delete(self, user_id):
+        pass
+
+
+user_view = UserAPI.as_view('user_api')
+auth.add_url_rule(
+    '/users/',
+    defaults={'user_id': None},
+    view_func=user_view,
+    methods=['GET'])
+auth.add_url_rule(
+    '/users/<int:user_id>',
+    view_func=user_view,
+    methods=['GET', 'POST'])

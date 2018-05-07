@@ -361,6 +361,11 @@ a > .tutorial{
     padding-bottom: 25px;
 }
 
+.small-horizontal-padding {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
 .sink-row {
     position: relative;
     margin-top: -70px;

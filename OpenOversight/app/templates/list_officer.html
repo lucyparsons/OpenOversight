@@ -12,29 +12,11 @@
       {{ department.name|title }} Officers
     </h1>
   {% endif %}
-  <nav aria-label="Page navigation top">
-    <ul class="pager">
-      {% if officers.has_prev %}
-        <li class="previous">
-          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search) }}">
-            <span aria-hidden="true">&larr;</span>
-            Previous
-          </a>
-        </li>
-      {% endif %}
-      {% if officers.has_next %}
-      <li class="next">
-        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search) }}">
-          Next
-          <span aria-hidden="true">&rarr;</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </nav>
-
+  {% with paginate=officers, next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
+        from_search=from_search), prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
+          from_search=from_search), location='top'%}
+    {% include "partials/paginate_nav.html" %}
+  {% endwith %}
   <ul class="list-group">
     {% for officer in officers.items %}
       {% if officer.face.first() is none %}
@@ -88,25 +70,13 @@
     {% endfor %}
   </ul>
 
-  <nav aria-label="Page navigation - bottom">
-    <ul class="pager">
-      {% if officers.has_prev %}
-        <li class="previous">
-          <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.prev_num, from_search=from_search) }}">
-            <span aria-hidden="true">&larr;</span>
-            Previous
-          </a>
-        </li>
-      {% endif %}
-      {% if officers.has_next %}
-      <li class="next">
-        <a role="button" href="{{ url_for('main.list_officer', department_id=department.id, page=officers.next_num, from_search=from_search) }}">
-          Next
-          <span aria-hidden="true">&rarr;</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-  </nav>
+  {% with paginate=officers,
+          next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
+        from_search=from_search),
+          prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
+          from_search=from_search),
+          location='bottom' %}
+    {% include "partials/paginate_nav.html" %}
+  {% endwith %}
 </div>
 {% endblock content %}

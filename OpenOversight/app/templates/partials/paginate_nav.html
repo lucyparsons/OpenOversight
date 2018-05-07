@@ -1,0 +1,20 @@
+<nav aria-label="Page navigation - {{ location }}">
+    <ul class="pager">
+      {% if paginate.has_prev %}
+        <li class="previous">
+          <a role="button" href="{{ prev_url }}">
+            <span aria-hidden="true">&larr;</span>
+            Previous
+          </a>
+        </li>
+      {% endif %}
+      {% if paginate.has_next %}
+      <li class="next">
+        <a role="button" href="{{ next_url }}">
+          Next
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
