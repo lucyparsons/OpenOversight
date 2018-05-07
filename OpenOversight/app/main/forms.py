@@ -1,15 +1,17 @@
 from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms import (StringField, DecimalField,
+from wtforms import (StringField, DecimalField, TextAreaField,
                      SelectField, IntegerField, SubmitField)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional)
+                                Length, Optional, Required)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
 from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES
+from ..formfields import TimeField
+import datetime
 
 
 def allowed_values(choices):
@@ -152,3 +154,21 @@ class AddUnitForm(Form):
         Regexp('\w*'), Length(max=120), DataRequired()])
     department = QuerySelectField('Department', validators=[Optional()], get_label='name')
     submit = SubmitField(label='Add')
+
+
+class IncidentEditForm(Form):
+    date_field = DateField('Date', validators=[Required()])
+    time_field = TimeField('Time')
+    report_number = StringField(validators=[Required()], description='Incident number for the organization tracking incidents')
+    description = TextAreaField(validators=[Optional()])
+    submit = SubmitField(label='Update')
+
+    @property
+    def datetime(self):
+        if self.date_field.data and self.time_field.data:
+            return datetime.datetime.combine(self.date_field.data, self.time_field.data)
+
+    @datetime.setter
+    def datetime(self, value):
+        self.date_field.data = value.date()
+        self.time_field.data = value.time()

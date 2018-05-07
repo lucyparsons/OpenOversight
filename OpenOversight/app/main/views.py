@@ -21,7 +21,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm)
+                    EditOfficerForm, IncidentEditForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Location, Link, LicensePlate, Incident)
@@ -609,6 +609,18 @@ class IncidentApi(ModelView):
     model = Incident
     model_name = 'incident'
     order_by = 'date'
+    form = IncidentEditForm
+
+    def get_populated_form(self, obj):
+        form = super(IncidentApi, self).get_populated_form(obj)
+        # set the date and time fields
+        form.datetime = obj.date
+        return form
+
+    def populate_obj(self, form, obj):
+        obj.date = form.datetime
+        super(IncidentApi, self).populate_obj(form, obj)
+
 
 incident_view = IncidentApi.as_view('incident_api')
 main.add_url_rule(
@@ -618,5 +630,9 @@ main.add_url_rule(
     methods=['GET'])
 main.add_url_rule(
     '/incidents/<int:id>',
+    view_func=incident_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/incidents/<int:id>/edit',
     view_func=incident_view,
     methods=['GET', 'POST'])
