@@ -1,7 +1,8 @@
 from pytest import raises
 import time
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
-                                      User, db, Department)
+                                      User, db, Department, Location, Link,
+                                      LicensePlate)
 
 
 def test_department_repr(mockdata):
@@ -150,3 +151,97 @@ def test_area_coordinator_with_dept_is_valid(mockdata):
     db.session.commit()
     assert user1.is_area_coordinator is True
     assert user1.ac_department_id == 1
+
+
+def test_locations_must_have_valid_zip_codes(mockdata):
+    with raises(ValueError):
+        Location(
+            street_name='Brookford St',
+            cross_street1='Mass Ave',
+            cross_street2='None',
+            city='Cambridge',
+            state='MA',
+            zip_code='543')
+
+
+def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
+    zip_code = '03456'
+    city = 'Cambridge'
+    lo = Location(
+        street_name='Brookford St',
+        cross_street1='Mass Ave',
+        cross_street2='None',
+        city=city,
+        state='MA',
+        zip_code=zip_code)
+    db.session.add(lo)
+    db.session.commit()
+    saved = Location.query.filter_by(zip_code=zip_code, city=city)
+    assert saved is not None
+
+
+def test_locations_must_have_valid_states(mockdata):
+    with raises(ValueError):
+        Location(
+            street_name='Brookford St',
+            cross_street1='Mass Ave',
+            cross_street2='None',
+            city='Cambridge',
+            state='JK',
+            zip_code='54340')
+
+
+def test_locations_can_be_saved_with_valid_states(mockdata):
+    state = 'AZ'
+    city = 'Cambridge'
+    lo = Location(
+        street_name='Brookford St',
+        cross_street1='Mass Ave',
+        cross_street2='None',
+        city=city,
+        state=state,
+        zip_code='54340')
+
+    db.session.add(lo)
+    db.session.commit()
+    saved = Location.query.filter_by(city=city, state=state).first()
+    assert saved is not None
+
+
+def test_license_plates_must_have_valid_states(mockdata):
+    with raises(ValueError):
+        LicensePlate(
+            number='603EEE',
+            state='JK')
+
+
+def test_license_plates_can_be_saved_with_valid_states(mockdata):
+    state = 'AZ'
+    city = 'Cambridge'
+    lp = LicensePlate(
+        number='603EEE',
+        state=state,)
+
+    db.session.add(lp)
+    db.session.commit()
+    saved = LicensePlate.query.filter_by(city=city, state=state).first()
+    assert saved is not None
+
+
+def test_links_must_have_valid_urls(mockdata):
+    bad_url = 'www.rachel.com'
+    with raises(ValueError):
+        Link(
+            link_type='video',
+            url=bad_url)
+
+
+def test_links_can_be_saved_with_valid_urls(mockdata):
+    good_url = 'http://www.rachel.com'
+    li = Link(
+        link_type='video',
+        url=good_url)
+    db.session.add(li)
+    db.session.commit()
+    saved = Link.query.filter_by(url=good_url).first()
+    assert saved is not None

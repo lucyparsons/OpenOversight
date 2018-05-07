@@ -1,3 +1,4 @@
+import re
 from urlparse import urlparse
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
@@ -7,6 +8,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, BadData
 from flask_login import UserMixin
 from flask import current_app
+from .validators import state_validator
 from . import login_manager
 
 db = SQLAlchemy()
@@ -170,6 +172,17 @@ class Location(db.Model):
     state = db.Column(db.String(2), unique=False, index=True)
     zip_code = db.Column(db.String(5), unique=False, index=True)
 
+    @validates('zip_code')
+    def validate_zip_code(self, key, zip_code):
+        zip_re = r'^\d{5}$'
+        if not re.match(zip_re, zip_code):
+            raise ValueError('Not a valid zip code')
+        return zip_code
+
+    @validates('state')
+    def validate_state(self, key, state):
+        return state_validator(state)
+
 
 class LicensePlate(db.Model):
     __tablename__ = 'license_plates'
@@ -177,6 +190,12 @@ class LicensePlate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
+    # for use if car is federal, diplomat, or other non-state
+    non_state_identifier = db.Column(db.String(20), index=True)
+
+    @validates('state')
+    def validate_state(self, key, state):
+        return state_validator(state)
 
 
 class Link(db.Model):
@@ -189,7 +208,7 @@ class Link(db.Model):
     @validates('url')
     def validate_url(self, key, url):
         parsed = urlparse(url)
-        if not parsed.scheme in ['http', 'https']:
+        if parsed.scheme not in ['http', 'https']:
             raise ValueError('Not a valid URL')
 
         return url
