@@ -13,14 +13,12 @@ db = SQLAlchemy()
 
 
 officer_links = db.Table('officer_links',
-    db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
-    db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True)
-)
+                         db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+                         db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True))
 
 officer_incidents = db.Table('officer_incidents',
-    db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
-    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True)
-)
+                             db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+                             db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True))
 
 
 class Department(db.Model):
@@ -49,9 +47,15 @@ class Officer(db.Model):
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
     # we don't expect to pull up officers via link often so we make it lazy.
-    links = db.relationship('Link', secondary=officer_links, lazy='subquery',
+    links = db.relationship(
+        'Link',
+        secondary=officer_links,
+        lazy='subquery',
         backref=db.backref('officers', lazy=True))
-    incidents = db.relationship('Officer', secondary=officer_links, lazy='subquery',
+    incidents = db.relationship(
+        'Officer',
+        secondary=officer_links,
+        lazy='subquery',
         backref=db.backref('officers'))
 
     def __repr__(self):
@@ -136,17 +140,20 @@ class Image(db.Model):
         return '<Image ID {}: {}>'.format(self.id, self.filepath)
 
 
-incident_links = db.Table('incident_links',
+incident_links = db.Table(
+    'incident_links',
     db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
     db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True)
 )
 
-incident_license_plates = db.Table('incident_license_plates',
+incident_license_plates = db.Table(
+    'incident_license_plates',
     db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
     db.Column('license_plate_id', db.Integer, db.ForeignKey('license_plates.id'), primary_key=True)
 )
 
-incident_officers = db.Table('incident_officers',
+incident_officers = db.Table(
+    'incident_officers',
     db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
     db.Column('officers_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True)
 )
