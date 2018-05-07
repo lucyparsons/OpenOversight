@@ -1,0 +1,16 @@
+{% extends "list.html" %}
+
+{% block list %}
+	<ul class="list-group">
+	  {% for incident in objects.items %}
+	  	<li class="list-group-item">
+	  		<h3>
+	  				<a href="{{ url_for('main.incident_api', id=incident.id)}}">
+	  				Incident {{ incident.report_number }}
+	  			</a>
+	  		</h3>
+	    	{% include 'partials/incident_fields.html' %}
+	    </li>
+	  {% endfor %}
+	</ul>
+{% endblock list %}

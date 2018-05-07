@@ -54,11 +54,11 @@ class Officer(db.Model):
         secondary=officer_links,
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
-    incidents = db.relationship(
-        'Officer',
-        secondary=officer_links,
-        lazy='subquery',
-        backref=db.backref('officers'))
+
+    def full_name(self):
+        if self.middle_initial:
+            return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+        return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
@@ -225,6 +225,11 @@ class Incident(db.Model):
     address = db.relationship('Location', backref='incidents')
     license_plates = db.relationship('LicensePlate', secondary=incident_license_plates, lazy='subquery', backref=db.backref('incidents', lazy=True))
     links = db.relationship('Link', secondary=incident_links, lazy='subquery', backref=db.backref('incidents', lazy=True))
+    officers = db.relationship(
+        'Officer',
+        secondary=officer_incidents,
+        lazy='subquery',
+        backref=db.backref('incidents'))
 
 
 class User(UserMixin, db.Model):

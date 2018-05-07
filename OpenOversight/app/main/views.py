@@ -22,8 +22,9 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm)
+from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit)
+                      Unit, Location, Link, LicensePlate, Incident)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -602,3 +603,20 @@ def server_shutdown():      # pragma: no cover
         abort(500)
     shutdown()
     return 'Shutting down...'
+
+
+class IncidentApi(ModelView):
+    model = Incident
+    model_name = 'incident'
+    order_by = 'date'
+
+incident_view = IncidentApi.as_view('incident_api')
+main.add_url_rule(
+    '/incidents/',
+    defaults={'id': None},
+    view_func=incident_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/incidents/<int:id>',
+    view_func=incident_view,
+    methods=['GET', 'POST'])

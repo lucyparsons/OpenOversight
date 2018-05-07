@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block head %}
+	<link href="{{ url_for('static', filename='css/responsive_embed.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	{% set incident = obj %}
+	<main class='container' role=''>
+		<h1>Incident {{incident.report_number}}</h1>
+		<div class='row'>
+			<div class="col-sm-12 col-md-6">
+				{% with detail=True %}
+					{% include 'partials/incident_fields.html' %}
+				{% endwith %}
+			</div>
+			<div class="col-sm-12 col-md-6">
+				<h5>Description</h5>
+				<p>{{ incident.description }}</p>
+			</div>
+			<div class='row'>
+					{% for type, list in incident.links|groupby('link_type') %}
+						{% if type == 'link' %}
+						<div class="col-sm-12 col-md-6">
+							<h5>Links</h5>
+							<ul class='list-group'>
+								{% for link in list %}
+									<li class='list-group-item'>
+										<a href="{{ link.url }}">{{ link.url }}</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</div>
+						{% endif %}
+						{% if type == 'video' %}
+							<div class="col-sm-12 col-md-6">
+								<ul class='list-group'>
+									<h5>Videos</h5>
+									{% for link in list %}
+										{% with link_url = link.url.split('v=')[1] %}
+											<li class='list-group-item'>
+												<div class='video-container'>
+													<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ link_url }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+												</div>
+											</li>
+										{% endwith%}
+									{% endfor %}
+								</ul>
+							</div>
+						{% endif %}
+					{% endfor %}
+			</div>
+		</div>
+	</main>
+{% endblock %}
