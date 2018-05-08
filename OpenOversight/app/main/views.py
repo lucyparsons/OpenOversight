@@ -18,10 +18,10 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
-                     ac_can_edit_officer, add_department_query, add_unit_query)
+                     ac_can_edit_officer, add_department_query, add_unit_query, create_incident)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentEditForm)
+                    EditOfficerForm, IncidentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Location, Link, LicensePlate, Incident)
@@ -609,12 +609,14 @@ class IncidentApi(ModelView):
     model = Incident
     model_name = 'incident'
     order_by = 'date'
-    form = IncidentEditForm
+    form = IncidentForm
+    create_function = create_incident
 
-    def get_populated_form(self, obj):
-        form = super(IncidentApi, self).get_populated_form(obj)
+    def get_populated_form(self, form, obj):
+        form = super(IncidentApi, self).get_populated_form(form, obj)
         # set the date and time fields
-        form.datetime = obj.date
+        if obj.date:
+            form.datetime = obj.date
         return form
 
     def populate_obj(self, form, obj):
@@ -628,6 +630,10 @@ main.add_url_rule(
     defaults={'id': None},
     view_func=incident_view,
     methods=['GET'])
+main.add_url_rule(
+    '/incidents/new',
+    view_func=incident_view,
+    methods=['GET', 'POST'])
 main.add_url_rule(
     '/incidents/<int:id>',
     view_func=incident_view,

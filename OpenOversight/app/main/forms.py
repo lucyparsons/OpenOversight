@@ -156,12 +156,9 @@ class AddUnitForm(Form):
     submit = SubmitField(label='Add')
 
 
-class IncidentEditForm(Form):
+class DateFieldForm(Form):
     date_field = DateField('Date', validators=[Required()])
     time_field = TimeField('Time')
-    report_number = StringField(validators=[Required()], description='Incident number for the organization tracking incidents')
-    description = TextAreaField(validators=[Optional()])
-    submit = SubmitField(label='Update')
 
     @property
     def datetime(self):
@@ -172,3 +169,10 @@ class IncidentEditForm(Form):
     def datetime(self, value):
         self.date_field.data = value.date()
         self.time_field.data = value.time()
+
+
+class IncidentForm(DateFieldForm):
+    report_number = StringField(validators=[Required()], description='Incident number for the organization tracking incidents')
+    description = TextAreaField(validators=[Optional()])
+    submit = SubmitField(label='Submit')
+

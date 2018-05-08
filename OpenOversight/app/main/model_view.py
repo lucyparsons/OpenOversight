@@ -10,6 +10,7 @@ class ModelView(MethodView):
     per_page = 20
     order_by = ''
     form = ''
+    create_function = ''
 
     def get(self, id):
         if id is None:
@@ -28,10 +29,22 @@ class ModelView(MethodView):
             obj = self.model.query.get_or_404(id)
             return render_template('{}_detail.html'.format(self.model_name), obj=obj)
 
+    def new(self, form=None):
+        form = self.form()
+        if form.validate_on_submit():
+            new_instance = self.create_function(form)
+            db.session.add(new_instance)
+            db.session.commit()
+
+            return redirect(url_for('main.{}_api'.format(self.model_name), id=new_instance.id, _method='GET'))
+
+        return render_template('{}_new.html'.format(self.model_name), form=form)
+
     def edit(self, id, form=None):
         obj = self.model.query.get_or_404(id)
         if not form:
-            form = self.get_populated_form(obj)
+            form = self.form(request.form, obj=obj)
+            form = self.get_populated_form(form, obj)
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
@@ -45,12 +58,12 @@ class ModelView(MethodView):
         if request.method == 'POST':
             db.session.delete(obj)
             db.session.commit()
+
             return redirect(url_for('main.{}_api'.format(self.model_name)))
 
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
 
-    def get_populated_form(self, obj):
-        form = self.form(request.form, obj=obj)
+    def get_populated_form(self, form, obj):
         form.populate_obj(obj)
         return form
 
@@ -65,6 +78,8 @@ class ModelView(MethodView):
                 meth = getattr(self, 'edit', None)
             elif end_of_url == 'delete':
                 meth = getattr(self, 'delete', None)
+            elif end_of_url == 'new':
+                meth = getattr(self, 'new', None)
             else:
                 meth = getattr(self, 'get', None)
 
@@ -73,6 +88,8 @@ class ModelView(MethodView):
                 meth = getattr(self, 'edit', None)
             elif end_of_url == 'delete':
                 meth = getattr(self, 'delete', None)
+            elif end_of_url == 'new':
+                meth = getattr(self, 'new', None)
             else:
                 abort(404)
 

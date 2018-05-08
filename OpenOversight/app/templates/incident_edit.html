@@ -1,24 +1,17 @@
-{% extends "base.html" %}
+{% extends "form.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
 
-{% block content %}
-	<div class="container theme-showcase" role="main">
+{% block page_title %}
+	Update Incident {{ obj.report_number }}
+{% endblock page_title %}
 
-		<div class="page-header">
-		    <h1>
-		    	Update Incident {{ obj.report_number }}
-		    </h1>
-		</div>
-		<div class="col-md-6 col-xs-12">
-				{% if form.errors %}
-					{% set post_url=url_for('main.incident_api', id=obj.id) %}
-				{% else %}
-					{% set post_url="{}/edit".format(url_for('main.incident_api',id=obj.id)) %}
-				{% endif %}
-				<h2>Incident Details</h2>
-					{{ wtf.quick_form(form, action=post_url, method='post', id="incident", button_map={'submit':'primary'}) }}
-		    <br>
-		</div>
-	</div>
+
+{% block content %}
+	{% if form.errors %}
+		{% set post_url=url_for('main.incident_api', id=obj.id) %}
+	{% else %}
+		{% set post_url="{}/edit".format(url_for('main.incident_api',id=obj.id)) %}
+	{% endif %}
+	{{ super() }}
 {% endblock content %}

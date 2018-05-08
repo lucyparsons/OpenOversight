@@ -7,7 +7,7 @@ from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
 
-from .models import db, Officer, Assignment, Image, Face, User, Unit, Department
+from .models import db, Officer, Assignment, Image, Face, User, Unit, Department, Incident
 
 
 def unit_choices():
@@ -244,3 +244,7 @@ def add_unit_query(form, current_user):
             department_id=current_user.ac_department_id)
     else:
         form.unit.query = Unit.query.all()
+
+def create_incident(self, form):
+    date = form.datetime
+    return Incident(date=date, description=form.data['description'], report_number=form.data['report_number'])
