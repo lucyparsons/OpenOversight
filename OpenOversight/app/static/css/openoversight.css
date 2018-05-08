@@ -271,6 +271,19 @@ a > .tutorial{
     color: white;
 }
 
+.btn-danger {
+    background: white;
+    color: black;
+    border-color: red;
+    font-weight: bold;
+}
+
+.btn-danger:hover {
+    border-color: #555555;
+    background-color: white;
+    color: #555555;
+}
+
 .btn-info {
     background: #0000ff;
     color: white;

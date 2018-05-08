@@ -636,3 +636,7 @@ main.add_url_rule(
     '/incidents/<int:id>/edit',
     view_func=incident_view,
     methods=['GET', 'POST'])
+main.add_url_rule(
+    '/incidents/<int:id>/delete',
+    view_func=incident_view,
+    methods=['GET', 'POST'])

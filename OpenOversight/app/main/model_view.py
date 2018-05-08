@@ -40,27 +40,39 @@ class ModelView(MethodView):
 
         return render_template('{}_edit.html'.format(self.model_name), obj=obj, form=form)
 
+    def delete(self, id):
+        obj = self.model.query.get_or_404(id)
+        if request.method == 'POST':
+            db.session.delete(obj)
+            db.session.commit()
+            return redirect(url_for('main.{}_api'.format(self.model_name)))
+
+        return render_template('{}_delete.html'.format(self.model_name), obj=obj)
+
     def get_populated_form(self, obj):
         form = self.form(request.form, obj=obj)
         form.populate_obj(obj)
         return form
 
-
     def populate_obj(self, form, obj):
         form.populate_obj(obj)
         db.session.add(obj)
 
-
     def dispatch_request(self, *args, **kwargs):
+        end_of_url = request.url.split('/')[-1]
         if request.method == 'GET':
-            if request.url.split('/')[-1] == 'edit':
+            if end_of_url == 'edit':
                 meth = getattr(self, 'edit', None)
+            elif end_of_url == 'delete':
+                meth = getattr(self, 'delete', None)
             else:
                 meth = getattr(self, 'get', None)
 
         if request.method == 'POST':
-            if request.url.split('/')[-1] == 'edit':
+            if end_of_url == 'edit':
                 meth = getattr(self, 'edit', None)
+            elif end_of_url == 'delete':
+                meth = getattr(self, 'delete', None)
             else:
                 abort(404)
 
