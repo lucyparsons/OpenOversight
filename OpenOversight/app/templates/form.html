@@ -16,8 +16,10 @@
 		{% endblock %}
 
 		<div class="col-md-6 col-xs-12">
-				{{ wtf.quick_form(form, action=post_url, method='post', id="incident", button_map={'submit':'primary'}) }}
+			{% block form %}
+				{{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
 				<br>
+			{% endblock form %}
 		</div>
 	</div>
 {% endblock content %}

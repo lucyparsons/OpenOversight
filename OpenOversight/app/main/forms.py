@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
-                     SelectField, IntegerField, SubmitField)
+                     SelectField, IntegerField, SubmitField,
+                     FormField, FieldList)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
@@ -9,8 +10,9 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES
+from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
 from ..formfields import TimeField
+from ..widgets import BootstrapListWidget, FormFieldWidget
 import datetime
 
 
@@ -171,8 +173,57 @@ class DateFieldForm(Form):
         self.time_field.data = value.time()
 
 
-class IncidentForm(DateFieldForm):
-    report_number = StringField(validators=[Required()], description='Incident number for the organization tracking incidents')
-    description = TextAreaField(validators=[Optional()])
-    submit = SubmitField(label='Submit')
+class LocationForm(Form):
+    street_name = StringField(validators=[Required()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
+    cross_street1 = StringField(validators=[Required()], description="Closest cross street to where incident occurred.")
+    cross_street2 = StringField(validators=[Optional()])
+    city = StringField(validators=[Required()])
+    state = SelectField('State', choices=STATE_CHOICES,
+                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+    zip_code = StringField('Zip Code', validators=[Regexp(r'^\d{5}$')])
 
+
+class LicensePlateForm(Form):
+    number = StringField('Plate Number', validators=[])
+    state = SelectField('State', choices=STATE_CHOICES,
+                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+
+
+class LinkForm(Form):
+    url = StringField(validators=[])
+    link_type = SelectField('Link Type', choices=LINK_CHOICES, validators=[AnyOf(allowed_values(LINK_CHOICES))])
+
+    def validate(self):
+        success = super(LinkForm, self).validate()
+        if self.url.data and not self.link_type.data:
+            self.url.errors = list(self.url.errors)
+            self.url.errors.append('Links must have a link type.')
+            success = False
+
+        return success
+
+
+class IncidentForm(DateFieldForm):
+    report_number = StringField(
+        validators=[Required(), Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
+        description='Incident number for the organization tracking incidents')
+    description = TextAreaField(validators=[Optional()])
+    address = FormField(LocationForm)
+    officers = FieldList(
+        StringField('OO Officer ID'),
+        description='Officers present at the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    license_plates = FieldList(FormField(
+        LicensePlateForm, widget=FormFieldWidget()),
+        description='License plates of police vehicles at the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+
+    submit = SubmitField(label='Submit')

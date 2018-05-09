@@ -18,13 +18,13 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
-                     ac_can_edit_officer, add_department_query, add_unit_query, create_incident)
+                     ac_can_edit_officer, add_department_query, add_unit_query, create_incident, get_or_create, replace_list)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit, Location, Link, LicensePlate, Incident)
+                      Unit, Incident, Location, LicensePlate, Link)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -612,14 +612,50 @@ class IncidentApi(ModelView):
     form = IncidentForm
     create_function = create_incident
 
-    def get_populated_form(self, form, obj):
-        form = super(IncidentApi, self).get_populated_form(form, obj)
-        # set the date and time fields
+    def get_form(self, obj):
+        form = super(IncidentApi, self).get_form(obj=obj)
+        # import pdb; pdb.set_trace()
+        no_license_plates = len(obj.license_plates)
+        no_links = len(obj.links)
+        no_officers = len(obj.officers)
+
+        form.license_plates.min_entries = no_license_plates
+        form.links.min_entries = no_links
+        form.officers.min_entries = no_officers
         if obj.date:
             form.datetime = obj.date
         return form
 
     def populate_obj(self, form, obj):
+        # remove all fields not directly on the Incident model
+        # use utils to add them to the current object
+        address = form.data.pop('address')
+        del form.address
+        if address['street_name']:
+            new_address, _ = get_or_create(db.session, Location, **address)
+            obj.address = new_address
+        else:
+            obj.address = None
+
+        links = form.data.pop('links')
+        del form.links
+        if links[0] and links[0]['url']:
+            replace_list(links, obj, 'links', Link, db)
+
+        officers = form.data.pop('officers')
+        del form.officers
+        if officers[0]:
+            for officer_id in officers:
+                if officer_id:
+                    of = Officer.query.filter_by(id=int(officer_id)).first()
+                    if of:
+                        obj.officers
+
+        license_plates = form.data.pop('license_plates')
+        del form.license_plates
+        if license_plates[0] and license_plates[0]['number']:
+            replace_list(license_plates, obj, 'license_plates', LicensePlate, db)
+
         obj.date = form.datetime
         super(IncidentApi, self).populate_obj(form, obj)
 

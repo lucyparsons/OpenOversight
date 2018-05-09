@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for, flash, abort
 from flask.views import MethodView
-from ..auth.utils import admin_required
+from ..auth.utils import ac_or_admin_required
 from ..models import db
 
 
@@ -43,8 +43,7 @@ class ModelView(MethodView):
     def edit(self, id, form=None):
         obj = self.model.query.get_or_404(id)
         if not form:
-            form = self.form(request.form, obj=obj)
-            form = self.get_populated_form(form, obj)
+            form = self.get_form(obj)
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
@@ -63,13 +62,15 @@ class ModelView(MethodView):
 
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
 
-    def get_populated_form(self, form, obj):
-        form.populate_obj(obj)
-        return form
+    def get_form(self, obj):
+        return self.form(request.form, obj=obj)
 
     def populate_obj(self, form, obj):
         form.populate_obj(obj)
         db.session.add(obj)
+
+    def create_obj(self, form):
+        self.model(**form.data)
 
     def dispatch_request(self, *args, **kwargs):
         end_of_url = request.url.split('/')[-1]

@@ -1,10 +1,5 @@
-{% extends 'form.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block page_title %}
-	New Incident
-{% endblock page_title %}
-
-{% block form %}
 <form class="form" method="post" role="form">
 			{{ form.hidden_tag() }}
 			{{ wtf.form_errors(form, hiddens="only") }}
@@ -36,8 +31,3 @@
 			</div>
 			{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
 </form>
-{% endblock form %}
-
-{% block js_footer %}
-	<script src="{{ url_for('static', filename='js/incidentAddButtons.js') }}"></script>
-{% endblock %}
