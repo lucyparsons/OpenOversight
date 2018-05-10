@@ -5,37 +5,7 @@
 {% endblock page_title %}
 
 {% block form %}
-<form class="form" method="post" role="form">
-			{{ form.hidden_tag() }}
-			{{ wtf.form_errors(form, hiddens="only") }}
-			{{ wtf.form_field(form.date_field, autofocus="autofocus") }}
-			{{ wtf.form_field(form.time_field) }}
-			{{ wtf.form_field(form.report_number) }}
-			{{ wtf.form_field(form.description) }}
-			{% with subform=form.address, no_remove=True %}
-				{% include "partials/subform.html" %}
-			{% endwith %}
-			<div>
-			{% for subform in form.license_plates %}
-				{% with id="js-license-plate", number=loop.index %}
-					{% include "partials/subform.html" %}
-				{% endwith %}
-			{% endfor %}
-				<button class="btn btn-primary js-add-another-button" style="margin-bottom: 2rem;">Add another license plate</button>
-			</div>
-			<fieldset>
-				<legend>Officers Involved</legend>
-				{{ form.officers(class__="form-control") }}
-				<button class="btn btn-primary js-add-another-button" style="margin-bottom: 2rem;">Add another officer</button>
-			</fieldset>
-			<div>
-			{% for subform in form.links %}
-				{% include "partials/subform.html" %}
-			{% endfor %}
-			<button class="btn btn-primary js-add-another-button" style="margin-bottom: 2rem;" disabled>Add another link</button>
-			</div>
-			{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
-</form>
+	{% include "partials/incident_form.html" %}
 {% endblock form %}
 
 {% block js_footer %}
