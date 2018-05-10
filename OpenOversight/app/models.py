@@ -125,9 +125,13 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    is_area_coordinator = db.Column(db.Boolean, default=False)
+    ac_department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    ac_department = db.relationship('Department', backref='coordinators', foreign_keys=[ac_department_id])
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
-
+    dept_pref = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    dept_pref_rel = db.relationship('Department', foreign_keys=[dept_pref])
     classifications = db.relationship('Image', backref='users')
     tags = db.relationship('Face', backref='users')
 

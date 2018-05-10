@@ -1,6 +1,5 @@
 import datetime
 import os
-from functools import wraps
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -10,7 +9,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify)
+                   flash, current_app, jsonify, Markup)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -18,14 +17,16 @@ from .. import limiter
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
-                     add_officer_profile, edit_officer_profile)
+                     add_officer_profile, edit_officer_profile,
+                     ac_can_edit_officer, add_department_query, add_unit_query)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    BasicOfficerForm)
+                    EditOfficerForm)
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit)
 
 from ..auth.forms import LoginForm
+from ..auth.utils import admin_required, ac_or_admin_required
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -35,19 +36,16 @@ def redirect_url(default='index'):
     return request.args.get('next') or request.referrer or url_for(default)
 
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_administrator:
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 @main.route('/')
 @main.route('/index')
 def index():
     return render_template('index.html')
+
+
+@main.route('/browse', methods=['GET'])
+def browse():
+    departments = Department.query.all()
+    return render_template('browse.html', departments=departments)
 
 
 @main.route('/find', methods=['GET', 'POST'])
@@ -106,7 +104,12 @@ def profile(username):
         user = User.query.filter_by(username=username).one()
     else:
         abort(404)
-    return render_template('profile.html', user=user)
+    try:
+        pref = User.query.filter_by(id=current_user.id).one().dept_pref
+        department = Department.query.filter_by(id=pref).one().name
+    except NoResultFound:
+        department = None
+    return render_template('profile.html', user=user, department=department)
 
 
 @main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
@@ -136,7 +139,22 @@ def officer_profile(officer_id):
                       format_exc(full_tback)])
         ))
 
-    if form.validate_on_submit() and current_user.is_administrator:
+    return render_template('officer.html', officer=officer, paths=face_paths,
+                           assignments=assignments, form=form)
+
+
+@main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
+@ac_or_admin_required
+def add_assignment(officer_id):
+    form = AssignmentForm()
+    officer = Officer.query.filter_by(id=officer_id).first()
+    if not officer:
+        flash('Officer not found')
+        abort(404)
+
+    if form.validate_on_submit() and (current_user.is_administrator or
+                                      (current_user.is_area_coordinator and
+                                       officer.department_id == current_user.ac_department_id)):
         try:
             add_new_assignment(officer_id, form)
             flash('Added new assignment!')
@@ -144,15 +162,22 @@ def officer_profile(officer_id):
             flash('Assignment already exists')
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
-    return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
+        abort(403)
+
+    return redirect(url_for('main.officer_profile'), officer_id=officer_id)
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
             methods=['GET', 'POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def edit_assignment(officer_id, assignment_id):
+    if current_user.is_area_coordinator and not current_user.is_administrator:
+        officer = Officer.query.filter_by(id=officer_id).one()
+        if not ac_can_edit_officer(officer, current_user):
+            abort(403)
+
     assignment = Assignment.query.filter_by(id=assignment_id).one()
     form = AssignmentForm(obj=assignment)
     if form.validate_on_submit():
@@ -246,13 +271,42 @@ def add_department():
         return render_template('add_department.html', form=form)
 
 
+@main.route('/department/<int:department_id>')
+def list_officer(department_id, page=1, from_search=False):
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
+
+    if request.args.get('from_search'):
+        if request.args.get('from_search') == 'True':
+            from_search = True
+        else:
+            from_search = False
+
+    OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    officers = Officer.query.filter(Officer.department_id == department_id) \
+        .order_by(Officer.last_name) \
+        .paginate(page, OFFICERS_PER_PAGE, False)
+    return render_template(
+        'list_officer.html',
+        department=department,
+        officers=officers,
+        from_search=from_search)
+
+
 @main.route('/officer/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def add_officer():
-    first_department = Department.query.first()
-    first_unit = Unit.query.first()
-    form = AddOfficerForm(department=first_department, unit=first_unit)
+    form = AddOfficerForm()
+    add_unit_query(form, current_user)
+    add_department_query(form, current_user)
+
+    if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
+            abort(403)
     if form.validate_on_submit():
         officer = add_officer_profile(form)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
@@ -263,10 +317,15 @@ def add_officer():
 
 @main.route('/officer/<int:officer_id>/edit', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
-    form = BasicOfficerForm(obj=officer)
+    form = EditOfficerForm(obj=officer)
+    if current_user.is_area_coordinator and not current_user.is_administrator:
+        if not ac_can_edit_officer(officer, current_user):
+            abort(403)
+    add_department_query(form, current_user)
+
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
         flash('Officer {} edited'.format(officer.last_name))
@@ -277,11 +336,10 @@ def edit_officer(officer_id):
 
 @main.route('/unit/new', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def add_unit():
-    first_department = Department.query.first()
-    form = AddUnitForm(department=first_department)
-
+    form = AddUnitForm()
+    add_department_query(form, current_user)
     if form.validate_on_submit():
         unit = Unit(descrip=form.descrip.data,
                     department_id=form.department.data.id)
@@ -295,10 +353,20 @@ def add_unit():
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
 @login_required
-@admin_required
+@ac_or_admin_required
 def delete_tag(tag_id):
+    tag = Face.query.filter_by(id=tag_id).first()
+
+    if not tag:
+        flash('Tag not found')
+        return redirect(url_for('main.index'))
+
+    if not current_user.is_administrator and current_user.is_area_coordinator:
+        if current_user.ac_department_id != tag.officer.department_id:
+            abort(403)
+
     try:
-        Face.query.filter_by(id=tag_id).delete()
+        db.session.delete(tag)
         db.session.commit()
         flash('Deleted this tag')
     except:  # noqa
@@ -381,11 +449,13 @@ def label_data(department_id=None, image_id=None):
 @login_required
 def complete_tagging(image_id):
     # Select a random untagged image from the database
-    image = Image.query.filter_by(id=image_id).one()
+    image = Image.query.filter_by(id=image_id).first()
+    if not image:
+        abort(404)
     image.is_tagged = True
     db.session.commit()
     flash('Marked image as completed.')
-    return redirect(url_for('main.label_data'))
+    return redirect(url_for('main.label_data', department_id=request.args.get('department_id')))
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
@@ -412,6 +482,14 @@ def get_gallery(page=1):
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_data = form.data
         officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
+        # If no officers are found, go to a list of all department officers
+        if not officers.items:
+            return redirect(url_for(
+                'main.list_officer',
+                department_id=form_data['dept'].id,
+                from_search=True)
+            )
+
         return render_template('gallery.html',
                                officers=officers,
                                form=form,
@@ -433,8 +511,19 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
-    departments = Department.query.all()
-    return render_template('submit_deptselect.html', departments=departments)
+    # try to use preferred department if available
+    try:
+        if User.query.filter_by(id=current_user.id).one().dept_pref:
+            flash(Markup('Want to submit for another department? Change your <a href="/auth/change-dept/">default department</a>.'))
+            department = User.query.filter_by(id=current_user.id).one().dept_pref
+            return redirect(url_for('main.submit_department_images', department_id=department))
+        else:
+            departments = Department.query.all()
+            return render_template('submit_deptselect.html', departments=departments)
+    # that is, an anonymous user has no id attribute
+    except AttributeError:
+        departments = Department.query.all()
+        return render_template('submit_deptselect.html', departments=departments)
 
 
 @main.route('/submit/department/<int:department_id>', methods=['GET', 'POST'])

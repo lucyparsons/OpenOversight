@@ -19,6 +19,8 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
+AC_DEPT = 1
+
 
 def pick_birth_date():
     return random.randint(1950, 2000)
@@ -154,32 +156,35 @@ def mockdata(session, request):
     SEED = current_app.config['SEED']
     random.seed(SEED)
 
-    image1 = models.Image(filepath='static/images/test_cop1.png',
-                          department_id=1)
-    image2 = models.Image(filepath='static/images/test_cop2.png',
-                          department_id=1)
-    image3 = models.Image(filepath='static/images/test_cop3.png',
-                          department_id=1)
-    image4 = models.Image(filepath='static/images/test_cop4.png',
-                          department_id=1)
-
     unit1 = models.Unit(descrip="test")
 
-    test_images = [image1, image2, image3, image4]
+    test_images = [models.Image(filepath='static/images/test_cop{}.png'.format(x), department_id=1) for x in range(5)] + \
+        [models.Image(filepath='static/images/test_cop{}.png'.format(x), department_id=2) for x in range(5)]
+
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
     session.add_all(officers)
     session.add_all(test_images)
+
     session.commit()
 
-    officers = models.Officer.query.all()
-    test_images = models.Image.query.all()
+    all_officers = models.Officer.query.all()
+    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
+    officers_dept2 = models.Officer.query.filter_by(department_id=2).all()
 
-    assignments = [build_assignment(officer, unit1) for officer in officers]
-    faces = [assign_faces(officer, test_images) for officer in officers]
-    faces = [f for f in faces if f]
+    # assures that there are some assigned and unassigned images in each department
+    assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
+
+    assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
+
+    assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
+    faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
+    faces1 = [f for f in faces_dept1 if f]
+    faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
     session.add_all(assignments)
-    session.add_all(faces)
+    session.add_all(faces1)
+    session.add_all(faces2)
 
     test_user = models.User(email='jen@example.org',
                             username='test_user',
@@ -193,6 +198,14 @@ def mockdata(session, request):
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)
+
+    test_area_coordinator = models.User(email='raq929@example.org',
+                                        username='test_ac',
+                                        password='horse',
+                                        confirmed=True,
+                                        is_area_coordinator=True,
+                                        ac_department_id=AC_DEPT)
+    session.add(test_area_coordinator)
 
     test_unconfirmed_user = models.User(email='freddy@example.org',
                                         username='b_meson',

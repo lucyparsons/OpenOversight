@@ -101,6 +101,14 @@
     require     => [ File["${source_path}/OpenOversight/.env"], Python::Virtualenv[$virtualenv], Postgresql::Server::Db[$database_name]  ]
   }
 
+  exec{'stamp database on latest migration':
+    command     => "python manage.py db stamp head",
+    cwd         => "$source_path/OpenOversight",
+    path        => "${virtualenv}/bin",
+    user        => $system_user,
+    require     => [ File["${source_path}/OpenOversight/.env"], Python::Virtualenv[$virtualenv], Postgresql::Server::Db[$database_name]  ]
+  }
+
   exec{'create test data':
     command     => "python test_data.py -p",
     cwd         => $source_path,

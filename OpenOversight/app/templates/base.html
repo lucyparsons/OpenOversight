@@ -46,13 +46,14 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
+            <li><a href="/browse">Browse</a></li>
             <li><a href="/find">Find an Officer</a></li>
             <li><a href="/submit">Submit Images</a></li>
             <li><a href="/label">Volunteer</a></li>
-            {% if current_user and current_user.is_authenticated %}
-              <li><a href="/leaderboard">Leaderboard</a></li>
-            {% endif %}
             <li><a href="/about">About</a></li>
+            {% if current_user and current_user.is_administrator %}
+              <li><a href="/auth/users">Users</a></li>
+            {% endif%}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if current_user and current_user.is_authenticated %}
@@ -62,6 +63,7 @@
                 <li><a href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a></li>
                 <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
                 <li><a href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
+		<li><a href="{{ url_for('auth.change_dept') }}">Change Default Department</a></li>
                 <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
               </ul>
             </li>

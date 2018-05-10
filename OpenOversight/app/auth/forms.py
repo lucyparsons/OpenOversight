@@ -1,8 +1,11 @@
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Email, Regexp, EqualTo
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms.validators import Required, Length, Email, Regexp, EqualTo, Optional
 from wtforms import ValidationError
+
 from ..models import User
+from ..utils import dept_choices
 
 
 class LoginForm(Form):
@@ -72,3 +75,26 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+
+class ChangeDefaultDepartmentForm(Form):
+    dept_pref = QuerySelectField('Default Department (Optional)', validators=[Optional()],
+                                 query_factory=dept_choices, get_label='name', allow_blank=True)
+    submit = SubmitField('Update Default')
+
+
+class EditUserForm(Form):
+    is_area_coordinator = BooleanField('Is area coordinator?')
+    ac_department = QuerySelectField('Department', validators=[Optional()],
+                                     query_factory=dept_choices, get_label='name', allow_blank=True)
+    is_administrator = BooleanField('Is administrator?')
+    submit = SubmitField(label='Update')
+
+    def validate(self):
+        success = super(EditUserForm, self).validate()
+        if self.is_area_coordinator.data and not self.ac_department.data:
+            self.is_area_coordinator.errors = list(self.is_area_coordinator.errors)
+            self.is_area_coordinator.errors.append('Area coordinators must have a department')
+            success = False
+
+        return success

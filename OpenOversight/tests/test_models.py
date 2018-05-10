@@ -142,3 +142,11 @@ def test_duplicate_email_change_token(mockdata):
     token = user2.generate_email_change_token('alice@example.com')
     assert user2.change_email(token) is False
     assert user2.email == 'bob@example.org'
+
+
+def test_area_coordinator_with_dept_is_valid(mockdata):
+    user1 = User(email='alice@example.com', username='me', password='cat', is_area_coordinator=True, ac_department_id=1)
+    db.session.add(user1)
+    db.session.commit()
+    assert user1.is_area_coordinator is True
+    assert user1.ac_department_id == 1
