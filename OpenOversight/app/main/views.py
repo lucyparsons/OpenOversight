@@ -449,11 +449,13 @@ def label_data(department_id=None, image_id=None):
 @login_required
 def complete_tagging(image_id):
     # Select a random untagged image from the database
-    image = Image.query.filter_by(id=image_id).one()
+    image = Image.query.filter_by(id=image_id).first()
+    if not image:
+        abort(404)
     image.is_tagged = True
     db.session.commit()
     flash('Marked image as completed.')
-    return redirect(url_for('main.label_data'))
+    return redirect(url_for('main.label_data', department_id=request.args.get('department_id')))
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
