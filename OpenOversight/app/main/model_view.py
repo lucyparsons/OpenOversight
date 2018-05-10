@@ -1,5 +1,6 @@
 from flask import render_template, redirect, request, url_for, flash, abort
 from flask.views import MethodView
+from flask_login import login_required
 from ..auth.utils import ac_or_admin_required
 from ..models import db
 
@@ -29,6 +30,8 @@ class ModelView(MethodView):
             obj = self.model.query.get_or_404(id)
             return render_template('{}_detail.html'.format(self.model_name), obj=obj)
 
+    @login_required
+    @ac_or_admin_required
     def new(self, form=None):
         form = self.form()
         if form.validate_on_submit():
@@ -40,6 +43,8 @@ class ModelView(MethodView):
 
         return render_template('{}_new.html'.format(self.model_name), form=form)
 
+    @login_required
+    @ac_or_admin_required
     def edit(self, id, form=None):
         obj = self.model.query.get_or_404(id)
         if not form:
@@ -52,6 +57,8 @@ class ModelView(MethodView):
 
         return render_template('{}_edit.html'.format(self.model_name), obj=obj, form=form)
 
+    @login_required
+    @ac_or_admin_required
     def delete(self, id):
         obj = self.model.query.get_or_404(id)
         if request.method == 'POST':
