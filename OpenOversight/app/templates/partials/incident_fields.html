@@ -9,6 +9,11 @@
 			<td>{{ incident.report_number }}</td>
 		</tr>
 		<tr>
+			<td><strong>Department</strong></td>
+			<td>{{ incident.department.name }}</td>
+		</tr>
+		{% if incident.officers %}
+		<tr>
 			<td><strong>Officers</strong></td>
 			<td>
 				{% for officer in incident.officers %}
@@ -16,7 +21,8 @@
 				{% endfor %}
 			</td>
 		</tr>
-		{% if detail %}
+		{% endif %}
+		{% if detail and incident.license_plates %}
 			<tr>
 				<td><strong>License Plates</strong></td>
 				<td>
@@ -39,9 +45,9 @@
 						<td>
 							{{ address.street_name }}
 							{% if address.cross_street1 and address.cross_street2 %}
-								between {{ address.cross_street1 }} and {{ address.cross_street2 }}
+								<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
 								{% else %}
-								 near {{ address.cross_street1 }}
+								 <em>near</em> {{ address.cross_street1 }}
 							{% endif %}
 							<br/>
 							{{ address.city }}, {{ address.state }} {{ address.zip_code }}

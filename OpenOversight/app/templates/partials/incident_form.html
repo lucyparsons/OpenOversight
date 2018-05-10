@@ -6,6 +6,7 @@
 			{{ wtf.form_field(form.date_field, autofocus="autofocus") }}
 			{{ wtf.form_field(form.time_field) }}
 			{{ wtf.form_field(form.report_number) }}
+			{{ wtf.form_field(form.department) }}
 			{{ wtf.form_field(form.description) }}
 			{% with subform=form.address, no_remove=True %}
 				{% include "partials/subform.html" %}

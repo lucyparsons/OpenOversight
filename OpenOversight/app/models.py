@@ -191,7 +191,7 @@ class LicensePlate(db.Model):
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
     # for use if car is federal, diplomat, or other non-state
-    non_state_identifier = db.Column(db.String(20), index=True)
+    # non_state_identifier = db.Column(db.String(20), index=True)
 
     @validates('state')
     def validate_state(self, key, state):
@@ -230,6 +230,8 @@ class Incident(db.Model):
         secondary=officer_incidents,
         lazy='subquery',
         backref=db.backref('incidents'))
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='incidents', lazy=True)
 
 
 class User(UserMixin, db.Model):

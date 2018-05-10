@@ -232,11 +232,10 @@ def ac_can_edit_officer(officer, ac):
 
 
 def add_department_query(form, current_user):
+    """Limits the departments available on forms for acs"""
     if not current_user.is_administrator:
         form.department.query = Department.query.filter_by(
             id=current_user.ac_department_id)
-    else:
-        form.department.query = Department.query.all()
 
 
 def add_unit_query(form, current_user):
@@ -310,6 +309,7 @@ def create_incident(self, form):
     return Incident(
         date=fields['date'],
         description=form.data['description'],
+        department=form.data['department'],
         address=fields['address'],
         officers=fields['officers'],
         report_number=form.data['report_number'],

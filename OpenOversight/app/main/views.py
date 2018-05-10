@@ -611,6 +611,7 @@ class IncidentApi(ModelView):
     order_by = 'date'
     form = IncidentForm
     create_function = create_incident
+    department_check = True
 
     def get_form(self, obj):
         form = super(IncidentApi, self).get_form(obj=obj)
@@ -639,12 +640,12 @@ class IncidentApi(ModelView):
 
         links = form.data.pop('links')
         del form.links
-        if links[0] and links[0]['url']:
+        if links and links[0]['url']:
             replace_list(links, obj, 'links', Link, db)
 
         officers = form.data.pop('officers')
         del form.officers
-        if officers[0]:
+        if officers:
             for officer_id in officers:
                 if officer_id:
                     of = Officer.query.filter_by(id=int(officer_id)).first()
@@ -653,7 +654,7 @@ class IncidentApi(ModelView):
 
         license_plates = form.data.pop('license_plates')
         del form.license_plates
-        if license_plates[0] and license_plates[0]['number']:
+        if license_plates and license_plates[0]['number']:
             replace_list(license_plates, obj, 'license_plates', LicensePlate, db)
 
         obj.date = form.datetime

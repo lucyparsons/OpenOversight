@@ -208,6 +208,11 @@ class IncidentForm(DateFieldForm):
         validators=[Required(), Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
         description='Incident number for the organization tracking incidents')
     description = TextAreaField(validators=[Optional()])
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
     address = FormField(LocationForm)
     officers = FieldList(
         StringField('OO Officer ID'),

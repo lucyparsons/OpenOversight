@@ -219,22 +219,21 @@ def mockdata(session, request):
     session.add_all(test_units)
     session.commit()
 
-    test_addresses = [models.Location(
+    test_addresses = [
+        models.Location(
             street_name='Test St',
             cross_street1='Cross St',
             cross_street2='2nd St',
             city='My City',
             state='AZ',
-            zip_code='23456'
-        ),
+            zip_code='23456'),
         models.Location(
             street_name='Testing St',
             cross_street1='First St',
             cross_street2='Fourth St',
             city='Another City',
             state='ME',
-            zip_code='23456'
-        )
+            zip_code='23456')
     ]
 
     session.add_all(test_addresses)
@@ -261,6 +260,7 @@ def mockdata(session, request):
             date=datetime(2016, 3, 16),
             report_number='42',
             description='A thing happened',
+            department_id=1,
             address=test_addresses[0],
             license_plates=test_license_plates,
             links=test_links,
@@ -270,6 +270,7 @@ def mockdata(session, request):
             date=datetime(2017, 12, 11),
             report_number='38',
             description='A thing happened',
+            department_id=2,
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
             links=test_links,
