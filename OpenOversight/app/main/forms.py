@@ -180,7 +180,7 @@ class LocationForm(Form):
     city = StringField(validators=[Required()])
     state = SelectField('State', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES))])
-    zip_code = StringField('Zip Code', validators=[Regexp(r'^\d{5}$')])
+    zip_code = StringField('Zip Code', validators=[Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
 
 
 class LicensePlateForm(Form):
