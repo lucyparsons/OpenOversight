@@ -247,7 +247,8 @@ def add_unit_query(form, current_user):
 
 
 def get_or_create(session, model, defaults=None, **kwargs):
-    kwargs.pop('csrf_token')
+    if 'csrf_token' in kwargs:
+        kwargs.pop('csrf_token')
     instance = model.query.filter_by(**kwargs).first()
     if instance:
         return instance, False
@@ -279,26 +280,29 @@ def create_incident(self, form):
         'date': form.datetime,
         'officers': [],
         'license_plates': [],
-        'links': []
+        'links': [],
+        'address': ''
     }
-    if form.data['address']:
+
+    if 'address' in form.data:
         address, _ = get_or_create(db.session, Location, **form.data['address'])
         fields['address'] = address
 
-    if form.data['officers']:
+    if 'officers' in form.data:
         for officer_id in form.data['officers']:
             if officer_id:
                 of = Officer.query.filter_by(id=int(officer_id)).first()
                 if of:
                     fields['officers'].append(of)
 
-    if form.data['license_plates']:
+    if 'license_plates' in form.data:
         for plate in form.data['license_plates']:
-            pl, _ = get_or_create(db.session, LicensePlate, **plate)
-            if pl:
-                fields['license_plates'].append(pl)
+            if plate['number']:
+                pl, _ = get_or_create(db.session, LicensePlate, **plate)
+                if pl:
+                    fields['license_plates'].append(pl)
 
-    if form.data['links']:
+    if 'links' in form.data:
         for link in form.data['links']:
             # don't try to create with a blank string
             if link['url']:
