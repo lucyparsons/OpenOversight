@@ -2,7 +2,7 @@ from pytest import raises
 import time
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User, db, Department, Location, Link,
-                                      LicensePlate)
+                                      LicensePlate, Incident)
 
 
 def test_department_repr(mockdata):
@@ -217,14 +217,14 @@ def test_license_plates_must_have_valid_states(mockdata):
 
 def test_license_plates_can_be_saved_with_valid_states(mockdata):
     state = 'AZ'
-    city = 'Cambridge'
+    number = '603RRR'
     lp = LicensePlate(
-        number='603EEE',
+        number=number,
         state=state,)
 
     db.session.add(lp)
     db.session.commit()
-    saved = LicensePlate.query.filter_by(city=city, state=state).first()
+    saved = LicensePlate.query.filter_by(number=number, state=state).first()
     assert saved is not None
 
 
@@ -245,3 +245,45 @@ def test_links_can_be_saved_with_valid_urls(mockdata):
     db.session.commit()
     saved = Link.query.filter_by(url=good_url).first()
     assert saved is not None
+
+
+def test_incident_m2m_officers(mockdata):
+    incident = Incident.query.first()
+    officer = Officer(first_name='Test',
+                      last_name='McTesterson',
+                      middle_initial='T',
+                      race='WHITE',
+                      gender='M',
+                      birth_year=1990)
+    incident.officers.append(officer)
+    db.session.add(incident)
+    db.session.add(officer)
+    db.session.commit()
+    assert officer in incident.officers
+    assert incident in officer.incidents
+
+
+def test_incident_m2m_links(mockdata):
+    incident = Incident.query.first()
+    link = Link(
+        link_type='video',
+        url='http://www.lulz.com')
+    incident.links.append(link)
+    db.session.add(incident)
+    db.session.add(link)
+    db.session.commit()
+    assert link in incident.links
+    assert incident in link.incidents
+
+
+def test_incident_m2m_license_plates(mockdata):
+    incident = Incident.query.first()
+    license_plate = LicensePlate(
+        number='W23F43',
+        state='DC',)
+    incident.license_plates.append(license_plate)
+    db.session.add(incident)
+    db.session.add(license_plate)
+    db.session.commit()
+    assert license_plate in incident.license_plates
+    assert incident in license_plate.incidents
