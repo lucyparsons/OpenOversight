@@ -88,8 +88,8 @@
                     Unknown
                     {% endif %}
                 </td>
-                <td>{% if assignment.star_date: %}
-                    {{ assignment.star_date }}
+                <td>{% if assignment.start_date: %}
+                    {{ assignment.start_date }}
                     {% else %}
                     Unknown
                     {% endif %}
@@ -145,8 +145,8 @@
 
             <tr>
               <td><b>Start date of new assignment:</b></td>
-              <td>{{ form.star_date }}
-                    {% for error in form.star_date.errors %}
+              <td>{{ form.start_date }}
+                    {% for error in form.start_date.errors %}
                         <p><span style="color: red;">[{{ error }}]</span></p>
                     {% endfor %}
               </td>

@@ -29,7 +29,7 @@ def add_new_assignment(officer_id, form):
                                 star_no=form.star_no.data,
                                 rank=form.rank.data,
                                 unit=unit,
-                                star_date=form.star_date.data)
+                                start_date=form.start_date.data)
     db.session.add(new_assignment)
     db.session.commit()
 
@@ -44,7 +44,7 @@ def edit_existing_assignment(assignment, form):
         officer_unit = None
 
     assignment.unit = officer_unit
-    assignment.star_date = form.star_date.data
+    assignment.start_date = form.start_date.data
     db.session.add(assignment)
     db.session.commit()
     return assignment
@@ -70,7 +70,7 @@ def add_officer_profile(form):
                             star_no=form.star_no.data,
                             rank=form.rank.data,
                             unit=officer_unit,
-                            star_date=form.employment_date.data)
+                            start_date=form.employment_date.data)
     db.session.add(assignment)
     db.session.commit()
     return officer
