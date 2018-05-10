@@ -351,7 +351,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(mockdata, client
         department = Department.query.get(department_id)
 
         assert rv.status_code == 200
-        assert department.name in rv.data
+        assert department.name in rv.data.decode('utf-8')
 
 
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
