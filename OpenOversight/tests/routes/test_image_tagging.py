@@ -7,7 +7,7 @@ from .route_helpers import login_user, login_admin, login_ac
 
 
 from OpenOversight.app.main.forms import FaceTag, FindOfficerIDForm
-from OpenOversight.app.models import Face, Image
+from OpenOversight.app.models import Face, Image, Department
 
 
 @pytest.mark.parametrize("route", [
@@ -232,3 +232,18 @@ def test_user_can_view_leaderboard(mockdata, client, session):
             follow_redirects=True
         )
         assert 'Top Users by Number of Images Sorted' in rv.data
+
+
+def test_user_is_redirected_to_correct_department_after_tagging(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        department_id = 2
+        image = Image.query.filter_by(department_id=department_id, faces=None).first()
+        rv = client.get(
+            url_for('main.complete_tagging', image_id=image.id, department_id=department_id),
+            follow_redirects=True
+        )
+        department = Department.query.get(department_id)
+
+        assert rv.status_code == 200
+        assert department.name in rv.data.decode('utf-8')
