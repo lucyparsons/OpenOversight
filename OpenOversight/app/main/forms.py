@@ -13,6 +13,7 @@ from ..utils import unit_choices, dept_choices
 from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
+from ..models import Officer
 import datetime
 
 
@@ -203,6 +204,14 @@ class LinkForm(Form):
         return success
 
 
+class OfficerIdField(StringField):
+    def process_data(self, value):
+        if type(value) == Officer:
+            self.data = value.id
+        else:
+            self.data = value
+
+
 class IncidentForm(DateFieldForm):
     report_number = StringField(
         validators=[Required(), Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
@@ -215,7 +224,7 @@ class IncidentForm(DateFieldForm):
         get_label='name')
     address = FormField(LocationForm)
     officers = FieldList(
-        StringField('OO Officer ID'),
+        OfficerIdField('OO Officer ID'),
         description='Officers present at the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
