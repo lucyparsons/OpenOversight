@@ -615,15 +615,16 @@ class IncidentApi(ModelView):
 
     def get_form(self, obj):
         form = super(IncidentApi, self).get_form(obj=obj)
-        # import pdb; pdb.set_trace()
+
         no_license_plates = len(obj.license_plates)
         no_links = len(obj.links)
         no_officers = len(obj.officers)
 
+        # set the form to have fields for all the models items
         form.license_plates.min_entries = no_license_plates
         form.links.min_entries = no_links
         form.officers.min_entries = no_officers
-        if obj.date:
+        if not form.date_field.data and obj.date:
             form.datetime = obj.date
         return form
 
@@ -650,7 +651,7 @@ class IncidentApi(ModelView):
                 if officer_id:
                     of = Officer.query.filter_by(id=int(officer_id)).first()
                     if of:
-                        obj.officers
+                        obj.officers.append(of)
 
         license_plates = form.data.pop('license_plates')
         del form.license_plates
