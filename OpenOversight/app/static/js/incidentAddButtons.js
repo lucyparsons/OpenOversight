@@ -1,20 +1,23 @@
 'use strict'
 
 $(document).ready(function () {
-    console.log('Ready')
-    $('button').removeAttr('disabled')
     $('.js-add-another-button').click(function (event) {
-        console.log('click!')
         event.preventDefault()
-        clone_field_list($(event.target.previousElementSibling));
+        cloneFieldList($(event.target.previousElementSibling));
     });
     $('.js-remove-button').click(removeParent)
+    $('button').removeAttr('disabled')
 });
 
-function clone_field_list(selector) {
+/*
+    This function clones the element matching the given selector
+    It looks for numbers in the element's id and increments them by 1
+    It attaches the new element to the DOM directly after the cloned element
+*/
+function cloneFieldList(selector) {
     var new_element = $(selector).clone(true);
-    var elem_id = new_element.find(':input')[0].id;
-    var elem_num = parseInt(elem_id.replace(/.*-(\d{1,4})-.*/m, '$1')) + 1;
+    var elem_id = new_element.nodeName === 'INPUT'? new_element.id : new_element.find(':input')[0].id;
+    var elem_num = parseInt(elem_id.replace(/.*-(\d{1,4})-?.*/m, '$1')) + 1;
     var matchRegex = new RegExp('-' + (elem_num - 1) + '(-?)')
     var replaceString = '-' + elem_num + '$1'
     new_element.find(':input').each(function() {
@@ -23,7 +26,7 @@ function clone_field_list(selector) {
             $(this).attr({'name': id, 'id': id})
             // don't delete the value of the csrf token
             if($(this).attr('name').indexOf('csrf') == -1){
-                $(this).attr({'name': id, 'id': id}).val('').removeAttr('checked');
+                $(this).val('').removeAttr('checked');
             }
         }
     });

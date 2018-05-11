@@ -21,8 +21,14 @@
 			</div>
 			<fieldset>
 				<legend>Officers Involved</legend>
-				{{ form.officers(class__="form-control") }}
-				<button class="btn btn-primary js-add-another-button" style="margin-bottom: 2rem;">Add another officer</button>
+				<ul class='list-unstyled'>
+					{% for field in form.officers %}
+						<li>
+							{{ wtf.form_field(field) }}
+						</li>
+					{% endfor %}
+					<button class="btn btn-primary js-add-another-button" style="margin-bottom: 2rem;">Add another officer</button>
+				</ul>
 			</fieldset>
 			<div>
 			{% for subform in form.links %}
