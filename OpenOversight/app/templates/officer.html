@@ -58,112 +58,127 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
+    </div> {# end col #}
+  </div> {# end row #}
 
   <div class="row">
     <div class="col-sm-6">
-      <div class="thumbnail">
-        <div class="caption">
-          <h3>Assignment History</h3>
-          <table class="table table-hover">
-              <tr>
-                <th><b>Rank</b></th>
-                <th><b>Badge No.</b></th>
-                <th><b>Unit</b></th>
-                <th><b>Assignment Date</b></th>
-                {% if current_user.is_administrator
-                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-                <th><b>Edit</b></th>
-                {% endif %}
-              </tr>
-            <tbody>
-              {% for assignment in assignments %}
-              <tr>
-                <td>{{ assignment.rank }}
-                <td>{{ assignment.star_no }}</td>
-                <td>{% if assignment.unit: %}
-                    {{ assignment.unit }}
-                    {% else %}
-                    Unknown
-                    {% endif %}
-                </td>
-                <td>{% if assignment.star_date: %}
-                    {{ assignment.star_date }}
-                    {% else %}
-                    Unknown
-                    {% endif %}
-                </td>
-                <td>
-                  {% if current_user.is_administrator
-                      or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-                  <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
-                              assignment_id=assignment.id) }}">
-                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-                  </a>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-          {% if current_user.is_administrator
+      <h3>Assignment History</h3>
+      <table class="table table-hover">
+          <tr>
+            <th><b>Rank</b></th>
+            <th><b>Badge No.</b></th>
+            <th><b>Unit</b></th>
+            <th><b>Assignment Date</b></th>
+            {% if current_user.is_administrator
               or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-          <h3>Add Assignment<small> Admin only</small></h3>
-          <table class="table">
-            <tbody>
-            <form action="{{ url_for('main.add_assignment', officer_id=officer.id) }}" method="post">
-            {{ form.hidden_tag() }}
+            <th><b>Edit</b></th>
+            {% endif %}
+          </tr>
+        <tbody>
+          {% for assignment in assignments %}
+          <tr>
+            <td>{{ assignment.rank }}</td>
+            <td>{{ assignment.star_no }}</td>
+            <td>{% if assignment.unit: %}
+                {{ assignment.unit }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>{% if assignment.star_date: %}
+                {{ assignment.star_date }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>
+              {% if current_user.is_administrator
+                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+              <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
+                          assignment_id=assignment.id) }}">
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-            <tr>
-              <td><b>New badge number:</b></td>
-              <td>{{ form.star_no }}
-                    {% for error in form.star_no.errors %}
-                        <p><span style="color: red;">[{{ error }}]</span></p>
-                    {% endfor %}
-              </td>
-            </tr>
+      {% if current_user.is_administrator
+          or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <h3>Add Assignment<small> Admin only</small></h3>
+      <table class="table">
+        <tbody>
+          <form action="{{ url_for('main.add_assignment', officer_id=officer.id) }}" method="post">
+          {{ form.hidden_tag() }}
 
-            <tr>
-              <td><b>New rank:</b></td>
-              <td>{{ form.rank }}
-                    {% for error in form.rank.errors %}
-                        <p><span style="color: red;">[{{ error }}]</span></p>
-                    {% endfor %}
-              </td>
-            </tr>
+          <tr>
+            <td><b>New badge number:</b></td>
+            <td>{{ form.star_no }}
+                  {% for error in form.star_no.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
 
-            <tr>
-              <td><b>New unit:</b></td>
-              <td>{{ form.unit }}
-                    {% for error in form.unit.errors %}
-                        <p><span style="color: red;">[{{ error }}]</span></p>
-                    {% endfor %}
-              </td>
-            </tr>
+          <tr>
+            <td><b>New rank:</b></td>
+            <td>{{ form.rank }}
+                  {% for error in form.rank.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
 
-            <tr>
-              <td><b>Start date of new assignment:</b></td>
-              <td>{{ form.star_date }}
-                    {% for error in form.star_date.errors %}
-                        <p><span style="color: red;">[{{ error }}]</span></p>
-                    {% endfor %}
-              </td>
-            </tr>
+          <tr>
+            <td><b>New unit:</b></td>
+            <td>{{ form.unit }}
+                  {% for error in form.unit.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
 
-            <tr>
-              <td>
-                <input type="submit" value="Add Assignment" name="add-assignment" class="btn-sm btn-primary"/>
-              </td>
-            </tr>
+          <tr>
+            <td><b>Start date of new assignment:</b></td>
+            <td>{{ form.star_date }}
+                  {% for error in form.star_date.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
 
-            </form>
-            </tbody>
-          </table>
-          {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
+          <tr>
+            <td>
+              <input type="submit" value="Add Assignment" name="add-assignment" class="btn-sm btn-primary"/>
+            </td>
+          </tr>
+
+          </form>
+        </tbody>
+      </table>
+      {% endif %}
+    </div> {# end col #}
+    <div class='col-sm-12 col-md-6'>
+      <h3>Incidents</h3>
+      <ul class="list-group">
+        {% for incident in officer.incidents %}
+          <li class="list-group-item">
+            <h4>
+                <a href="{{ url_for('main.incident_api', id=incident.id)}}">
+                Incident {{ incident.report_number }}
+              </a>
+            </h4>
+            {% include 'partials/incident_fields.html' %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>{# end col #}
+  </div> {# end row #}
+  {% with obj=officer %}
+    {% include "partials/links_and_videos_row.html" %}
+  {% endwith %}
+</div> {# end container #}
 {% endblock %}

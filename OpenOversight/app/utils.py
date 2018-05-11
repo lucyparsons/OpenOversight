@@ -11,6 +11,20 @@ from .models import (db, Officer, Assignment, Image, Face, User, Unit, Departmen
                      Incident, Location, LicensePlate, Link)
 
 
+def get_or_create(session, model, defaults=None, **kwargs):
+    if 'csrf_token' in kwargs:
+        kwargs.pop('csrf_token')
+    instance = model.query.filter_by(**kwargs).first()
+    if instance:
+        return instance, False
+    else:
+        params = dict((k, v) for k, v in kwargs.iteritems())
+        params.update(defaults or {})
+        instance = model(**params)
+        session.add(instance)
+        return instance, True
+
+
 def unit_choices():
     return db.session.query(Unit).all()
 
@@ -72,6 +86,13 @@ def add_officer_profile(form):
                             rank=form.rank.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
+    if form.links.data:
+        for link in form.data['links']:
+            # don't try to create with a blank string
+            if link['url']:
+                li, _ = get_or_create(db.session, Link, **link)
+                if li:
+                    officer.links.append(li)
     db.session.add(assignment)
     db.session.commit()
     return officer
@@ -79,7 +100,15 @@ def add_officer_profile(form):
 
 def edit_officer_profile(officer, form):
     for field, data in form.data.iteritems():
-        setattr(officer, field, data)
+        if field == 'links':
+            for link in data:
+                # don't try to create with a blank string
+                if link['url']:
+                    li, _ = get_or_create(db.session, Link, **link)
+                    if li:
+                        officer.links.append(li)
+        else:
+            setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
@@ -244,20 +273,6 @@ def add_unit_query(form, current_user):
             department_id=current_user.ac_department_id)
     else:
         form.unit.query = Unit.query.all()
-
-
-def get_or_create(session, model, defaults=None, **kwargs):
-    if 'csrf_token' in kwargs:
-        kwargs.pop('csrf_token')
-    instance = model.query.filter_by(**kwargs).first()
-    if instance:
-        return instance, False
-    else:
-        params = dict((k, v) for k, v in kwargs.iteritems())
-        params.update(defaults or {})
-        instance = model(**params)
-        session.add(instance)
-        return instance, True
 
 
 def replace_list(items, obj, attr, model, db):

@@ -103,6 +103,20 @@ class DepartmentForm(Form):
     submit = SubmitField(label='Add')
 
 
+class LinkForm(Form):
+    url = StringField(validators=[])
+    link_type = SelectField('Link Type', choices=LINK_CHOICES, validators=[AnyOf(allowed_values(LINK_CHOICES))])
+
+    def validate(self):
+        success = super(LinkForm, self).validate()
+        if self.url.data and not self.link_type.data:
+            self.url.errors = list(self.url.errors)
+            self.url.errors.append('Links must have a link type.')
+            success = False
+
+        return success
+
+
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
@@ -125,6 +139,12 @@ class AddOfficerForm(Form):
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     department = QuerySelectField('Department', validators=[Optional()],
                                   query_factory=dept_choices, get_label='name')
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
     submit = SubmitField(label='Add')
 
 
@@ -149,13 +169,23 @@ class EditOfficerForm(Form):
         validators=[Optional()],
         query_factory=dept_choices,
         get_label='name')
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
 
 
 class AddUnitForm(Form):
     descrip = StringField('Unit name or description', default='', validators=[
         Regexp('\w*'), Length(max=120), DataRequired()])
-    department = QuerySelectField('Department', validators=[Optional()], get_label='name')
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
     submit = SubmitField(label='Add')
 
 
@@ -188,20 +218,6 @@ class LicensePlateForm(Form):
     number = StringField('Plate Number', validators=[])
     state = SelectField('State', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES))])
-
-
-class LinkForm(Form):
-    url = StringField(validators=[])
-    link_type = SelectField('Link Type', choices=LINK_CHOICES, validators=[AnyOf(allowed_values(LINK_CHOICES))])
-
-    def validate(self):
-        success = super(LinkForm, self).validate()
-        if self.url.data and not self.link_type.data:
-            self.url.errors = list(self.url.errors)
-            self.url.errors.append('Links must have a link type.')
-            success = False
-
-        return success
 
 
 class OfficerIdField(StringField):

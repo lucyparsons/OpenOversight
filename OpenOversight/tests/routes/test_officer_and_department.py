@@ -5,12 +5,12 @@ from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
-from .route_helpers import login_admin, login_ac
+from .route_helpers import login_admin, login_ac, process_form_data
 
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
-                                          EditOfficerForm)
+                                          EditOfficerForm, LinkForm)
 
 from OpenOversight.app.models import Department, Unit, Officer
 
@@ -319,6 +319,10 @@ def test_admin_can_add_new_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+        links = [
+            LinkForm(url='http://pleasework.com', link_type='link').data,
+            LinkForm(url='http://avideo?v=2345jk', link_type='video').data
+        ]
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesterson',
                               middle_initial='T',
@@ -327,11 +331,14 @@ def test_admin_can_add_new_officer(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -362,11 +369,15 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              # because of encoding error, link_type must be set for tests
+                              links=[LinkForm(link_type='link').data])
+
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -398,11 +409,15 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              # because of encoding error, link_type must be set for tests
+                              links=[LinkForm(link_type='link').data])
+
+        data = process_form_data(form.data)
 
         client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -414,6 +429,12 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+        link_url0 = 'http://pleasework.com'
+        link_url1 = 'http://avideo?v=2345jk'
+        links = [
+            LinkForm(url=link_url0, link_type='link').data,
+            LinkForm(url=link_url0, link_type='video').data
+        ]
         form = AddOfficerForm(first_name='Test',
                               last_name='Testerinski',
                               middle_initial='T',
@@ -422,27 +443,32 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              links=links)
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
         officer = Officer.query.filter_by(
             last_name='Testerinski').one()
 
-        form = EditOfficerForm(last_name='Changed')
+        form = EditOfficerForm(last_name='Changed', links=links[:1])
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.edit_officer', officer_id=officer.id),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
         assert 'Changed' in rv.data
         assert 'Testerinski' not in rv.data
+        assert link_url0 in rv.data
+        assert link_url1 not in rv.data
 
 
 def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
@@ -455,11 +481,14 @@ def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
         new_last_name = 'Shiny'
         form = EditOfficerForm(
             last_name=new_last_name,
-        )
+            # because of encoding error, link_type must be set for tests
+            links=[LinkForm(link_type='link').data])
+
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.edit_officer', officer_id=officer.id),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -504,11 +533,15 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              # because of encoding error, link_type must be set for tests
+                              links=[LinkForm(link_type='link').data])
+
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -521,12 +554,15 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             last_name=new_last_name,
             race=race,
             gender=gender,
-            department=department.id
+            department=department.id,
+            # because of encoding error, link_type must be set for tests
+            links=[LinkForm(link_type='link').data]
         )
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.edit_officer', officer_id=officer.id),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -551,11 +587,14 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              # because of encoding error, link_type must be set for tests
+                              links=[LinkForm(link_type='link').data])
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
@@ -583,11 +622,14 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
                               star_no='T666',
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              # because of encoding error, link_type must be set for tests
+                              links=[LinkForm(link_type='link').data])
+        data = process_form_data(form.data)
 
         rv = client.post(
             url_for('main.add_officer'),
-            data=form.data,
+            data=data,
             follow_redirects=True
         )
 
