@@ -1,7 +1,9 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
-<fieldset {% if id and number %}id="{{id}}-{{number}}"{% endif %}>
- 	<legend><small>{{ subform.label}}</small></legend>
+<fieldset
+  {% if id and number %}id="{{id}}-{{number}}"{% endif %}
+  class='well'
+>
   {{ subform.hidden_tag() }}
   {{ wtf.form_errors(subform, hiddens="only") }}
   {% for subfield in subform %}

@@ -284,6 +284,20 @@ a > .tutorial{
     color: #555555;
 }
 
+.btn-success {
+    background: white;
+    color: black;
+    border-color: green;
+    font-weight: bold;
+    margin-bottom: 3rem;
+}
+
+.btn-success:hover {
+    border-color: #555555;
+    background-color: white;
+    color: #555555;
+}
+
 .btn-info {
     background: #0000ff;
     color: white;
