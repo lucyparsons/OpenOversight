@@ -2,11 +2,11 @@ from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
                      SelectField, IntegerField, SubmitField,
-                     FormField, FieldList)
+                     HiddenField, FormField, FieldList)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional, Required)
+                                Length, Optional, Required, URL)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
@@ -104,8 +104,21 @@ class DepartmentForm(Form):
 
 
 class LinkForm(Form):
-    url = StringField(validators=[])
-    link_type = SelectField('Link Type', choices=LINK_CHOICES, validators=[AnyOf(allowed_values(LINK_CHOICES))])
+    title = StringField(
+        validators=[Length(max=100, message='Titles are limited to 100 characters.')],
+        description='Text that will be displayed as the link.')
+    description = TextAreaField(
+        validators=[Length(max=600, message='Descriptions are limited to 600 characters.')],
+        description='A short description of the link.')
+    author = StringField(
+        validators=[Length(max=255, message='Limit of 255 characters.')],
+        description='The source or author of the link.')
+    url = StringField(validators=[Optional(), URL(message='Not a valid URL')])
+    link_type = SelectField(
+        'Link Type',
+        choices=LINK_CHOICES,
+        validators=[AnyOf(allowed_values(LINK_CHOICES))])
+    user_id = HiddenField(validators=[Required(message='Not a valid user ID')])
 
     def validate(self):
         success = super(LinkForm, self).validate()
@@ -255,5 +268,6 @@ class IncidentForm(DateFieldForm):
         description='Links to articles about or videos of the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
+    user_id = HiddenField(validators=[Required(message='Incidents must have a user id')])
 
     submit = SubmitField(label='Submit')

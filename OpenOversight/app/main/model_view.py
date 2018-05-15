@@ -36,8 +36,12 @@ class ModelView(MethodView):
     @ac_or_admin_required
     def new(self, form=None):
         if not form:
-            form = self.form()
-        add_department_query(form, current_user)
+            form = self.get_new_form()
+            if form.department:
+                add_department_query(form, current_user)
+            if form.user_id:
+                form.user_id.data = current_user.id
+
         if form.validate_on_submit():
             new_instance = self.create_function(form)
             db.session.add(new_instance)
@@ -56,9 +60,14 @@ class ModelView(MethodView):
                 abort(403)
 
         if not form:
-            form = self.get_form(obj)
+            form = self.get_edit_form(obj)
+            if obj.user_id:
+                form.user_id.data = obj.user_id
+            else:
+                form.user_id.data = current_user.id
 
-        add_department_query(form, current_user)
+        if form.department:
+            add_department_query(form, current_user)
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
@@ -83,8 +92,11 @@ class ModelView(MethodView):
 
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
 
-    def get_form(self, obj):
+    def get_edit_form(self, obj):
         return self.form(request.form, obj=obj)
+
+    def get_new_form(self):
+        return self.form()
 
     def populate_obj(self, form, obj):
         form.populate_obj(obj)

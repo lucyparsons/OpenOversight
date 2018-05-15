@@ -18,4 +18,4 @@ RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
                 ('PO', 'Police Officer')]
 
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
-LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video')]
+LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]

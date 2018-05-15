@@ -34,7 +34,13 @@
 					<button class="btn btn-success js-add-another-button" disabled>Add another officer</button>
 				</ul>
 			</fieldset>
-			{% include "partials/links_subform.html" %}
+			<div>
+				<legend>{{ form.links.label }}</legend>
+				{% for subform in form.links %}
+					{% include "partials/subform.html" %}
+				{% endfor %}
+				<button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+			</div>
 
 			{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
 </form>

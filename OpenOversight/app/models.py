@@ -202,8 +202,13 @@ class Link(db.Model):
     __tablename__ = 'links'
 
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), index=True)
     url = db.Column(db.String(255), nullable=False)
     link_type = db.Column(db.String(100), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    author = db.Column(db.String(255), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='links', lazy=True)
 
     @validates('url')
     def validate_url(self, key, url):
@@ -232,6 +237,8 @@ class Incident(db.Model):
         backref=db.backref('incidents'))
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='incidents', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='incidents', lazy=True)
 
 
 class User(UserMixin, db.Model):

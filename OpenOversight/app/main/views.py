@@ -626,14 +626,27 @@ class IncidentApi(ModelView):
         else:
             return super(IncidentApi, self).get(id)
 
-    def get_form(self, obj):
-        form = super(IncidentApi, self).get_form(obj=obj)
+
+    def get_new_form(self):
+        form = self.form()
+        for link in form.links:
+            link.user_id.data = current_user.id
+        return form
+
+
+    def get_edit_form(self, obj):
+        form = super(IncidentApi, self).get_edit_form(obj=obj)
 
         no_license_plates = len(obj.license_plates)
         no_links = len(obj.links)
         no_officers = len(obj.officers)
+        for link in form.links:
+            if link.user_id.data:
+                continue
+            else:
+                link.user_id.data = current_user.id
 
-        # set the form to have fields for all the models items
+        # set the form to have fields for all the current model's items
         form.license_plates.min_entries = no_license_plates
         form.links.min_entries = no_links
         form.officers.min_entries = no_officers
