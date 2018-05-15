@@ -168,13 +168,17 @@
           <li class="list-group-item">
             <h4>
                 <a href="{{ url_for('main.incident_api', id=incident.id)}}">
-                Incident {{ incident.report_number }}
+                Incident {{ incident.report_number }} 
+              </a>
+               <a href="{{ url_for('main.incident_api', id=incident.id) + '/edit' }}">
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
               </a>
             </h4>
             {% include 'partials/incident_fields.html' %}
           </li>
         {% endfor %}
       </ul>
+      <a href="{{ url_for('main.incident_api') + 'new' }}" class='btn btn-primary'>New Incident</a>
     </div>{# end col #}
   </div> {# end row #}
   {% with obj=officer %}
