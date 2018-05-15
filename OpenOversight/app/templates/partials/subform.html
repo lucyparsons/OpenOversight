@@ -5,7 +5,9 @@
   class='well'
 >
   {{ subform.hidden_tag() }}
-  {{ wtf.form_errors(subform, hiddens="only") }}
+  <div class="text-danger">
+    {{ wtf.form_errors(subform, hiddens="only") }}
+  </div>
   {% for subfield in subform %}
     {% if not bootstrap_is_hidden_field(subfield) %}
       {{ wtf.form_field(subfield,
