@@ -379,3 +379,24 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
             assert incident.report_number in rv.data
         for incident in non_department_incidents:
             assert incident.report_number not in rv.data
+
+
+def test_admins_can_see_who_created_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get(url_for('main.incident_api', obj_id=1))
+        assert 'Creator' in rv.data
+
+
+def test_acs_cannot_see_who_created_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        rv = client.get(url_for('main.incident_api', obj_id=1))
+        assert 'Creator' not in rv.data
+
+
+def test_users_cannot_see_who_created_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        rv = client.get(url_for('main.incident_api', obj_id=1))
+        assert 'Creator' not in rv.data
