@@ -627,13 +627,11 @@ class IncidentApi(ModelView):
         else:
             return super(IncidentApi, self).get(obj_id)
 
-
     def get_new_form(self):
         form = self.form()
         for link in form.links:
             link.user_id.data = current_user.id
         return form
-
 
     def get_edit_form(self, obj):
         form = super(IncidentApi, self).get_edit_form(obj=obj)

@@ -10,7 +10,7 @@ class ModelView(MethodView):
     model = None
     model_name = ''
     per_page = 20
-    order_by = '' # this should be a field on the model
+    order_by = ''  # this should be a field on the model
     descending = False  # used for order_by
     form = ''
     create_function = ''
@@ -114,7 +114,7 @@ class ModelView(MethodView):
         end_of_url = request.url.split('/')[-1]
         endings = ['edit', 'new', 'delete']
         meth = None
-        for ending in ['edit', 'new', 'delete']:
+        for ending in endings:
             if end_of_url == ending:
                 meth = getattr(self, ending, None)
         if not meth:
