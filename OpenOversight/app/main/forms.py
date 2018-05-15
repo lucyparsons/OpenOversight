@@ -240,6 +240,12 @@ class OfficerIdField(StringField):
         else:
             self.data = value
 
+    def pre_validate(self, form):
+        if self.data:
+            officer = Officer.query.get(int(self.data))
+            if not officer:
+                raise ValueError('Not a valid officer id')
+
 
 class IncidentForm(DateFieldForm):
     report_number = StringField(
