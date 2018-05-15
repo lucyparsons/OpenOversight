@@ -6,7 +6,7 @@ from wtforms import (StringField, DecimalField, TextAreaField,
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional, Required, URL)
+                                Length, Optional, Required, URL, ValidationError)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
@@ -208,13 +208,16 @@ class DateFieldForm(Form):
 
     @property
     def datetime(self):
-        if self.date_field.data and self.time_field.data:
-            return datetime.datetime.combine(self.date_field.data, self.time_field.data)
+        return datetime.datetime.combine(self.date_field.data, self.time_field.data)
 
     @datetime.setter
     def datetime(self, value):
         self.date_field.data = value.date()
         self.time_field.data = value.time()
+
+    def validate_time_field(self, field):
+        if not type(field.data) == datetime.time:
+            raise ValidationError('Not a valid time.')
 
 
 class LocationForm(Form):

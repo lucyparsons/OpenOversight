@@ -45,7 +45,7 @@ def test_route_admin_or_required(route, client, mockdata):
 def test_admins_can_create_basic_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        date = datetime(2016, 5, 25, 1, 45)
+        date = datetime(2000, 5, 25, 1, 45)
         report_number = '42'
 
         address_form = LocationForm(
@@ -88,6 +88,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.first()
+        inc_id = inc.id
         new_date = datetime(2017, 6, 25, 1, 45)
         street_name = 'Newest St'
         address_form = LocationForm(
@@ -114,14 +115,15 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for('main.incident_api', id=inc.id) + '/edit',
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
             data=data,
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
-        assert inc.date == new_date
-        assert inc.address.street_name == street_name
+        assert 'successfully updated' in rv.data
+        updated = Incident.query.get(inc_id)
+        assert updated.date == new_date
+        assert updated.address.street_name == street_name
 
 
 def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
@@ -159,12 +161,12 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for('main.incident_api', id=inc.id) + '/edit',
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
             data=data,
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'successfully updated' in rv.data
         # old links are still there
         for link in old_links:
             assert link in inc.links
@@ -210,12 +212,12 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for('main.incident_api', id=inc.id) + '/edit',
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
             data=data,
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'successfully updated' in rv.data
         for officer in old_officers:
             assert officer in inc.officers
         assert new_officer.id in [off.id for off in inc.officers]
@@ -251,12 +253,12 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for('main.incident_api', id=inc.id) + '/edit',
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
             data=data,
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'successfully updated' in rv.data
         assert inc.date == new_date
         assert inc.address.street_name == street_name
 
@@ -292,7 +294,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for('main.incident_api', id=inc.id) + '/edit',
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
             data=data,
             follow_redirects=True
         )
@@ -305,7 +307,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
         incident = Incident.query.first()
         inc_id = incident.id
         rv = client.post(
-            url_for('main.incident_api', id=inc_id) + '/delete',
+            url_for('main.incident_api', obj_id=inc_id) + '/delete',
             follow_redirects=True
         )
         assert rv.status_code == 200
@@ -319,7 +321,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
         inc_id = incident.id
         rv = client.post(
-            url_for('main.incident_api', id=inc_id) + '/delete',
+            url_for('main.incident_api', obj_id=inc_id) + '/delete',
             follow_redirects=True
         )
         assert rv.status_code == 200
@@ -333,7 +335,7 @@ def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, s
         incident = Incident.query.except_(Incident.query.filter_by(department_id=AC_DEPT)).first()
         inc_id = incident.id
         rv = client.post(
-            url_for('main.incident_api', id=inc_id) + '/delete',
+            url_for('main.incident_api', obj_id=inc_id) + '/delete',
             follow_redirects=True
         )
         assert rv.status_code == 403
@@ -346,7 +348,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         login_ac(client)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
         rv = client.get(
-            url_for('main.incident_api', id=incident.id) + '/edit',
+            url_for('main.incident_api', obj_id=incident.id) + '/edit',
             follow_redirects=True
         )
         assert rv.status_code == 200
@@ -358,7 +360,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         login_ac(client)
         incident = Incident.query.except_(Incident.query.filter_by(department_id=AC_DEPT)).first()
         rv = client.get(
-            url_for('main.incident_api', id=incident.id) + '/edit',
+            url_for('main.incident_api', obj_id=incident.id) + '/edit',
             follow_redirects=True
         )
         assert rv.status_code == 403

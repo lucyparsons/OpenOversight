@@ -30,8 +30,8 @@
               or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
 			<div class="row">
 				<div class="col-sm-12 col-md-6">
-					<a class="btn btn-primary" href="{{ '{}/edit'.format(url_for('main.incident_api', id=incident.id))}}" role="button">Edit</a>
-					<a class="btn btn-danger" href="{{ '{}/delete'.format(url_for('main.incident_api', id=incident.id))}}" role="button">Delete</a>
+					<a class="btn btn-primary" href="{{ '{}/edit'.format(url_for('main.incident_api', obj_id=incident.id))}}" role="button">Edit</a>
+					<a class="btn btn-danger" href="{{ '{}/delete'.format(url_for('main.incident_api', obj_id=incident.id))}}" role="button">Delete</a>
 				</div>
 			</div>
 		{% endif %}

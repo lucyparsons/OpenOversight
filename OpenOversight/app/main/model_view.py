@@ -16,8 +16,8 @@ class ModelView(MethodView):
     create_function = ''
     department_check = False
 
-    def get(self, id):
-        if id is None:
+    def get(self, obj_id):
+        if obj_id is None:
             if request.args.get('page'):
                 page = int(request.args.get('page'))
             else:
@@ -25,7 +25,6 @@ class ModelView(MethodView):
 
             if self.order_by:
                 if not self.descending:
-                    import pdb; pdb.set_trace()
                     objects = self.model.query.order_by(getattr(self.model, self.order_by)).paginate(page, self.per_page, False)
                 objects = self.model.query.order_by(getattr(self.model, self.order_by).desc()).paginate(page, self.per_page, False)
             else:
@@ -33,7 +32,7 @@ class ModelView(MethodView):
 
             return render_template('{}_list.html'.format(self.model_name), objects=objects, url='main.{}_api'.format(self.model_name))
         else:
-            obj = self.model.query.get_or_404(id)
+            obj = self.model.query.get_or_404(obj_id)
             return render_template('{}_detail.html'.format(self.model_name), obj=obj, current_user=current_user)
 
     @login_required
@@ -53,14 +52,14 @@ class ModelView(MethodView):
             db.session.add(new_instance)
             db.session.commit()
             flash('{} created!'.format(self.model_name))
-            return redirect(url_for('main.{}_api'.format(self.model_name), id=new_instance.id, _method='GET'))
+            return redirect(url_for('main.{}_api'.format(self.model_name), obj_id=new_instance.id, _method='GET'))
 
         return render_template('{}_new.html'.format(self.model_name), form=form)
 
     @login_required
     @ac_or_admin_required
-    def edit(self, id, form=None):
-        obj = self.model.query.get_or_404(id)
+    def edit(self, obj_id, form=None):
+        obj = self.model.query.get_or_404(obj_id)
         if self.department_check:
             if not current_user.is_administrator and current_user.ac_department_id != obj.department_id:
                 abort(403)
@@ -75,18 +74,17 @@ class ModelView(MethodView):
 
         if form.department:
             add_department_query(form, current_user)
-
         if form.validate_on_submit():
             self.populate_obj(form, obj)
             flash('{} successfully updated!'.format(self.model_name))
-            return redirect(url_for('main.{}_api'.format(self.model_name), id=id, _method='GET'))
+            return redirect(url_for('main.{}_api'.format(self.model_name), obj_id=obj_id, _method='GET'))
 
         return render_template('{}_edit.html'.format(self.model_name), obj=obj, form=form)
 
     @login_required
     @ac_or_admin_required
-    def delete(self, id):
-        obj = self.model.query.get_or_404(id)
+    def delete(self, obj_id):
+        obj = self.model.query.get_or_404(obj_id)
         if self.department_check:
             if not current_user.is_administrator and current_user.ac_department_id != obj.department_id:
                 abort(403)

@@ -248,8 +248,8 @@ def mockdata(session, request):
     session.commit()
 
     test_links = [
-        models.Link(url='http://something.com', link_type='link'),
-        models.Link(url='http://somethingelse.com?v=help', link_type='video')
+        models.Link(url='https://stackoverflow.com/', link_type='link'),
+        models.Link(url='http://www.youtube.com/?v=help', link_type='video')
     ]
 
     session.add_all(test_links)
@@ -265,6 +265,8 @@ def mockdata(session, request):
             license_plates=test_license_plates,
             links=test_links,
             officers=[generate_officer() for o in range(4)],
+            creator_id=1,
+            last_updated_id=1
         ),
         models.Incident(
             date=datetime(2017, 12, 11),
@@ -275,6 +277,8 @@ def mockdata(session, request):
             license_plates=[test_license_plates[0]],
             links=test_links,
             officers=[generate_officer() for o in range(3)],
+            creator_id=2,
+            last_updated_id=1
         ),
     ]
     session.add_all(test_incidents)

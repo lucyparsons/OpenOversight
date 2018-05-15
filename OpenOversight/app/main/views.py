@@ -614,7 +614,7 @@ class IncidentApi(ModelView):
     create_function = create_incident
     department_check = True
 
-    def get(self, id):
+    def get(self, obj_id):
         if request.args.get('page'):
                 page = int(request.args.get('page'))
         else:
@@ -625,7 +625,7 @@ class IncidentApi(ModelView):
             obj = self.model.query.filter_by(department_id=department_id).order_by(getattr(self.model, self.order_by).desc()).paginate(page, self.per_page, False)
             return render_template('{}_list.html'.format(self.model_name), objects=obj, url='main.{}_api'.format(self.model_name), department=dept)
         else:
-            return super(IncidentApi, self).get(id)
+            return super(IncidentApi, self).get(obj_id)
 
 
     def get_new_form(self):
@@ -692,7 +692,7 @@ class IncidentApi(ModelView):
 incident_view = IncidentApi.as_view('incident_api')
 main.add_url_rule(
     '/incidents/',
-    defaults={'id': None},
+    defaults={'obj_id': None},
     view_func=incident_view,
     methods=['GET'])
 main.add_url_rule(
@@ -700,14 +700,14 @@ main.add_url_rule(
     view_func=incident_view,
     methods=['GET', 'POST'])
 main.add_url_rule(
-    '/incidents/<int:id>',
+    '/incidents/<int:obj_id>',
     view_func=incident_view,
     methods=['GET'])
 main.add_url_rule(
-    '/incidents/<int:id>/edit',
+    '/incidents/<int:obj_id>/edit',
     view_func=incident_view,
     methods=['GET', 'POST'])
 main.add_url_rule(
-    '/incidents/<int:id>/delete',
+    '/incidents/<int:obj_id>/delete',
     view_func=incident_view,
     methods=['GET', 'POST'])

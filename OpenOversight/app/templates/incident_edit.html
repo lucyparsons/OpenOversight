@@ -9,7 +9,7 @@
 
 {% block form %}
 	{% if form.errors %}
-		{% set post_url=url_for('main.incident_api', id=obj.id) %}
+		{% set post_url=url_for('main.incident_api', obj_id=obj.id) %}
 	{% else %}
 		{% set post_url="{}/edit".format(url_for('main.incident_api',id=obj.id)) %}
 	{% endif %}
