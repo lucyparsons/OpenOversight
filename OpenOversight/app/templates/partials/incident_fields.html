@@ -2,7 +2,7 @@
 	<tbody>
 		<tr>
 			<td><strong>Date</strong></td>
-			<td>{{ incident.date }}</td>
+			<td>{{ incident.date.strftime('%b %d, %Y %l:%M %p') }}</td>
 		</tr>
 		<tr>
 			<td><strong>Report #</strong></td>

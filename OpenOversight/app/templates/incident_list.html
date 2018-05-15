@@ -1,8 +1,9 @@
 {% extends "list.html" %}
 
 {% block list %}
+	<h1>Incidents</h1>
 	{% if department %}
-		<h3>Incidents in {{ department.name }}</h3>
+		<h2><small>{{ department.name }}</small></h2>
 		<p>
 			<a href="{{ url_for('main.incident_api')}}">All Incidents</a>
 		</p>
@@ -23,4 +24,10 @@
 			<p>There are no incidents.</p>
 		{% endif %}
 	</ul>
+	{% if current_user.is_administrator or current_user.is_area_coordinator %}
+		<a href="{{ url_for('main.incident_api')+ 'new' }}" class="btn btn-primary" role="button">
+	      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+	      Add New Incident
+	  </a>
+	{% endif %}
 {% endblock list %}

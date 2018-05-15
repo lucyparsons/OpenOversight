@@ -609,6 +609,7 @@ class IncidentApi(ModelView):
     model = Incident
     model_name = 'incident'
     order_by = 'date'
+    descending = True
     form = IncidentForm
     create_function = create_incident
     department_check = True
@@ -621,7 +622,7 @@ class IncidentApi(ModelView):
         if request.args.get('department_id'):
             department_id = request.args.get('department_id')
             dept = Department.query.get_or_404(department_id)
-            obj = self.model.query.filter_by(department_id=department_id).order_by(getattr(self.model, self.order_by)).paginate(page, self.per_page, False)
+            obj = self.model.query.filter_by(department_id=department_id).order_by(getattr(self.model, self.order_by).desc()).paginate(page, self.per_page, False)
             return render_template('{}_list.html'.format(self.model_name), objects=obj, url='main.{}_api'.format(self.model_name), department=dept)
         else:
             return super(IncidentApi, self).get(id)
