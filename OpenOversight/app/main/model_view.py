@@ -95,25 +95,14 @@ class ModelView(MethodView):
 
     def dispatch_request(self, *args, **kwargs):
         end_of_url = request.url.split('/')[-1]
-        if request.method == 'GET':
-            if end_of_url == 'edit':
-                meth = getattr(self, 'edit', None)
-            elif end_of_url == 'delete':
-                meth = getattr(self, 'delete', None)
-            elif end_of_url == 'new':
-                meth = getattr(self, 'new', None)
-            else:
+        endings = ['edit', 'new', 'delete']
+        meth = None
+        for ending in ['edit', 'new', 'delete']:
+            if end_of_url == ending:
+                meth = getattr(self, ending, None)
+        if not meth:
+            if request.method == 'GET':
                 meth = getattr(self, 'get', None)
-
-        if request.method == 'POST':
-            if end_of_url == 'edit':
-                meth = getattr(self, 'edit', None)
-            elif end_of_url == 'delete':
-                meth = getattr(self, 'delete', None)
-            elif end_of_url == 'new':
-                meth = getattr(self, 'new', None)
             else:
-                abort(404)
-
-        assert meth is not None, 'Unimplemented method %r' % request.method
+                assert meth is not None, 'Unimplemented method %r' % request.method
         return meth(*args, **kwargs)
