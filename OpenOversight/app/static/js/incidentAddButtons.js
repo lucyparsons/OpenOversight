@@ -39,7 +39,37 @@ function cloneFieldList(selector) {
     $(selector).after(new_element);
 }
 
+
+/* This function checks if it is the last fieldset element in its parent. If it is, it copies itself before deleting, and sets a new click handler and text on the add button. If it has other fieldset siblings, it simply deletes itself. */
+
 function removeParent(event) {
     event.preventDefault()
+    var previousElement = event.target.parentElement.previousElementSibling
+    var nextElement = event.target.parentElement.nextElementSibling
+    // If it's between the legend and the add button, it's the last remaining fieldset, and needs different handling
+    if(previousElement &&
+       previousElement.tagName === 'LEGEND' &&
+       nextElement &&
+       nextElement.tagName === 'BUTTON'){
+
+        var new_element = $(event.target.parentElement).clone(true)
+        var add_button = $(event.target.parentElement.nextElementSibling)
+        var fieldsetName = $(previousElement).text().slice(0, -1)
+        // Remove previous click handler
+        add_button.off('click')
+        add_button.text('New ' + fieldsetName)
+        add_button.on('click', function(event) {
+            event.preventDefault()
+            add_button.before(new_element);
+            // remove this click handler
+            add_button.off('click')
+            add_button.text('Add another ' + fieldsetName)
+            // restore the previous add function
+            add_button.click(function (event) {
+                event.preventDefault()
+                cloneFieldList($(event.target.previousElementSibling));
+            });
+        })
+    }
     event.target.parentElement.remove()
 }
