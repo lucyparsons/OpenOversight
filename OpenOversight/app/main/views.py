@@ -613,6 +613,19 @@ class IncidentApi(ModelView):
     create_function = create_incident
     department_check = True
 
+    def get(self, id):
+        if request.args.get('page'):
+                page = int(request.args.get('page'))
+        else:
+            page = 1
+        if request.args.get('department_id'):
+            department_id = request.args.get('department_id')
+            dept = Department.query.get_or_404(department_id)
+            obj = self.model.query.filter_by(department_id=department_id).order_by(getattr(self.model, self.order_by)).paginate(page, self.per_page, False)
+            return render_template('{}_list.html'.format(self.model_name), objects=obj, url='main.{}_api'.format(self.model_name), department=dept)
+        else:
+            return super(IncidentApi, self).get(id)
+
     def get_form(self, obj):
         form = super(IncidentApi, self).get_form(obj=obj)
 

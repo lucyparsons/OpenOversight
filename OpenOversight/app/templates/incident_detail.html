@@ -8,6 +8,9 @@
 	{% set incident = obj %}
 	<main class='container pt-35' role='main'>
 		<a href="{{ url_for('main.incident_api')}}">All Incidents</a>
+		<p>
+			<a href="{{ url_for('main.incident_api', department_id=incident.department_id)}}">More incidents in the {{ incident.department.name }}</a>
+		</p>
 		<h1>Incident {{incident.report_number}}</h1>
 		<div class='row'>
 			<div class="col-sm-12 col-md-6">

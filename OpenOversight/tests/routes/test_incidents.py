@@ -7,12 +7,13 @@ from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
 
 from OpenOversight.app.main.forms import IncidentForm, LocationForm, LinkForm, LicensePlateForm
-from OpenOversight.app.models import Incident, Officer
+from OpenOversight.app.models import Incident, Officer, Department
 
 
 @pytest.mark.parametrize("route", [
     ('/incidents/'),
-    ('/incidents/1')
+    ('/incidents/1'),
+    ('/incidents/?department_id=1')
 ])
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
@@ -361,3 +362,18 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 403
+
+
+def test_users_can_view_incidents_by_department(mockdata, client, session):
+    with current_app.test_request_context():
+        department = Department.query.first()
+        department_incidents = Incident.query.filter_by(department_id=department.id)
+        non_department_incidents = Incident.query.except_(Incident.query.filter_by(department_id=department.id))
+        rv = client.get(
+            url_for('main.incident_api', department_id=department.id))
+
+        # Requires that report numbers in test data not include other report numbers
+        for incident in department_incidents:
+            assert incident.report_number in rv.data
+        for incident in non_department_incidents:
+            assert incident.report_number not in rv.data

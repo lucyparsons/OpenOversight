@@ -1,16 +1,26 @@
 {% extends "list.html" %}
 
 {% block list %}
+	{% if department %}
+		<h3>Incidents in {{ department.name }}</h3>
+		<p>
+			<a href="{{ url_for('main.incident_api')}}">All Incidents</a>
+		</p>
+	{% endif %}
 	<ul class="list-group">
-	  {% for incident in objects.items %}
-	  	<li class="list-group-item">
-	  		<h3>
-	  				<a href="{{ url_for('main.incident_api', id=incident.id)}}">
-	  				Incident {{ incident.report_number }}
-	  			</a>
-	  		</h3>
-	    	{% include 'partials/incident_fields.html' %}
-	    </li>
-	  {% endfor %}
+		{% if objects.items %}
+		  {% for incident in objects.items %}
+		  	<li class="list-group-item">
+		  		<h3>
+		  				<a href="{{ url_for('main.incident_api', id=incident.id)}}">
+		  				Incident {{ incident.report_number }}
+		  			</a>
+		  		</h3>
+		    	{% include 'partials/incident_fields.html' %}
+		    </li>
+		  {% endfor %}
+		{% else %}
+			<p>There are no incidents.</p>
+		{% endif %}
 	</ul>
 {% endblock list %}
