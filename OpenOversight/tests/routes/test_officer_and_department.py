@@ -320,8 +320,8 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         login_admin(client)
         department = random.choice(dept_choices())
         links = [
-            LinkForm(url='http://pleasework.com', link_type='link').data,
-            LinkForm(url='http://avideo?v=2345jk', link_type='video').data
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesterson',
@@ -430,7 +430,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
         login_admin(client)
         department = random.choice(dept_choices())
         link_url0 = 'http://pleasework.com'
-        link_url1 = 'http://avideo?v=2345jk'
+        link_url1 = 'http://avideo/?v=2345jk'
         links = [
             LinkForm(url=link_url0, link_type='link').data,
             LinkForm(url=link_url0, link_type='video').data

@@ -303,9 +303,10 @@ def list_officer(department_id, page=1, from_search=False):
 @ac_or_admin_required
 def add_officer():
     form = AddOfficerForm()
+    for link in form.links:
+        link.user_id.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
-
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
             abort(403)
     if form.validate_on_submit():
@@ -322,9 +323,14 @@ def add_officer():
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
+    for link in form.links:
+        if not link.user_id.data:
+            link.user_id.data = current_user.id
+
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(403)
+
     add_department_query(form, current_user)
 
     if form.validate_on_submit():
