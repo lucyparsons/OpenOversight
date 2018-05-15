@@ -274,6 +274,7 @@ class IncidentForm(DateFieldForm):
         description='Links to articles about or videos of the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
-    user_id = HiddenField(validators=[Required(message='Incidents must have a user id')])
+    creator_id = HiddenField(validators=[Required(message='Incidents must have a creator id.')])
+    last_updated_id = HiddenField(validators=[Required(message='Incidents must have a user id for editing.')])
 
     submit = SubmitField(label='Submit')

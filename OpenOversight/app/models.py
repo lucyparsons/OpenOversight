@@ -237,8 +237,10 @@ class Incident(db.Model):
         backref=db.backref('incidents'))
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='incidents', lazy=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref='incidents', lazy=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    creator = db.relationship('User', backref='incidents_created', lazy=True, foreign_keys=[creator_id])
+    last_updated_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    last_updated_by = db.relationship('User', backref='incidents_updated', lazy=True, foreign_keys=[last_updated_id])
 
 
 class User(UserMixin, db.Model):

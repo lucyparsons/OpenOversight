@@ -55,5 +55,19 @@
 				</tr>
 			{% endif %}
 		{% endwith %}
+		{% if detail and current_user.is_administrator %}
+			{% if incident.creator %}
+				<tr>
+					<td><strong>Creator</strong></td>
+					<td><a href="{{ url_for('main.profile', username=incident.creator.username)}}">{{ incident.creator.username }}</a></td>
+				</tr>
+			{% endif %}
+			{% if incident.last_updated_by %}
+				<tr>
+					<td><strong>Last Edited By</strong></td>
+					<td><a href="{{ url_for('main.profile', username=incident.last_updated_by.username)}}">{{ incident.last_updated_by.username }}</a></td>
+				</tr>
+			{% endif %}
+		{% endif %}
 	</tbody>
 </table>

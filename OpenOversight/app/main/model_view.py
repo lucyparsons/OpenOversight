@@ -34,7 +34,7 @@ class ModelView(MethodView):
             return render_template('{}_list.html'.format(self.model_name), objects=objects, url='main.{}_api'.format(self.model_name))
         else:
             obj = self.model.query.get_or_404(id)
-            return render_template('{}_detail.html'.format(self.model_name), obj=obj)
+            return render_template('{}_detail.html'.format(self.model_name), obj=obj, current_user=current_user)
 
     @login_required
     @ac_or_admin_required
@@ -43,8 +43,10 @@ class ModelView(MethodView):
             form = self.get_new_form()
             if form.department:
                 add_department_query(form, current_user)
-            if form.user_id:
-                form.user_id.data = current_user.id
+            if form.creator_id and not form.creator_id.data:
+                form.creator_id.data = current_user.id
+            if form.last_updated_id:
+                form.last_updated_id.data = current_user.id
 
         if form.validate_on_submit():
             new_instance = self.create_function(form)
@@ -65,10 +67,11 @@ class ModelView(MethodView):
 
         if not form:
             form = self.get_edit_form(obj)
-            if obj.user_id:
-                form.user_id.data = obj.user_id
+            if obj.creator_id:
+                form.creator_id.data = obj.creator_id
             else:
-                form.user_id.data = current_user.id
+                form.creator_id.data = current_user.id
+            form.last_updated_id.data = current_user.id
 
         if form.department:
             add_department_query(form, current_user)
