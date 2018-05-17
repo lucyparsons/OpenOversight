@@ -1,0 +1,14 @@
+/* Override Dropzone checkmark animation */
+.dropzone .dz-preview.dz-success .dz-success-mark {
+	opacity: 1;
+	-webkit-animation: none 0s ease
+  -moz-animation: none 0s ease
+  -ms-animation: none 0s ease
+  -o-animation: none 0s ease
+  animation: none 0s ease
+  -webkit-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1)!important;
+  -moz-animation:  slide-in 3s cubic-bezier(0.77, 0, 0.175, 1)!important;
+  -ms-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1)!important;
+  -o-animation:  slide-in 3s cubic-bezier(0.77, 0, 0.175, 1)!important;
+  animation:  slide-in 3s cubic-bezier(0.77, 0, 0.175, 1)!important;
+}

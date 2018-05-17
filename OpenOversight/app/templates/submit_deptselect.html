@@ -1,7 +1,12 @@
 {% extends "base.html" %}
-{% block content %}
 
-<link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
+
+{% block head %}
+	<link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/dropzone-override.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
 
 <div class="container theme-showcase" role="main">
 
