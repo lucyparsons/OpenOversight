@@ -462,7 +462,11 @@ def complete_tagging(image_id):
     image.is_tagged = True
     db.session.commit()
     flash('Marked image as completed.')
-    return redirect(url_for('main.label_data', department_id=request.args.get('department_id')))
+    department_id = request.args.get('department_id')
+    if department_id:
+        return redirect(url_for('main.label_data', department_id=department_id))
+    else:
+        return redirect(url_for('main.label_data'))
 
 
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
