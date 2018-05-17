@@ -1,3 +1,5 @@
+from us import states
+
 # Choices are a list of (value, label) tuples
 RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
                 ('HISPANIC', 'Hispanic'),
@@ -14,3 +16,6 @@ RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
                 ('CAPTAIN', 'Captain'), ('LIEUTENANT', 'Lieutenant'),
                 ('SERGEANT', 'Sergeant'), ('FIELD', 'Field Training Officer'),
                 ('PO', 'Police Officer')]
+
+STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
+LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]

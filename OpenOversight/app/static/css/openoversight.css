@@ -271,6 +271,33 @@ a > .tutorial{
     color: white;
 }
 
+.btn-danger {
+    background: white;
+    color: black;
+    border-color: red;
+    font-weight: bold;
+}
+
+.btn-danger:hover {
+    border-color: #555555;
+    background-color: white;
+    color: #555555;
+}
+
+.btn-success {
+    background: white;
+    color: black;
+    border-color: green;
+    font-weight: bold;
+    margin-bottom: 3rem;
+}
+
+.btn-success:hover {
+    border-color: #555555;
+    background-color: white;
+    color: #555555;
+}
+
 .btn-info {
     background: #0000ff;
     color: white;
@@ -385,4 +412,8 @@ a > .tutorial{
 
 .pb-90 {
     padding-bottom: 90px;
+}
+
+.pt-35 {
+    padding-top: 35px;
 }

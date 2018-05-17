@@ -1,13 +1,26 @@
+import re
+from urlparse import urlparse
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import validates
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, BadData
 from flask_login import UserMixin
 from flask import current_app
+from .validators import state_validator
 from . import login_manager
 
 db = SQLAlchemy()
+
+
+officer_links = db.Table('officer_links',
+                         db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+                         db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True))
+
+officer_incidents = db.Table('officer_incidents',
+                             db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+                             db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True))
 
 
 class Department(db.Model):
@@ -35,6 +48,17 @@ class Officer(db.Model):
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
+    # we don't expect to pull up officers via link often so we make it lazy.
+    links = db.relationship(
+        'Link',
+        secondary=officer_links,
+        lazy='subquery',
+        backref=db.backref('officers', lazy=True))
+
+    def full_name(self):
+        if self.middle_initial:
+            return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+        return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
         return '<Officer ID {}: {} {} {}>'.format(self.id,
@@ -116,6 +140,107 @@ class Image(db.Model):
 
     def __repr__(self):
         return '<Image ID {}: {}>'.format(self.id, self.filepath)
+
+
+incident_links = db.Table(
+    'incident_links',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True)
+)
+
+incident_license_plates = db.Table(
+    'incident_license_plates',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('license_plate_id', db.Integer, db.ForeignKey('license_plates.id'), primary_key=True)
+)
+
+incident_officers = db.Table(
+    'incident_officers',
+    db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True),
+    db.Column('officers_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True)
+)
+
+
+class Location(db.Model):
+    __tablename__ = 'locations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    street_name = db.Column(db.String(100), index=True)
+    cross_street1 = db.Column(db.String(100), unique=False)
+    cross_street2 = db.Column(db.String(100), unique=False)
+    city = db.Column(db.String(100), unique=False, index=True)
+    state = db.Column(db.String(2), unique=False, index=True)
+    zip_code = db.Column(db.String(5), unique=False, index=True)
+
+    @validates('zip_code')
+    def validate_zip_code(self, key, zip_code):
+        zip_re = r'^\d{5}$'
+        if not re.match(zip_re, zip_code):
+            raise ValueError('Not a valid zip code')
+        return zip_code
+
+    @validates('state')
+    def validate_state(self, key, state):
+        return state_validator(state)
+
+
+class LicensePlate(db.Model):
+    __tablename__ = 'license_plates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(8), nullable=False, index=True)
+    state = db.Column(db.String(2), index=True)
+    # for use if car is federal, diplomat, or other non-state
+    # non_state_identifier = db.Column(db.String(20), index=True)
+
+    @validates('state')
+    def validate_state(self, key, state):
+        return state_validator(state)
+
+
+class Link(db.Model):
+    __tablename__ = 'links'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), index=True)
+    url = db.Column(db.String(255), nullable=False)
+    link_type = db.Column(db.String(100), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    author = db.Column(db.String(255), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='links', lazy=True)
+
+    @validates('url')
+    def validate_url(self, key, url):
+        parsed = urlparse(url)
+        if parsed.scheme not in ['http', 'https']:
+            raise ValueError('Not a valid URL')
+
+        return url
+
+
+class Incident(db.Model):
+    __tablename__ = 'incidents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, unique=False, index=True)
+    report_number = db.Column(db.String(50), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    address_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
+    address = db.relationship('Location', backref='incidents')
+    license_plates = db.relationship('LicensePlate', secondary=incident_license_plates, lazy='subquery', backref=db.backref('incidents', lazy=True))
+    links = db.relationship('Link', secondary=incident_links, lazy='subquery', backref=db.backref('incidents', lazy=True))
+    officers = db.relationship(
+        'Officer',
+        secondary=officer_incidents,
+        lazy='subquery',
+        backref=db.backref('incidents'))
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='incidents', lazy=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    creator = db.relationship('User', backref='incidents_created', lazy=True, foreign_keys=[creator_id])
+    last_updated_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    last_updated_by = db.relationship('User', backref='incidents_updated', lazy=True, foreign_keys=[last_updated_id])
 
 
 class User(UserMixin, db.Model):

@@ -7,7 +7,22 @@ from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
 
-from .models import db, Officer, Assignment, Image, Face, User, Unit, Department
+from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
+                     Incident, Location, LicensePlate, Link)
+
+
+def get_or_create(session, model, defaults=None, **kwargs):
+    if 'csrf_token' in kwargs:
+        kwargs.pop('csrf_token')
+    instance = model.query.filter_by(**kwargs).first()
+    if instance:
+        return instance, False
+    else:
+        params = dict((k, v) for k, v in kwargs.iteritems())
+        params.update(defaults or {})
+        instance = model(**params)
+        session.add(instance)
+        return instance, True
 
 
 def unit_choices():
@@ -71,6 +86,13 @@ def add_officer_profile(form):
                             rank=form.rank.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
+    if form.links.data:
+        for link in form.data['links']:
+            # don't try to create with a blank string
+            if link['url']:
+                li, _ = get_or_create(db.session, Link, **link)
+                if li:
+                    officer.links.append(li)
     db.session.add(assignment)
     db.session.commit()
     return officer
@@ -78,7 +100,15 @@ def add_officer_profile(form):
 
 def edit_officer_profile(officer, form):
     for field, data in form.data.iteritems():
-        setattr(officer, field, data)
+        if field == 'links':
+            for link in data:
+                # don't try to create with a blank string
+                if link['url']:
+                    li, _ = get_or_create(db.session, Link, **link)
+                    if li:
+                        officer.links.append(li)
+        else:
+            setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
@@ -231,11 +261,10 @@ def ac_can_edit_officer(officer, ac):
 
 
 def add_department_query(form, current_user):
+    """Limits the departments available on forms for acs"""
     if not current_user.is_administrator:
         form.department.query = Department.query.filter_by(
             id=current_user.ac_department_id)
-    else:
-        form.department.query = Department.query.all()
 
 
 def add_unit_query(form, current_user):
@@ -244,3 +273,64 @@ def add_unit_query(form, current_user):
             department_id=current_user.ac_department_id)
     else:
         form.unit.query = Unit.query.all()
+
+
+def replace_list(items, obj, attr, model, db):
+    """Takes a list of items, and object, the attribute of that object that needs to be replaced, the model corresponding the items, and the db
+
+    Sets the objects attribute to the list of items received. DOES NOT SAVE TO DB.
+    """
+    new_list = []
+    if not hasattr(obj, attr):
+        raise LookupError('The object does not have the {} attribute'.format(attr))
+
+    for item in items:
+        new_item, _ = get_or_create(db.session, model, **item)
+        new_list.append(new_item)
+    setattr(obj, attr, new_list)
+
+
+def create_incident(self, form):
+    fields = {
+        'date': form.datetime,
+        'officers': [],
+        'license_plates': [],
+        'links': [],
+        'address': ''
+    }
+
+    if 'address' in form.data:
+        address, _ = get_or_create(db.session, Location, **form.data['address'])
+        fields['address'] = address
+
+    if 'officers' in form.data:
+        for officer_id in form.data['officers']:
+            if officer_id:
+                of = Officer.query.filter_by(id=int(officer_id)).first()
+                if of:
+                    fields['officers'].append(of)
+
+    if 'license_plates' in form.data:
+        for plate in form.data['license_plates']:
+            if plate['number']:
+                pl, _ = get_or_create(db.session, LicensePlate, **plate)
+                if pl:
+                    fields['license_plates'].append(pl)
+
+    if 'links' in form.data:
+        for link in form.data['links']:
+            # don't try to create with a blank string
+            if link['url']:
+                li, _ = get_or_create(db.session, Link, **link)
+                if li:
+                    fields['links'].append(li)
+
+    return Incident(
+        date=fields['date'],
+        description=form.data['description'],
+        department=form.data['department'],
+        address=fields['address'],
+        officers=fields['officers'],
+        report_number=form.data['report_number'],
+        license_plates=fields['license_plates'],
+        links=fields['links'])
