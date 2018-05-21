@@ -167,11 +167,15 @@ def filter_by_form(form, officer_query):
         )
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
                         'PACIFIC ISLANDER'):
-        officer_query = officer_query.filter(
-            Officer.race.like('%%{}%%'.format(form['race']))
-        )
+        officer_query = officer_query.filter(db.or_(
+            Officer.race.like('%%{}%%'.format(form['race'])),
+            Officer.race == 'Not Sure',
+            Officer.race == None  # noqa
+        ))
     if form['gender'] in ('M', 'F'):
-        officer_query = officer_query.filter(Officer.gender == form['gender'])
+        officer_query = officer_query.filter(db.or_(Officer.gender == form['gender'],
+                                                    Officer.gender == 'Not Sure',
+                                                    Officer.gender == None))  # noqa
     if form['dept']:
         officer_query = officer_query.filter(
             Officer.department_id == form['dept'].id

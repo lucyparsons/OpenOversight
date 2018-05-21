@@ -30,11 +30,11 @@ def pick_birth_date():
 
 def pick_race():
     return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
-                          'PACIFIC ISLANDER'])
+                          'PACIFIC ISLANDER', None])
 
 
 def pick_gender():
-    return random.choice(['M', 'F'])
+    return random.choice(['M', 'F', None])
 
 
 def pick_first():
