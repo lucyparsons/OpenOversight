@@ -169,7 +169,7 @@ def filter_by_form(form, officer_query):
                         'PACIFIC ISLANDER'):
         officer_query = officer_query.filter(db.or_(
             Officer.race.like('%%{}%%'.format(form['race'])),
-            Officer.race == 'Not Sure',
+            Officer.race == 'Not Sure',  # noqa
             Officer.race == None  # noqa
         ))
     if form['gender'] in ('M', 'F'):
@@ -198,14 +198,16 @@ def filter_by_form(form, officer_query):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%PO%%'),
                    Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == None)  # noqa
+                   Assignment.rank == None,  # noqa
+                   Assignment.rank == 'Not Sure')  # noqa
         )
     if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
                         'COMMANDER', 'DEP CHIEF', 'CHIEF', 'DEPUTY SUPT',
                         'SUPT OF POLICE'):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == None)  # noqa
+                   Assignment.rank == None,  # noqa
+                   Assignment.rank == 'Not Sure')  # noqa
         )
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list

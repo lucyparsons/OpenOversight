@@ -52,7 +52,7 @@ def pick_name():
 
 
 def pick_rank():
-    return random.choice(['COMMANDER', 'CAPTAIN', 'PO'])
+    return random.choice(['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure'])
 
 
 def pick_star():
