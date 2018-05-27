@@ -1,6 +1,6 @@
 # Routing and view tests
 import pytest
-from datetime import datetime
+from datetime import datetime, date
 from flask import url_for, current_app
 from OpenOversight.tests.conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
@@ -175,6 +175,40 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         assert old_license_plates not in inc.license_plates
         assert len(inc.license_plates) == 1
         assert new_number in [lp.number for lp in inc.license_plates]
+
+
+def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        inc = Incident.query.first()
+
+        address_form = LocationForm(
+            street_name=inc.address.street_name,
+            cross_street1=inc.address.cross_street1,
+            cross_street2=inc.address.cross_street2,
+            city=inc.address.city,
+            state=inc.address.state,
+            zip_code=inc.address.zip_code
+        )
+
+        form = IncidentForm(
+            date_field=date(1899, 12, 5),
+            time_field=str(inc.date.time()),
+            report_number=inc.report_number,
+            description=inc.description,
+            department='1',
+            address=address_form.data,
+            officers=[officer.id for officer in inc.officers]
+        )
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Incidents prior to 1900 not allowed.' in rv.data
 
 
 def test_admins_can_edit_incident_officers(mockdata, client, session):

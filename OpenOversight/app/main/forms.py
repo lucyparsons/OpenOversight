@@ -219,6 +219,10 @@ class DateFieldForm(Form):
         if not type(field.data) == datetime.time:
             raise ValidationError('Not a valid time.')
 
+    def validate_date_field(self, field):
+        if field.data.year < 1900:
+            raise ValidationError('Incidents prior to 1900 not allowed.')
+
 
 class LocationForm(Form):
     street_name = StringField(validators=[Required()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
