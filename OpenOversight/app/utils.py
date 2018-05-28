@@ -11,6 +11,15 @@ from .models import (db, Officer, Assignment, Image, Face, User, Unit, Departmen
                      Incident, Location, LicensePlate, Link)
 
 
+def set_dynamic_default(form_field, value):
+    # First we ensure no value is set already
+    if not form_field.data:
+        try:  # Try to use a default if there is one.
+            form_field.data = value
+        except AttributeError:
+            pass
+
+
 def get_or_create(session, model, defaults=None, **kwargs):
     if 'csrf_token' in kwargs:
         kwargs.pop('csrf_token')

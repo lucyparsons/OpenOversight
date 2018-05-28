@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask_login import login_required, current_user
 from ..auth.utils import ac_or_admin_required
 from ..models import db
-from ..utils import add_department_query
+from ..utils import add_department_query, set_dynamic_default
 
 
 class ModelView(MethodView):
@@ -42,6 +42,8 @@ class ModelView(MethodView):
             form = self.get_new_form()
             if form.department:
                 add_department_query(form, current_user)
+                if getattr(current_user, 'dept_pref_rel', None):
+                    set_dynamic_default(form.department, current_user.dept_pref_rel)
             if form.creator_id and not form.creator_id.data:
                 form.creator_id.data = current_user.id
             if form.last_updated_id:

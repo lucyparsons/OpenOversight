@@ -18,7 +18,9 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
-                     ac_can_edit_officer, add_department_query, add_unit_query, create_incident, get_or_create, replace_list)
+                     ac_can_edit_officer, add_department_query, add_unit_query,
+                     create_incident, get_or_create, replace_list,
+                     set_dynamic_default)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm)
@@ -52,6 +54,9 @@ def browse():
 @main.route('/find', methods=['GET', 'POST'])
 def get_officer():
     form = FindOfficerForm()
+    if getattr(current_user, 'dept_pref_rel', None):
+        set_dynamic_default(form.dept, current_user.dept_pref_rel)
+
     if form.validate_on_submit():
         return redirect(url_for('main.get_gallery'), code=307)
     return render_template('input_find_officer.html', form=form)
@@ -307,6 +312,8 @@ def add_officer():
         link.user_id.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
+    set_dynamic_default(form.department, current_user.dept_pref_rel)
+
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
             abort(403)
     if form.validate_on_submit():
@@ -347,6 +354,8 @@ def edit_officer(officer_id):
 def add_unit():
     form = AddUnitForm()
     add_department_query(form, current_user)
+    set_dynamic_default(form.department, current_user.dept_pref_rel)
+
     if form.validate_on_submit():
         unit = Unit(descrip=form.descrip.data,
                     department_id=form.department.data.id)
