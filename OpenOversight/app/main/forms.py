@@ -1,15 +1,20 @@
 from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms import (StringField, DecimalField,
-                     SelectField, IntegerField, SubmitField)
+from wtforms import (StringField, DecimalField, TextAreaField,
+                     SelectField, IntegerField, SubmitField,
+                     HiddenField, FormField, FieldList)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional)
+                                Length, Optional, Required, URL, ValidationError)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES
+from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
+from ..formfields import TimeField
+from ..widgets import BootstrapListWidget, FormFieldWidget
+from ..models import Officer
+import datetime
 
 
 def allowed_values(choices):
@@ -98,6 +103,33 @@ class DepartmentForm(Form):
     submit = SubmitField(label='Add')
 
 
+class LinkForm(Form):
+    title = StringField(
+        validators=[Length(max=100, message='Titles are limited to 100 characters.')],
+        description='Text that will be displayed as the link.')
+    description = TextAreaField(
+        validators=[Length(max=600, message='Descriptions are limited to 600 characters.')],
+        description='A short description of the link.')
+    author = StringField(
+        validators=[Length(max=255, message='Limit of 255 characters.')],
+        description='The source or author of the link.')
+    url = StringField(validators=[Optional(), URL(message='Not a valid URL')])
+    link_type = SelectField(
+        'Link Type',
+        choices=LINK_CHOICES,
+        validators=[AnyOf(allowed_values(LINK_CHOICES))])
+    user_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+
+    def validate(self):
+        success = super(LinkForm, self).validate()
+        if self.url.data and not self.link_type.data:
+            self.url.errors = list(self.url.errors)
+            self.url.errors.append('Links must have a link type.')
+            success = False
+
+        return success
+
+
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
@@ -120,6 +152,12 @@ class AddOfficerForm(Form):
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     department = QuerySelectField('Department', validators=[Optional()],
                                   query_factory=dept_choices, get_label='name')
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
     submit = SubmitField(label='Add')
 
 
@@ -144,11 +182,106 @@ class EditOfficerForm(Form):
         validators=[Optional()],
         query_factory=dept_choices,
         get_label='name')
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
 
 
 class AddUnitForm(Form):
     descrip = StringField('Unit name or description', default='', validators=[
         Regexp('\w*'), Length(max=120), DataRequired()])
-    department = QuerySelectField('Department', validators=[Optional()], get_label='name')
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
     submit = SubmitField(label='Add')
+
+
+class DateFieldForm(Form):
+    date_field = DateField('Date', validators=[Required()])
+    time_field = TimeField('Time')
+
+    @property
+    def datetime(self):
+        return datetime.datetime.combine(self.date_field.data, self.time_field.data)
+
+    @datetime.setter
+    def datetime(self, value):
+        self.date_field.data = value.date()
+        self.time_field.data = value.time()
+
+    def validate_time_field(self, field):
+        if not type(field.data) == datetime.time:
+            raise ValidationError('Not a valid time.')
+
+    def validate_date_field(self, field):
+        if field.data.year < 1900:
+            raise ValidationError('Incidents prior to 1900 not allowed.')
+
+
+class LocationForm(Form):
+    street_name = StringField(validators=[Required()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
+    cross_street1 = StringField(validators=[Required()], description="Closest cross street to where incident occurred.")
+    cross_street2 = StringField(validators=[Optional()])
+    city = StringField(validators=[Required()])
+    state = SelectField('State', choices=STATE_CHOICES,
+                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+    zip_code = StringField('Zip Code', validators=[Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
+
+
+class LicensePlateForm(Form):
+    number = StringField('Plate Number', validators=[])
+    state = SelectField('State', choices=STATE_CHOICES,
+                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+
+
+class OfficerIdField(StringField):
+    def process_data(self, value):
+        if type(value) == Officer:
+            self.data = value.id
+        else:
+            self.data = value
+
+    def pre_validate(self, form):
+        if self.data:
+            officer = Officer.query.get(int(self.data))
+            if not officer:
+                raise ValueError('Not a valid officer id')
+
+
+class IncidentForm(DateFieldForm):
+    report_number = StringField(
+        validators=[Required(), Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
+        description='Incident number for the organization tracking incidents')
+    description = TextAreaField(validators=[Optional()])
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
+    address = FormField(LocationForm)
+    officers = FieldList(
+        OfficerIdField('OO Officer ID'),
+        description='Officers present at the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    license_plates = FieldList(FormField(
+        LicensePlateForm, widget=FormFieldWidget()),
+        description='License plates of police vehicles at the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    links = FieldList(FormField(
+        LinkForm,
+        widget=FormFieldWidget()),
+        description='Links to articles about or videos of the incident.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    creator_id = HiddenField(validators=[Required(message='Incidents must have a creator id.')])
+    last_updated_id = HiddenField(validators=[Required(message='Incidents must have a user id for editing.')])
+
+    submit = SubmitField(label='Submit')

@@ -9,6 +9,7 @@ from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm, \
     EditUserForm
 from .utils import admin_required
+from ..utils import set_dynamic_default
 
 
 @auth.before_app_request
@@ -172,6 +173,8 @@ def change_email(token):
 @login_required
 def change_dept():
     form = ChangeDefaultDepartmentForm()
+    set_dynamic_default(form.dept_pref, current_user.dept_pref_rel)
+
     if form.validate_on_submit():
         try:
             current_user.dept_pref = form.dept_pref.data.id

@@ -10,9 +10,19 @@
   <div class="text-center frontpage-leads">
   {% for department in departments %}
     <p>
-      <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
-         {{ department.name }}
-      </a>
+      <div class="btn-group">
+        <h2>{{ department.name }}
+          <p>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
+             Officers
+          </a>
+          {% if department.incidents %}
+            <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
+               Incidents
+            </a>
+        </p>
+        {% endif %}
+      </div>
     </p>
   {% endfor %}
   </div>

@@ -1,0 +1,13 @@
+{% extends 'form.html' %}
+
+{% block page_title %}
+	New Incident
+{% endblock page_title %}
+
+{% block form %}
+	{% include "partials/incident_form.html" %}
+{% endblock form %}
+
+{% block js_footer %}
+	<script src="{{ url_for('static', filename='js/incidentAddButtons.js') }}"></script>
+{% endblock %}

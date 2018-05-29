@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container" role="main">
+    {% with paginate=objects, next_url=url_for(url, page=objects.next_num), prev_url=url_for(url, page=objects.prev_num), location='top' %}
+      {% include "partials/paginate_nav.html" %}
+    {% endwith %}
+
+    {% block list %}
+    {% endblock list%}
+
+    {% with paginate=objects, next_url=url_for(url, page=objects.next_num), prev_url=url_for(url, page=objects.prev_num), location='bottom' %}
+      {% include "partials/paginate_nav.html" %}
+    {% endwith %}
+  </div>
+{% endblock content %}

@@ -1,0 +1,73 @@
+<table class='table table-hover table-responsive'>
+	<tbody>
+		<tr>
+			<td><strong>Date</strong></td>
+			<td>{{ incident.date.strftime('%b %d, %Y %l:%M %p') }}</td>
+		</tr>
+		<tr>
+			<td><strong>Report #</strong></td>
+			<td>{{ incident.report_number }}</td>
+		</tr>
+		<tr>
+			<td><strong>Department</strong></td>
+			<td>{{ incident.department.name }}</td>
+		</tr>
+		{% if incident.officers %}
+		<tr>
+			<td><strong>Officers</strong></td>
+			<td>
+				{% for officer in incident.officers %}
+					<a href="{{url_for('main.officer_profile', officer_id=officer.id)}}">{{ officer.full_name()|title }}</a>{% if not loop.last %}, {% endif %}
+				{% endfor %}
+			</td>
+		</tr>
+		{% endif %}
+		{% if detail and incident.license_plates %}
+			<tr>
+				<td><strong>License Plates</strong></td>
+				<td>
+					{% for plate in incident.license_plates %}
+						{{ plate.state }} {{ plate.number }}{% if not loop.last %}<br/> {% endif %}
+					{% endfor %}
+				</td>
+			</tr>
+		{% endif %}
+		{% if not detail %}
+			<tr>
+				<td><strong>Description</strong></td>
+				<td>{{ incident.description|truncate(300) }}</td>
+			</tr>
+		{% endif %}
+		{% with address=incident.address %}
+			{% if address %}
+				<tr>
+					<td><strong>Address</strong></td>
+						<td>
+							{{ address.street_name }}
+							{% if address.cross_street1 and address.cross_street2 %}
+								<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
+								{% else %}
+								 <em>near</em> {{ address.cross_street1 }}
+							{% endif %}
+							<br/>
+							{{ address.city }}, {{ address.state }} {{ address.zip_code }}
+						</td>
+				</tr>
+			{% endif %}
+		{% endwith %}
+		{% if detail and current_user.is_administrator %}
+			{% if incident.creator %}
+				<tr>
+					<td><strong>Creator</strong></td>
+					<td><a href="{{ url_for('main.profile', username=incident.creator.username)}}">{{ incident.creator.username }}</a></td>
+				</tr>
+			{% endif %}
+			{% if incident.last_updated_by %}
+				<tr>
+					<td><strong>Last Edited By</strong></td>
+					<td><a href="{{ url_for('main.profile', username=incident.last_updated_by.username)}}">{{ incident.last_updated_by.username }}</a></td>
+				</tr>
+			{% endif %}
+		{% endif %}
+	</tbody>
+</table>

@@ -23,7 +23,7 @@ def test_race_filter_select_all_black_officers(mockdata):
          'dept': department}
     )
     for element in results:
-        assert element.race == 'BLACK'
+        assert element.race in ('BLACK', 'Not Sure')
 
 
 def test_gender_filter_select_all_male_officers(mockdata):
@@ -34,7 +34,7 @@ def test_gender_filter_select_all_male_officers(mockdata):
          'dept': department}
     )
     for element in results:
-        assert element.gender == 'M'
+        assert element.gender in ('M', 'Not Sure')
 
 
 def test_rank_filter_select_all_commanders(mockdata):
@@ -46,7 +46,7 @@ def test_rank_filter_select_all_commanders(mockdata):
     )
     for element in results:
         assignment = element.assignments.first()
-        assert assignment.rank == 'COMMANDER'
+        assert assignment.rank in ('COMMANDER', 'Not Sure')
 
 
 def test_rank_filter_select_all_police_officers(mockdata):
@@ -58,7 +58,7 @@ def test_rank_filter_select_all_police_officers(mockdata):
     )
     for element in results:
         assignment = element.assignments.first()
-        assert assignment.rank == 'PO'
+        assert assignment.rank in ('PO', 'Not Sure')
 
 
 def test_filter_by_name(mockdata):
