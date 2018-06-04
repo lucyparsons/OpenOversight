@@ -2,11 +2,18 @@ import boto3
 import botocore
 import datetime
 import hashlib
+import os
 import random
+import sys
+import tempfile
+import urllib
+from traceback import format_exc
+
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
+from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note)
@@ -373,3 +380,65 @@ def create_note(self, form):
         officer_id=form.officer_id.data,
         date_created=datetime.datetime.now(),
         date_updated=datetime.datetime.now())
+
+
+def get_uploaded_cropped_image(original_image, crop_data):
+    """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
+
+    tmpdir = tempfile.mkdtemp()
+    original_filename = original_image.filepath.split('/')[-1]
+    safe_local_path0 = os.path.join(tmpdir, original_filename)
+    # get the original image and save it locally
+    urllib.urlretrieve(original_image.filepath, safe_local_path0)
+    # import pdb; pdb.set_trace()
+    pimage = Pimage.open(safe_local_path0)
+    SIZE = 300, 300
+    cropped_image = pimage.crop(crop_data)
+    cropped_image.thumbnail(SIZE)
+
+    tmp_filename = '{}{}'.format(datetime.datetime.now(), original_filename)
+    safe_local_path = os.path.join(tmpdir, tmp_filename)
+
+    def rm_dirs():
+        os.remove(safe_local_path0)
+        os.remove(safe_local_path)
+        os.rmdir(tmpdir)
+
+    # TODO: For faster implementation,
+    # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
+    cropped_image.save(fp=safe_local_path)
+    file = open(safe_local_path)
+
+    # See if there is a matching photo already in the db
+    hash_img = compute_hash(file.read())
+    hash_found = Image.query.filter_by(hash_img=hash_img).first()
+    if hash_found:
+        rm_dirs()
+        return hash_found
+
+    # Generate new filename
+    file_extension = original_filename.split('.')[-1]
+    new_filename = '{}.{}'.format(hash_img, file_extension)
+
+    # Upload file from local filesystem to S3 bucket and delete locally
+    try:
+        url = upload_file(safe_local_path, original_filename,
+                          new_filename)
+        rm_dirs()
+        # Update the database to add the image
+        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                          date_image_inserted=datetime.datetime.now(),
+                          department_id=original_image.department_id,
+                          # TODO: Get the following field from exif data
+                          date_image_taken=original_image.date_image_taken)
+        db.session.add(new_image)
+        db.session.commit()
+        return new_image
+    except:  # noqa
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error uploading to S3: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
+        rm_dirs()
+        return None
