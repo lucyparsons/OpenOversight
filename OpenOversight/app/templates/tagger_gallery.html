@@ -46,17 +46,7 @@
 
 
               <div align="center">
-                {% if officer.face.first().face_position_x %}
-                <div class="img-responsive thumbnail text-center"
-                     style="background-image: url({{ officer_image }});
-                            background-repeat: no-repeat;
-                            background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
-                            width: {{ officer.face.first().face_width }}px;
-                            height: {{ officer.face.first().face_height }}px;">
-                </div>
-                {% else %}
                 <img src="{{ officer_image }}" class="img-responsive thumbnail">
-                {% endif %}
               </div>
 
               </div>
