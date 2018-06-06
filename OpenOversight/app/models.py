@@ -33,6 +33,19 @@ class Department(db.Model):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
 
+class Note(db.Model):
+    __tablename__ = 'notes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    note = db.Column(db.Text())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='notes')
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
+    officer = db.relationship('Officer', backref='notes')
+    date_created = db.Column(db.DateTime)
+    date_updated = db.Column(db.DateTime)
+
+
 class Officer(db.Model):
     __tablename__ = 'officers'
 
