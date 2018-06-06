@@ -8,7 +8,7 @@ import imghdr as imghdr
 from flask import current_app, url_for
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link)
+                     Incident, Location, LicensePlate, Link, Note)
 
 
 def set_dynamic_default(form_field, value):
@@ -74,7 +74,7 @@ def edit_existing_assignment(assignment, form):
     return assignment
 
 
-def add_officer_profile(form):
+def add_officer_profile(form, current_user):
     officer = Officer(first_name=form.first_name.data,
                       last_name=form.last_name.data,
                       middle_initial=form.middle_initial.data,
@@ -84,6 +84,7 @@ def add_officer_profile(form):
                       employment_date=form.employment_date.data,
                       department_id=form.department.data.id)
     db.session.add(officer)
+    db.session.commit()
 
     if form.unit.data:
         officer_unit = form.unit.data.id
@@ -95,6 +96,7 @@ def add_officer_profile(form):
                             rank=form.rank.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
+    db.session.add(assignment)
     if form.links.data:
         for link in form.data['links']:
             # don't try to create with a blank string
@@ -102,7 +104,18 @@ def add_officer_profile(form):
                 li, _ = get_or_create(db.session, Link, **link)
                 if li:
                     officer.links.append(li)
-    db.session.add(assignment)
+    if form.notes.data:
+        for note in form.data['notes']:
+            # don't try to create with a blank string
+            if note['note']:
+                new_note = Note(
+                    note=note['note'],
+                    user_id=current_user.id,
+                    officer=officer,
+                    date_created=datetime.datetime.now(),
+                    date_updated=datetime.datetime.now())
+                db.session.add(new_note)
+
     db.session.commit()
     return officer
 
@@ -349,3 +362,12 @@ def create_incident(self, form):
         report_number=form.data['report_number'],
         license_plates=fields['license_plates'],
         links=fields['links'])
+
+
+def create_note(self, form):
+    return Note(
+        note=form.note.data,
+        user_id=form.creator_id.data,
+        officer_id=form.officer_id.data,
+        date_created=datetime.datetime.now(),
+        date_updated=datetime.datetime.now())

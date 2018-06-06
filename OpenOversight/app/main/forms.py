@@ -130,6 +130,17 @@ class LinkForm(Form):
         return success
 
 
+class NoteForm(Form):
+    note = TextAreaField()
+    officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
+    creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+    submit = SubmitField(label='Add')
+
+
+class NewOfficerNoteForm(Form):
+    note = TextAreaField()
+
+
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
@@ -158,6 +169,13 @@ class AddOfficerForm(Form):
         description='Links to articles about or videos of the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
+    notes = FieldList(FormField(
+        NewOfficerNoteForm,
+        widget=FormFieldWidget()),
+        description='This note about the officer will be attributed to your username.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+
     submit = SubmitField(label='Add')
 
 

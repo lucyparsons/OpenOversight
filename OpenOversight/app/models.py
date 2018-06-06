@@ -41,7 +41,7 @@ class Note(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref='notes')
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
-    officer = db.relationship('Officer', backref='notes')
+    officer = db.relationship('Officer', back_populates='notes')
     date_created = db.Column(db.DateTime)
     date_updated = db.Column(db.DateTime)
 
@@ -67,6 +67,7 @@ class Officer(db.Model):
         secondary=officer_links,
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
+    notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
 
     def full_name(self):
         if self.middle_initial:
