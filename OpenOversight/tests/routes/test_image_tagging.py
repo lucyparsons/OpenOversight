@@ -1,10 +1,11 @@
 # Routing and view tests
 import pytest
+from mock import MagicMock, patch
 from flask import url_for, current_app
 from urlparse import urlparse
 from ..conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac
-
+from OpenOversight.app.main import views
 
 from OpenOversight.app.main.forms import FaceTag, FindOfficerIDForm
 from OpenOversight.app.models import Face, Image, Department
@@ -154,24 +155,27 @@ def test_ac_cannot_delete_tag_in_their_dept(mockdata, client, session):
         assert deleted_tag is not None
 
 
-def test_user_can_add_tag(mockdata, client, session):
+def test_user_can_add_tag(mockdata, client, session, monkeypatch):
     with current_app.test_request_context():
-        login_user(client)
-        officer = Image.query.filter_by(department_id=1).first()
-        image = Image.query.filter_by(department_id=1).first()
-        form = FaceTag(officer_id=officer.id,
-                       image_id=image.id,
-                       dataX=34,
-                       dataY=32,
-                       dataWidth=3,
-                       dataHeight=33)
+        mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.get_uploaded_cropped_image', mock):
+            login_user(client)
+            officer = Image.query.filter_by(department_id=1).first()
+            image = Image.query.filter_by(department_id=1).first()
+            form = FaceTag(officer_id=officer.id,
+                           image_id=image.id,
+                           dataX=34,
+                           dataY=32,
+                           dataWidth=3,
+                           dataHeight=33)
 
-        rv = client.post(
-            url_for('main.label_data', image_id=image.id),
-            data=form.data,
-            follow_redirects=True
-        )
-        assert 'Tag added to database' in rv.data
+            rv = client.post(
+                url_for('main.label_data', image_id=image.id),
+                data=form.data,
+                follow_redirects=True
+            )
+            views.get_uploaded_cropped_image.assert_called_once()
+            assert 'Tag added to database' in rv.data
 
 
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
