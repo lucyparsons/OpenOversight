@@ -18,27 +18,33 @@ depends_on = None
 
 
 def upgrade():
-    for face in Face.query.all():
-        # import pdb; pdb.set_trace()
-        if face.face_position_x \
-           and face.image.filepath.split('/')[0] != 'static':
-            left = face.face_position_x
-            upper = face.face_position_y
-            right = left + face.face_width
-            lower = upper + face.face_height
+    try:
+        for face in Face.query.all():
+            if face.face_position_x \
+               and face.image.filepath.split('/')[0] != 'static':
+                left = face.face_position_x
+                upper = face.face_position_y
+                right = left + face.face_width
+                lower = upper + face.face_height
 
-            cropped_image = get_uploaded_cropped_image(face.image, (left, upper, right, lower))
+                cropped_image = get_uploaded_cropped_image(face.image, (left, upper, right, lower))
 
-            new_face = Face(
-                officer_id=face.officer_id,
-                img_id=cropped_image.id,
-                user_id=face.user_id)
+                new_face = Face(
+                    officer_id=face.officer_id,
+                    img_id=cropped_image.id,
+                    original_image_id=face.image_id,
+                    face_position_x=face.face_position_x,
+                    face_position_y=face.face_position_y,
+                    face_height=face.face_height,
+                    face_width=face.face_width,
+                    user_id=face.user_id)
 
-            db.session.add(cropped_image)
-            db.session.add(new_face)
-            db.session.delete(face)
-            db.session.commit()
-
+                db.session.add(cropped_image)
+                db.session.add(new_face)
+                db.session.delete(face)
+                db.session.commit()
+    except AttributeError:
+        pass  # then skip this face
 
 def downgrade():
     pass
