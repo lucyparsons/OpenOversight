@@ -454,6 +454,11 @@ def label_data(department_id=None, image_id=None):
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,
                                img_id=cropped_image.id,
+                               original_image_id=image.id,
+                               face_position_x=left,
+                               face_position_y=upper,
+                               face_width=form.dataWidth.data,
+                               face_height=form.dataHeight.data,
                                user_id=current_user.id)
                 db.session.add(new_tag)
                 db.session.commit()

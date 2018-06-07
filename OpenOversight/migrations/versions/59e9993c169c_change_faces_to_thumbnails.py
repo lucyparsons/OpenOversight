@@ -12,7 +12,7 @@ from app.utils import get_uploaded_cropped_image
 
 # revision identifiers, used by Alembic.
 revision = '59e9993c169c'
-down_revision = 'bd0398fe4aab'
+down_revision = '4a490771dda1'
 branch_labels = None
 depends_on = None
 
