@@ -203,7 +203,7 @@ class EditOfficerForm(Form):
     links = FieldList(FormField(
         LinkForm,
         widget=FormFieldWidget()),
-        description='Links to articles about or videos of the incident.',
+        description='Links to articles about or videos of the officer.',
         min_entries=1,
         widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
