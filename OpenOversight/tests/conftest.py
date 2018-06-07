@@ -6,10 +6,13 @@ from selenium import webdriver
 import time
 import threading
 from xvfbwrapper import Xvfb
+from faker import Faker
 
 from OpenOversight.app import create_app
 from OpenOversight.app import models
 from OpenOversight.app.models import db as _db
+
+factory = Faker()
 
 
 OFFICERS = [('IVANA', '', 'TINKLE'),
@@ -80,6 +83,11 @@ def generate_officer():
 def build_assignment(officer, unit):
     return models.Assignment(star_no=pick_star(), rank=pick_rank(),
                              officer=officer)
+
+
+def build_note(officer, user):
+    date = factory.date_time_this_year()
+    return models.Note(note=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
 
 
 def assign_faces(officer, images):
@@ -282,6 +290,19 @@ def mockdata(session, request):
         ),
     ]
     session.add_all(test_incidents)
+    session.commit()
+
+    users_that_can_create_notes = [test_admin, test_area_coordinator]
+
+    # for testing routes
+    first_officer = models.Officer.query.get(1)
+    note = build_note(first_officer, test_admin)
+    session.add(note)
+    for officer in models.Officer.query.limit(20):
+        user = random.choice(users_that_can_create_notes)
+        note = build_note(officer, user)
+        session.add(note)
+
     session.commit()
 
     def teardown():

@@ -86,7 +86,7 @@ class ModelView(MethodView):
         if form.validate_on_submit():
             self.populate_obj(form, obj)
             flash('{} successfully updated!'.format(self.model_name))
-            return self.get_redirect_url()
+            return self.get_redirect_url(obj_id=obj_id)
 
         return render_template('{}_edit.html'.format(self.model_name), obj=obj, form=form)
 
@@ -107,7 +107,7 @@ class ModelView(MethodView):
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
 
     def get_edit_form(self, obj):
-        form = EditNoteForm(obj=obj)
+        form = self.form(obj=obj)
         return form
 
     def get_new_form(self):
