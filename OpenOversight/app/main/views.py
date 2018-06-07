@@ -23,7 +23,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      set_dynamic_default, create_note)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, NoteForm)
+                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note)
@@ -744,11 +744,14 @@ class NoteApi(ModelView):
         form.officer_id.data = self.officer_id
         return form
 
-    def get_redirect_url_new(self, *args, **kwargs):
+    def get_redirect_url(self, *args, **kwargs):
         return redirect(url_for('main.officer_profile', officer_id=self.officer_id))
 
+    def get_edit_form(self, obj):
+        form = EditNoteForm(obj=obj)
+        return form
+
     def dispatch_request(self, *args, **kwargs):
-        # import pdb; pdb.set_trace()
         if 'officer_id' in kwargs:
             officer = Officer.query.get_or_404(kwargs['officer_id'])
             self.officer_id = kwargs.pop('officer_id')

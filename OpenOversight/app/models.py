@@ -38,9 +38,9 @@ class Note(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     note = db.Column(db.Text())
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref='notes')
-    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    creator = db.relationship('User', backref='notes')
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     officer = db.relationship('Officer', back_populates='notes')
     date_created = db.Column(db.DateTime)
     date_updated = db.Column(db.DateTime)

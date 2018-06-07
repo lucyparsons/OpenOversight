@@ -367,7 +367,7 @@ def create_incident(self, form):
 def create_note(self, form):
     return Note(
         note=form.note.data,
-        user_id=form.creator_id.data,
+        creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
         date_created=datetime.datetime.now(),
         date_updated=datetime.datetime.now())

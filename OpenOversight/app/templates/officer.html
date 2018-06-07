@@ -195,8 +195,8 @@
             <li class="list-group-item">
                 <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
                 {{ note.note }} <br/>
-              <em>{{ note.user.username }} </em>
-              {% if note.user_id == current_user.id %}
+                <em>{{ note.creator.username }} </em>
+              {% if note.creator_id == current_user.id %}
                 <a href="{{ url_for('main.note_api', officer_id=officer.id,
                           obj_id=note.id) + '/edit' }}">
                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i>

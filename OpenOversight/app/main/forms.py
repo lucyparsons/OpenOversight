@@ -134,7 +134,15 @@ class NoteForm(Form):
     note = TextAreaField()
     officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
     creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
-    submit = SubmitField(label='Add')
+    submit = SubmitField(label='Submit')
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        # import pdb; pdb.set_trace()
+        super(NoteForm, self).process(formdata, obj, **kwargs)
+
+class EditNoteForm(Form):
+    note = TextAreaField()
+    submit = SubmitField(label='Submit')
 
 
 class NewOfficerNoteForm(Form):
