@@ -130,23 +130,17 @@ class LinkForm(Form):
         return success
 
 
-class NoteForm(Form):
+class BaseNoteForm(Form):
     note = TextAreaField()
+
+
+class EditNoteForm(BaseNoteForm):
+    submit = SubmitField(label='Submit')
+
+
+class NoteForm(EditNoteForm):
     officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
     creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
-    submit = SubmitField(label='Submit')
-
-    def process(self, formdata=None, obj=None, **kwargs):
-        # import pdb; pdb.set_trace()
-        super(NoteForm, self).process(formdata, obj, **kwargs)
-
-class EditNoteForm(Form):
-    note = TextAreaField()
-    submit = SubmitField(label='Submit')
-
-
-class NewOfficerNoteForm(Form):
-    note = TextAreaField()
 
 
 class AddOfficerForm(Form):
@@ -178,7 +172,7 @@ class AddOfficerForm(Form):
         min_entries=1,
         widget=BootstrapListWidget())
     notes = FieldList(FormField(
-        NewOfficerNoteForm,
+        BaseNoteForm,
         widget=FormFieldWidget()),
         description='This note about the officer will be attributed to your username.',
         min_entries=1,

@@ -747,31 +747,38 @@ class NoteApi(ModelView):
     def get_redirect_url(self, *args, **kwargs):
         return redirect(url_for('main.officer_profile', officer_id=self.officer_id))
 
+    def get_post_delete_url(self, *args, **kwargs):
+        return self.get_redirect_url()
+
     def get_edit_form(self, obj):
         form = EditNoteForm(obj=obj)
         return form
+
+    def get_department_id(self, obj):
+        return self.department_id
 
     def dispatch_request(self, *args, **kwargs):
         if 'officer_id' in kwargs:
             officer = Officer.query.get_or_404(kwargs['officer_id'])
             self.officer_id = kwargs.pop('officer_id')
+            self.department_id = officer.department_id
 
         return super(NoteApi, self).dispatch_request(*args, **kwargs)
 
 note_view = NoteApi.as_view('note_api')
 main.add_url_rule(
-    '/officer/<int:officer_id>/notes/new',
+    '/officer/<int:officer_id>/note/new',
     view_func=note_view,
     methods=['GET', 'POST'])
 main.add_url_rule(
-    '/officer/<int:officer_id>/notes/<int:obj_id>',
+    '/officer/<int:officer_id>/note/<int:obj_id>',
     view_func=note_view,
     methods=['GET'])
 main.add_url_rule(
-    '/officer/<int:officer_id>/notes/<int:obj_id>/edit',
+    '/officer/<int:officer_id>/note/<int:obj_id>/edit',
     view_func=note_view,
     methods=['GET', 'POST'])
 main.add_url_rule(
-    '/officer/<int:officer_id>/notes/<int:obj_id>/delete',
+    '/officer/<int:officer_id>/note/<int:obj_id>/delete',
     view_func=note_view,
     methods=['GET', 'POST'])
