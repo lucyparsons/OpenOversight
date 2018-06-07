@@ -46,5 +46,6 @@ def upgrade():
     except AttributeError:
         pass  # then skip this face
 
+
 def downgrade():
     pass

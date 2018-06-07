@@ -126,7 +126,8 @@ class Face(db.Model):
     )
     original_image_id = db.Column(
         db.Integer,
-        db.ForeignKey('raw_images.id',
+        db.ForeignKey(
+            'raw_images.id',
             ondelete='SET NULL',
             onupdate='CASCADE',
             use_alter=True),

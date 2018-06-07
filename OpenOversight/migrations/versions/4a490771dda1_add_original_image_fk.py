@@ -7,7 +7,6 @@ Create Date: 2018-06-07 15:32:25.524117
 """
 from alembic import op
 import sqlalchemy as sa
-from app.models import Face
 
 
 # revision identifiers, used by Alembic.
