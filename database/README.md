@@ -6,7 +6,9 @@ Create with `OpenOversight/create_db.py`
 
 ## Database Diagram
 
-![](oodb_with_rawimg_table.jpg)
+![](relationships.real.large.png)
+
+See more detailed database schema information [here](https://disman.tl/oo-docs/).
 
 (if you want to nicely typeset this please do - and ideally in a way that enables us to easily make edits (e.g. LaTeX or graphviz))
 
