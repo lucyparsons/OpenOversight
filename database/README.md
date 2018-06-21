@@ -10,8 +10,6 @@ Create with `OpenOversight/create_db.py`
 
 See more detailed database schema information [here](https://disman.tl/oo-docs/).
 
-(if you want to nicely typeset this please do - and ideally in a way that enables us to easily make edits (e.g. LaTeX or graphviz))
-
 ## Populating from Raw Data
 
 Everything here assumes that you executed the ETL scripts in `etl` to load the raw data into `public`. Once you've done that you can get the data into the form that the webapp expects using the following scripts:
