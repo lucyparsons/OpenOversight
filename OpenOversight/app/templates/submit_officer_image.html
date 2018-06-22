@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/dropzone-override.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+   <div class="page-header">
+      <h1>Submit images <small>of {{ officer.full_name() }} in uniform. The officer's face, and either a badge number or name, should be clearly visible in each photograph.</small></h1>
+   </div>
+
+  <div class='header'>
+    <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
+  </div>
+  <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}" class="dropzone" id="my-cop-dropzone">
+  </form>
+    <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+      Done uploading images
+    </a>
+</div>
+
+{% endblock %}
+
+{% block js_footer %}
+  <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+  <script>
+  $(document).ready(function(){
+    Dropzone.options.myCopDropzone = {
+      url: "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
+      method: "POST",
+      uploadMultiple: false,
+      parallelUploads: 50,
+      acceptedFiles: "image/png, image/jpeg, image/gif, image/jpg",
+      maxFiles: 50,
+      init: function() {
+        this.on("error", function(file, responseText) {
+          file.previewTemplate.appendChild(document.createTextNode(responseText));
+        });
+      }
+    }
+
+  });
+  </script>
+{% endblock %}

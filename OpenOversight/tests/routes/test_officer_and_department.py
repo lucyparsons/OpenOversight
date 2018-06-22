@@ -889,6 +889,15 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
         assert officer.suffix == 'Jr'
 
 
+def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
+        rv = client.post(
+            url_for('main.upload', department_id=department.id, officer_id=department.officers[0])
+        )
+        assert rv.status_code == 403
+
 def test_officer_csv(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -1087,6 +1096,25 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
 
+def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
+        with current_app.test_request_context():
+            login_ac(client)
+            data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+            department = Department.query.filter_by(id=AC_DEPT).first()
+            officer = department.officers[4]
+            officer_face_count = officer.face.count()
+
+            mock = MagicMock(return_value=Image.query.first())
+            with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+                rv = client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert rv.status_code == 200
+                assert b'Success' in rv.data
+                # check that Face was added to database
+                assert officer.face.count() == officer_face_count + 1
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):
     with current_app.test_request_context():
