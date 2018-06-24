@@ -93,11 +93,11 @@ class AssignmentForm(Form):
 
 class DepartmentForm(Form):
     name = StringField(
-        'Full name of police department, e.g. Chicago Police Department',
+        'Full name of law enforcement agency, e.g. Chicago Police Department',
         default='', validators=[Regexp('\w*'), Length(max=255), DataRequired()]
     )
     short_name = StringField(
-        'Shortened acronym for police department, e.g. CPD',
+        'Shortened acronym for law enforcement agency, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
     submit = SubmitField(label='Add')
