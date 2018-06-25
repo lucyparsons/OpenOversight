@@ -765,6 +765,7 @@ class NoteApi(ModelView):
 
         return super(NoteApi, self).dispatch_request(*args, **kwargs)
 
+
 note_view = NoteApi.as_view('note_api')
 main.add_url_rule(
     '/officer/<int:officer_id>/note/new',
