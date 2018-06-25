@@ -113,7 +113,8 @@ class ModelView(MethodView):
         self.model(**form.data)
 
     def dispatch_request(self, *args, **kwargs):
-        end_of_url = request.url.split('/')[-1]
+        # isolate the method at the end of the url
+        end_of_url = request.url.split('/')[-1].split('?')[0]
         endings = ['edit', 'new', 'delete']
         meth = None
         for ending in endings:

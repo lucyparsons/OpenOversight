@@ -183,7 +183,7 @@
       </ul>
       {% if current_user.is_administrator
           or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-        <a href="{{ url_for('main.incident_api') + 'new' }}" class='btn btn-primary'>New Incident</a>
+        <a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
       {% endif %}
     </div>{# end col #}
   </div> {# end row #}
