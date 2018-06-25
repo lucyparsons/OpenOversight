@@ -434,3 +434,11 @@ def test_users_cannot_see_who_created_incidents(mockdata, client, session):
         login_ac(client)
         rv = client.get(url_for('main.incident_api', obj_id=1))
         assert 'Creator' not in rv.data
+
+
+def test_form_with_officer_id_prepopulates(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer_id = '1234'
+        rv = client.get(url_for('main.incident_api') + 'new?officer_id={}'.format(officer_id))
+        assert officer_id in rv.data

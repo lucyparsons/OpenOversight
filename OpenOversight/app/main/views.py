@@ -648,6 +648,9 @@ class IncidentApi(ModelView):
 
     def get_new_form(self):
         form = self.form()
+        if request.args.get('officer_id'):
+            form.officers[0].data = request.args.get('officer_id')
+
         for link in form.links:
             link.user_id.data = current_user.id
         return form
