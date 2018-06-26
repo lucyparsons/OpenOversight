@@ -40,7 +40,7 @@ function cloneFieldList(selector) {
 }
 
 
-/* This function checks if it is the last fieldset element in its parent. If it is, it copies itself before deleting, and sets a new click handler and text on the add button. If it has other fieldset siblings, it simply deletes itself. */
+/* This function checks if it is the last fieldset element in its parent. If it is, it removes all field values before hiding the element, and sets a new click handler and text on the add button. If it has other fieldset siblings, it simply deletes itself. */
 
 function removeParent(event) {
     event.preventDefault()
@@ -51,16 +51,21 @@ function removeParent(event) {
        previousElement.tagName === 'LEGEND' &&
        nextElement &&
        nextElement.tagName === 'BUTTON'){
-
-        var new_element = $(event.target.parentElement).clone(true)
-        var add_button = $(event.target.parentElement.nextElementSibling)
+        var $lastElement = $(event.target.parentElement)
+        // Remove any filled in values (but not the csrf token)
+        $lastElement.find(':input:not(:hidden)').each(function(child) {
+            $(this).val('')
+        });
+        $lastElement.hide()
+        var add_button = $(nextElement)
         var fieldsetName = $(previousElement).text().slice(0, -1)
+
         // Remove previous click handler
         add_button.off('click')
         add_button.text('New ' + fieldsetName)
         add_button.on('click', function(event) {
             event.preventDefault()
-            add_button.before(new_element);
+            $lastElement.show()
             // remove this click handler
             add_button.off('click')
             add_button.text('Add another ' + fieldsetName)
@@ -71,5 +76,4 @@ function removeParent(event) {
             });
         })
     }
-    event.target.parentElement.remove()
 }
