@@ -207,7 +207,6 @@ def filter_by_form(form, officer_query):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%PO%%'),
                    Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
     if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
@@ -215,7 +214,6 @@ def filter_by_form(form, officer_query):
                         'SUPT OF POLICE'):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
 
