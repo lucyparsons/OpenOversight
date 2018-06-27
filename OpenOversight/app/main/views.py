@@ -20,13 +20,13 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
-                     set_dynamic_default)
+                     set_dynamic_default, create_note)
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm)
+                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit, Incident, Location, LicensePlate, Link)
+                      Unit, Incident, Location, LicensePlate, Link, Note)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -317,7 +317,7 @@ def add_officer():
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
             abort(403)
     if form.validate_on_submit():
-        officer = add_officer_profile(form)
+        officer = add_officer_profile(form, current_user)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
@@ -730,4 +730,59 @@ main.add_url_rule(
 main.add_url_rule(
     '/incidents/<int:obj_id>/delete',
     view_func=incident_view,
+    methods=['GET', 'POST'])
+
+
+class NoteApi(ModelView):
+    model = Note
+    model_name = 'note'
+    order_by = 'date_created'
+    descending = True
+    form = NoteForm
+    create_function = create_note
+    department_check = True
+
+    def get_new_form(self):
+        form = self.form()
+        form.officer_id.data = self.officer_id
+        return form
+
+    def get_redirect_url(self, *args, **kwargs):
+        return redirect(url_for('main.officer_profile', officer_id=self.officer_id))
+
+    def get_post_delete_url(self, *args, **kwargs):
+        return self.get_redirect_url()
+
+    def get_edit_form(self, obj):
+        form = EditNoteForm(obj=obj)
+        return form
+
+    def get_department_id(self, obj):
+        return self.department_id
+
+    def dispatch_request(self, *args, **kwargs):
+        if 'officer_id' in kwargs:
+            officer = Officer.query.get_or_404(kwargs['officer_id'])
+            self.officer_id = kwargs.pop('officer_id')
+            self.department_id = officer.department_id
+
+        return super(NoteApi, self).dispatch_request(*args, **kwargs)
+
+
+note_view = NoteApi.as_view('note_api')
+main.add_url_rule(
+    '/officer/<int:officer_id>/note/new',
+    view_func=note_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/note/<int:obj_id>',
+    view_func=note_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/note/<int:obj_id>/edit',
+    view_func=note_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/note/<int:obj_id>/delete',
+    view_func=note_view,
     methods=['GET', 'POST'])

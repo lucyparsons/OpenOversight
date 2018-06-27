@@ -33,6 +33,19 @@ class Department(db.Model):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
 
+class Note(db.Model):
+    __tablename__ = 'notes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    note = db.Column(db.Text())
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    creator = db.relationship('User', backref='notes')
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer = db.relationship('Officer', back_populates='notes')
+    date_created = db.Column(db.DateTime)
+    date_updated = db.Column(db.DateTime)
+
+
 class Officer(db.Model):
     __tablename__ = 'officers'
 
@@ -54,6 +67,7 @@ class Officer(db.Model):
         secondary=officer_links,
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
+    notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
 
     def full_name(self):
         if self.middle_initial:

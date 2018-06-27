@@ -97,6 +97,7 @@
                   or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
               <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
                           assignment_id=assignment.id) }}">
+                <span class='sr-only'>Edit</span>
                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
               </a>
               {% endif %}
@@ -185,6 +186,36 @@
           or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
         <a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
       {% endif %}
+    </div>{# end col #}
+    {% if current_user.is_administrator
+                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <div class='col-sm-12 col-md-6'>
+        <h3>Notes</h3>
+        <ul class="list-group">
+          {% for note in officer.notes %}
+            <li class="list-group-item">
+                <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
+                {{ note.note }} <br/>
+                <em>{{ note.creator.username }} </em>
+              {% if note.creator_id == current_user.id or current_user.is_administrator %}
+                <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                          obj_id=note.id) + '/edit' }}">
+                  <span class='sr-only'>Edit</span>
+                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                          obj_id=note.id) + '/delete' }}">
+                  <span class='sr-only'>Delete</span>
+                  <i class="fa fa-trash-o" aria-hidden="true"></i>
+                </a>
+              </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
+      </div>
+    {% endif %}
     </div>{# end col #}
   </div> {# end row #}
   {% with obj=officer %}
