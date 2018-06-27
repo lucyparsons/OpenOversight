@@ -228,7 +228,7 @@ def filter_roster(form, officer_query):
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
         )
 
-    officer_query = officer_query.join(Assignment)
+    officer_query = officer_query.outerjoin(Assignment)
     if form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
