@@ -72,6 +72,17 @@ def test_filter_by_name(mockdata):
         assert 'J' in element.last_name
 
 
+def test_filters_do_not_exclude_officers_without_assignments(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer = OpenOversight.app.models.Officer(first_name='Rachel', last_name='S', department=department, birth_year=1992)
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': 'S', 'badge': '',
+         'dept': department}
+    )
+    assert officer in results
+
+
 def test_filter_by_badge_no(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
