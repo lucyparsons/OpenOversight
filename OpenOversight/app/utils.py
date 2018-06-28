@@ -210,7 +210,7 @@ def filter_by_form(form, officer_query):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.join(Assignment)
+    officer_query = officer_query.outerjoin(Assignment)
     if form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
@@ -220,7 +220,6 @@ def filter_by_form(form, officer_query):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%PO%%'),
                    Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
     if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
@@ -228,7 +227,6 @@ def filter_by_form(form, officer_query):
                         'SUPT OF POLICE'):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
 
@@ -243,7 +241,7 @@ def filter_roster(form, officer_query):
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
         )
 
-    officer_query = officer_query.join(Assignment)
+    officer_query = officer_query.outerjoin(Assignment)
     if form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
