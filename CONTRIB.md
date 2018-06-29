@@ -1,12 +1,12 @@
 # Contributing Guide
 
-First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.
+First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.  Please also read our [code of conduct](/CODE_OF_CONDUCT.md) before getting started.
 
 ## Submitting a PR
 
 When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
 
-Use `PULL_REQUEST_TEMPLATE.md` to create the description for your PR!
+Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
 
 ### Linting / Style Checks
 
