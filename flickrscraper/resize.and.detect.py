@@ -128,5 +128,5 @@ if __name__ == '__main__':
         max_results = '4'
         try:
             main(file, output, max_results)
-        except:
+        except:  # noqa
             os.remove(file)
