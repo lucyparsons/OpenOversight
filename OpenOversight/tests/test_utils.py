@@ -106,13 +106,13 @@ def test_s3_upload_png(mockdata):
     local_path = os.path.join(test_dir, '../app/static/images/test_cop1.png')
 
     mocked_connection = Mock()
+    mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
-        url = OpenOversight.app.utils.upload_file(local_path,
-                                                  'doesntmatter.png',
-                                                  'test_cop1.png')
-    assert 'https' in url
-    # url should show folder structure with first two chars as folder name
-    assert 'te/st' in url
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            OpenOversight.app.utils.upload_file(local_path,
+                                                'doesntmatter.png',
+                                                'test_cop1.png')
+
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/png'
 
 
@@ -121,10 +121,13 @@ def test_s3_upload_jpeg(mockdata):
     local_path = os.path.join(test_dir, '../app/static/images/test_cop5.jpg')
 
     mocked_connection = Mock()
+    mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
-        OpenOversight.app.utils.upload_file(local_path,
-                                            'doesntmatter.jpg',
-                                            'test_cop5.jpg')
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            OpenOversight.app.utils.upload_file(local_path,
+                                                'doesntmatter.jpg',
+                                                'test_cop5.jpg')
+
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/jpeg'
 
 
