@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import datetime
 import hashlib
 import random
@@ -174,10 +175,13 @@ def upload_file(safe_local_path, src_filename, dest_filename):
                           s3_path,
                           ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
-    url = "https://s3-{}.amazonaws.com/{}/{}".format(
-        current_app.config['AWS_DEFAULT_REGION'],
-        current_app.config['S3_BUCKET_NAME'], s3_path
-    )
+    config = s3_client._client_config
+    config.signature_version = botocore.UNSIGNED
+    url = boto3.resource(
+        's3', config=config).meta.client.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': current_app.config['S3_BUCKET_NAME'],
+                'Key': s3_path})
 
     return url
 
