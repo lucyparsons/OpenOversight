@@ -426,7 +426,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
                           new_filename)
         rm_dirs()
         # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
                           date_image_inserted=datetime.datetime.now(),
                           department_id=original_image.department_id,
                           # TODO: Get the following field from exif data
