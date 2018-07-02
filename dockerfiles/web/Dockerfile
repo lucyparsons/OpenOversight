@@ -3,15 +3,18 @@ FROM python:2
 WORKDIR /usr/src/app
 
 ENV DEBIAN-FRONTEND noninteractive
+ENV DISPLAY=:1
 RUN apt-get update && apt-get install -y xvfb firefox-esr
 
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
 RUN mkdir geckodriver
-RUN tar -xzf geckodriver-v0.19.1-linux64.tar.gz -C geckodriver
+RUN tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -r dev-requirements.txt
+
+RUN mkdir /var/www && chmod a+xw /var/www
 
 COPY create_db.py test_data.py /usr/src/app/
 EXPOSE 3000
