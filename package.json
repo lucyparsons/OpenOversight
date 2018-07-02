@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "repository": "https://github.com/lucyparsons/OpenOversight",
   "scripts": {
-    "build": "parcel build -d OpenOversight/app/static/dist OpenOversight/app/static/scss/*",
-    "watch": "parcel watch -d OpenOversight/app/static/dist OpenOversight/app/static/scss/*"
+    "build": "parcel build --cache-dir=/tmp -d OpenOversight/app/static/dist OpenOversight/app/static/scss/*",
+    "watch": "parcel watch --cache-dir=/tmp -d OpenOversight/app/static/dist OpenOversight/app/static/scss/*"
   },
   "devDependencies": {
     "bootstrap": "^4.1.1",
