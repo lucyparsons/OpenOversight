@@ -97,6 +97,11 @@ def assign_faces(officer, images):
 def populate():
     """ Populate database with test data"""
 
+    departments = models.Department.query.all()
+    if len(departments) > 0:
+        print('Test data already inserted, skipping...')
+        sys.exit(0)
+
     department1 = models.Department(name='Springfield Police Department',
                                     short_name='SPD')
     db.session.add(department1)

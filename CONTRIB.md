@@ -14,6 +14,33 @@ Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the descript
 
 ## Development Environment
 
+You can use our Docker or Vagrant/VirtualBox development environments.
+
+### Docker
+
+You will need to have Docker installed in order to use the Docker development environment.
+
+To build and run the development environment, simply `make dev`. Whenever you want to rebuild the containers, `make build` (you should need to do this rarely).
+
+Tests are executed via `make test`. If you're switching between the Docker and Vagrant/VirtualBox environments and having trouble getting tests running, make sure to delete any remaining `.pyc` files and `__pycache__` directories.
+
+To hop into the postgres container, you can do the following:
+
+```
+$ docker exec -it openoversight_postgres_1 /bin/bash
+# psql -d openoversight-dev -U openoversight
+```
+
+Similarly to hop into the web container:
+
+```
+$ docker exec -it openoversight_web_1 /bin/bash
+```
+
+Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
+
+### VirtualBox + Vagrant
+
 Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and VirtualBox installed to start out.
 
 * Install Vagrant: https://www.vagrantup.com/downloads.html
