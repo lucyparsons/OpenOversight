@@ -16,7 +16,7 @@ from flask import current_app, url_for
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link, Note)
+                     Incident, Location, LicensePlate, Link, Note, AutoFace)
 
 
 def set_dynamic_default(form_field, value):
@@ -190,7 +190,31 @@ def upload_file(safe_local_path, src_filename, dest_filename):
         Params={'Bucket': current_app.config['S3_BUCKET_NAME'],
                 'Key': s3_path})
 
-    return url
+    return url, s3_path
+
+
+def detect_faces_in_image(s3_path, image):
+    rekog_client = boto3.client('rekognition')
+
+    # worker needs to access app context to write to the database
+    from . import app  # noqa
+
+    with app.app_context():
+        response = rekog_client.detect_faces(
+            Image={'S3Object': {'Bucket': current_app.config['S3_BUCKET_NAME'],
+                   'Name': s3_path}}, Attributes=['ALL'])
+
+        for auto_detected_face in response['FaceDetails']:
+            autoface = AutoFace(
+                img_id=image.id,
+                face_top=auto_detected_face['BoundingBox']['Top'],
+                face_left=auto_detected_face['BoundingBox']['Left'],
+                face_width=auto_detected_face['BoundingBox']['Width'],
+                face_height=auto_detected_face['BoundingBox']['Height'])
+            db.session.add(autoface)
+            db.session.commit()
+
+    return 0
 
 
 def filter_by_form(form, officer_query):
