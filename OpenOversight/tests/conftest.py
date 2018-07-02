@@ -240,7 +240,7 @@ def browser(app, request):
     # start headless webdriver
     vdisplay = Xvfb()
     vdisplay.start()
-    driver = webdriver.Firefox()
+    driver = webdriver.Firefox(log_path='/tmp/geckodriver.log')
     # wait for browser to start up
     time.sleep(3)
     yield driver
