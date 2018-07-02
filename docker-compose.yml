@@ -33,6 +33,8 @@ services:
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
      - cache_dir:/usr/src/app/.cache
+     - /usr/src/app/.cache/
+     - /usr/src/app/OpenOversight/static/dist/
    links:
      - postgres:postgres
    expose:
