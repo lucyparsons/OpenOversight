@@ -148,6 +148,21 @@ class Face(db.Model):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
 
 
+class AutoFace(db.Model):
+    __tablename__ = 'detected_faces'
+
+    id = db.Column(db.Integer, primary_key=True)
+    img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
+    face_top = db.Column(db.Float, unique=False)
+    face_left = db.Column(db.Float, unique=False)
+    face_width = db.Column(db.Float, unique=False)
+    face_height = db.Column(db.Float, unique=False)
+    image = db.relationship('Image', backref='autofaces')
+
+    def __repr__(self):
+        return '<AutoFace ID {}: {}>'.format(self.id, self.img_id)
+
+
 class Image(db.Model):
     __tablename__ = 'raw_images'
 
