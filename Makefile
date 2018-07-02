@@ -18,6 +18,10 @@ create_db: start
 	## Creating database
 	docker-compose run --rm web /usr/local/bin/python ../create_db.py
 
+.PHONY: assets
+assets:
+	yarn build
+
 .PHONY: dev
 dev: build start create_db populate
 
@@ -38,12 +42,16 @@ test: start  ## Run tests
 	    else FLASK_ENV=testing docker-compose run --rm web /usr/local/bin/pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
+.PHONY: cleanassets
+cleanassets:
+	rm -rf ./OpenOversight/app/static/dist/*
+
 .PHONY: stop
 stop:  ## Stop containers
 	docker-compose stop
 
 .PHONY: clean
-clean: stop  ## Remove containers
+clean: cleanassets stop  ## Remove containers
 	docker-compose rm -f
 
 .PHONY: clean_all

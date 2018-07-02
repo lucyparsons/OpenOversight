@@ -1,5 +1,7 @@
 version: "3"
 
+volumes:
+   cache_dir:
 services:
  postgres:
    restart: always
@@ -17,6 +19,8 @@ services:
    restart: always
    build:
       context: .
+      args:
+      - DOCKER_BUILD_ENV
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
@@ -25,12 +29,14 @@ services:
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      FLASK_APP: app
      FLASK_ENV: "${FLASK_ENV:-development}"
+     HMR: 1
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+     - cache_dir:/usr/src/app/.cache
    links:
      - postgres:postgres
    expose:
      - "3000"
-   command: flask run --host=0.0.0.0 --port=3000
+   command: scripts/entrypoint.sh
    ports:
      - "3000:3000"

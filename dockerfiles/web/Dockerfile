@@ -11,15 +11,31 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_
 RUN mkdir geckodriver
 RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
+RUN apt-get update && apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get install -y nodejs
+RUN npm install -g yarn
+
+RUN pip install --no-cache-dir virtualenv
+RUN virtualenv /ve
+ENV PATH=/ve/bin:$PATH
+
+RUN mkdir /var/www ./node_modules; chown -R www-data /var/www /ve ./node_modules
+
+USER www-data
+
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 RUN pip3 install --no-cache-dir -r dev-requirements.txt
 
-RUN mkdir /var/www && chmod a+xw /var/www
+ARG DOCKER_BUILD_ENV
+RUN test "${DOCKER_BUILD_ENV}" = production || pip install --no-cache-dir -r dev-requirements.txt
+
+COPY package.json yarn.lock /usr/src/app/
+RUN yarn
 
 COPY create_db.py test_data.py /usr/src/app/
 EXPOSE 3000
-USER www-data
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
