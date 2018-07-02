@@ -115,12 +115,29 @@ class Face(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
-    img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
+    img_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'raw_images.id',
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+            name='fk_face_image_id',
+            use_alter=True),
+    )
+    original_image_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'raw_images.id',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+            use_alter=True),
+        name='fk_face_original_image_id')
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship('Image', backref='faces')
+    image = db.relationship('Image', backref='faces', foreign_keys=[img_id])
+    original_image = db.relationship('Image', backref='tags', foreign_keys=[original_image_id], lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
 

@@ -166,8 +166,8 @@ def mockdata(session, request):
 
     unit1 = models.Unit(descrip="test")
 
-    test_images = [models.Image(filepath='static/images/test_cop{}.png'.format(x), department_id=1) for x in range(5)] + \
-        [models.Image(filepath='static/images/test_cop{}.png'.format(x), department_id=2) for x in range(5)]
+    test_images = [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
+        [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
 
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
     session.add_all(officers)

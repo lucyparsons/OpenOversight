@@ -20,7 +20,9 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note)
+                     set_dynamic_default, create_note,
+                     get_uploaded_cropped_image)
+
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
@@ -443,16 +445,26 @@ def label_data(department_id=None, image_id=None):
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
         elif not existing_tag:
-            new_tag = Face(officer_id=form.officer_id.data,
-                           img_id=form.image_id.data,
-                           face_position_x=form.dataX.data,
-                           face_position_y=form.dataY.data,
-                           face_width=form.dataWidth.data,
-                           face_height=form.dataHeight.data,
-                           user_id=current_user.id)
-            db.session.add(new_tag)
-            db.session.commit()
-            flash('Tag added to database')
+            left = form.dataX.data
+            upper = form.dataY.data
+            right = left + form.dataWidth.data
+            lower = upper + form.dataHeight.data
+            cropped_image = get_uploaded_cropped_image(image, (left, upper, right, lower))
+
+            if cropped_image:
+                new_tag = Face(officer_id=form.officer_id.data,
+                               img_id=cropped_image.id,
+                               original_image_id=image.id,
+                               face_position_x=left,
+                               face_position_y=upper,
+                               face_width=form.dataWidth.data,
+                               face_height=form.dataHeight.data,
+                               user_id=current_user.id)
+                db.session.add(new_tag)
+                db.session.commit()
+                flash('Tag added to database')
+            else:
+                flash('There was a problem saving this tag. Please try again later.')
         else:
             flash('Tag already exists between this officer and image! Tag not added.')
 

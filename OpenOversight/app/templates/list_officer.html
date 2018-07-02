@@ -28,18 +28,7 @@
       <li class="list-group-item">
           <div class="row">
             <div class="col-md-6 col-xs-12">
-              {% if officer.face.first().face_position_x %}
-              <div class="img-responsive thumbnail"
-                   style="background-image: url({{ officer_image }});
-                          background-repeat: no-repeat;
-                          background-position: -{{ officer.face.first().face_position_x }}px -{{ officer.face.first().face_position_y }}px;
-                          width: {{ officer.face.first().face_width }}px;
-                          height: {{ officer.face.first().face_height }}px;"
-                          alt="{% include 'partials/officer_name.html' %}">
-              </div>
-              {% else %}
               <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
-              {% endif %}
             </div>
             <div class="col-md-6 col-xs-12">
               <h2>

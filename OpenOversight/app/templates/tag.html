@@ -12,12 +12,7 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-6 col-md-4">
-      <div style="background-image: url({{ path }});
-                  background-repeat: no-repeat;
-                  background-position: -{{ face.face_position_x }}px -{{ face.face_position_y }}px;
-                  width: {{ face.face_width }}px;
-                  height: {{ face.face_height }}px;">
-      </div>
+      <img src="{{ face.image.filepath }}" />
       <br>
     </div>
   </div>
