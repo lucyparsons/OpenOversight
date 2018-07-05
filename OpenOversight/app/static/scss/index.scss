@@ -1,14 +1,15 @@
-$body-bg: #000;
+$body-bg: #fff;
 $body-color: #111;
+$navbar-link-color: #000;
 
-// Required
-@import "node_modules/bootstrap/scss/functions";
-@import "node_modules/bootstrap/scss/variables";
-@import "node_modules/bootstrap/scss/mixins";
+$navbar-default-bg: #fff;
+$navbar-default-border: #fff;
+$navbar-default-toggle-border-color: #333333;
+$navbar-default-toggle-icon-bar-bg: #333333;
+$navbar-default-toggle-hover-bg: #D3D3D3;
 
-// Optional
-@import "node_modules/bootstrap/scss/reboot";
-@import "node_modules/bootstrap/scss/type";
-@import "node_modules/bootstrap/scss/images";
-@import "node_modules/bootstrap/scss/code";
-@import "node_modules/bootstrap/scss/grid";
+@import "bootstrap";
+
+.navbar-link {
+  color: $navbar-link-color;
+}

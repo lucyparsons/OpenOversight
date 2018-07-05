@@ -21,6 +21,8 @@ RUN virtualenv /ve
 ENV PATH=/ve/bin:$PATH
 
 RUN mkdir /var/www ./node_modules; chown -R www-data /var/www /ve ./node_modules
+COPY yarn.lock /usr/src/app/
+RUN chown www-data yarn.lock
 
 USER www-data
 
@@ -43,4 +45,4 @@ ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres
 
 WORKDIR /usr/src/app/OpenOversight
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:3000", "--timeout", "90", "app:app"]
+CMD ["scripts/entrypoint.sh"]
