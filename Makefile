@@ -1,6 +1,6 @@
 .PHONY: default build run
 
-default: dev build start clean test stop
+default: dev build start test stop clean
 
 dev:
 	make build
