@@ -21,8 +21,10 @@ RUN virtualenv /ve
 ENV PATH=/ve/bin:$PATH
 
 RUN mkdir /var/www ./node_modules; chown -R www-data /var/www /ve ./node_modules
+RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
-RUN chown www-data yarn.lock
+RUN chown www-data yarn.lock yarn-error.log
+RUN chmod -R 777 /usr/src/app/
 
 USER www-data
 
@@ -33,7 +35,8 @@ RUN pip3 install --no-cache-dir -r dev-requirements.txt
 ARG DOCKER_BUILD_ENV
 RUN test "${DOCKER_BUILD_ENV}" = production || pip install --no-cache-dir -r dev-requirements.txt
 
-COPY package.json yarn.lock /usr/src/app/
+CMD ["/bin/bash"]
+COPY package.json /usr/src/app/
 RUN yarn
 
 COPY create_db.py test_data.py /usr/src/app/
