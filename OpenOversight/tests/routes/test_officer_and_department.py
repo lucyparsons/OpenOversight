@@ -3,11 +3,13 @@ import json
 import pytest
 import random
 from datetime import datetime
+from io import BytesIO
+from mock import patch, MagicMock
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
-from .route_helpers import login_admin, login_ac, process_form_data
+from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
@@ -17,7 +19,7 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           LocationForm, LicensePlateForm,
                                           BrowseForm, SalaryForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary, Job
+from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary, Job, Image
 
 
 @pytest.mark.parametrize("route", [
@@ -894,7 +896,7 @@ def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(mockdata, clie
         login_ac(client)
         department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
         rv = client.post(
-            url_for('main.upload', department_id=department.id, officer_id=department.officers[0])
+            url_for('main.upload', department_id=department.id, officer_id=department.officers[0].id)
         )
         assert rv.status_code == 403
 
@@ -1055,6 +1057,97 @@ def test_browse_filtering_allows_good(client, mockdata, session):
                               department=department_id,
                               birth_year=1990,
                               links=links)
+def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[0]
+        officer_face_count = officer.face.count()
+
+        mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+            assert rv.status_code == 200
+            assert 'Success' in rv.data
+            # check that Face was added to database
+            assert officer.face.count() == officer_face_count + 1
+
+
+def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        mock = MagicMock(return_value=Image.query.first())
+        officer = department.officers[0]
+        officer_face_count = officer.face.count()
+        with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+            assert rv.status_code == 200
+            assert 'Success' in rv.data
+            # check that Face was added to database
+            assert officer.face.count() == officer_face_count + 1
+
+
+def test_upload_photo_sends_500_on_s3_error(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        mock = MagicMock(return_value=None)
+        officer = department.officers[0]
+        officer_face_count = officer.face.count()
+        with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+            assert rv.status_code == 500
+            assert 'error' in rv.data
+            # check that Face was not added to database
+            assert officer.face.count() == officer_face_count
+
+
+def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[0]
+        mock = MagicMock(return_value=False)
+        with patch('OpenOversight.app.main.views.allowed_file', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+        assert rv.status_code == 415
+        assert 'not allowed' in rv.data
+
+
+def test_user_cannot_upload_officer_photo(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[0]
+        rv = client.post(
+            url_for('main.upload', department_id=department.id, officer_id=officer.id),
+            content_type='multipart/form-data',
+            data=data
+        )
+        assert rv.status_code == 403
+        assert 'not authorized' in rv.data
 
         data = process_form_data(form.data)
 
