@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.dirname(current_app.root_path))
 
 from app.models import Face, db  # noqa: E402
-from app.utils import get_uploaded_cropped_image  # noqa: E402
+from app.utils import get_uploaded_image  # noqa: E402
 
 
 # revision identifiers, used by Alembic.
@@ -32,7 +32,7 @@ def upgrade():
                 right = left + face.face_width
                 lower = upper + face.face_height
 
-                cropped_image = get_uploaded_cropped_image(face.image, (left, upper, right, lower))
+                cropped_image = get_uploaded_image(face.image, (left, upper, right, lower))
 
                 new_face = Face(
                     officer_id=face.officer_id,

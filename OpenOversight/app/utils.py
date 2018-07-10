@@ -13,6 +13,7 @@ import random
 import sys
 import tempfile
 from traceback import format_exc
+from werkzeug import secure_filename
 
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
@@ -23,6 +24,9 @@ from PIL import Image as Pimage
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
 from .main.choices import RACE_CHOICES, GENDER_CHOICES
+
+# Ensure the file is read/write by the creator only
+SAVED_UMASK = os.umask(0o077)
 
 
 def set_dynamic_default(form_field, value):
@@ -436,31 +440,41 @@ def create_description(self, form):
         date_updated=datetime.datetime.now())
 
 
-def get_uploaded_cropped_image(original_image, crop_data):
+def get_uploaded_image(image, crop_data=None, department_id=None):
     """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
 
     tmpdir = tempfile.mkdtemp()
-    original_filename = original_image.filepath.split('/')[-1]
-    safe_local_path0 = os.path.join(tmpdir, original_filename)
-    # get the original image and save it locally
-    urlretrieve(original_image.filepath, safe_local_path0)
-    pimage = Pimage.open(safe_local_path0)
-    SIZE = 300, 300
-    cropped_image = pimage.crop(crop_data)
-    cropped_image.thumbnail(SIZE)
+    # if there is cropdata, we're receiving an image object
+    if crop_data:
+        filename = image.filepath.split('/')[-1]
+    else:
+        filename = secure_filename(image.filename)
+        image_data = image.read()
 
-    tmp_filename = '{}{}'.format(datetime.datetime.now(), original_filename)
-    safe_local_path = os.path.join(tmpdir, tmp_filename)
+    safe_local_path = os.path.join(tmpdir, filename)
+
+    if crop_data:
+        urllib.urlretrieve(image.filepath, safe_local_path)
+    else:
+        with open(safe_local_path, 'w') as tmp:
+            tmp.write(image_data)
+            os.umask(SAVED_UMASK)
 
     def rm_dirs():
-        os.remove(safe_local_path0)
         os.remove(safe_local_path)
         os.rmdir(tmpdir)
 
-    # TODO: For faster implementation,
-    # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
-    cropped_image.save(fp=safe_local_path)
-    file = open(safe_local_path, 'rb')
+    if crop_data:
+        pimage = Pimage.open(safe_local_path)
+        SIZE = 300, 300
+        cropped_image = pimage.crop(crop_data)
+        cropped_image.thumbnail(SIZE)
+
+        # TODO: For faster implementation,
+        # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
+        cropped_image.save(fp=safe_local_path)
+
+    file = open(safe_local_path)
 
     # See if there is a matching photo already in the db
     hash_img = compute_hash(file.read())
@@ -470,20 +484,29 @@ def get_uploaded_cropped_image(original_image, crop_data):
         return hash_found
 
     # Generate new filename
-    file_extension = original_filename.split('.')[-1]
+    file_extension = filename.split('.')[-1]
     new_filename = '{}.{}'.format(hash_img, file_extension)
 
     # Upload file from local filesystem to S3 bucket and delete locally
     try:
-        url = upload_file(safe_local_path, original_filename,
+        url = upload_file(safe_local_path, filename,
                           new_filename)
         rm_dirs()
         # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
-                          date_image_inserted=datetime.datetime.now(),
-                          department_id=original_image.department_id,
-                          # TODO: Get the following field from exif data
-                          date_image_taken=original_image.date_image_taken)
+        # If we're cropping an image, get data from the original image,
+        # else, use data given to us.
+        if crop_data:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=image.department_id,
+                              date_image_taken=image.date_image_taken)
+        else:
+            new_image = Image(filepath=url, hash_img=hash_img,
+                              is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif datas
+                              date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
         db.session.commit()
         return new_image

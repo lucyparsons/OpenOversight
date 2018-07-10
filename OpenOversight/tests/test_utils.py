@@ -172,36 +172,36 @@ def test_unit_choices(mockdata):
 
 # Mock calls to upload_file
 @patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_get_uploaded_cropped_image_new_tag(mockdata):
+def test_get_uploaded_image_new_tag(mockdata):
     original_image = Image.query.first()
 
     # gives the correct local path so that Pimage can open the image
     original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
     original_image_count = Image.query.count()
-    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+    cropped_image = OpenOversight.app.utils.get_uploaded_image(original_image, (20, 50, 200, 200))
 
     assert type(cropped_image) == Image
     assert Image.query.count() == original_image_count + 1
 
 
 @patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_get_uploaded_cropped_image_existing_tag(mockdata):
+def test_get_uploaded_image_existing_tag(mockdata):
     original_image = Image.query.first()
     # gives the correct local path so that Pimage can open the image
     original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
 
-    first_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
-    second_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+    first_crop = OpenOversight.app.utils.get_uploaded_image(original_image, (20, 50, 200, 200))
+    second_crop = OpenOversight.app.utils.get_uploaded_image(original_image, (20, 50, 200, 200))
 
     assert first_crop.id == second_crop.id
 
 
 @patch('OpenOversight.app.utils.upload_file', MagicMock(side_effect=ValueError('foo')))
-def test_get_uploaded_cropped_image_s3_error(mockdata):
+def test_get_uploaded_image_s3_error(mockdata):
     original_image = Image.query.first()
     original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
 
-    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+    cropped_image = OpenOversight.app.utils.get_uploaded_image(original_image, (20, 50, 200, 200))
 
     assert cropped_image is None
 
