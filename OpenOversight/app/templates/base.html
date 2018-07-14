@@ -19,10 +19,6 @@
     <!-- Font Awesome -->
     <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
 
-    {% for item in jsloads %}
-    <script src="{{ url_for('static', filename=item) }}"></script>
-    {% endfor %}
-
     {% block head %}{% endblock %}
   </head>
 
