@@ -205,10 +205,11 @@ class Location(db.Model):
 
     @validates('zip_code')
     def validate_zip_code(self, key, zip_code):
-        zip_re = r'^\d{5}$'
-        if not re.match(zip_re, zip_code):
-            raise ValueError('Not a valid zip code')
-        return zip_code
+        if zip_code:
+            zip_re = r'^\d{5}$'
+            if not re.match(zip_re, zip_code):
+                raise ValueError('Not a valid zip code')
+            return zip_code
 
     @validates('state')
     def validate_state(self, key, state):
