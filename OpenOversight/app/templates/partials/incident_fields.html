@@ -4,10 +4,12 @@
 			<td><strong>Date</strong></td>
 			<td>{{ incident.date.strftime('%b %d, %Y %l:%M %p') }}</td>
 		</tr>
+		{% if incident.report_number %}
 		<tr>
 			<td><strong>Report #</strong></td>
 			<td>{{ incident.report_number }}</td>
 		</tr>
+		{% endif %}
 		<tr>
 			<td><strong>Department</strong></td>
 			<td>{{ incident.department.name }}</td>
@@ -50,7 +52,7 @@
 								 <em>near</em> {{ address.cross_street1 }}
 							{% endif %}
 							<br/>
-							{{ address.city }}, {{ address.state }} {{ address.zip_code }}
+							{{ address.city }}, {{ address.state }} {% if address.zipcode %} {{ address.zip_code }} {% endif %}
 						</td>
 				</tr>
 			{% endif %}
