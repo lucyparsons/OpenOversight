@@ -1,14 +1,22 @@
 import boto3
+import botocore
 import datetime
 import hashlib
+import os
 import random
+import sys
+import tempfile
+import urllib
+from traceback import format_exc
+
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
+from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link)
+                     Incident, Location, LicensePlate, Link, Note)
 
 
 def set_dynamic_default(form_field, value):
@@ -74,7 +82,7 @@ def edit_existing_assignment(assignment, form):
     return assignment
 
 
-def add_officer_profile(form):
+def add_officer_profile(form, current_user):
     officer = Officer(first_name=form.first_name.data,
                       last_name=form.last_name.data,
                       middle_initial=form.middle_initial.data,
@@ -84,6 +92,7 @@ def add_officer_profile(form):
                       employment_date=form.employment_date.data,
                       department_id=form.department.data.id)
     db.session.add(officer)
+    db.session.commit()
 
     if form.unit.data:
         officer_unit = form.unit.data.id
@@ -95,6 +104,7 @@ def add_officer_profile(form):
                             rank=form.rank.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
+    db.session.add(assignment)
     if form.links.data:
         for link in form.data['links']:
             # don't try to create with a blank string
@@ -102,7 +112,18 @@ def add_officer_profile(form):
                 li, _ = get_or_create(db.session, Link, **link)
                 if li:
                     officer.links.append(li)
-    db.session.add(assignment)
+    if form.notes.data:
+        for note in form.data['notes']:
+            # don't try to create with a blank string
+            if note['note']:
+                new_note = Note(
+                    note=note['note'],
+                    user_id=current_user.id,
+                    officer=officer,
+                    date_created=datetime.datetime.now(),
+                    date_updated=datetime.datetime.now())
+                db.session.add(new_note)
+
     db.session.commit()
     return officer
 
@@ -161,10 +182,13 @@ def upload_file(safe_local_path, src_filename, dest_filename):
                           s3_path,
                           ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
-    url = "https://s3-{}.amazonaws.com/{}/{}".format(
-        current_app.config['AWS_DEFAULT_REGION'],
-        current_app.config['S3_BUCKET_NAME'], s3_path
-    )
+    config = s3_client._client_config
+    config.signature_version = botocore.UNSIGNED
+    url = boto3.resource(
+        's3', config=config).meta.client.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': current_app.config['S3_BUCKET_NAME'],
+                'Key': s3_path})
 
     return url
 
@@ -197,7 +221,7 @@ def filter_by_form(form, officer_query):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.join(Assignment)
+    officer_query = officer_query.outerjoin(Assignment)
     if form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
@@ -207,7 +231,6 @@ def filter_by_form(form, officer_query):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%PO%%'),
                    Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
     if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
@@ -215,7 +238,6 @@ def filter_by_form(form, officer_query):
                         'SUPT OF POLICE'):
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == None,  # noqa
                    Assignment.rank == 'Not Sure')  # noqa
         )
 
@@ -230,7 +252,7 @@ def filter_roster(form, officer_query):
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
         )
 
-    officer_query = officer_query.join(Assignment)
+    officer_query = officer_query.outerjoin(Assignment)
     if form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
@@ -349,3 +371,74 @@ def create_incident(self, form):
         report_number=form.data['report_number'],
         license_plates=fields['license_plates'],
         links=fields['links'])
+
+
+def create_note(self, form):
+    return Note(
+        note=form.note.data,
+        creator_id=form.creator_id.data,
+        officer_id=form.officer_id.data,
+        date_created=datetime.datetime.now(),
+        date_updated=datetime.datetime.now())
+
+
+def get_uploaded_cropped_image(original_image, crop_data):
+    """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
+
+    tmpdir = tempfile.mkdtemp()
+    original_filename = original_image.filepath.split('/')[-1]
+    safe_local_path0 = os.path.join(tmpdir, original_filename)
+    # get the original image and save it locally
+    urllib.urlretrieve(original_image.filepath, safe_local_path0)
+    # import pdb; pdb.set_trace()
+    pimage = Pimage.open(safe_local_path0)
+    SIZE = 300, 300
+    cropped_image = pimage.crop(crop_data)
+    cropped_image.thumbnail(SIZE)
+
+    tmp_filename = '{}{}'.format(datetime.datetime.now(), original_filename)
+    safe_local_path = os.path.join(tmpdir, tmp_filename)
+
+    def rm_dirs():
+        os.remove(safe_local_path0)
+        os.remove(safe_local_path)
+        os.rmdir(tmpdir)
+
+    # TODO: For faster implementation,
+    # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
+    cropped_image.save(fp=safe_local_path)
+    file = open(safe_local_path)
+
+    # See if there is a matching photo already in the db
+    hash_img = compute_hash(file.read())
+    hash_found = Image.query.filter_by(hash_img=hash_img).first()
+    if hash_found:
+        rm_dirs()
+        return hash_found
+
+    # Generate new filename
+    file_extension = original_filename.split('.')[-1]
+    new_filename = '{}.{}'.format(hash_img, file_extension)
+
+    # Upload file from local filesystem to S3 bucket and delete locally
+    try:
+        url = upload_file(safe_local_path, original_filename,
+                          new_filename)
+        rm_dirs()
+        # Update the database to add the image
+        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
+                          date_image_inserted=datetime.datetime.now(),
+                          department_id=original_image.department_id,
+                          # TODO: Get the following field from exif data
+                          date_image_taken=original_image.date_image_taken)
+        db.session.add(new_image)
+        db.session.commit()
+        return new_image
+    except:  # noqa
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error uploading to S3: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc(full_tback)])
+        ))
+        rm_dirs()
+        return None

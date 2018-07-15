@@ -1,6 +1,7 @@
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 import os
 import OpenOversight
+from OpenOversight.app.models import Image
 
 
 # Utils tests
@@ -72,6 +73,17 @@ def test_filter_by_name(mockdata):
         assert 'J' in element.last_name
 
 
+def test_filters_do_not_exclude_officers_without_assignments(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer = OpenOversight.app.models.Officer(first_name='Rachel', last_name='S', department=department, birth_year=1992)
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': 'S', 'badge': '',
+         'dept': department}
+    )
+    assert officer in results
+
+
 def test_filter_by_badge_no(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
@@ -95,13 +107,13 @@ def test_s3_upload_png(mockdata):
     local_path = os.path.join(test_dir, '../app/static/images/test_cop1.png')
 
     mocked_connection = Mock()
+    mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
-        url = OpenOversight.app.utils.upload_file(local_path,
-                                                  'doesntmatter.png',
-                                                  'test_cop1.png')
-    assert 'https' in url
-    # url should show folder structure with first two chars as folder name
-    assert 'te/st' in url
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            OpenOversight.app.utils.upload_file(local_path,
+                                                'doesntmatter.png',
+                                                'test_cop1.png')
+
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/png'
 
 
@@ -110,10 +122,13 @@ def test_s3_upload_jpeg(mockdata):
     local_path = os.path.join(test_dir, '../app/static/images/test_cop5.jpg')
 
     mocked_connection = Mock()
+    mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
-        OpenOversight.app.utils.upload_file(local_path,
-                                            'doesntmatter.jpg',
-                                            'test_cop5.jpg')
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            OpenOversight.app.utils.upload_file(local_path,
+                                                'doesntmatter.jpg',
+                                                'test_cop5.jpg')
+
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/jpeg'
 
 
@@ -135,3 +150,39 @@ def test_user_cannot_submit_invalid_file_extension(mockdata):
 def test_unit_choices(mockdata):
     unit_choices = [str(x) for x in OpenOversight.app.utils.unit_choices()]
     assert 'Unit: Bureau of Organized Crime' in unit_choices
+
+
+# Mock calls to upload_file
+@patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_get_uploaded_cropped_image_new_tag(mockdata):
+    original_image = Image.query.first()
+
+    # gives the correct local path so that Pimage can open the image
+    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+    original_image_count = Image.query.count()
+    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+
+    assert type(cropped_image) == Image
+    assert Image.query.count() == original_image_count + 1
+
+
+@patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_get_uploaded_cropped_image_existing_tag(mockdata):
+    original_image = Image.query.first()
+    # gives the correct local path so that Pimage can open the image
+    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+
+    first_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+    second_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+
+    assert first_crop.id == second_crop.id
+
+
+@patch('OpenOversight.app.utils.upload_file', MagicMock(side_effect=ValueError('foo')))
+def test_get_uploaded_cropped_image_s3_error(mockdata):
+    original_image = Image.query.first()
+    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+
+    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+
+    assert cropped_image is None

@@ -93,11 +93,11 @@ class AssignmentForm(Form):
 
 class DepartmentForm(Form):
     name = StringField(
-        'Full name of police department, e.g. Chicago Police Department',
+        'Full name of law enforcement agency, e.g. Chicago Police Department',
         default='', validators=[Regexp('\w*'), Length(max=255), DataRequired()]
     )
     short_name = StringField(
-        'Shortened acronym for police department, e.g. CPD',
+        'Shortened acronym for law enforcement agency, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
     submit = SubmitField(label='Add')
@@ -130,6 +130,19 @@ class LinkForm(Form):
         return success
 
 
+class BaseNoteForm(Form):
+    note = TextAreaField()
+
+
+class EditNoteForm(BaseNoteForm):
+    submit = SubmitField(label='Submit')
+
+
+class NoteForm(EditNoteForm):
+    officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
+    creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+
+
 class AddOfficerForm(Form):
     first_name = StringField('First name', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
@@ -158,6 +171,13 @@ class AddOfficerForm(Form):
         description='Links to articles about or videos of the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
+    notes = FieldList(FormField(
+        BaseNoteForm,
+        widget=FormFieldWidget()),
+        description='This note about the officer will be attributed to your username.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+
     submit = SubmitField(label='Add')
 
 
@@ -185,7 +205,7 @@ class EditOfficerForm(Form):
     links = FieldList(FormField(
         LinkForm,
         widget=FormFieldWidget()),
-        description='Links to articles about or videos of the incident.',
+        description='Links to articles about or videos of the officer.',
         min_entries=1,
         widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
@@ -203,12 +223,18 @@ class AddUnitForm(Form):
 
 
 class DateFieldForm(Form):
-    date_field = DateField('Date', validators=[Required()])
-    time_field = TimeField('Time')
+    date_field = DateField('Date <span class="text-danger">*</span>', validators=[Required()])
+    time_field = TimeField('Time', validators=[Optional()])
 
     @property
     def datetime(self):
-        return datetime.datetime.combine(self.date_field.data, self.time_field.data)
+        if self.time_field.data:
+            return datetime.datetime.combine(self.date_field.data,
+                                             self.time_field.data)
+        else:  # Code these events at a precise time so we can find them later
+            coded_no_time = datetime.time(1, 2, 3, 45678)
+            return datetime.datetime.combine(self.date_field.data,
+                                             coded_no_time)
 
     @datetime.setter
     def datetime(self, value):
@@ -225,13 +251,15 @@ class DateFieldForm(Form):
 
 
 class LocationForm(Form):
-    street_name = StringField(validators=[Required()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
-    cross_street1 = StringField(validators=[Required()], description="Closest cross street to where incident occurred.")
+    street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
+    cross_street1 = StringField(validators=[Optional()], description="Closest cross street to where incident occurred.")
     cross_street2 = StringField(validators=[Optional()])
-    city = StringField(validators=[Required()])
-    state = SelectField('State', choices=STATE_CHOICES,
+    city = StringField('City <span class="text-danger">*</span>', validators=[Required()])
+    state = SelectField('State <span class="text-danger">*</span>', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES))])
-    zip_code = StringField('Zip Code', validators=[Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
+    zip_code = StringField('Zip Code',
+                           validators=[Optional(),
+                                       Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
 
 
 class LicensePlateForm(Form):
@@ -256,11 +284,11 @@ class OfficerIdField(StringField):
 
 class IncidentForm(DateFieldForm):
     report_number = StringField(
-        validators=[Required(), Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
+        validators=[Regexp(r'^[a-zA-Z0-9-]*$', message="Report numbers can contain letters, numbers, and dashes")],
         description='Incident number for the organization tracking incidents')
     description = TextAreaField(validators=[Optional()])
     department = QuerySelectField(
-        'Department',
+        'Department <span class="text-danger">*</span>',
         validators=[Required()],
         query_factory=dept_choices,
         get_label='name')

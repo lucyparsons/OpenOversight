@@ -97,11 +97,16 @@ def assign_faces(officer, images):
 def populate():
     """ Populate database with test data"""
 
+    departments = models.Department.query.all()
+    if len(departments) > 0:
+        print('Test data already inserted, skipping...')
+        sys.exit(0)
+
     department1 = models.Department(name='Springfield Police Department',
-                                   short_name='SPD')
+                                    short_name='SPD')
     db.session.add(department1)
     department2 = models.Department(name='Gotham Police Department',
-                                   short_name='GPD')
+                                    short_name='GPD')
     db.session.add(department2)
     db.session.commit()
 
@@ -206,6 +211,7 @@ if __name__ == "__main__":
         try:
             cleanup()
             print("[*] Completed successfully!")
-        except:
+        except Exception as e:
             print("[!] Encountered an unknown issue, exiting.")
+            print(e)
             sys.exit(1)

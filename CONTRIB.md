@@ -1,18 +1,45 @@
 # Contributing Guide
 
-First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.
+First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.  Please also read our [code of conduct](/CODE_OF_CONDUCT.md) before getting started.
 
 ## Submitting a PR
 
 When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
 
-Use `PULL_REQUEST_TEMPLATE.md` to create the description for your PR!
+Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
 
 ### Linting / Style Checks
 
  `flake8` is a tool for automated linting and style checks. Be sure to run `flake8` and fix any errors before submitting a PR.
 
 ## Development Environment
+
+You can use our Docker or Vagrant/VirtualBox development environments.
+
+### Docker
+
+You will need to have Docker installed in order to use the Docker development environment.
+
+To build and run the development environment, simply `make dev`. Whenever you want to rebuild the containers, `make build` (you should need to do this rarely).
+
+Tests are executed via `make test`. If you're switching between the Docker and Vagrant/VirtualBox environments and having trouble getting tests running, make sure to delete any remaining `.pyc` files and `__pycache__` directories.
+
+To hop into the postgres container, you can do the following:
+
+```
+$ docker exec -it openoversight_postgres_1 /bin/bash
+# psql -d openoversight-dev -U openoversight
+```
+
+Similarly to hop into the web container:
+
+```
+$ docker exec -it openoversight_web_1 /bin/bash
+```
+
+Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
+
+### VirtualBox + Vagrant
 
 Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and VirtualBox installed to start out.
 

@@ -2,6 +2,7 @@ import subprocess
 from tqdm import tqdm
 from sys import argv
 
+
 def main():
     accounts_file_location = 'chicago.txt'
     if len(argv) == 2:

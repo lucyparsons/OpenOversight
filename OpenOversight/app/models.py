@@ -33,6 +33,19 @@ class Department(db.Model):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
 
+class Note(db.Model):
+    __tablename__ = 'notes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    note = db.Column(db.Text())
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    creator = db.relationship('User', backref='notes')
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer = db.relationship('Officer', back_populates='notes')
+    date_created = db.Column(db.DateTime)
+    date_updated = db.Column(db.DateTime)
+
+
 class Officer(db.Model):
     __tablename__ = 'officers'
 
@@ -54,6 +67,7 @@ class Officer(db.Model):
         secondary=officer_links,
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
+    notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
 
     def full_name(self):
         if self.middle_initial:
@@ -101,12 +115,29 @@ class Face(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
-    img_id = db.Column(db.Integer, db.ForeignKey('raw_images.id'))
+    img_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'raw_images.id',
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+            name='fk_face_image_id',
+            use_alter=True),
+    )
+    original_image_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'raw_images.id',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+            use_alter=True),
+        name='fk_face_original_image_id')
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship('Image', backref='faces')
+    image = db.relationship('Image', backref='faces', foreign_keys=[img_id])
+    original_image = db.relationship('Image', backref='tags', foreign_keys=[original_image_id], lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
 
@@ -174,10 +205,11 @@ class Location(db.Model):
 
     @validates('zip_code')
     def validate_zip_code(self, key, zip_code):
-        zip_re = r'^\d{5}$'
-        if not re.match(zip_re, zip_code):
-            raise ValueError('Not a valid zip code')
-        return zip_code
+        if zip_code:
+            zip_re = r'^\d{5}$'
+            if not re.match(zip_re, zip_code):
+                raise ValueError('Not a valid zip code')
+            return zip_code
 
     @validates('state')
     def validate_state(self, key, state):

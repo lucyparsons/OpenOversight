@@ -1,6 +1,6 @@
 # Deployment
 
-When this application is deployed you will need to do some setup. These instructions are for an Ubuntu server running an `nginx` reverse proxy  and `gunicorn`. 
+When this application is deployed you will need to do some setup. These instructions are for an Ubuntu server running an `nginx` reverse proxy  and `gunicorn`.
 
 # Dependencies
 
@@ -109,7 +109,7 @@ For more details about the S3 and AWS settings, see above. Please raise an issue
 
 # Systemd
 
-You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). More details can be found in `CONTRIB.md`.
+You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). More details can be found in [CONTRIB.md](/CONTRIB.md).
 
 ```
 [Unit]

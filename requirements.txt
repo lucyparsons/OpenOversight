@@ -11,6 +11,7 @@ Flask-Migrate==2.1.1
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
+Pillow==5.1.0
 psycopg2>=2.6.2
 SQLAlchemy==1.1.15
 gunicorn==17.5

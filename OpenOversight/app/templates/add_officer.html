@@ -25,6 +25,13 @@
         {{ wtf.form_field(form.birth_year) }}
         {{ wtf.form_field(form.department) }}
         {% include "partials/links_subform.html" %}
+        <div>
+            <legend>{{ form.notes.label }}</legend>
+            {% for subform in form.notes %}
+                {% include "partials/subform.html" %}
+            {% endfor %}
+            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+        </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>
     <br>
