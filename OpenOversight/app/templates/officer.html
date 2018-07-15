@@ -220,9 +220,9 @@
       </div>
     {% endif %}
     </div>{# end col #}
+    {% with obj=officer %}
+      {% include "partials/links_and_videos_row.html" %}
+    {% endwith %}
   </div> {# end row #}
-  {% with obj=officer %}
-    {% include "partials/links_and_videos_row.html" %}
-  {% endwith %}
 </div> {# end container #}
 {% endblock %}
