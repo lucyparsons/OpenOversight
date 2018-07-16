@@ -14,7 +14,15 @@
   <div class="row">
     <div class="col-sm-6">
       {% for path in paths %}
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">
+      {% endif %}
       <img src="{{ path }}" alt="Submission">
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      </a>
+      {% endif %}
       {% endfor %}
     </div>
     <div class="col-sm-6 col-md-4">
