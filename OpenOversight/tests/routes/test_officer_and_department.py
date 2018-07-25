@@ -523,7 +523,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
-	suffix = ''
+        suffix = ''
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
         form = AddOfficerForm(first_name=first_name,
