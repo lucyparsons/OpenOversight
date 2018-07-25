@@ -523,11 +523,13 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
+	suffix = ''
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
+                              suffix=suffix,
                               race=race,
                               gender=gender,
                               star_no=666,
@@ -552,6 +554,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         form = EditOfficerForm(
             first_name=first_name,
             last_name=new_last_name,
+            suffix=suffix,
             race=race,
             gender=gender,
             department=department.id,

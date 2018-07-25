@@ -12,7 +12,7 @@ def test_department_repr(mockdata):
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
-    assert officer.__repr__() == '<Officer ID {}: {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name)
+    assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
 
 
 def test_assignment_repr(mockdata):
