@@ -53,6 +53,7 @@ class Officer(db.Model):
     last_name = db.Column(db.String(120), index=True, unique=False)
     first_name = db.Column(db.String(120), index=True, unique=False)
     middle_initial = db.Column(db.String(120), unique=False, nullable=True)
+    suffix = db.Column(db.String(120), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
     gender = db.Column(db.String(120), index=True, unique=False)
     employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
@@ -71,14 +72,20 @@ class Officer(db.Model):
 
     def full_name(self):
         if self.middle_initial:
-            return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+            if self.suffix:
+                return '{} {}. {} {}'.format(self.first_name, self.middle_initial, self.last_name, self.suffix)
+            else:
+                return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+        if self.suffix:
+                return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
-        return '<Officer ID {}: {} {} {}>'.format(self.id,
-                                                  self.first_name,
-                                                  self.middle_initial,
-                                                  self.last_name)
+        return '<Officer ID {}: {} {} {} {}>'.format(self.id,
+                                                     self.first_name,
+                                                     self.middle_initial,
+                                                     self.last_name,
+                                                     self.suffix)
 
 
 class Assignment(db.Model):

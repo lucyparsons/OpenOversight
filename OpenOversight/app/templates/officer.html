@@ -8,7 +8,10 @@
                            {% if officer.middle_initial %}
                            {{ officer.middle_initial }}
                            {% endif %}
-                           {{ officer.last_name|title }}</b></h1>
+                           {{ officer.last_name|title }}
+                           {% if officer.suffix %}
+                           {{ officer.suffix }}
+                           {% endif %}</b></h1>
   </div>
 
   <div class="row">

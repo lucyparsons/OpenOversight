@@ -86,6 +86,7 @@ def add_officer_profile(form, current_user):
     officer = Officer(first_name=form.first_name.data,
                       last_name=form.last_name.data,
                       middle_initial=form.middle_initial.data,
+                      suffix=form.suffix.data,
                       race=form.race.data,
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,

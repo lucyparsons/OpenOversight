@@ -10,7 +10,7 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
+from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
@@ -150,6 +150,8 @@ class AddOfficerForm(Form):
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
+    suffix = SelectField('Suffix', default='', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
@@ -191,6 +193,8 @@ class EditOfficerForm(Form):
     middle_initial = StringField('Middle initial',
                                  validators=[Regexp('\w*'), Length(max=50),
                                              Optional()])
+    suffix = SelectField('Suffix', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', choices=GENDER_CHOICES,

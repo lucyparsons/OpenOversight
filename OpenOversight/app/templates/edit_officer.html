@@ -14,6 +14,7 @@
         {{ wtf.form_errors(form, hiddens="only") }}
         {{ wtf.form_field(form.first_name, autofocus="autofocus") }}
         {{ wtf.form_field(form.middle_initial) }}
+        {{ wtf.form_field(form.suffix) }}
         {{ wtf.form_field(form.last_name) }}
         {{ wtf.form_field(form.race) }}
         {{ wtf.form_field(form.gender) }}

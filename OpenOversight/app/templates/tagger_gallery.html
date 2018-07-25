@@ -38,7 +38,8 @@
               <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
                     {{ officer.first_name.lower()|title }}
                     {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-                    {{ officer.last_name.lower()|title }}</a></h1>
+                    {{ officer.last_name.lower()|title }}
+                    {% if officer.suffix %}{{ officer.suffix }}. {% endif %}</a></h1>
                   <h4 class="text-success"><b>OpenOversight ID: {{ officer.id }}</b></h4>
                   <h5 class="text-muted">Race: {{ officer.race }}</h5>
                   <h5 class="text-muted">Gender: {{ officer.gender }}</h5>

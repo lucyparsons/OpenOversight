@@ -4,6 +4,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
 
 
 @contextmanager
@@ -69,3 +70,42 @@ def test_user_can_get_to_complaint(mockdata, browser):
 
     title_text = browser.find_element_by_tag_name("h1").text
     assert "File a Complaint" in title_text
+
+
+def test_officer_suffix(mockdata, browser):
+    browser.get("http://localhost:5000/auth/login")
+    wait_for_page_load(browser)
+
+    # get past the login page
+    elem = browser.find_element_by_id("email")
+    elem.clear()
+    elem.send_keys("redshiftzero@example.org")
+    elem = browser.find_element_by_id("password")
+    elem.clear()
+    elem.send_keys("cat")
+    browser.find_element_by_id("submit").click()
+    wait_for_element(browser, By.ID, "cpd")
+
+    test_suffixes = ["-", "Jr", "Sr", "II", "III", "IV", "V"]
+
+    for test_suffix in test_suffixes:
+        # enter a last name to test
+        browser.get("http://localhost:5000/officer/new")
+        wait_for_element(browser, By.ID, "suffix")
+        elem = browser.find_element_by_id("last_name")
+        elem.clear()
+        elem.send_keys("Bacon")
+        elem = Select(browser.find_element_by_id("suffix"))
+        elem.select_by_visible_text(test_suffix)
+        browser.find_element_by_id("submit").click()
+
+        # check result
+        wait_for_element(browser, By.TAG_NAME, "tbody")
+        # assumes the page-header field is of the form:
+        # <div class="page-header"><h1>Officer Detail: <b>Bacon Jr</b></h1></div>
+        rendered_field = browser.find_element_by_class_name("page-header").text
+        rendered_suffix = rendered_field.split("Bacon")[1].strip()
+        if test_suffix == "-":
+            assert rendered_suffix == ""
+        else:
+            assert rendered_suffix == test_suffix
