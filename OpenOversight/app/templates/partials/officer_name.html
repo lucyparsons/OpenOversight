@@ -1,3 +1,3 @@
 {{ officer.first_name.lower()|title }}
 {% if officer.middle_initial %}{{ officer.middle_initial }}. {% endif %}
-{{ officer.last_name.lower()|title }}
+{{ officer.last_name|capfirst }}
