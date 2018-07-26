@@ -710,6 +710,45 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         assert unit is None
 
 
+def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
+        ]
+        form = AddOfficerForm(first_name='Testy',
+                              last_name='McTesty',
+                              middle_initial='T',
+                              suffix='Jr',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department.id,
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'McTesty' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesty').one()
+        assert officer.first_name == 'Testy'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert officer.suffix == 'Jr'
+
+
 # def test_find_form_submission(client, mockdata):
 #     with current_app.test_request_context():
 #         form = FindOfficerForm()
