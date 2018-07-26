@@ -105,7 +105,7 @@ psql  -h localhost -d openoversight-dev -U openoversight --password
 with the password `terriblepassword`.
 
 
-The provisioning step already does this, but in case you need it, in the `/vagrant/OpenOversight` directory, there is a script to create the database:
+The provisioning step already does this, but in case you need it, in the `/vagrant` directory, there is a script to create the database:
 
 ```sh
 ~/oovirtenv/bin/python create_db.py
