@@ -53,6 +53,7 @@ class Officer(db.Model):
     last_name = db.Column(db.String(120), index=True, unique=False)
     first_name = db.Column(db.String(120), index=True, unique=False)
     middle_initial = db.Column(db.String(120), unique=False, nullable=True)
+    suffix = db.Column(db.String(10), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
     gender = db.Column(db.String(120), index=True, unique=False)
     employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)

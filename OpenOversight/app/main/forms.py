@@ -150,6 +150,8 @@ class AddOfficerForm(Form):
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
+    suffix = StringField('Suffix', default='', validators=[
+        Regexp('\w*'), Length(max=10), Optional()])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
@@ -191,6 +193,7 @@ class EditOfficerForm(Form):
     middle_initial = StringField('Middle initial',
                                  validators=[Regexp('\w*'), Length(max=50),
                                              Optional()])
+    suffix = StringField('Suffix', default='', validators=[Regexp('\w*'), Length(max=10), Optional()])
     race = SelectField('Race', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', choices=GENDER_CHOICES,
