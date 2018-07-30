@@ -8,6 +8,8 @@ services:
      POSTGRES_USER: openoversight
      POSTGRES_PASSWORD: terriblepassword
      POSTGRES_DB: openoversight-dev
+   ports:
+     - "5432:5432"
 
  web:
    restart: always
@@ -28,4 +30,3 @@ services:
    command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:3000 app:app
    ports:
      - "3000:3000"
-     - "5433:5432"

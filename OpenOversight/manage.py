@@ -10,7 +10,6 @@ from app.models import db, User
 
 migrate = Migrate(app, db)
 manager = Manager(app)
-manager.add_command("runserver", Server(host="0.0.0.0", port=3000))
 manager.add_command("db", MigrateCommand)
 
 
