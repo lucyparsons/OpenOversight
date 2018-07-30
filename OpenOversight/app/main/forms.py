@@ -103,6 +103,10 @@ class DepartmentForm(Form):
     submit = SubmitField(label='Add')
 
 
+class EditDepartmentForm(DepartmentForm):
+    submit = SubmitField(label='Update')
+
+
 class LinkForm(Form):
     title = StringField(
         validators=[Length(max=100, message='Titles are limited to 100 characters.')],

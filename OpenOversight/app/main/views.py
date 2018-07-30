@@ -25,7 +25,8 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
+                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm,
+                    EditDepartmentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note)
@@ -276,7 +277,23 @@ def add_department():
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
     else:
-        return render_template('add_department.html', form=form)
+        return render_template('add_edit_department.html', form=form)
+
+
+@main.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_department(department_id):
+    department = Department.query.get_or_404(department_id)
+    form = EditDepartmentForm(obj=department)
+    if form.validate_on_submit():
+        department.name=form.name.data
+        department.short_name=form.short_name.data
+        db.session.commit()
+        flash('Department {} edited'.format(department.name))
+        return redirect(url_for('main.list_officer', department_id=department.id))
+    else:
+        return render_template('add_edit_department.html', form=form, update=True)
 
 
 @main.route('/department/<int:department_id>')
