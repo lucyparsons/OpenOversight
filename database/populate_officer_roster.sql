@@ -15,11 +15,12 @@ from public.invisinst;
 -- merge in rows from more recent roster from foia
 -- recent foia data does not have birth year
 insert into officers.roster
-    (last_name, first_name, middle_initial, race, gender, employment_date)
+    (last_name, first_name, middle_initial, suffix, race, gender, employment_date)
 select
     "Last Name",
     "First Name",
     "Middle Initial",
+    "Suffix",
     "Race",
     "Gender",
     "Date of Employment"

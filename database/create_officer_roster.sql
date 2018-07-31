@@ -5,6 +5,7 @@ create table officers.roster (
         last_name varchar(80),
         first_name varchar(80),
         middle_initial varchar(10),
+        suffix varchar(10),
         race varchar(40),
         gender varchar(40),
         employment_date date,

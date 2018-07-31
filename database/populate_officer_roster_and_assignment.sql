@@ -3,11 +3,12 @@ delete from public.assignments;
 
 -- populate chicago police department officers cpd corresponds to pd_id=1
 insert into public.officers
-    (last_name, first_name, middle_initial, race, gender, employment_date, pd_id)
+    (last_name, first_name, middle_initial, suffix, race, gender, employment_date, pd_id)
 select
     "Last Name",
     "First Name",
     "Middle Initial",
+    "Suffix",
     "Race",
     "Gender",
     "Date of Employment",
