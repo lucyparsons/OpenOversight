@@ -75,6 +75,11 @@ def create_app(config_name='default'):
     def rate_exceeded(e):
         return render_template('429.html'), 429
 
+    # create jinja2 filter for titles with multiple capitals
+    @app.template_filter('capfirst')
+    def capfirst_filter(s):
+        return s[0].capitalize() + s[1:]  # only change 1st letter
+
     return app
 
 
