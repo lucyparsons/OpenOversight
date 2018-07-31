@@ -7,7 +7,7 @@ from flask_migrate import Migrate, MigrateCommand
 
 from app import app
 from app.models import db, Assignment, Department, Officer, User
-from app.utils import badge_exists
+from app.utils import officer_exists
 
 
 migrate = Migrate(app, db)
@@ -107,9 +107,12 @@ def bulk_add_officers(filename):
             else:
                 raise Exception('Department ID {} not found'.format(department_id))
 
-        # check for existing officer based on badge
-        if badge_exists(line['badge'], department_id):
-            print 'Skipping creation of existing badge id {} for department id {}'.format(line['badge'], department_id)
+        # check for existing officer based on name
+        if officer_exists(department_id, line['first_name'], line['last_name'],
+                          line['middle_initial'], line['suffix']):
+            print 'Skipping creation of existing officer {} {} for department id {}'.format(line['first_name'],
+                                                                                            line['last_name'],
+                                                                                            department_id)
             continue
 
         # create officer
@@ -118,6 +121,7 @@ def bulk_add_officers(filename):
         officer.last_name = line['last_name']
         officer.first_name = line['first_name']
         officer.middle_initial = line['middle_initial']
+        officer.suffix = line['suffix']
         officer.race = line['race']
         officer.gender = line['gender']
         officer.employment_date = line['employment_date']
