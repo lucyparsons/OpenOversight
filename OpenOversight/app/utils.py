@@ -476,9 +476,12 @@ def get_uploaded_cropped_image(original_image, crop_data):
         return None
 
 
-def badge_exists(star_no, department_id):
-    """badge_exists checks if a given badge number exists already for a department."""
-    for assignment in Assignment.query.filter_by(star_no=star_no).all():
-        if str(assignment.baseofficer.department_id) == str(department_id):
-            return True
-        return False
+def officer_exists(department_id, first_name, last_name, middle_initial=None, suffix=None):
+    """officer_exists checks if a given full name exists already for a department."""
+    return True if Officer.query.filter_by(
+        department_id=department_id,
+        first_name=first_name,
+        last_name=last_name,
+        middle_initial=middle_initial,
+        suffix=suffix
+    ).one_or_none() else False
