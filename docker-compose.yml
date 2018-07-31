@@ -8,6 +8,8 @@ services:
      POSTGRES_USER: openoversight
      POSTGRES_PASSWORD: terriblepassword
      POSTGRES_DB: openoversight-dev
+   volumes:
+     - ./container_data/postgres:/var/lib/postgresql/data
    ports:
      - "5432:5432"
 
