@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine.
-   config.vm.network "forwarded_port", guest: 3000, host: 3000
+   config.vm.network "forwarded_port", guest: 5000, host: 5000
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
