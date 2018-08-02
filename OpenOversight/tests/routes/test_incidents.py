@@ -211,6 +211,88 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
         assert 'Incidents prior to 1900 not allowed.' in rv.data
 
 
+def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        date = datetime(2000, 5, 25, 1, 45)
+        report_number = '42'
+
+        address_form = LocationForm(
+            street_name='AAAAA',
+            cross_street1='BBBBB',
+            city='FFFFF',
+            state='',
+            zip_code='03435'
+        )
+
+        form = IncidentForm(
+            date_field=str(date.date()),
+            time_field=str(date.time()),
+            report_number=report_number,
+            description='Something happened',
+            department='1',
+            address=address_form.data,
+            officers=[officer.id for officer in Officer.query.all()[:5]]
+        )
+        data = process_form_data(form.data)
+
+        incident_count_before = Incident.query.count()
+        rv = client.post(
+            url_for('main.incident_api') + 'new',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Must select a state.' in rv.data
+        assert incident_count_before == Incident.query.count()
+
+
+def test_admins_cannot_make_incidents_with_multiple_validation_errors(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        date = datetime(2000, 5, 25, 1, 45)
+        report_number = '42'
+
+        address_form = LocationForm(
+            street_name='AAAAA',
+            cross_street1='BBBBB',
+            # no city given => 'This field is required.'
+            city='',
+            state='NY',
+            # invalid ZIP code => 'Zip codes must have 5 digits.'
+            zip_code='0343'
+        )
+
+        # license plate number given, but no state selected => 'Must also select a state.'
+        license_plate_form = LicensePlateForm(number='ABCDE', state='')
+
+        form = IncidentForm(
+            # no date given => 'This field is required.'
+            date_field='',
+            time_field=str(date.time()),
+            report_number=report_number,
+            description='Something happened',
+            # invalid department id => 'This field is required.'
+            department='-1',
+            address=address_form.data,
+            license_plates=[license_plate_form.data],
+            officers=[officer.id for officer in Officer.query.all()[:5]]
+        )
+        data = process_form_data(form.data)
+
+        incident_count_before = Incident.query.count()
+        rv = client.post(
+            url_for('main.incident_api') + 'new',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Must also select a state.' in rv.data
+        assert 'Zip codes must have 5 digits.' in rv.data
+        assert rv.data.count('This field is required.') >= 3
+        assert incident_count_before == Incident.query.count()
+
+
 def test_admins_can_edit_incident_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
