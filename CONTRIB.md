@@ -50,7 +50,7 @@ Make sure you've started VirtualBox, and then in your project directory, run:
 
 `vagrant up`
 
-This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine.
+This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:5000` that you can browse to on your host machine.
 
 In addition, you can now SSH into it:
 
@@ -94,8 +94,8 @@ $ sudo service gunicorn stop
  * Stopping Gunicorn workers
  [oo] *
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/ # (again, if you're not already there)
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver
- * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver --host 0.0.0.0
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
 ```
