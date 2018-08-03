@@ -9,7 +9,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Markup)
+                   flash, current_app, jsonify)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -25,7 +25,8 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
+                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm,
+                    AddImageForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note)
@@ -543,26 +544,20 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
+    preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
         if User.query.filter_by(id=current_user.id).one().dept_pref:
-            flash(Markup('Want to submit for another department? Change your <a href="/auth/change-dept/">default department</a>.'))
-            department = User.query.filter_by(id=current_user.id).one().dept_pref
-            return redirect(url_for('main.submit_department_images', department_id=department))
+            preferred_dept_id = User.query.filter_by(id=current_user.id).one().dept_pref
+            form = AddImageForm()
         else:
-            departments = Department.query.all()
-            return render_template('submit_deptselect.html', departments=departments)
+            form = AddImageForm()
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
     # that is, an anonymous user has no id attribute
     except AttributeError:
-        departments = Department.query.all()
-        return render_template('submit_deptselect.html', departments=departments)
-
-
-@main.route('/submit/department/<int:department_id>', methods=['GET', 'POST'])
-@limiter.limit('5/minute')
-def submit_department_images(department_id=1):
-    department = Department.query.filter_by(id=department_id).one()
-    return render_template('submit_department.html', department=department)
+        preferred_dept_id = Department.query.first().id
+        form = AddImageForm()
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
