@@ -283,7 +283,11 @@ class OfficerIdField(StringField):
         else:
             self.data = value
 
-    def pre_validate(self, form):
+
+class OOIdForm(Form):
+    oo_id = StringField('OO Officer ID', validators=[])
+
+    def validate_id(self, field):
         if self.data:
             officer = Officer.query.get(int(self.data))
             if not officer:
@@ -301,8 +305,8 @@ class IncidentForm(DateFieldForm):
         query_factory=dept_choices,
         get_label='name')
     address = FormField(LocationForm)
-    officers = FieldList(
-        OfficerIdField('OO Officer ID'),
+    officers = FieldList(FormField(
+        OOIdForm, widget=FormFieldWidget()),
         description='Officers present at the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
