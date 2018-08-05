@@ -284,14 +284,23 @@ class OfficerIdField(StringField):
             self.data = value
 
 
-class OOIdForm(Form):
-    oo_id = StringField('OO Officer ID', validators=[])
+def validate_oo_id(self, field):
+    if field.data:
+        try:
+            officer_id = int(field.data)
+            officer = Officer.query.get(officer_id)
 
-    def validate_id(self, field):
-        if self.data:
-            officer = Officer.query.get(int(self.data))
-            if not officer:
-                raise ValueError('Not a valid officer id')
+        # Sometimes we get a string in field.data with py.test, this parses it
+        except ValueError:
+            officer_id = field.data.split("value=\"")[1][:-2]
+            officer = Officer.query.get(officer_id)
+
+        if not officer:
+            raise ValidationError('Not a valid officer id')
+
+
+class OOIdForm(Form):
+    oo_id = StringField('OO Officer ID', validators=[validate_oo_id])
 
 
 class IncidentForm(DateFieldForm):

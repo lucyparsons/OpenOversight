@@ -31,23 +31,10 @@ def set_dynamic_default(form_field, value):
 def get_or_create(session, model, defaults=None, **kwargs):
     if 'csrf_token' in kwargs:
         kwargs.pop('csrf_token')
+    # Because id is a keyword in Python, officers member is called oo_id
+    if 'oo_id' in kwargs:
+        kwargs = {'id': kwargs['oo_id']}
     instance = model.query.filter_by(**kwargs).first()
-    if instance:
-        return instance, False
-    else:
-        params = dict((k, v) for k, v in kwargs.iteritems())
-        params.update(defaults or {})
-        instance = model(**params)
-        session.add(instance)
-        return instance, True
-
-
-# Because id is a keyword in Python, officers member is called oo_id
-def get_or_create_officer(session, model, defaults=None, **kwargs):
-    if 'csrf_token' in kwargs:
-        kwargs.pop('csrf_token')
-    new_kwargs = {'id': kwargs['oo_id']}
-    instance = model.query.filter_by(**new_kwargs).first()
     if instance:
         return instance, False
     else:
@@ -360,7 +347,7 @@ def create_incident(self, form):
     if 'officers' in form.data:
         for officer in form.data['officers']:
             if officer['oo_id']:
-                of, _ = get_or_create_officer(db.session, Officer, **officer)
+                of, _ = get_or_create(db.session, Officer, **officer)
                 if of:
                     fields['officers'].append(of)
 
