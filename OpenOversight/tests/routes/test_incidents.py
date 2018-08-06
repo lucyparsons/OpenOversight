@@ -348,6 +348,52 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         assert new_officer.id in [off.id for off in inc.officers]
 
 
+def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        inc = Incident.query.first()
+
+        address_form = LocationForm(
+            street_name=inc.address.street_name,
+            cross_street1=inc.address.cross_street1,
+            cross_street2=inc.address.cross_street2,
+            city=inc.address.city,
+            state=inc.address.state,
+            zip_code=inc.address.zip_code
+        )
+        links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
+        license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+
+        old_officers = inc.officers
+        old_officer_ids = [officer.id for officer in inc.officers]
+        old_ooid_forms = [OOIdForm(oo_id=the_id) for the_id in old_officer_ids]
+        # create an OOIdForm with an invalid officer ID
+        new_ooid_form = OOIdForm(oo_id="99999999999999999")
+
+        form = IncidentForm(
+            date_field=str(inc.date.date()),
+            time_field=str(inc.date.time()),
+            report_number=inc.report_number,
+            description=inc.description,
+            department='1',
+            address=address_form.data,
+            links=links_forms,
+            license_plates=license_plates_forms,
+            officers=old_ooid_forms + [new_ooid_form]
+        )
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Not a valid officer id' in rv.data
+        for officer in old_officers:
+            assert officer in inc.officers
+
+
 def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
