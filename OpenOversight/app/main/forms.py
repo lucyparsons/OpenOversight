@@ -10,15 +10,15 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
+from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
 import datetime
 
 
-def allowed_values(choices):
-    return [x[0] for x in choices]
+def allowed_values(choices, empty_allowed=True):
+    return [x[0] for x in choices if empty_allowed or x[0]]
 
 
 class HumintContribution(Form):
@@ -150,6 +150,8 @@ class AddOfficerForm(Form):
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
+    suffix = SelectField('Suffix', default='', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
@@ -192,6 +194,8 @@ class EditOfficerForm(Form):
     middle_initial = StringField('Middle initial',
                                  validators=[Regexp('\w*'), Length(max=50),
                                              Optional()])
+    suffix = SelectField('Suffix', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', choices=GENDER_CHOICES,
@@ -254,20 +258,24 @@ class DateFieldForm(Form):
 
 class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
-    cross_street1 = StringField(validators=[Optional()], description="Closest cross street to where incident occurred.")
+    cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
     city = StringField('City <span class="text-danger">*</span>', validators=[Required()])
     state = SelectField('State <span class="text-danger">*</span>', choices=STATE_CHOICES,
-                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+                        validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
                            validators=[Optional(),
-                                       Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
+                                       Regexp('^\d{5}$', message='Zip codes must have 5 digits.')])
 
 
 class LicensePlateForm(Form):
     number = StringField('Plate Number', validators=[])
     state = SelectField('State', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES))])
+
+    def validate_state(self, field):
+        if self.number.data != '' and field.data == '':
+            raise ValidationError('Must also select a state.')
 
 
 class OfficerIdField(StringField):

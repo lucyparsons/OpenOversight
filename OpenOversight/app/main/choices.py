@@ -1,6 +1,8 @@
 from us import states
 
 # Choices are a list of (value, label) tuples
+SUFFIX_CHOICES = [('', '-'), ('Jr', 'Jr'), ('Sr', 'Sr'), ('II', 'II'),
+                  ('III', 'III'), ('IV', 'IV'), ('V', 'V')]
 RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
                 ('HISPANIC', 'Hispanic'),
                 ('NATIVE AMERICAN', 'Native American'),

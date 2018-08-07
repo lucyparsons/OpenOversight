@@ -1,7 +1,7 @@
 from getpass import getpass
 import sys
 
-from flask_script import Manager, Server, Shell
+from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
 from app import app
@@ -10,7 +10,6 @@ from app.models import db, User
 
 migrate = Migrate(app, db)
 manager = Manager(app)
-manager.add_command("runserver", Server(host="0.0.0.0", port=3000))
 manager.add_command("db", MigrateCommand)
 
 

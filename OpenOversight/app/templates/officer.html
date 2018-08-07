@@ -4,11 +4,7 @@
 <div class="container" role="main">
 
   <div class="page-header">
-    <h1>Officer Detail: <b>{{ officer.first_name|title }}
-                           {% if officer.middle_initial %}
-                           {{ officer.middle_initial }}
-                           {% endif %}
-                           {{ officer.last_name|title }}</b></h1>
+    <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
   </div>
 
   <div class="row">
