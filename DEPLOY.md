@@ -48,6 +48,23 @@ For the officer identification UI to work, you'll need to create a CORS policy f
 </CORSConfiguration>
 ```
 
+ For facial detection/recognition, you'll also want to give this IAM user the `AmazonRekognitionFullAccess` permission:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "rekognition:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
 If you don't click "Save" on that policy, however, the policy will not actually be applied.
 
 # Webserver Configuration

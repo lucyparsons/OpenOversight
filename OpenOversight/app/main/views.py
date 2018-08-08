@@ -1,6 +1,8 @@
 import datetime
 import os
 import re
+from redis import Redis
+from rq import Queue
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import sys
@@ -20,7 +22,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note,
+                     set_dynamic_default, create_note, detect_faces_in_image,
                      get_uploaded_cropped_image)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
@@ -35,6 +37,9 @@ from ..auth.utils import admin_required, ac_or_admin_required
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+
+queue = Queue(connection=Redis())
 
 
 def redirect_url(default='index'):
@@ -593,8 +598,8 @@ def upload(department_id):
 
     # Upload file from local filesystem to S3 bucket and delete locally
     try:
-        url = upload_file(safe_local_path, original_filename,
-                          new_filename)
+        url, s3_path = upload_file(safe_local_path, original_filename,
+                                   new_filename)
         # Update the database to add the image
         new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
                           date_image_inserted=datetime.datetime.now(),
@@ -603,6 +608,10 @@ def upload(department_id):
                           date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
         db.session.commit()
+
+        # Submit facial detection task to queue
+        queue.enqueue(detect_faces_in_image, args=(s3_path, new_image))
+
         return jsonify(success="Success!"), 200
     except:  # noqa
         exception_type, value, full_tback = sys.exc_info()
