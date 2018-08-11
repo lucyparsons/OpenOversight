@@ -16,7 +16,7 @@ from flask import current_app, url_for
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link, Note)
+                     Incident, Location, LicensePlate, Link, Note, Description)
 
 
 def set_dynamic_default(form_field, value):
@@ -119,14 +119,25 @@ def add_officer_profile(form, current_user):
     if form.notes.data:
         for note in form.data['notes']:
             # don't try to create with a blank string
-            if note['note']:
+            if note['text_contents']:
                 new_note = Note(
-                    note=note['note'],
+                    note=note['text_contents'],
                     user_id=current_user.id,
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
                 db.session.add(new_note)
+    if form.descriptions.data:
+        for description in form.data['descriptions']:
+            # don't try to create with a blank string
+            if description['text_contents']:
+                new_description = description(
+                    description=description['text_contents'],
+                    user_id=current_user.id,
+                    officer=officer,
+                    date_created=datetime.datetime.now(),
+                    date_updated=datetime.datetime.now())
+                db.session.add(new_description)
 
     db.session.commit()
     return officer
@@ -379,7 +390,16 @@ def create_incident(self, form):
 
 def create_note(self, form):
     return Note(
-        note=form.note.data,
+        text_contents=form.text_contents.data,
+        creator_id=form.creator_id.data,
+        officer_id=form.officer_id.data,
+        date_created=datetime.datetime.now(),
+        date_updated=datetime.datetime.now())
+
+
+def create_description(self, form):
+    return Description(
+        text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
         date_created=datetime.datetime.now(),

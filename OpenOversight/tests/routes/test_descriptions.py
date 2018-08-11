@@ -6,13 +6,13 @@ from .route_helpers import login_user, login_admin, login_ac
 
 
 from OpenOversight.app.main.forms import TextForm, EditTextForm
-from OpenOversight.app.models import db, Officer, Note, User
+from OpenOversight.app.models import db, Officer, Description, User
 
 
 @pytest.mark.parametrize("route", [
-    ('officer/1/note/1/edit'),
-    ('officer/1/note/new'),
-    ('officer/1/note/1/delete')
+    ('officer/1/description/1/edit'),
+    ('officer/1/description/new'),
+    ('officer/1/description/1/delete')
 ])
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
@@ -20,9 +20,9 @@ def test_route_login_required(route, client, mockdata):
 
 
 @pytest.mark.parametrize("route", [
-    ('officer/1/note/1/edit'),
-    ('officer/1/note/new'),
-    ('officer/1/note/1/delete')
+    ('officer/1/description/1/edit'),
+    ('officer/1/description/new'),
+    ('officer/1/description/1/delete')
 ])
 def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():
@@ -31,11 +31,11 @@ def test_route_admin_or_required(route, client, mockdata):
         assert rv.status_code == 403
 
 
-def test_admins_can_create_notes(mockdata, client, session):
+def test_admins_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.first()
-        text_contents = 'I can haz notez'
+        text_contents = 'I can haz descriptionz'
         admin = User.query.filter_by(email='jen@example.org').first()
         form = TextForm(
             text_contents=text_contents,
@@ -44,7 +44,7 @@ def test_admins_can_create_notes(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id),
+            url_for('main.description_api', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
@@ -52,25 +52,25 @@ def test_admins_can_create_notes(mockdata, client, session):
         assert rv.status_code == 200
         assert 'created' in rv.data
 
-        created_note = Note.query.filter_by(text_contents=text_contents).first()
-        assert created_note is not None
-        assert created_note.date_created is not None
+        created_description = Description.query.filter_by(text_contents=text_contents).first()
+        assert created_description is not None
+        assert created_description.date_created is not None
 
 
-def test_acs_can_create_notes(mockdata, client, session):
+def test_acs_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.first()
-        note = 'I can haz notez'
+        description = 'A description'
         ac = User.query.filter_by(email='raq929@example.org').first()
         form = TextForm(
-            text_contents=note,
+            text_contents=description,
             officer_id=officer.id,
             creator_id=ac.id
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id),
+            url_for('main.description_api', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
@@ -78,202 +78,202 @@ def test_acs_can_create_notes(mockdata, client, session):
         assert rv.status_code == 200
         assert 'created' in rv.data
 
-        created_note = Note.query.filter_by(text_contents=note).first()
-        assert created_note is not None
-        assert created_note.date_created is not None
+        created_description = Description.query.filter_by(text_contents=description).first()
+        assert created_description is not None
+        assert created_description.date_created is not None
 
 
-def test_admins_can_edit_notes(mockdata, client, session):
+def test_admins_can_edit_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.first()
-        old_note = 'meow'
-        new_note = 'I can haz editing notez'
+        old_description = 'meow'
+        new_description = 'I can haz editing descriptionz'
         original_date = datetime.now()
-        note = Note(
-            text_contents=old_note,
+        description = Description(
+            text_contents=old_description,
             officer_id=officer.id,
             creator_id=1,
             date_created=original_date,
             date_updated=original_date,
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
 
         form = EditTextForm(
-            text_contents=new_note,
+            text_contents=new_description,
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit',
             data=form.data,
             follow_redirects=True
         )
         assert rv.status_code == 200
         assert 'updated' in rv.data
 
-        assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert description.text_contents == new_description
+        assert description.date_updated > original_date
 
 
-def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
+def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email='raq929@example.org').first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        old_note = 'meow'
-        new_note = 'I can haz editing notez'
+        old_description = 'meow'
+        new_description = 'I can haz editing descriptionz'
         original_date = datetime.now()
-        note = Note(
-            text_contents=old_note,
+        description = Description(
+            text_contents=old_description,
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=original_date,
             date_updated=original_date,
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
 
         form = EditTextForm(
-            text_contents=new_note,
+            text_contents=new_description,
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit',
             data=form.data,
             follow_redirects=True
         )
         assert rv.status_code == 200
         assert 'updated' in rv.data
 
-        assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert description.text_contents == new_description
+        assert description.date_updated > original_date
 
 
-def test_ac_can_edit_others_notes(mockdata, client, session):
+def test_ac_can_edit_others_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email='raq929@example.org').first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        old_note = 'meow'
-        new_note = 'I can haz editing notez'
+        old_description = 'meow'
+        new_description = 'I can haz editing descriptionz'
         original_date = datetime.now()
-        note = Note(
-            text_contents=old_note,
+        description = Description(
+            text_contents=old_description,
             officer_id=officer.id,
             creator_id=ac.id - 1,
             date_created=original_date,
             date_updated=original_date,
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
 
         form = EditTextForm(
-            text_contents=new_note,
+            text_contents=new_description,
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit',
             data=form.data,
             follow_redirects=True
         )
         assert rv.status_code == 200
         assert 'updated' in rv.data
 
-        assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert description.text_contents == new_description
+        assert description.date_updated > original_date
 
 
-def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session):
+def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
         ac = User.query.filter_by(email='raq929@example.org').first()
-        old_note = 'meow'
-        new_note = 'I can haz editing notez'
+        old_description = 'meow'
+        new_description = 'I can haz editing descriptionz'
         original_date = datetime.now()
-        note = Note(
-            text_contents=old_note,
+        description = Description(
+            text_contents=old_description,
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=original_date,
             date_updated=original_date,
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
 
         form = EditTextForm(
-            text_contents=new_note,
+            text_contents=new_description,
         )
 
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit',
             data=form.data,
             follow_redirects=True
         )
         assert rv.status_code == 403
 
 
-def test_admins_can_delete_notes(mockdata, client, session):
+def test_admins_can_delete_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        note = Note.query.first()
-        note_id = note.id
+        description = Description.query.first()
+        description_id = description.id
         rv = client.post(
-            url_for('main.note_api', officer_id=note.officer_id, obj_id=note_id) + '/delete',
+            url_for('main.description_api', officer_id=description.officer_id, obj_id=description_id) + '/delete',
             follow_redirects=True
         )
         assert rv.status_code == 200
-        deleted = Note.query.get(note_id)
+        deleted = Description.query.get(description_id)
         assert deleted is None
 
 
-def test_acs_can_delete_their_notes_in_their_department(mockdata, client, session):
+def test_acs_can_delete_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email='raq929@example.org').first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        note = Note(
+        description = Description(
             text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
-        note_id = note.id
+        description_id = description.id
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/delete',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/delete',
             follow_redirects=True
         )
         assert rv.status_code == 200
-        deleted = Note.query.get(note_id)
+        deleted = Description.query.get(description_id)
         assert deleted is None
 
 
-def test_acs_cannot_delete_notes_not_in_their_department(mockdata, client, session):
+def test_acs_cannot_delete_descriptions_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
-        note = Note(
+        description = Description(
             text_contents='Hello',
             officer_id=officer.id,
             creator_id=2,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
-        note_id = note.id
+        description_id = description.id
         rv = client.post(
-            url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/delete',
+            url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/delete',
             follow_redirects=True
         )
 
         assert rv.status_code == 403
-        not_deleted = Note.query.get(note_id)
+        not_deleted = Description.query.get(description_id)
         assert not_deleted is not None
 
 
@@ -282,17 +282,17 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         ac = User.query.filter_by(email='raq929@example.org').first()
-        note = Note(
+        description = Description(
             text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
-            url_for('main.note_api', obj_id=note.id, officer_id=officer.id) + '/edit',
+            url_for('main.description_api', obj_id=description.id, officer_id=officer.id) + '/edit',
             follow_redirects=True
         )
         assert rv.status_code == 200
@@ -304,17 +304,17 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         ac = User.query.filter_by(email='raq929@example.org').first()
-        note = Note(
+        description = Description(
             text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id - 1,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
-            url_for('main.note_api', obj_id=note.id, officer_id=officer.id) + '/edit',
+            url_for('main.description_api', obj_id=description.id, officer_id=officer.id) + '/edit',
             follow_redirects=True
         )
         assert rv.status_code == 200
@@ -325,111 +325,111 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
-        note = Note(
+        description = Description(
             text_contents='Hello',
             officer_id=officer.id,
             creator_id=2,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
-            url_for('main.note_api', obj_id=note.id, officer_id=officer.id) + '/edit',
+            url_for('main.description_api', obj_id=description.id, officer_id=officer.id) + '/edit',
             follow_redirects=True
         )
         assert rv.status_code == 403
 
 
-def test_users_cannot_see_notes(mockdata, client, session):
+def test_users_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         officer = Officer.query.first()
-        text_contents = 'U can\'t see meeee'
-        note = Note(
+        text_contents = 'You can see me'
+        description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
             url_for('main.officer_profile', officer_id=officer.id),
             follow_redirects=True
         )
-        # ensures we're looking for a note that exists
-        assert note in officer.notes
+        # ensures we're looking for a description that exists
+        assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents not in rv.data
+        assert text_contents in rv.data
 
 
-def test_admins_can_see_notes(mockdata, client, session):
+def test_admins_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.first()
         text_contents = 'Kittens see everything'
-        note = Note(
+        description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
             url_for('main.officer_profile', officer_id=officer.id),
             follow_redirects=True
         )
-        assert note in officer.notes
+        assert description in officer.descriptions
         assert rv.status_code == 200
         # import pdb; pdb.set_trace()
         assert text_contents in rv.data
 
 
-def test_acs_can_see_notes_in_their_department(mockdata, client, session):
+def test_acs_can_see_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        text_contents = 'I can haz notez'
-        note = Note(
+        text_contents = 'I can haz descriptionz'
+        description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
             url_for('main.officer_profile', officer_id=officer.id),
             follow_redirects=True
         )
-        # ensures we're looking for a note that exists
-        assert note in officer.notes
+        # ensures we're looking for a description that exists
+        assert description in officer.descriptions
         assert rv.status_code == 200
         assert text_contents in rv.data
 
 
-def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session):
+def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
         text_contents = 'Hello it me'
-        note = Note(
+        description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
-        db.session.add(note)
+        db.session.add(description)
         db.session.commit()
         rv = client.get(
             url_for('main.officer_profile', officer_id=officer.id),
             follow_redirects=True
         )
-        # ensures we're looking for a note that exists
-        assert note in officer.notes
+        # ensures we're looking for a description that exists
+        assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents not in rv.data
+        assert text_contents in rv.data

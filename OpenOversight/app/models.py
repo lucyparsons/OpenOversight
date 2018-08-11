@@ -37,11 +37,24 @@ class Note(db.Model):
     __tablename__ = 'notes'
 
     id = db.Column(db.Integer, primary_key=True)
-    note = db.Column(db.Text())
+    text_contents = db.Column(db.Text())
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     creator = db.relationship('User', backref='notes')
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     officer = db.relationship('Officer', back_populates='notes')
+    date_created = db.Column(db.DateTime)
+    date_updated = db.Column(db.DateTime)
+
+
+class Description(db.Model):
+    __tablename__ = 'descriptions'
+
+    creator = db.relationship('User', backref='descriptions')
+    officer = db.relationship('Officer', back_populates='descriptions')
+    id = db.Column(db.Integer, primary_key=True)
+    text_contents = db.Column(db.Text())
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     date_created = db.Column(db.DateTime)
     date_updated = db.Column(db.DateTime)
 
@@ -70,6 +83,7 @@ class Officer(db.Model):
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
+    descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
 
     def full_name(self):
         if self.middle_initial:

@@ -87,7 +87,12 @@ def build_assignment(officer, unit):
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
-    return models.Note(note=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Note(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+
+
+def build_description(officer, user):
+    date = factory.date_time_this_year()
+    return models.Description(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
 
 
 def assign_faces(officer, images):
@@ -302,6 +307,19 @@ def mockdata(session, request):
         user = random.choice(users_that_can_create_notes)
         note = build_note(officer, user)
         session.add(note)
+
+    session.commit()
+
+    users_that_can_create_descriptions = [test_admin, test_area_coordinator]
+
+    # for testing routes
+    first_officer = models.Officer.query.get(1)
+    description = build_description(first_officer, test_admin)
+    session.add(description)
+    for officer in models.Officer.query.limit(20):
+        user = random.choice(users_that_can_create_descriptions)
+        description = build_description(officer, user)
+        session.add(description)
 
     session.commit()
 

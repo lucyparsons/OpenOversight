@@ -34,6 +34,13 @@
             {% endfor %}
             <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
         </div>
+        <div>
+            <legend>{{ form.descriptions.label }}</legend>
+            {% for subform in form.descriptions %}
+                {% include "partials/subform.html" %}
+            {% endfor %}
+            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+        </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>
     <br>
