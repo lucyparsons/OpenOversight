@@ -1,0 +1,46 @@
+h1 {
+    padding: 10px;
+}
+
+.commander {
+    background-color: darkblue;
+    color: white;
+    padding: 10px;
+    font-size: 10px;
+}
+
+.captain {
+    background-color: dodgerblue;
+    color: white;
+    padding: 10px;
+    font-size: 10px;
+}
+
+.po {
+    background-color: cadetblue;
+    color: white;
+    padding: 10px;
+    font-size: 10px;
+}
+.notsure {
+    background-color: tomato;
+    color: white;
+    padding: 10px;
+    font-size: 10px;
+}
+
+.commander a {
+    color: white;
+}
+
+.captain a {
+    color: white;
+}
+
+.po a {
+    color: white;
+}
+
+.notsure a {
+    color: white;
+}

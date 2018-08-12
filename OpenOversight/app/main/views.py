@@ -14,6 +14,7 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
+from choices import RANK_CHOICES
 from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
@@ -303,6 +304,46 @@ def list_officer(department_id, page=1, from_search=False):
         department=department,
         officers=officers,
         from_search=from_search)
+
+
+@main.route('/department/<int:department_id>/chart')
+def dept_org_chart(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    officers = Officer.query.filter(Officer.department_id == department_id).all()
+    # map each officer to their most recent assignment
+    assign_dict = {}
+    assign_records = Assignment.query.all()
+    for record in assign_records:
+        if record.officer_id not in assign_dict:
+            assign_dict[record.officer_id] = record
+        else:
+            if record.star_date > assign_dict[record.officer_id].star_date:
+                assign_dict[record.officer_id] = record
+
+    officer_nodes = {}
+    # give each rank a number. assumes they are maintained in highest to lowest
+    # order in choices.py (except for index 0, "Not Sure")
+    rankscores = [rc[0] for rc in RANK_CHOICES]
+    for rank in rankscores:
+        safe_rank = rank.replace(" ", "_")
+        officer_nodes[safe_rank] = []
+
+    for officer in officers:
+        rec = assign_dict[officer.id]
+        rankscore = rankscores.index(rec.rank)
+        safe_rank = rec.rank.replace(" ", "_")
+        officer_nodes[safe_rank].append({'id': officer.id,
+                                         'last': officer.last_name,
+                                         'star': rec.star_no,
+                                         'unit': rec.unit,
+                                         'rank': rec.rank,
+                                         'score': rankscore})
+
+    return render_template('dept_org_chart.html', department=department,
+                           data=officer_nodes)
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])
