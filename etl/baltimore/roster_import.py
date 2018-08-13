@@ -38,19 +38,33 @@ def load(filename):
     for column in columns.keys():
         assert column in df.columns
     df.rename(columns=columns, inplace=True)
-    df.to_sql('roster_raw', db.engine)
+    try:
+        df.to_sql('roster_raw', db.engine)
+    except ValueError:
+        print('Raw roster already imported')
+    else:
+        print('Raw roster successfully imported')
 
     departments = models.Department.query.all()
-    if len(departments) == 0:
+    bpd = None
+    for department in departments:
+        if department.name == 'Baltimore City Police Department':
+            print('Department already created')
+            bpd = department
+    if not bpd:
         print("Creating department")
         bpd = models.Department(name='Baltimore City Police Department',
             short_name='BPD')
         db.session.add(bpd)
         db.session.commit()
-    else:
-        bpd = departments[0]
 
-    print("Transforming data")
+    print("Deleting previous officer records")
+    db.session.execute(
+        models.Officer.__table__.delete().where(models.Officer.department_id == bpd.id)
+    )
+    db.session.commit()
+
+    print("Importing new officer records")
     for pig in df.itertuples():
         # print(pig.seq_no)
         try:
@@ -73,7 +87,7 @@ def load(filename):
         )
         db.session.add(assignment)
 
-    print("Done.")
+    print("Finished data import!")
 
 if __name__ == '__main__':
     load('Active_employees_as_of_May_3_2018.xlsx')
