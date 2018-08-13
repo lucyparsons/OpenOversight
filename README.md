@@ -43,6 +43,13 @@ Password: testtest
 
 Please see [CONTRIB.md](/CONTRIB.md) for the full developer setup instructions.
 
+## Documentation Quickstart
+
+```
+pip install dev-requirements.txt
+make docs
+```
+
 ## Deployment
 
 Please see the [DEPLOY.md](/DEPLOY.md) file for deployment instructions.

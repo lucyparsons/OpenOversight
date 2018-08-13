@@ -7,3 +7,5 @@ pytest-cov==2.4.0
 pytest-pep8==1.0.6
 xvfbwrapper
 mock
+sphinx
+sphinx-autobuild
