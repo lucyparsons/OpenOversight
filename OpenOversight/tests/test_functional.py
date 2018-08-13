@@ -4,6 +4,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
+from OpenOversight.app.models import Officer
+from OpenOversight.app.config import BaseConfig
 
 
 @contextmanager
@@ -69,6 +71,30 @@ def test_user_can_get_to_complaint(mockdata, browser):
 
     title_text = browser.find_element_by_tag_name("h1").text
     assert "File a Complaint" in title_text
+
+
+def test_officer_browse_pagination(mockdata, browser):
+    dept_id = 1
+    total = Officer.query.filter_by(department_id=dept_id).count()
+    perpage = BaseConfig.OFFICERS_PER_PAGE
+
+    # first page of results
+    browser.get("http://localhost:5000/department/{}?from_search=False&page=1"
+                .format(dept_id))
+    wait_for_element(browser, By.TAG_NAME, "body")
+    page_text = browser.find_element_by_tag_name("body").text
+    expected = 'Showing 1-{} of {}'.format(perpage, total)
+    assert expected in page_text
+
+    # last page of results
+    last_page_index = (total / perpage) + 1
+    browser.get("http://localhost:5000/department/{}?from_search=False&page={}"
+                .format(dept_id, last_page_index))
+    wait_for_element(browser, By.TAG_NAME, "body")
+    page_text = browser.find_element_by_tag_name("body").text
+    expected = ('Showing {}-{} of {}'
+                .format(perpage * (total / perpage) + 1, total, total))
+    assert expected in page_text
 
 
 def test_lastname_capitalization(mockdata, browser):
