@@ -87,6 +87,7 @@ def load(filename):
         )
         db.session.add(assignment)
 
+    db.session.commit()
     print("Finished data import!")
 
 if __name__ == '__main__':
