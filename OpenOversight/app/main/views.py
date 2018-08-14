@@ -326,7 +326,10 @@ def dept_org_chart(department_id):
     rank_types = ["NOT SURE"]
 
     for officer in officers:
-        rec = assign_dict[officer.id]
+        try:
+            rec = assign_dict[officer.id]
+        except KeyError:
+            continue
         if len(rec.rank) <= 1:
             rec.rank = "NOT SURE"
         safe_rank = rec.rank.upper()
@@ -335,12 +338,12 @@ def dept_org_chart(department_id):
             rank_types.insert(0, safe_rank)
         if safe_rank not in officer_nodes.keys():
             officer_nodes[safe_rank] = []
-        else:
-            officer_nodes[safe_rank].append({'id': officer.id,
-                                             'last': officer.last_name,
-                                             'star': rec.star_no,
-                                             'unit': rec.unit,
-                                             'rank': rec.rank})
+
+        officer_nodes[safe_rank].append({'id': officer.id,
+                                         'last': officer.last_name,
+                                         'star': rec.star_no,
+                                         'unit': rec.unit,
+                                         'rank': rec.rank})
 
     return render_template('dept_org_chart.html', department=department,
                            data=officer_nodes, rank_types=rank_types)
