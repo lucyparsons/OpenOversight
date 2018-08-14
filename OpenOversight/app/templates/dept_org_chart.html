@@ -6,99 +6,38 @@
 {% endblock head %}
 
 {% block content %}
-</style>
 
 <div class="container" role="main">
     <h1>
       {{ department.name|title }}
     </h1>
 
-    <div class="commander">
-        <div class="row">
-          <div class="column">
-            <center><h1>Commanders</h1></center>
+    {% for rank in rank_types %}
+      {% set randcolor = ['darkblue','lightblue','cornflowerblue','darkblue','darkcyan','darkorchid','darkslateblue','dodgerblue','indigo','navy','rebeccapurple','royalblue','slateblue']|random %}
+      <div class="anyrank" style="background-color:{{randcolor}}">
+          <div class="row">
+            <div class="column">
+              <center><h2>{{rank}}</h2></center>
+            </div>
           </div>
-        </div>
-      <div class="row">
-      {% for x in data.COMMANDER %}
-           <div class="column">
-             <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
-               {{x.last}} #{{x.star}}
-             </a>
-           </div>
 
-          {% if loop.index % 6 == 0 %}
-             </div>
-             <div class="row">
-          {% endif %}
-      {% endfor %}
-      </div>
-    </div>
+          <div class="row">
+          {% for x in data[rank] %}
+              <div class="column">
+                  <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
+                   {{x.last}} #{{x.star}}
+                  </a>
+              </div>
 
-    <div class="captain">
-        <div class="row">
-          <div class="column">
-            <center><h1>Captains</h1></center>
+              {% if loop.index % 6 == 0 %}
           </div>
-        </div>
-      <div class="row">
-      {% for x in data.CAPTAIN %}
-           <div class="column">
-             <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
-               {{x.last}} #{{x.star}}
-             </a>
-           </div>
-
-          {% if loop.index % 6 == 0 %}
-             </div>
-             <div class="row">
-          {% endif %}
-      {% endfor %}
-      </div>
-    </div>
-
-    <div class="po">
-        <div class="row">
-          <div class="column">
-            <center><h1>Police Officers</h1></center>
+          <div class="row">
+              {% endif %}
+          {% endfor %}
           </div>
-        </div>
-      <div class="row">
-      {% for x in data.PO %}
-           <div class="column">
-             <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
-               {{x.last}} #{{x.star}}
-             </a>
-           </div>
 
-          {% if loop.index % 6 == 0 %}
-             </div>
-             <div class="row">
-          {% endif %}
-      {% endfor %}
       </div>
-    </div>
-
-    <div class="notsure">
-        <div class="row">
-          <div class="column">
-            <center><h1>Not Sure</h1></center>
-          </div>
-        </div>
-      <div class="row">
-      {% for x in data.Not_Sure %}
-           <div class="column">
-             <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
-               {{x.last}} #{{x.star}}
-             </a>
-           </div>
-          {% if loop.index % 6 == 0 %}
-             </div>
-             <div class="row">
-          {% endif %}
-      {% endfor %}
-      </div>
-    </div>
+    {% endfor %}
 
 </div>
 {% endblock content %}
