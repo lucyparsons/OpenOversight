@@ -717,11 +717,19 @@ def upload(department_id):
         url = upload_file(safe_local_path, original_filename,
                           new_filename)
         # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                          date_image_inserted=datetime.datetime.now(),
-                          department_id=department_id,
-                          # TODO: Get the following field from exif data
-                          date_image_taken=datetime.datetime.now())
+        try:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now(),
+                              user_id=current_user.id)
+        except AttributeError:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
         db.session.commit()
         return jsonify(success="Success!"), 200
