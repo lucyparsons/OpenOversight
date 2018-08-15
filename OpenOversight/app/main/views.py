@@ -661,7 +661,7 @@ class IncidentApi(ModelView):
     def get_new_form(self):
         form = self.form()
         if request.args.get('officer_id'):
-            form.officers[0].data = request.args.get('officer_id')
+            form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
             link.user_id.data = current_user.id
@@ -678,6 +678,9 @@ class IncidentApi(ModelView):
                 continue
             else:
                 link.user_id.data = current_user.id
+
+        for officer_idx, officer in enumerate(obj.officers):
+            form.officers[officer_idx].oo_id.data = officer.id
 
         # set the form to have fields for all the current model's items
         form.license_plates.min_entries = no_license_plates
@@ -706,9 +709,14 @@ class IncidentApi(ModelView):
         officers = form.data.pop('officers')
         del form.officers
         if officers:
-            for officer_id in officers:
-                if officer_id:
-                    of = Officer.query.filter_by(id=int(officer_id)).first()
+            for officer in officers:
+                if officer["oo_id"]:
+                    try:
+                        of = Officer.query.filter_by(id=int(officer["oo_id"])).first()
+                    # Sometimes we get a string in officer["oo_id"], this parses it
+                    except ValueError:
+                        our_id = officer["oo_id"].split("value=\"")[1][:-2]
+                        of = Officer.query.filter_by(id=int(our_id)).first()
                     if of:
                         obj.officers.append(of)
 
