@@ -132,6 +132,7 @@ def bulk_add_officers(filename):
         assignment = Assignment()
         assignment.officer_id = officer.id
         assignment.star_no = line['badge']
+        assignment.supervisor_star_no = line['supervisor_badge']
         assignment.rank = line['rank']
         db.session.add(assignment)
         db.session.commit()
