@@ -13,6 +13,7 @@
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
         {{ wtf.form_field(form.star_no) }}
+        {{ wtf.form_field(form.supervisor_star_no) }}
         {{ wtf.form_field(form.rank) }}
         {{ wtf.form_field(form.unit) }}
         <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>

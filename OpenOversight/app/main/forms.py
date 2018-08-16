@@ -84,6 +84,8 @@ class FaceTag(Form):
 class AssignmentForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
+    supervisor_star_no = StringField('Supervisor Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
@@ -164,6 +166,8 @@ class AddOfficerForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
+    supervisor_star_no = StringField('Badge Number', default='', validators=[
+        Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='PO', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
