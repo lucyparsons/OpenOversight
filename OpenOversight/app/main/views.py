@@ -4,6 +4,7 @@ import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import sys
+import json
 import tempfile
 from traceback import format_exc
 from werkzeug import secure_filename
@@ -328,6 +329,64 @@ def list_officer(department_id, page=1, from_search=False):
         department=department,
         officers=officers,
         from_search=from_search)
+
+
+@main.route('/department/<int:department_id>/network')
+def network_view(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    # get a dict of current assignments together, keyed by officer id
+    all_assignments = Assignment.query.all()
+    current_dept_assignments = {}
+    for record in all_assignments:
+        if record.officer_id not in current_dept_assignments:
+            current_dept_assignments[record.officer_id] = record
+        else:
+            if record.star_date > current_dept_assignments[record.officer_id].star_date:
+                current_dept_assignments[record.officer_id] = record
+
+    # assemble a graph based on supervisor relationships
+    links = []
+    officer_nodes = []
+    officer_records = Officer.query.filter_by(department_id=department_id).all()
+    # central "department" node
+    officer_nodes.append({"id": "999999999", "rank": "", "last": department.name, "supervisor": "9999999999"})
+    # id refers to badge number in this method, not officer id. the key must be called "id" for d3.js
+    good_ids = [str(record.star_no) for record in current_dept_assignments.values()]
+    for record in officer_records:
+        officer_node = dict.fromkeys(["id", "rank", "last", "supervisor"])
+        assn = current_dept_assignments[record.id]
+        if len(str(assn.star_no)) < 6:
+            continue
+        officer_node["id"] = assn.star_no
+        officer_node["last"] = record.last_name
+        officer_node["rank"] = assn.rank
+
+        # officers without supervisors get assigned to the central "department" node for now
+        if(assn.supervisor_star_no is None or
+           len(assn.supervisor_star_no) == 0 or assn.supervisor_star_no == " "):
+            officer_node["supervisor"] = "999999999"
+            links.append({"source": str(assn.star_no),
+                          "target": "999999999",
+                          "value": "1"})
+        else:
+            if assn.supervisor_star_no in good_ids and assn.star_no in good_ids:
+                officer_node["supervisor"] = str(assn.supervisor_star_no)
+                links.append({"source": str(assn.supervisor_star_no),
+                              "target": str(assn.star_no),
+                              "value": "1"})
+            else:
+                officer_node["supervisor"] = "999999999"
+                links.append({"source": str(assn.star_no),
+                              "target": "999999999",
+                              "value": "1"})
+
+        officer_nodes.append(officer_node)
+
+    return render_template('network.html', department=department,
+                           graph=json.dumps({"nodes": officer_nodes, "links": links}))
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])
