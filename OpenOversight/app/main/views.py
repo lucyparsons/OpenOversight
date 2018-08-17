@@ -285,10 +285,17 @@ def add_department():
 @admin_required
 def edit_department(department_id):
     department = Department.query.get_or_404(department_id)
+    previous_name = department.name
     form = EditDepartmentForm(obj=department)
     if form.validate_on_submit():
-        department.name=form.name.data
-        department.short_name=form.short_name.data
+        new_name = form.name.data
+        if new_name != previous_name:
+            if Department.query.filter_by(name=new_name).count() > 0:
+                flash('Department {} already exists'.format(new_name))
+                return redirect(url_for('main.edit_department',
+                                        department_id=department_id))
+        department.name = new_name
+        department.short_name = form.short_name.data
         db.session.commit()
         flash('Department {} edited'.format(department.name))
         return redirect(url_for('main.list_officer', department_id=department.id))
