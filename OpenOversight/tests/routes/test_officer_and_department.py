@@ -10,7 +10,8 @@ from .route_helpers import login_admin, login_ac, process_form_data
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
-                                          EditOfficerForm, LinkForm)
+                                          EditOfficerForm, LinkForm,
+                                          EditDepartmentForm,)
 
 from OpenOversight.app.models import Department, Unit, Officer
 
@@ -300,6 +301,129 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         department = Department.query.filter_by(
             name='Chicago Police Department').one()
         assert department.short_name == 'CPD'
+
+
+def test_admin_can_edit_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        misspelled_form = DepartmentForm(name='Misspelled Police Department',
+                                         short_name='MPD')
+
+        misspelled_rv = client.post(
+            url_for('main.add_department'),
+            data=misspelled_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in misspelled_rv.data
+
+        department = Department.query.filter_by(name='Misspelled Police Department').one()
+
+        corrected_form = EditDepartmentForm(name='Corrected Police Department',
+                                            short_name='MPD')
+
+        corrected_rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=corrected_form.data,
+            follow_redirects=True
+        )
+
+        assert 'Department Corrected Police Department edited' in corrected_rv.data
+
+        # Check the department with the new name is now in the database.
+        corrected_department = Department.query.filter_by(
+            name='Corrected Police Department').one()
+        assert corrected_department.short_name == 'MPD'
+
+        # Check that the old name is no longer present:
+        assert Department.query.filter_by(
+            name='Misspelled Police Department').count() == 0
+
+        edit_short_name_form = EditDepartmentForm(name='Corrected Police Department',
+                                                  short_name='CPD')
+
+        edit_short_name_rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=edit_short_name_form.data,
+            follow_redirects=True
+        )
+
+        assert 'Department Corrected Police Department edited' in edit_short_name_rv.data
+
+        edit_short_name_department = Department.query.filter_by(
+            name='Corrected Police Department').one()
+        assert edit_short_name_department.short_name == 'CPD'
+
+
+def test_ac_cannot_edit_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        department = Department.query.first()
+
+        form = EditDepartmentForm(name='Corrected Police Department',
+                                  short_name='CPD')
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client,
+                                                              session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        existing_dep_form = DepartmentForm(name='Existing Police Department',
+                                           short_name='EPD')
+
+        existing_dep_rv = client.post(
+            url_for('main.add_department'),
+            data=existing_dep_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in existing_dep_rv.data
+
+        new_dep_form = DepartmentForm(name='New Police Department',
+                                      short_name='NPD')
+
+        new_dep_rv = client.post(
+            url_for('main.add_department'),
+            data=new_dep_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in new_dep_rv.data
+
+        new_department = Department.query.filter_by(
+            name='New Police Department').one()
+
+        edit_form = EditDepartmentForm(name='Existing Police Department',
+                                       short_name='EPD2')
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=new_department.id),
+            data=edit_form.data,
+            follow_redirects=True
+        )
+
+        assert 'already exists' in rv.data
+
+        # make sure original department is still here
+        existing_department = Department.query.filter_by(
+            name='Existing Police Department').one()
+        assert existing_department.short_name == 'EPD'
+
+        # make sure new department is left unchanged
+        new_department = Department.query.filter_by(
+            name='New Police Department').one()
+        assert new_department.short_name == 'NPD'
 
 
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
