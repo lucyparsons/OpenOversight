@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}OpenOversight Admin - Add Department{% endblock %}
+{% block title %}OpenOversight Admin - {% if update %} Update {% else %} Add {% endif %} Department{% endblock %}
 
 {% block content %}
 <div class="container theme-showcase" role="main">
 
 <div class="page-header">
-    <h1>Add Department</h1>
+    <h1>{% if update %} Update {% else %} Add {% endif %} Department</h1>
 </div>
 <div class="col-md-6">
     <form class="form" method="post" role="form">

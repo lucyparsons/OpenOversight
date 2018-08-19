@@ -44,13 +44,12 @@ function cloneFieldList(selector) {
 
 function removeParent(event) {
     event.preventDefault()
+    var things_to_add;
+    things_to_add = {"Plate Number" : "license plate", "Link" : "link", "OO Officer ID" : "officer"};
     var previousElement = event.target.parentElement.previousElementSibling
     var nextElement = event.target.parentElement.nextElementSibling
-    // If it's between the legend and the add button, it's the last remaining fieldset, and needs different handling
-    if(previousElement &&
-       previousElement.tagName === 'LEGEND' &&
-       nextElement &&
-       nextElement.tagName === 'BUTTON'){
+
+    if(previousElement && nextElement){
         var $lastElement = $(event.target.parentElement)
         // Remove any filled in values (but not the csrf token)
         $lastElement.find(':input:not(:hidden)').each(function(child) {
@@ -59,21 +58,37 @@ function removeParent(event) {
         $lastElement.hide()
         var add_button = $(nextElement)
         var fieldsetName = $(previousElement).text().slice(0, -1)
+        for (var key in things_to_add) {
+             if(fieldsetName.search(key) != -1) {
+                fieldsetName = things_to_add[key]
+                break;
+             }
+        }
 
-        // Remove previous click handler
-        add_button.off('click')
-        add_button.text('New ' + fieldsetName)
-        add_button.on('click', function(event) {
-            event.preventDefault()
-            $lastElement.show()
-            // remove this click handler
-            add_button.off('click')
-            add_button.text('Add another ' + fieldsetName)
-            // restore the previous add function
-            add_button.click(function (event) {
-                event.preventDefault()
-                cloneFieldList($(event.target.previousElementSibling));
-            });
-        })
-    }
+        // nextElement's textContent is short, like
+        // "Add another link" when we're removing the last element added
+        // When we are removing something that is not the
+        // last element added, it is huge (the whole input form)
+        // with lots of whitespace.
+        // If we're not removing the last element added,
+        // we already have a valid Add button so we don't
+        // want to create another
+        if (nextElement.textContent.length <= 40) {
+             // Remove previous click handler
+             add_button.off('click')
+             add_button.text('Add another ' + fieldsetName)
+             add_button.on('click', function(event) {
+                  event.preventDefault()
+                  $lastElement.show()
+                  // remove this click handler
+                  add_button.off('click')
+                  add_button.text('Add another ' + fieldsetName)
+                  // restore the previous add function
+                  add_button.click(function (event) {
+                      event.preventDefault()
+                      cloneFieldList($(event.target.previousElementSibling));
+                 });
+             })
+        }
+   }
 }

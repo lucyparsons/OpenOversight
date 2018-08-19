@@ -6,7 +6,7 @@ from OpenOversight.tests.conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
 
-from OpenOversight.app.main.forms import IncidentForm, LocationForm, LinkForm, LicensePlateForm
+from OpenOversight.app.main.forms import IncidentForm, LocationForm, LinkForm, LicensePlateForm, OOIdForm
 from OpenOversight.app.models import Incident, Officer, Department
 
 
@@ -100,6 +100,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         )
         links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
         license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+        ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
             date_field=str(new_date.date()),
@@ -110,7 +111,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             address=address_form.data,
             links=links_forms,
             license_plates=license_plates_forms,
-            officers=[officer.id for officer in inc.officers]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -146,6 +147,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         old_license_plates = inc.license_plates
         new_number = '453893'
         license_plates_form = LicensePlateForm(number=new_number, state='IA')
+        ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
             date_field=str(inc.date.date()),
@@ -156,7 +158,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
             address=address_form.data,
             links=old_links_forms + [link_form.data],
             license_plates=[license_plates_form.data],
-            officers=[officer.id for officer in inc.officers]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -190,6 +192,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             state=inc.address.state,
             zip_code=inc.address.zip_code
         )
+        ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
             date_field=date(1899, 12, 5),
@@ -198,7 +201,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             description=inc.description,
             department='1',
             address=address_form.data,
-            officers=[officer.id for officer in inc.officers]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -224,6 +227,8 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             state='',
             zip_code='03435'
         )
+        ooid_forms = [OOIdForm(ooid=officer.id)
+                      for officer in Officer.query.all()[:5]]
 
         form = IncidentForm(
             date_field=str(date.date()),
@@ -232,7 +237,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             description='Something happened',
             department='1',
             address=address_form.data,
-            officers=[officer.id for officer in Officer.query.all()[:5]]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -265,6 +270,8 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(mockdata, 
 
         # license plate number given, but no state selected => 'Must also select a state.'
         license_plate_form = LicensePlateForm(number='ABCDE', state='')
+        ooid_forms = [OOIdForm(ooid=officer.id)
+                      for officer in Officer.query.all()[:5]]
 
         form = IncidentForm(
             # no date given => 'This field is required.'
@@ -276,7 +283,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(mockdata, 
             department='-1',
             address=address_form.data,
             license_plates=[license_plate_form.data],
-            officers=[officer.id for officer in Officer.query.all()[:5]]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -311,8 +318,10 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
 
         old_officers = inc.officers
         old_officer_ids = [officer.id for officer in inc.officers]
+        old_ooid_forms = [OOIdForm(oo_id=the_id) for the_id in old_officer_ids]
         # get a new officer that is different from the old officers
         new_officer = Officer.query.except_(Officer.query.filter(Officer.id.in_(old_officer_ids))).first()
+        new_ooid_form = OOIdForm(oo_id=new_officer.id)
 
         form = IncidentForm(
             date_field=str(inc.date.date()),
@@ -323,7 +332,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             address=address_form.data,
             links=links_forms,
             license_plates=license_plates_forms,
-            officers=old_officer_ids + [new_officer.id]
+            officers=old_ooid_forms + [new_ooid_form]
         )
         data = process_form_data(form.data)
 
@@ -337,6 +346,52 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         for officer in old_officers:
             assert officer in inc.officers
         assert new_officer.id in [off.id for off in inc.officers]
+
+
+def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        inc = Incident.query.first()
+
+        address_form = LocationForm(
+            street_name=inc.address.street_name,
+            cross_street1=inc.address.cross_street1,
+            cross_street2=inc.address.cross_street2,
+            city=inc.address.city,
+            state=inc.address.state,
+            zip_code=inc.address.zip_code
+        )
+        links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
+        license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+
+        old_officers = inc.officers
+        old_officer_ids = [officer.id for officer in inc.officers]
+        old_ooid_forms = [OOIdForm(oo_id=the_id) for the_id in old_officer_ids]
+        # create an OOIdForm with an invalid officer ID
+        new_ooid_form = OOIdForm(oo_id="99999999999999999")
+
+        form = IncidentForm(
+            date_field=str(inc.date.date()),
+            time_field=str(inc.date.time()),
+            report_number=inc.report_number,
+            description=inc.description,
+            department='1',
+            address=address_form.data,
+            links=links_forms,
+            license_plates=license_plates_forms,
+            officers=old_ooid_forms + [new_ooid_form]
+        )
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Not a valid officer id' in rv.data
+        for officer in old_officers:
+            assert officer in inc.officers
 
 
 def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
@@ -354,6 +409,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         )
         links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
         license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+        ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
             date_field=str(new_date.date()),
@@ -364,7 +420,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             address=address_form.data,
             links=links_forms,
             license_plates=license_plates_forms,
-            officers=[officer.id for officer in inc.officers]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 
@@ -395,6 +451,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         )
         links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
         license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+        ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
             date_field=str(new_date.date()),
@@ -405,7 +462,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
             address=address_form.data,
             links=links_forms,
             license_plates=license_plates_forms,
-            officers=[officer.id for officer in inc.officers]
+            officers=ooid_forms
         )
         data = process_form_data(form.data)
 

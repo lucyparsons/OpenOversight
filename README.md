@@ -31,7 +31,7 @@ vagrant up
 vagrant ssh
 ```
 
-And open `http://localhost:3000` in your favorite browser!
+And open `http://localhost:5000` in your favorite browser!
 
 If you need to log in, use the auto-generated test account
 credentials:
@@ -42,6 +42,13 @@ Password: testtest
 ```
 
 Please see [CONTRIB.md](/CONTRIB.md) for the full developer setup instructions.
+
+## Documentation Quickstart
+
+```
+pip install dev-requirements.txt
+make docs
+```
 
 ## Deployment
 

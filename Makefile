@@ -1,12 +1,12 @@
-.PHONY: default build run
-
 default: dev build start test stop clean
 
-dev:
+.PHONY: dev
+dev:  ## Build and run containers
 	make build
 	make start
 
-build:
+.PHONY: build
+build:  ## Build containers
 	docker-compose build postgres
 	docker-compose up -d postgres
 	docker-compose build web
@@ -14,15 +14,31 @@ build:
 	docker-compose run --rm web /usr/local/bin/python ../create_db.py
 	docker-compose run --rm web /usr/local/bin/python ../test_data.py -p
 
-start:
+.PHONY: start
+start:  ## Run containers
 	docker-compose up -d
 
-clean:
+.PHONY: clean
+clean:  ## Remove containers
 	docker rm openoversight_web_1
 	docker rm openoversight_postgres_1
 
-test:
+.PHONY: test
+test:  ## Run tests
 	docker-compose run --rm web /usr/local/bin/pytest -v tests/
 
-stop:
+.PHONY: stop
+stop:  ## Stop containers
 	docker-compose stop
+
+.PHONY: docs
+docs: ## Build project documentation in live reload for editing
+	make -C docs/ clean && sphinx-autobuild docs/ docs/_build/html
+
+.PHONY: help
+help: ## Print this message and exit
+	@printf "OpenOversight: Makefile for development, documentation and testing.\n"
+	@printf "Subcommands:\n\n"
+	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%s\033[0m : %s\n", $$1, $$2}' $(MAKEFILE_LIST) \
+		| sort \
+		| column -s ':' -t

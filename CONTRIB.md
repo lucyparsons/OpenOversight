@@ -50,7 +50,7 @@ Make sure you've started VirtualBox, and then in your project directory, run:
 
 `vagrant up`
 
-This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:3000` that you can browse to on your host machine.
+This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:5000` that you can browse to on your host machine.
 
 In addition, you can now SSH into it:
 
@@ -72,11 +72,17 @@ In the VM instance, your code is copied to a folder inside of `/vagrant`, so you
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight
 ```
 
+Tests can be run with:
+```sh
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/$ cd tests
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/tests$ pytest
+```
+
 *Note:* the photo upload functionality - which uses an S3 bucket - and the email functionality - which
 requires an email account - do not work in the development environment as they require some environment
 variables to be configured.
 
-## Server commands
+#### Dynamically reloading changes
 
 The app, as provisioned, is running under gunicorn, which means that it does not dynamically reload your changes.
 
@@ -88,11 +94,31 @@ $ sudo service gunicorn stop
  * Stopping Gunicorn workers
  [oo] *
 (oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/ # (again, if you're not already there)
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver
- * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
+(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver --host 0.0.0.0
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
 ```
+
+#### Changing the Development Environment
+
+If you're making massive changes to the development environment provisioning, you should know that Vagrant and the Puppet modules that provision the box use Ruby, so you'll want some reasonably-modern Ruby. Anything in the 2.0-2.2 area should work. Puppet has some annoying interactions where puppet 3 doesn't work with ruby 2.2, though, so you might have to get creative on modern OSes.
+
+If you don't have bundler installed:
+
+`gem install bundler`
+
+If you don't have rake installed:
+
+`bundle install`
+
+Then provision the VM:
+
+`rake vagrant:provision`
+
+Puppet modules are dropped into place by librarian-puppet, and there's a rake task that'll do it without the headache of remembering all the paths and such:
+
+`rake vagrant:build_puppet`
 
 ## Database commands
 
@@ -105,16 +131,16 @@ psql  -h localhost -d openoversight-dev -U openoversight --password
 with the password `terriblepassword`.
 
 
-The provisioning step already does this, but in case you need it, in the `/vagrant` directory, there is a script to create the database:
+In the Docker environment, you'll need to run the script to create the database:
 
 ```sh
-~/oovirtenv/bin/python create_db.py
+$ python create_db.py
 ```
 
 In the event that you need to create or delete the test data, you can do that with
-`~/oovirtenv/bin/python test_data.py --populate` to create the data
+`$ python test_data.py --populate` to create the data
 or
-`~/oovirtenv/bin/python test_data.py --cleanup` to delete the data
+`$ python test_data.py --cleanup` to delete the data
 
 ### Migrating the Database
 
@@ -123,13 +149,13 @@ If you e.g. add a new column or table, you'll need to migrate the database.
 You can use the management interface to first generate migrations:
 
 ```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py db migrate
+$ python manage.py db migrate
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
 
 ```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py db upgrade
+$ python manage.py db upgrade
 ```
 
 You can also downgrade the database using `python manage.py db downgrade`.
@@ -139,7 +165,7 @@ You can also downgrade the database using `python manage.py db downgrade`.
 In addition to running the development server, `manage.py` (OpenOversight's management interface) can be used to do the following:
 
 ```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py
+$ python manage.py
 --------------------------------------------------------------------------------
 INFO in __init__ [/vagrant/OpenOversight/app/__init__.py:57]:
 OpenOversight startup
@@ -164,39 +190,10 @@ optional arguments:
 In development, you can make an administrator account without having to confirm your email:
 
 ```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py make_admin_user
+$ python manage.py make_admin_user
 Username: redshiftzero
 Email: jen@redshiftzero.com
 Password:
 Type your password again:
 Administrator redshiftzero successfully added
 ```
-
-## Running Unit Tests
-
- Run tests with `pytest`:
-
-```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/$ cd tests
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/tests$ pytest
-```
-
-## Changing the Development Environment
-
-If you're making massive changes to the development environment provisioning, you should know that Vagrant and the Puppet modules that provision the box use Ruby, so you'll want some reasonably-modern Ruby. Anything in the 2.0-2.2 area should work. Puppet has some annoying interactions where puppet 3 doesn't work with ruby 2.2, though, so you might have to get creative on modern OSes.
-
-If you don't have bundler installed:
-
-`gem install bundler`
-
-If you don't have rake installed:
-
-`bundle install`
-
-Then provision the VM:
-
-`rake vagrant:provision`
-
-Puppet modules are dropped into place by librarian-puppet, and there's a rake task that'll do it without the headache of remembering all the paths and such:
-
-`rake vagrant:build_puppet`

@@ -26,7 +26,7 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, NoteForm, EditNoteForm,
-                    AddImageForm)
+                    AddImageForm, EditDepartmentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note)
@@ -277,7 +277,30 @@ def add_department():
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
     else:
-        return render_template('add_department.html', form=form)
+        return render_template('add_edit_department.html', form=form)
+
+
+@main.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_department(department_id):
+    department = Department.query.get_or_404(department_id)
+    previous_name = department.name
+    form = EditDepartmentForm(obj=department)
+    if form.validate_on_submit():
+        new_name = form.name.data
+        if new_name != previous_name:
+            if Department.query.filter_by(name=new_name).count() > 0:
+                flash('Department {} already exists'.format(new_name))
+                return redirect(url_for('main.edit_department',
+                                        department_id=department_id))
+        department.name = new_name
+        department.short_name = form.short_name.data
+        db.session.commit()
+        flash('Department {} edited'.format(department.name))
+        return redirect(url_for('main.list_officer', department_id=department.id))
+    else:
+        return render_template('add_edit_department.html', form=form, update=True)
 
 
 @main.route('/department/<int:department_id>')
@@ -656,7 +679,7 @@ class IncidentApi(ModelView):
     def get_new_form(self):
         form = self.form()
         if request.args.get('officer_id'):
-            form.officers[0].data = request.args.get('officer_id')
+            form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
             link.user_id.data = current_user.id
@@ -673,6 +696,9 @@ class IncidentApi(ModelView):
                 continue
             else:
                 link.user_id.data = current_user.id
+
+        for officer_idx, officer in enumerate(obj.officers):
+            form.officers[officer_idx].oo_id.data = officer.id
 
         # set the form to have fields for all the current model's items
         form.license_plates.min_entries = no_license_plates
@@ -701,9 +727,14 @@ class IncidentApi(ModelView):
         officers = form.data.pop('officers')
         del form.officers
         if officers:
-            for officer_id in officers:
-                if officer_id:
-                    of = Officer.query.filter_by(id=int(officer_id)).first()
+            for officer in officers:
+                if officer["oo_id"]:
+                    try:
+                        of = Officer.query.filter_by(id=int(officer["oo_id"])).first()
+                    # Sometimes we get a string in officer["oo_id"], this parses it
+                    except ValueError:
+                        our_id = officer["oo_id"].split("value=\"")[1][:-2]
+                        of = Officer.query.filter_by(id=int(our_id)).first()
                     if of:
                         obj.officers.append(of)
 

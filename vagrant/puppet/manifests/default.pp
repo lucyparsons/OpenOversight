@@ -87,7 +87,7 @@
     ensure     => present,
     virtualenv => $virtualenv,
     dir        => "${source_path}/OpenOversight",
-    bind       => '0.0.0.0:3000',
+    bind       => '0.0.0.0:5000',
     require    => [ File["${source_path}/OpenOversight/.env"], Postgresql::Server::Db['openoversight-dev'] ]
   }
 

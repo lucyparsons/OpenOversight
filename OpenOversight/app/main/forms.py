@@ -103,6 +103,10 @@ class DepartmentForm(Form):
     submit = SubmitField(label='Add')
 
 
+class EditDepartmentForm(DepartmentForm):
+    submit = SubmitField(label='Update')
+
+
 class LinkForm(Form):
     title = StringField(
         validators=[Length(max=100, message='Titles are limited to 100 characters.')],
@@ -291,11 +295,24 @@ class OfficerIdField(StringField):
         else:
             self.data = value
 
-    def pre_validate(self, form):
-        if self.data:
-            officer = Officer.query.get(int(self.data))
-            if not officer:
-                raise ValueError('Not a valid officer id')
+
+def validate_oo_id(self, field):
+    if field.data:
+        try:
+            officer_id = int(field.data)
+            officer = Officer.query.get(officer_id)
+
+        # Sometimes we get a string in field.data with py.test, this parses it
+        except ValueError:
+            officer_id = field.data.split("value=\"")[1][:-2]
+            officer = Officer.query.get(officer_id)
+
+        if not officer:
+            raise ValidationError('Not a valid officer id')
+
+
+class OOIdForm(Form):
+    oo_id = StringField('OO Officer ID', validators=[validate_oo_id])
 
 
 class IncidentForm(DateFieldForm):
@@ -309,8 +326,8 @@ class IncidentForm(DateFieldForm):
         query_factory=dept_choices,
         get_label='name')
     address = FormField(LocationForm)
-    officers = FieldList(
-        OfficerIdField('OO Officer ID'),
+    officers = FieldList(FormField(
+        OOIdForm, widget=FormFieldWidget()),
         description='Officers present at the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
