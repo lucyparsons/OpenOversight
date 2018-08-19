@@ -21,15 +21,16 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
                      set_dynamic_default, create_note,
-                     get_uploaded_cropped_image)
+                     get_uploaded_cropped_image, create_description)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm,
+                    EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit, Incident, Location, LicensePlate, Link, Note)
+                      Unit, Incident, Location, LicensePlate, Link, Note,
+                      Description)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -771,14 +772,11 @@ main.add_url_rule(
     methods=['GET', 'POST'])
 
 
-class NoteApi(ModelView):
-    model = Note
-    model_name = 'note'
+class TextApi(ModelView):
     order_by = 'date_created'
     descending = True
-    form = NoteForm
-    create_function = create_note
     department_check = True
+    form = TextForm
 
     def get_new_form(self):
         form = self.form()
@@ -791,20 +789,39 @@ class NoteApi(ModelView):
     def get_post_delete_url(self, *args, **kwargs):
         return self.get_redirect_url()
 
-    def get_edit_form(self, obj):
-        form = EditNoteForm(obj=obj)
-        return form
-
     def get_department_id(self, obj):
         return self.department_id
+
+    def get_edit_form(self, obj):
+        form = EditTextForm(obj=obj)
+        return form
 
     def dispatch_request(self, *args, **kwargs):
         if 'officer_id' in kwargs:
             officer = Officer.query.get_or_404(kwargs['officer_id'])
             self.officer_id = kwargs.pop('officer_id')
             self.department_id = officer.department_id
+        return super(TextApi, self).dispatch_request(*args, **kwargs)
 
+
+class NoteApi(TextApi):
+    model = Note
+    model_name = 'note'
+    form = TextForm
+    create_function = create_note
+
+    def dispatch_request(self, *args, **kwargs):
         return super(NoteApi, self).dispatch_request(*args, **kwargs)
+
+
+class DescriptionApi(TextApi):
+    model = Description
+    model_name = 'description'
+    form = TextForm
+    create_function = create_description
+
+    def dispatch_request(self, *args, **kwargs):
+        return super(DescriptionApi, self).dispatch_request(*args, **kwargs)
 
 
 note_view = NoteApi.as_view('note_api')
@@ -823,4 +840,22 @@ main.add_url_rule(
 main.add_url_rule(
     '/officer/<int:officer_id>/note/<int:obj_id>/delete',
     view_func=note_view,
+    methods=['GET', 'POST'])
+
+description_view = DescriptionApi.as_view('description_api')
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/new',
+    view_func=description_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>',
+    view_func=description_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>/edit',
+    view_func=description_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>/delete',
+    view_func=description_view,
     methods=['GET', 'POST'])
