@@ -191,7 +191,9 @@
     	</div>{# end col #}
     {% endif %}
     <div class='col-sm-12 col-md-6'>
+       {% if officer.descriptions %}
        <h3>Descriptions</h3>
+       {% endif %}
        <ul class="list-group">
           {% for description in officer.descriptions %}
           <li class="list-group-item">
@@ -214,8 +216,14 @@
           </li>
           {% endfor %}
        </ul>
+       {% if current_user.is_administrator
+                   or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+       {% if not officer.descriptions %}
+       <h3>Descriptions</h3>
+       {% endif %}
        <a href="{{ url_for('main.description_api', officer_id=officer.id) }}" class='btn btn-primary'>New description</a>
-    </div>
+       </div>
+       {% endif %}
     </div>{# end col #}
     {% if current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
