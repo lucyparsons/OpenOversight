@@ -62,6 +62,7 @@ class Officer(db.Model):
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
+    unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
     # we don't expect to pull up officers via link often so we make it lazy.
     links = db.relationship(
         'Link',
