@@ -230,6 +230,14 @@ class AddUnitForm(Form):
     submit = SubmitField(label='Add')
 
 
+class AddImageForm(Form):
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
+
+
 class DateFieldForm(Form):
     date_field = DateField('Date <span class="text-danger">*</span>', validators=[Required()])
     time_field = TimeField('Time', validators=[Optional()])

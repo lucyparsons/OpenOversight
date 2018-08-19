@@ -18,7 +18,6 @@ from OpenOversight.app.models import Department, Unit, Officer
 
 @pytest.mark.parametrize("route", [
     ('/submit'),
-    ('/submit/department/1'),
     ('/label'),
     ('/department/1'),
     ('/officer/3'),
