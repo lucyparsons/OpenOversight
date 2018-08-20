@@ -655,6 +655,12 @@ def download_incidents_csv(department_id):
     return Response(csv, mimetype="text/csv", headers=csv_headers)
 
 
+@main.route('/download/all', methods=['GET'])
+def all_data():
+    departments = Department.query.all()
+    return render_template('all_depts.html', departments=departments)
+
+
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
 @limiter.limit('250/minute')
 def upload(department_id):
