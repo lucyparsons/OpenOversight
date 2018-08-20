@@ -21,3 +21,4 @@ RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
 
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
 LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]
+AGE_CHOICES = [(str(age), str(age)) for age in range(16, 101)]
