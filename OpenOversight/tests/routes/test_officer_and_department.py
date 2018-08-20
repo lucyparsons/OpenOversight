@@ -1,6 +1,8 @@
 # Routing and view tests
 import pytest
 import random
+import datetime
+import time
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
@@ -10,7 +12,7 @@ from .route_helpers import login_admin, login_ac, process_form_data
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
-                                          EditOfficerForm, LinkForm)
+                                          EditOfficerForm, LinkForm, BrowseForm)
 
 from OpenOversight.app.models import Department, Unit, Officer
 
@@ -747,6 +749,116 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
         assert officer.race == 'WHITE'
         assert officer.gender == 'M'
         assert officer.suffix == 'Jr'
+
+
+def test_browse_filtering(client, mockdata, session):
+    with current_app.test_request_context():
+        race_list = ["BLACK", "WHITE"]
+        gender_list = ["M", "F"]
+        rank_list = ["COMMANDER", "PO"]
+        department_id = Department.query.first().id
+
+        # Test that nothing incorrect appears in filtered data
+        for race in race_list:
+            for gender in gender_list:
+                for rank in rank_list:
+                    form = BrowseForm(race=race,
+                                      gender=gender,
+                                      rank=rank,
+                                      min_age=16,
+                                      max_age=100)
+
+                    data = process_form_data(form.data)
+
+                    rv = client.post(
+                        url_for('main.list_officer', department_id=department_id),
+                        data=data,
+                        follow_redirects=True
+                    )
+
+                    # Test that the combinations that should be filtered
+                    # do not appear in the data
+                    filter_list = rv.data.split("<dt>Race</dt>")[1:]
+                    if race == "BLACK":
+                        bad_substr = "<dd>White</dd>"
+                    else:
+                        bad_substr = "<dd>Black</dd>"
+                    assert not any(bad_substr in token for token in filter_list)
+
+                    filter_list = rv.data.split("<dt>Gender</dt>")[1:]
+                    if gender == "M":
+                        bad_substr = "<dd>F</dd>"
+                    else:
+                        bad_substr = "<dd>M</dd>"
+                    assert not any(bad_substr in token for token in filter_list)
+
+                    filter_list = rv.data.split("<dt>Rank</dt>")[1:]
+                    if rank == "COMMANDER":
+                        bad_substr = "<dd>PO</dd>"
+                    else:
+                        bad_substr = "<dd>COMMANDER</dd>"
+                    assert not any(bad_substr in token for token in filter_list)
+
+        # Pause for rate limiting
+        time.sleep(1)
+
+        # Add a officer with a specific race, gender, rank and age to the first page
+        login_admin(client)
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
+        ]
+        form = AddOfficerForm(first_name='A',
+                              last_name='A',
+                              middle_initial='A',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department_id,
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'A' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='A').one()
+        assert officer.first_name == 'A'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+
+        # Check that added officer appears when filtering for this race, gender, rank and age
+        form = BrowseForm(race='WHITE',
+                          gender='M',
+                          rank='COMMANDER',
+                          min_age=datetime.datetime.now().year - 1991,
+                          max_age=datetime.datetime.now().year - 1989)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.list_officer', department_id=department_id),
+            data=data,
+            follow_redirects=True
+        )
+
+        filter_list = rv.data.split("<dt>Race</dt>")[1:]
+        assert any("<dd>White</dd>" in token for token in filter_list)
+
+        filter_list = rv.data.split("<dt>Rank</dt>")[1:]
+        assert any("<dd>COMMANDER</dd>" in token for token in filter_list)
+
+        filter_list = rv.data.split("<dt>Gender</dt>")[1:]
+        assert any("<dd>M</dd>" in token for token in filter_list)
 
 
 # def test_find_form_submission(client, mockdata):

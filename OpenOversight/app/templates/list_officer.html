@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block content %}
 <div class="container" role="main">
@@ -8,13 +9,33 @@
     <h2>Other Officers from {{ department.name|title }}</h2>
   {% else %}
     <h4><a href="/find">Search for officers</a></h4>
+    <h4>Filter officers</h4>
+    <div>
+      <form class="form" method="post" role="form">
+         <div class="browse-form-input">
+          {{ wtf.form_field(form.race) }}
+        </div>
+        <div class="browse-form-input">
+          {{ wtf.form_field(form.gender) }}
+        </div>
+        <div class="browse-form-input">
+          {{ wtf.form_field(form.rank) }}
+        </div>
+        <div class="browse-form-input">
+          {{ wtf.form_field(form.min_age) }}
+          {{ wtf.form_field(form.min_age).label }}
+        </div>
+        <div class="browse-form-input">
+          {{ wtf.form_field(form.max_age) }}
+        </div>
+        <br>
+        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+    </div>
     <h1>
       {{ department.name|title }} Officers
     </h1>
   {% endif %}
-  {% with paginate=officers, next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search), prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search), location='top'%}
+  {% with paginate=officers, location='top'%}
     {% include "partials/paginate_nav.html" %}
   {% endwith %}
   <ul class="list-group">
@@ -39,7 +60,7 @@
                 <div class="col-md-6 col-xs-6">
                   <dl>
                     <dt>Rank</dt>
-                    <dd>{{ officer.rank|default('Unknown') }}</dd>
+                    <dd>{{ assignment.rank|default('Unknown') }}</dd>
                     <dt>Race</dt>
                     <dd>{{ officer.race.lower()|title|default('Unknown') }}</dd>
                   </dl>
@@ -68,4 +89,6 @@
     {% include "partials/paginate_nav.html" %}
   {% endwith %}
 </div>
+<script src="{{ url_for('static', filename='js/browseFiltering.js') }}"></script>¬
+</form>
 {% endblock content %}

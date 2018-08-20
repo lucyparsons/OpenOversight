@@ -10,7 +10,7 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
+from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES, AGE_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
@@ -333,4 +333,18 @@ class IncidentForm(DateFieldForm):
     creator_id = HiddenField(validators=[Required(message='Incidents must have a creator id.')])
     last_updated_id = HiddenField(validators=[Required(message='Incidents must have a user id for editing.')])
 
+    submit = SubmitField(label='Submit')
+
+
+class BrowseForm(Form):
+    rank = SelectField('rank', default='Not Sure', choices=RANK_CHOICES,
+                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
+                       validators=[AnyOf(allowed_values(RACE_CHOICES))])
+    gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,
+                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    min_age = SelectField('minimum age', default=16, choices=AGE_CHOICES,
+                          validators=[AnyOf(allowed_values(AGE_CHOICES))])
+    max_age = SelectField('maximum age', default=100, choices=AGE_CHOICES,
+                          validators=[AnyOf(allowed_values(AGE_CHOICES))])
     submit = SubmitField(label='Submit')
