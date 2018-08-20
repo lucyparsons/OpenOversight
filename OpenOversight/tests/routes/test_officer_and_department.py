@@ -2,7 +2,6 @@
 import pytest
 import random
 import datetime
-import time
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
@@ -751,7 +750,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
         assert officer.suffix == 'Jr'
 
 
-def test_browse_filtering(client, mockdata, session):
+def test_browse_filtering_filters_bad(client, mockdata, session):
     with current_app.test_request_context():
         race_list = ["BLACK", "WHITE"]
         gender_list = ["M", "F"]
@@ -799,8 +798,10 @@ def test_browse_filtering(client, mockdata, session):
                         bad_substr = "<dd>COMMANDER</dd>"
                     assert not any(bad_substr in token for token in filter_list)
 
-        # Pause for rate limiting
-        time.sleep(1)
+
+def test_browse_filtering_allows_good(client, mockdata, session):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
 
         # Add a officer with a specific race, gender, rank and age to the first page
         login_admin(client)
