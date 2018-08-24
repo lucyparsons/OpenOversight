@@ -20,12 +20,12 @@ services:
      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
    volumes:
-     - ./OpenOversight/:/usr/src/app/OpenOversight/
+     - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    links:
      - postgres:postgres
    expose:
      - "3000"
-   command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:3000 app:app
+   command: /usr/local/bin/gunicorn --reload -w 4 -b 0.0.0.0:3000 app:app
    ports:
      - "3000:3000"
      - "5433:5432"
