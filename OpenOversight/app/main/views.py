@@ -51,7 +51,7 @@ def index():
 
 @main.route('/browse', methods=['GET'])
 def browse():
-    departments = Department.query.all()
+    departments = Department.query.filter(Department.officers.any())
     return render_template('browse.html', departments=departments)
 
 
