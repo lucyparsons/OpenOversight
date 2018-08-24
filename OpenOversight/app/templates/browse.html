@@ -26,11 +26,8 @@
             <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
                Incidents
             </a>
-        {% endif %}
-          <a class="btn btn-lg btn-primary" href="{{ url_for('main.network_view', department_id=department.id) }}">
-             Visualize
-          </a>
         </p>
+        {% endif %}
       </div>
     </p>
   {% endfor %}

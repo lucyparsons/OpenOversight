@@ -4,7 +4,11 @@
 }
 
 .nodes circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
+  stroke: #0000ff;
+  stroke-width: 0.5px;
 }
 
+.nodes text {
+  font-family: sans-serif;
+  font-size: 10px;
+}
