@@ -9,7 +9,7 @@ from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_mail import Mail
 
-from config import config
+from .config import config
 
 
 bootstrap = Bootstrap()

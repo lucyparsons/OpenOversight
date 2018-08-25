@@ -17,3 +17,4 @@ gunicorn==19.9
 Fabric==1.14.0
 itsdangerous==0.24
 us>=1.0
+future
