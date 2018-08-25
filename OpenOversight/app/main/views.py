@@ -150,7 +150,7 @@ def officer_profile(officer_id):
         ))
 
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+                           faces=faces, assignments=assignments, form=form)
 
 
 @main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
