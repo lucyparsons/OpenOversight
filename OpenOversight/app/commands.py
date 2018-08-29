@@ -91,46 +91,89 @@ def link_officers_to_department():
 @with_appcontext
 def bulk_add_officers(filename):
     """Bulk adds officers."""
-    csvfile = csv.DictReader(open(filename))
-    departments = {}
-    n_created = 0
-    for line in csvfile:
-        department_id = line['department_id']
-        department = departments.get(department_id)
-        if line['department_id'] not in departments:
-            department = Department.query.filter_by(id=department_id).one_or_none()
-            if department:
-                departments[department_id] = department
+    with open(filename, 'r') as f:
+        csvfile = csv.DictReader(f)
+        departments = {}
+        n_created = 0
+
+        # Assert required fields are in CSV file
+        required_fields = [
+            'department_id',
+            'first_name',
+            'last_name',
+        ]
+        for field in required_fields:
+            if field not in csvfile.fieldnames:
+                raise Exception('Missing required field {}'.format(field))
+        if 'badge' not in csvfile.fieldnames and 'unique_internal_identifier' not in csvfile.fieldnames:
+            raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
+
+        for line in csvfile:
+            department_id = line['department_id']
+            department = departments.get(department_id)
+            if line['department_id'] not in departments:
+                department = Department.query.filter_by(id=department_id).one_or_none()
+                if department:
+                    departments[department_id] = department
+                else:
+                    raise Exception('Department ID {} not found'.format(department_id))
+
+            # check for existing officer based on name
+            if 'unique_internal_identifier' in csvfile.fieldnames and line['unique_internal_identifier']:
+                if Officer.query.filter_by(
+                    department_id=department_id,
+                    unique_internal_identifier=line['unique_internal_identifier']
+                ).one_or_none():
+                    print('Skipping creation of existing officer with ID {} for department ID {}'.format(line['unique_internal_identifier'],
+                                                                                                         department_id))
+                    continue
+            elif 'badge' in csvfile.fieldnames and line['badge']:
+                if officer_exists(department_id, line['badge'], line['first_name'], line['last_name']):
+                    print('Skipping creation of existing officer {} {} #{} for department ID {}'.format(line['first_name'],
+                                                                                                        line['last_name'],
+                                                                                                        line['badge'],
+                                                                                                        department_id))
+                    continue
             else:
-                raise Exception('Department ID {} not found'.format(department_id))
+                raise Exception('Officer {} {} missing badge number and unique identifier'.format(line['first_name'],
+                                                                                                  line['last_name']))
 
-        # check for existing officer based on name
-        if officer_exists(department_id, line['first_name'], line['last_name'],
-                          line['middle_initial'], line['suffix']):
-            print 'Skipping creation of existing officer {} {} for department id {}'.format(line['first_name'],
-                                                                                            line['last_name'],
-                                                                                            department_id)
-            continue
+            # create officer
+            officer = Officer()
+            officer.department_id = department_id
+            officer.last_name = line['last_name']
+            officer.first_name = line['first_name']
+            if 'middle_initial' in csvfile.fieldnames:
+                officer.middle_initial = line['middle_initial']
+            if 'suffix' in csvfile.fieldnames:
+                officer.suffix = line['suffix']
+            if 'race' in csvfile.fieldnames:
+                officer.race = line['race']
+            if 'gender' in csvfile.fieldnames:
+                officer.gender = line['gender']
+            if 'employment_date' in csvfile.fieldnames:
+                officer.employment_date = line['employment_date']
+            if 'birth_year' in csvfile.fieldnames:
+                officer.birth_year = line['birth_year']
+            if 'unique_internal_identifier' in csvfile.fieldnames:
+                officer.unique_internal_identifier = line['unique_internal_identifier']
+            db.session.add(officer)
+            db.session.commit()
 
-        # create officer
-        officer = Officer()
-        officer.department_id = department_id
-        officer.last_name = line['last_name']
-        officer.first_name = line['first_name']
-        officer.middle_initial = line['middle_initial']
-        officer.suffix = line['suffix']
-        officer.race = line['race']
-        officer.gender = line['gender']
-        officer.employment_date = line['employment_date']
-        officer.birth_year = line['birth_year']
-        db.session.add(officer)
-        db.session.commit()
+            assignment = Assignment()
+            assignment.officer_id = officer.id
+            if 'badge' in csvfile.fieldnames:
+                assignment.star_no = line['badge']
+            if 'rank' in csvfile.fieldnames:
+                assignment.rank = line['rank']
+            if 'unit' in csvfile.fieldnames:
+                assignment.unit = line['unit']
+            if 'star_date' in csvfile.fieldnames:
+                assignment.star_date = line['star_date']
+            if 'resign_date' in csvfile.fieldnames:
+                assignment.resign_date = line['resign_date']
+            db.session.add(assignment)
+            db.session.commit()
 
-        assignment = Assignment()
-        assignment.officer_id = officer.id
-        assignment.star_no = line['badge']
-        assignment.rank = line['rank']
-        db.session.add(assignment)
-        db.session.commit()
-        n_created += 1
-    print 'created {} officers'.format(n_created)
+            n_created += 1
+        print('Created {} officers'.format(n_created))

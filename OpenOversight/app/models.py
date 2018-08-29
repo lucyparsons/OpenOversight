@@ -89,8 +89,6 @@ class Officer(db.Model):
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
 
-    __table_args__ = (UniqueConstraint('first_name', 'middle_initial', 'last_name', 'suffix'), )
-
     def full_name(self):
         if self.middle_initial:
             if self.suffix:
