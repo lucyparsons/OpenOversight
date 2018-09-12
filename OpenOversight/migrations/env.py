@@ -3,6 +3,11 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import logging
+import sys
+import os
+
+# Add our Flask app to the search paths for modules
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
