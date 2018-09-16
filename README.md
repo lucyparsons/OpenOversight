@@ -47,7 +47,7 @@ Please see [CONTRIB.md](/CONTRIB.md) for the full developer setup instructions.
 ## Documentation Quickstart
 
 ```
-pip install dev-requirements.txt
+pip install -r dev-requirements.txt
 make docs
 ```
 
