@@ -54,7 +54,7 @@ def create_app(config_name='default'):
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
-    app.logger.info('OpenOversight startup')
+    app.logger.info('BPD Watch startup')
 
     # Also log when endpoints are getting hit hard
     limiter.logger.addHandler(file_handler)

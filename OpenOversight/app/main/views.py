@@ -273,7 +273,7 @@ def add_department():
                                     short_name=form.short_name.data)
             db.session.add(department)
             db.session.commit()
-            flash('New department {} added to OpenOversight'.format(department.name))
+            flash('New department {} added to BPD Watch'.format(department.name))
         else:
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
@@ -345,7 +345,7 @@ def add_officer():
             abort(403)
     if form.validate_on_submit():
         officer = add_officer_profile(form, current_user)
-        flash('New Officer {} added to OpenOversight'.format(officer.last_name))
+        flash('New Officer {} added to BPD Watch'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
         return render_template('add_officer.html', form=form)
@@ -388,7 +388,7 @@ def add_unit():
                     department_id=form.department.data.id)
         db.session.add(unit)
         db.session.commit()
-        flash('New unit {} added to OpenOversight'.format(unit.descrip))
+        flash('New unit {} added to BPD Watch'.format(unit.descrip))
         return redirect(url_for('main.get_started_labeling'))
     else:
         return render_template('add_unit.html', form=form)
@@ -468,7 +468,7 @@ def label_data(department_id=None, image_id=None):
                          .filter(Face.officer_id == form.officer_id.data) \
                          .filter(Face.img_id == form.image_id.data).first()
         if not officer_exists:
-            flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+            flash('Invalid officer ID. Please select a valid BPD Watch ID!')
         elif not existing_tag:
             left = form.dataX.data
             upper = form.dataY.data
@@ -597,7 +597,7 @@ def upload(department_id):
     hash_img = compute_hash(image_data)
     hash_found = Image.query.filter_by(hash_img=hash_img).first()
     if hash_found:
-        return jsonify(error="Image already uploaded to OpenOversight!"), 400
+        return jsonify(error="Image already uploaded to BPD Watch!"), 400
 
     # Generate new filename
     file_extension = original_filename.split('.')[-1]
