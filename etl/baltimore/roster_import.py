@@ -74,7 +74,8 @@ def load(filename):
                 first_name = pig.first_name,
                 middle_initial = pig.middle_initial.strip() if type(pig.middle_initial) == unicode else None,
                 gender = pig.sex,
-                employment_date = pig.service_date
+                employment_date = pig.service_date,
+                unique_internal_identifier = pig.seq_no
             )
         except:
             import pdb; pdb.set_trace()

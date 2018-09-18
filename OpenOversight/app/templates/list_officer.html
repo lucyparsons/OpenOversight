@@ -33,7 +33,7 @@
             <div class="col-md-6 col-xs-12">
               <h2>
                 <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{% include "partials/officer_name.html" %}</a>
-                <small>#{{ assignment.star_no }}</small>
+                <small>#{{ officer.unique_internal_identifier }}</small>
               </h2>
               <div class="row">
                 <div class="col-md-6 col-xs-6">
