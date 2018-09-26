@@ -73,7 +73,7 @@ class FindOfficerIDForm(Form):
 
 
 class FaceTag(Form):
-    officer_id = IntegerField('officer_id', validators=[DataRequired()])
+    officer_id = StringField('officer_id', validators=[Regexp('^\w\d\d\d$')])
     image_id = IntegerField('image_id', validators=[DataRequired()])
     dataX = IntegerField('dataX', validators=[DataRequired()])
     dataY = IntegerField('dataY', validators=[DataRequired()])
@@ -321,7 +321,7 @@ def validate_oo_id(self, field):
 
 
 class OOIdForm(Form):
-    oo_id = StringField('OO Officer ID', validators=[validate_oo_id])
+    oo_id = StringField('BPD Watch ID', validators=[validate_oo_id])
 
 
 class IncidentForm(DateFieldForm):

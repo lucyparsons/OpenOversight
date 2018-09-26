@@ -37,8 +37,7 @@
             <div class="carousel-caption">
               <h1><a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
                     {% include 'partials/officer_name.html' %}</a></h1>
-                  <h4 class="text-success"><b>BPD Watch ID: {{ officer.id }}</b></h4>
-                  <h5 class="text-muted">Sequence Number: {{ officer.unique_internal_identifier }}</h5>
+                  <h4 class="text-success"><b>Sequence Number: {{ officer.unique_internal_identifier }}</b></h4>
                   <h5 class="text-muted">Race: {{ officer.race }}</h5>
                   <h5 class="text-muted">Gender: {{ officer.gender }}</h5>
                   <h5 class="text-muted">Current badge number: #{{ assignment.star_no }}</h5>

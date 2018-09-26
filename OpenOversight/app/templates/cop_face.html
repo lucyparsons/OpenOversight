@@ -74,8 +74,8 @@
               {% endfor %}
 
               <div class="input-group input-group-sm">
-                <label class="input-group-addon" for="officer_id">BPD Watch ID</label>
-                <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="officer ID">
+                <label class="input-group-addon" for="officer_id">Sequence Number</label>
+                <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="Seq No.">
               </div>
               {% for error in form.officer_id.errors %}
                 <p><span style="color: red;">[{{ error }}]</span></p>

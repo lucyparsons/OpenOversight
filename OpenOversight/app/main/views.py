@@ -463,35 +463,38 @@ def label_data(department_id=None, image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
-        officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
-        existing_tag = db.session.query(Face) \
-                         .filter(Face.officer_id == form.officer_id.data) \
-                         .filter(Face.img_id == form.image_id.data).first()
+        officer_exists = Officer.query.filter_by(unique_internal_identifier=form.officer_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid BPD Watch ID!')
-        elif not existing_tag:
-            left = form.dataX.data
-            upper = form.dataY.data
-            right = left + form.dataWidth.data
-            lower = upper + form.dataHeight.data
-            cropped_image = get_uploaded_cropped_image(image, (left, upper, right, lower))
-
-            if cropped_image:
-                new_tag = Face(officer_id=form.officer_id.data,
-                               img_id=cropped_image.id,
-                               original_image_id=image.id,
-                               face_position_x=left,
-                               face_position_y=upper,
-                               face_width=form.dataWidth.data,
-                               face_height=form.dataHeight.data,
-                               user_id=current_user.id)
-                db.session.add(new_tag)
-                db.session.commit()
-                flash('Tag added to database')
-            else:
-                flash('There was a problem saving this tag. Please try again later.')
         else:
-            flash('Tag already exists between this officer and image! Tag not added.')
+            officer_id = officer_exists.id
+            existing_tag = db.session.query(Face) \
+                             .filter(Face.officer_id == officer_id) \
+                             .filter(Face.img_id == form.image_id.data).first()
+
+            if not existing_tag:
+                left = form.dataX.data
+                upper = form.dataY.data
+                right = left + form.dataWidth.data
+                lower = upper + form.dataHeight.data
+                cropped_image = get_uploaded_cropped_image(image, (left, upper, right, lower))
+
+                if cropped_image:
+                    new_tag = Face(officer_id=officer_id,
+                                   img_id=cropped_image.id,
+                                   original_image_id=image.id,
+                                   face_position_x=left,
+                                   face_position_y=upper,
+                                   face_width=form.dataWidth.data,
+                                   face_height=form.dataHeight.data,
+                                   user_id=current_user.id)
+                    db.session.add(new_tag)
+                    db.session.commit()
+                    flash('Tag added to database')
+                else:
+                    flash('There was a problem saving this tag. Please try again later.')
+            else:
+                flash('Tag already exists between this officer and image! Tag not added.')
 
     return render_template('cop_face.html', form=form,
                            image=image, path=proper_path,
