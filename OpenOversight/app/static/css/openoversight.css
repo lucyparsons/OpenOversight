@@ -85,6 +85,10 @@ body {
      border-color: black;
  }
 
+ .navbar .navbar-header img.navbar-logo {
+     padding: 3px 0 7px;
+ }
+
  .glyphicon {
      font-size: 30px;
  }
@@ -173,7 +177,7 @@ a > .tutorial{
      /*TODO: get background image- using color as standin for now*/
      background-color: #d3d3d3;
      text-align: center;
-     padding: 150px;
+     padding: 30px 0 80px 0;
  }
 
 .hero-section.no-sub {
