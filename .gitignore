@@ -86,3 +86,5 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
+
+fabfile.py
