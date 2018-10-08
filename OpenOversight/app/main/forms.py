@@ -10,15 +10,15 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
+from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
 import datetime
 
 
-def allowed_values(choices):
-    return [x[0] for x in choices]
+def allowed_values(choices, empty_allowed=True):
+    return [x[0] for x in choices if empty_allowed or x[0]]
 
 
 class HumintContribution(Form):
@@ -39,11 +39,11 @@ class FindOfficerForm(Form):
                                                          Length(max=10)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
-    rank = SelectField('rank', default='COMMANDER', choices=RANK_CHOICES,
+    rank = SelectField('rank', default='Not Sure', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
-    race = SelectField('race', default='WHITE', choices=RACE_CHOICES,
+    race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('gender', default='M', choices=GENDER_CHOICES,
+    gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     min_age = IntegerField('min_age', default=16, validators=[
         NumberRange(min=16, max=100)
@@ -103,6 +103,10 @@ class DepartmentForm(Form):
     submit = SubmitField(label='Add')
 
 
+class EditDepartmentForm(DepartmentForm):
+    submit = SubmitField(label='Update')
+
+
 class LinkForm(Form):
     title = StringField(
         validators=[Length(max=100, message='Titles are limited to 100 characters.')],
@@ -130,15 +134,16 @@ class LinkForm(Form):
         return success
 
 
-class BaseNoteForm(Form):
-    note = TextAreaField()
+class BaseTextForm(Form):
+    text_contents = TextAreaField()
+    description = "This information about the officer will be attributed to your username."
 
 
-class EditNoteForm(BaseNoteForm):
+class EditTextForm(BaseTextForm):
     submit = SubmitField(label='Submit')
 
 
-class NoteForm(EditNoteForm):
+class TextForm(EditTextForm):
     officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
     creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
 
@@ -150,12 +155,15 @@ class AddOfficerForm(Form):
         Regexp('\w*'), Length(max=50), DataRequired()])
     middle_initial = StringField('Middle initial', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
+    suffix = SelectField('Suffix', default='', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
+    unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
     rank = SelectField('Rank', default='PO', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     unit = QuerySelectField('Unit', validators=[Optional()],
@@ -172,9 +180,15 @@ class AddOfficerForm(Form):
         min_entries=1,
         widget=BootstrapListWidget())
     notes = FieldList(FormField(
-        BaseNoteForm,
+        BaseTextForm,
         widget=FormFieldWidget()),
         description='This note about the officer will be attributed to your username.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    descriptions = FieldList(FormField(
+        BaseTextForm,
+        widget=FormFieldWidget()),
+        description='This description of the officer will be attributed to your username.',
         min_entries=1,
         widget=BootstrapListWidget())
 
@@ -191,12 +205,15 @@ class EditOfficerForm(Form):
     middle_initial = StringField('Middle initial',
                                  validators=[Regexp('\w*'), Length(max=50),
                                              Optional()])
+    suffix = SelectField('Suffix', choices=SUFFIX_CHOICES,
+                         validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('Gender', choices=GENDER_CHOICES,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
+    unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
     department = QuerySelectField(
         'Department',
         validators=[Optional()],
@@ -220,6 +237,14 @@ class AddUnitForm(Form):
         query_factory=dept_choices,
         get_label='name')
     submit = SubmitField(label='Add')
+
+
+class AddImageForm(Form):
+    department = QuerySelectField(
+        'Department',
+        validators=[Required()],
+        query_factory=dept_choices,
+        get_label='name')
 
 
 class DateFieldForm(Form):
@@ -252,20 +277,24 @@ class DateFieldForm(Form):
 
 class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
-    cross_street1 = StringField(validators=[Optional()], description="Closest cross street to where incident occurred.")
+    cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
     city = StringField('City <span class="text-danger">*</span>', validators=[Required()])
     state = SelectField('State <span class="text-danger">*</span>', choices=STATE_CHOICES,
-                        validators=[AnyOf(allowed_values(STATE_CHOICES))])
+                        validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
                            validators=[Optional(),
-                                       Regexp('^\d{5}$', message='Zip codes must have 5 digits')])
+                                       Regexp('^\d{5}$', message='Zip codes must have 5 digits.')])
 
 
 class LicensePlateForm(Form):
     number = StringField('Plate Number', validators=[])
     state = SelectField('State', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES))])
+
+    def validate_state(self, field):
+        if self.number.data != '' and field.data == '':
+            raise ValidationError('Must also select a state.')
 
 
 class OfficerIdField(StringField):
@@ -275,11 +304,24 @@ class OfficerIdField(StringField):
         else:
             self.data = value
 
-    def pre_validate(self, form):
-        if self.data:
-            officer = Officer.query.get(int(self.data))
-            if not officer:
-                raise ValueError('Not a valid officer id')
+
+def validate_oo_id(self, field):
+    if field.data:
+        try:
+            officer_id = int(field.data)
+            officer = Officer.query.get(officer_id)
+
+        # Sometimes we get a string in field.data with py.test, this parses it
+        except ValueError:
+            officer_id = field.data.split("value=\"")[1][:-2]
+            officer = Officer.query.get(officer_id)
+
+        if not officer:
+            raise ValidationError('Not a valid officer id')
+
+
+class OOIdForm(Form):
+    oo_id = StringField('OO Officer ID', validators=[validate_oo_id])
 
 
 class IncidentForm(DateFieldForm):
@@ -293,8 +335,8 @@ class IncidentForm(DateFieldForm):
         query_factory=dept_choices,
         get_label='name')
     address = FormField(LocationForm)
-    officers = FieldList(
-        OfficerIdField('OO Officer ID'),
+    officers = FieldList(FormField(
+        OOIdForm, widget=FormFieldWidget()),
         description='Officers present at the incident.',
         min_entries=1,
         widget=BootstrapListWidget())

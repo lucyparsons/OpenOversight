@@ -4,17 +4,21 @@
 <div class="container" role="main">
 
   <div class="page-header">
-    <h1>Officer Detail: <b>{{ officer.first_name|title }}
-                           {% if officer.middle_initial %}
-                           {{ officer.middle_initial }}
-                           {% endif %}
-                           {{ officer.last_name|title }}</b></h1>
+    <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
   </div>
 
   <div class="row">
     <div class="col-sm-6">
       {% for path in paths %}
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">
+      {% endif %}
       <img src="{{ path }}" alt="Submission">
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      </a>
+      {% endif %}
       {% endfor %}
     </div>
     <div class="col-sm-6 col-md-4">
@@ -33,6 +37,10 @@
               <tr>
                 <td><b>OpenOversight ID</b></td>
                 <td>{{ officer.id }}</td>
+              </tr>
+              <tr>
+                <td><b>Unique Internal Identifier</b></td>
+                <td>{{ officer.unique_internal_identifier }}</td>
               </tr>
               <tr>
                 <td><b>Department</b></td>
@@ -190,6 +198,41 @@
       	{% endif %}
     	</div>{# end col #}
     {% endif %}
+    <div class='col-sm-12 col-md-6'>
+       {% if officer.descriptions %}
+       <h3>Descriptions</h3>
+       {% endif %}
+       <ul class="list-group">
+          {% for description in officer.descriptions %}
+          <li class="list-group-item">
+                <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br/>
+                {{ description.text_contents }} <br/>
+                <em>{{ description.creator.username }} </em>
+             {% if description.creator_id == current_user.id or current_user.is_administrator %}
+                <a href="{{ url_for('main.description_api', officer_id=officer.id,
+                         obj_id=description.id) + '/edit' }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('main.description_api', officer_id=officer.id,
+                         obj_id=description.id) + '/delete' }}">
+                <span class='sr-only'>Delete</span>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                </a>
+             </a>
+             {% endif %}
+          </li>
+          {% endfor %}
+       </ul>
+       {% if current_user.is_administrator
+                   or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+       {% if not officer.descriptions %}
+       <h3>Descriptions</h3>
+       {% endif %}
+       <a href="{{ url_for('main.description_api', officer_id=officer.id) }}" class='btn btn-primary'>New description</a>
+       </div>
+       {% endif %}
+    </div>{# end col #}
     {% if current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
       <div class='col-sm-12 col-md-6'>
@@ -198,7 +241,7 @@
           {% for note in officer.notes %}
             <li class="list-group-item">
                 <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
-                {{ note.note }} <br/>
+                {{ note.text_contents }} <br/>
                 <em>{{ note.creator.username }} </em>
               {% if note.creator_id == current_user.id or current_user.is_administrator %}
                 <a href="{{ url_for('main.note_api', officer_id=officer.id,

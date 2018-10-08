@@ -23,17 +23,13 @@
 				{# buttons are disabled until the DOM loads and click handlers are added #}
 				<button class="btn btn-success js-add-another-button" disabled>Add another license plate</button>
 			</div>
-			<fieldset>
-				<legend>Officers Involved</legend>
-				<ul class='list-unstyled'>
-					{% for field in form.officers %}
-						<li>
-							{{ wtf.form_field(field) }}
-						</li>
-					{% endfor %}
-					<button class="btn btn-success js-add-another-button" disabled>Add another officer</button>
-				</ul>
-			</fieldset>
+            <legend>{{ form.officers.label }}</legend>
+				{% for subform in form.officers %}
+					{% with id="js-officer", number=loop.index %}
+					   {% include "partials/subform.html" %}
+					{% endwith %}
+				{% endfor %}
+				<button class="btn btn-success js-add-another-button" disabled>Add another officer</button>
 			<div>
 				<legend>{{ form.links.label }}</legend>
 				{% for subform in form.links %}

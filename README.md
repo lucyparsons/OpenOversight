@@ -1,8 +1,6 @@
 ![](docs/img/lpl-logo.png)
 
-# OpenOversight [![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight) [![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop)
-
-[![Join the chat at https://gitter.im/OpenOversight/Lobby](https://badges.gitter.im/OpenOversight/Lobby.svg)](https://gitter.im/OpenOversight/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# OpenOversight [![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight) [![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop) [![Documentation Status](https://readthedocs.org/projects/openoversight/badge/?version=latest)](https://openoversight.readthedocs.io/en/latest/?badge=latest) [![Join the chat at https://gitter.im/OpenOversight/Lobby](https://badges.gitter.im/OpenOversight/Lobby.svg)](https://gitter.im/OpenOversight/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 OpenOversight is a Lucy Parsons Labs project to improve law enforcement accountability through public and crowdsourced data. We maintain a database of officer demographic information and provide digital galleries of photographs. This is done to help people identify law enforcement officers for filing complaints and in order for the public to see work-related information about law enforcement officers that interact with the public.
 
@@ -24,11 +22,12 @@ contribution, just include "#notip" in your PR description. The amount of the ti
 
 ## Developer Quickstart
 
+Make sure you have Docker installed and then:
+
 ```
 git clone https://github.com/lucyparsons/OpenOversight.git
 cd OpenOversight
-vagrant up
-vagrant ssh
+make dev
 ```
 
 And open `http://localhost:3000` in your favorite browser!
@@ -42,6 +41,13 @@ Password: testtest
 ```
 
 Please see [CONTRIB.md](/CONTRIB.md) for the full developer setup instructions.
+
+## Documentation Quickstart
+
+```
+pip install -r dev-requirements.txt
+make docs
+```
 
 ## Deployment
 

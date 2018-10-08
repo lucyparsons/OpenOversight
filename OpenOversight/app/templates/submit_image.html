@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}¬
+
+{% block head %}
+<link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/dropzone-override.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+
+   <div class="page-header">
+      <h1>Submit images <small>of officers in uniform. Law enforcement officer faces, and either a badge number or name, should be clearly visible in each photograph.</small></h1>
+   </div>
+
+   <div class="header">
+      <h3>What happens when I submit a photograph?</h3>
+      <p class="small">The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
+   </div>
+   <h3>Select the department that the police officer in your image belongs to:</h3>
+   <div class="form-group">
+      <form class="form" name = "deptselect" id = "deptselect" method="post" role="form" label="deptselect">
+         {{ wtf.form_field(form.department) }}
+      </form>
+      <br> 
+   </div>
+
+   <h3>Drop images here to submit photos of officers:</h3>
+
+   <form id="my-cop-dropzone" action="/upload/department/1" class='dropzone'>
+   </form>
+   <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
+
+   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+
+   <script>
+   // Select user's preferred department by default
+   document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
+   // Save the preferred department in dept_id
+   var dept_id = document.getElementById("department").selectedIndex + 1;
+
+   // Store changes in drop down list in dept_id variable
+   $(function() {
+      select_dept = $('#deptselect');
+      select_dept.on('change', function() {
+         // fires when department selection changes
+         dept_id = document.getElementById("department").value;
+      });
+   }); 
+
+   Dropzone.autoDiscover = false;
+   const getURL = (file) => {
+      return "/upload/department/" + dept_id;
+   }
+
+   let myDropzone = new Dropzone("#my-cop-dropzone", {
+      method: "post",
+      url: getURL,
+      uploadMultiple: false,
+      parallelUploads: 50,
+      acceptedFiles: "image/png, image/jpeg, image/gif, image/jpg",
+      maxFiles: 50,
+      init: function() {
+         this.on("error", function(file, responseText) {
+            file.previewTemplate.appendChild(document.createTextNode(responseText));
+         });
+      }
+   });
+   </script>
+</div>
+
+<div class="container">
+   <h3>High Security Submissions</h3>
+   <p class="small">We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a> For very high security submissions of photos or videos, you can use an anonymous dropbox called SecureDrop (launch instructions below). All files that we receive through SecureDrop are <a href="https://mat.boum.org/">scrubbed of metadata.</a></p>
+   <a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a>
+</div>
+
+{% endblock %}

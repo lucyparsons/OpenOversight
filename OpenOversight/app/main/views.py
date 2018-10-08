@@ -9,7 +9,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Markup)
+                   flash, current_app, jsonify)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -21,14 +21,16 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
                      set_dynamic_default, create_note,
-                     get_uploaded_cropped_image)
+                     get_uploaded_cropped_image, create_description)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, NoteForm, EditNoteForm)
+                    EditOfficerForm, IncidentForm, TextForm, EditTextForm,
+                    AddImageForm, EditDepartmentForm)
 from .model_view import ModelView
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit, Incident, Location, LicensePlate, Link, Note)
+                      Unit, Incident, Location, LicensePlate, Link, Note,
+                      Description)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -49,7 +51,7 @@ def index():
 
 @main.route('/browse', methods=['GET'])
 def browse():
-    departments = Department.query.all()
+    departments = Department.query.filter(Department.officers.any())
     return render_template('browse.html', departments=departments)
 
 
@@ -148,7 +150,7 @@ def officer_profile(officer_id):
         ))
 
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+                           faces=faces, assignments=assignments, form=form)
 
 
 @main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
@@ -276,7 +278,30 @@ def add_department():
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
     else:
-        return render_template('add_department.html', form=form)
+        return render_template('add_edit_department.html', form=form)
+
+
+@main.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_department(department_id):
+    department = Department.query.get_or_404(department_id)
+    previous_name = department.name
+    form = EditDepartmentForm(obj=department)
+    if form.validate_on_submit():
+        new_name = form.name.data
+        if new_name != previous_name:
+            if Department.query.filter_by(name=new_name).count() > 0:
+                flash('Department {} already exists'.format(new_name))
+                return redirect(url_for('main.edit_department',
+                                        department_id=department_id))
+        department.name = new_name
+        department.short_name = form.short_name.data
+        db.session.commit()
+        flash('Department {} edited'.format(department.name))
+        return redirect(url_for('main.list_officer', department_id=department.id))
+    else:
+        return render_template('add_edit_department.html', form=form, update=True)
 
 
 @main.route('/department/<int:department_id>')
@@ -543,26 +568,20 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
+    preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
         if User.query.filter_by(id=current_user.id).one().dept_pref:
-            flash(Markup('Want to submit for another department? Change your <a href="/auth/change-dept/">default department</a>.'))
-            department = User.query.filter_by(id=current_user.id).one().dept_pref
-            return redirect(url_for('main.submit_department_images', department_id=department))
+            preferred_dept_id = User.query.filter_by(id=current_user.id).one().dept_pref
+            form = AddImageForm()
         else:
-            departments = Department.query.all()
-            return render_template('submit_deptselect.html', departments=departments)
+            form = AddImageForm()
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
     # that is, an anonymous user has no id attribute
     except AttributeError:
-        departments = Department.query.all()
-        return render_template('submit_deptselect.html', departments=departments)
-
-
-@main.route('/submit/department/<int:department_id>', methods=['GET', 'POST'])
-@limiter.limit('5/minute')
-def submit_department_images(department_id=1):
-    department = Department.query.filter_by(id=department_id).one()
-    return render_template('submit_department.html', department=department)
+        preferred_dept_id = Department.query.first().id
+        form = AddImageForm()
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
@@ -661,7 +680,7 @@ class IncidentApi(ModelView):
     def get_new_form(self):
         form = self.form()
         if request.args.get('officer_id'):
-            form.officers[0].data = request.args.get('officer_id')
+            form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
             link.user_id.data = current_user.id
@@ -678,6 +697,9 @@ class IncidentApi(ModelView):
                 continue
             else:
                 link.user_id.data = current_user.id
+
+        for officer_idx, officer in enumerate(obj.officers):
+            form.officers[officer_idx].oo_id.data = officer.id
 
         # set the form to have fields for all the current model's items
         form.license_plates.min_entries = no_license_plates
@@ -706,9 +728,14 @@ class IncidentApi(ModelView):
         officers = form.data.pop('officers')
         del form.officers
         if officers:
-            for officer_id in officers:
-                if officer_id:
-                    of = Officer.query.filter_by(id=int(officer_id)).first()
+            for officer in officers:
+                if officer["oo_id"]:
+                    try:
+                        of = Officer.query.filter_by(id=int(officer["oo_id"])).first()
+                    # Sometimes we get a string in officer["oo_id"], this parses it
+                    except ValueError:
+                        our_id = officer["oo_id"].split("value=\"")[1][:-2]
+                        of = Officer.query.filter_by(id=int(our_id)).first()
                     if of:
                         obj.officers.append(of)
 
@@ -745,14 +772,11 @@ main.add_url_rule(
     methods=['GET', 'POST'])
 
 
-class NoteApi(ModelView):
-    model = Note
-    model_name = 'note'
+class TextApi(ModelView):
     order_by = 'date_created'
     descending = True
-    form = NoteForm
-    create_function = create_note
     department_check = True
+    form = TextForm
 
     def get_new_form(self):
         form = self.form()
@@ -765,20 +789,39 @@ class NoteApi(ModelView):
     def get_post_delete_url(self, *args, **kwargs):
         return self.get_redirect_url()
 
-    def get_edit_form(self, obj):
-        form = EditNoteForm(obj=obj)
-        return form
-
     def get_department_id(self, obj):
         return self.department_id
+
+    def get_edit_form(self, obj):
+        form = EditTextForm(obj=obj)
+        return form
 
     def dispatch_request(self, *args, **kwargs):
         if 'officer_id' in kwargs:
             officer = Officer.query.get_or_404(kwargs['officer_id'])
             self.officer_id = kwargs.pop('officer_id')
             self.department_id = officer.department_id
+        return super(TextApi, self).dispatch_request(*args, **kwargs)
 
+
+class NoteApi(TextApi):
+    model = Note
+    model_name = 'note'
+    form = TextForm
+    create_function = create_note
+
+    def dispatch_request(self, *args, **kwargs):
         return super(NoteApi, self).dispatch_request(*args, **kwargs)
+
+
+class DescriptionApi(TextApi):
+    model = Description
+    model_name = 'description'
+    form = TextForm
+    create_function = create_description
+
+    def dispatch_request(self, *args, **kwargs):
+        return super(DescriptionApi, self).dispatch_request(*args, **kwargs)
 
 
 note_view = NoteApi.as_view('note_api')
@@ -797,4 +840,22 @@ main.add_url_rule(
 main.add_url_rule(
     '/officer/<int:officer_id>/note/<int:obj_id>/delete',
     view_func=note_view,
+    methods=['GET', 'POST'])
+
+description_view = DescriptionApi.as_view('description_api')
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/new',
+    view_func=description_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>',
+    view_func=description_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>/edit',
+    view_func=description_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/description/<int:obj_id>/delete',
+    view_func=description_view,
     methods=['GET', 'POST'])

@@ -10,14 +10,14 @@ from .route_helpers import login_admin, login_ac, process_form_data
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
-                                          EditOfficerForm, LinkForm)
+                                          EditOfficerForm, LinkForm,
+                                          EditDepartmentForm,)
 
 from OpenOversight.app.models import Department, Unit, Officer
 
 
 @pytest.mark.parametrize("route", [
     ('/submit'),
-    ('/submit/department/1'),
     ('/label'),
     ('/department/1'),
     ('/officer/3'),
@@ -302,6 +302,129 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         assert department.short_name == 'CPD'
 
 
+def test_admin_can_edit_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        misspelled_form = DepartmentForm(name='Misspelled Police Department',
+                                         short_name='MPD')
+
+        misspelled_rv = client.post(
+            url_for('main.add_department'),
+            data=misspelled_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in misspelled_rv.data
+
+        department = Department.query.filter_by(name='Misspelled Police Department').one()
+
+        corrected_form = EditDepartmentForm(name='Corrected Police Department',
+                                            short_name='MPD')
+
+        corrected_rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=corrected_form.data,
+            follow_redirects=True
+        )
+
+        assert 'Department Corrected Police Department edited' in corrected_rv.data
+
+        # Check the department with the new name is now in the database.
+        corrected_department = Department.query.filter_by(
+            name='Corrected Police Department').one()
+        assert corrected_department.short_name == 'MPD'
+
+        # Check that the old name is no longer present:
+        assert Department.query.filter_by(
+            name='Misspelled Police Department').count() == 0
+
+        edit_short_name_form = EditDepartmentForm(name='Corrected Police Department',
+                                                  short_name='CPD')
+
+        edit_short_name_rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=edit_short_name_form.data,
+            follow_redirects=True
+        )
+
+        assert 'Department Corrected Police Department edited' in edit_short_name_rv.data
+
+        edit_short_name_department = Department.query.filter_by(
+            name='Corrected Police Department').one()
+        assert edit_short_name_department.short_name == 'CPD'
+
+
+def test_ac_cannot_edit_police_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        department = Department.query.first()
+
+        form = EditDepartmentForm(name='Corrected Police Department',
+                                  short_name='CPD')
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=department.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client,
+                                                              session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        existing_dep_form = DepartmentForm(name='Existing Police Department',
+                                           short_name='EPD')
+
+        existing_dep_rv = client.post(
+            url_for('main.add_department'),
+            data=existing_dep_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in existing_dep_rv.data
+
+        new_dep_form = DepartmentForm(name='New Police Department',
+                                      short_name='NPD')
+
+        new_dep_rv = client.post(
+            url_for('main.add_department'),
+            data=new_dep_form.data,
+            follow_redirects=True
+        )
+
+        assert 'New department' in new_dep_rv.data
+
+        new_department = Department.query.filter_by(
+            name='New Police Department').one()
+
+        edit_form = EditDepartmentForm(name='Existing Police Department',
+                                       short_name='EPD2')
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=new_department.id),
+            data=edit_form.data,
+            follow_redirects=True
+        )
+
+        assert 'already exists' in rv.data
+
+        # make sure original department is still here
+        existing_department = Department.query.filter_by(
+            name='Existing Police Department').one()
+        assert existing_department.short_name == 'EPD'
+
+        # make sure new department is left unchanged
+        new_department = Department.query.filter_by(
+            name='New Police Department').one()
+        assert new_department.short_name == 'NPD'
+
+
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client,
                                                             session):
     with current_app.test_request_context():
@@ -523,11 +646,13 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
+        suffix = ''
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
+                              suffix=suffix,
                               race=race,
                               gender=gender,
                               star_no=666,
@@ -552,6 +677,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         form = EditOfficerForm(
             first_name=first_name,
             last_name=new_last_name,
+            suffix=suffix,
             race=race,
             gender=gender,
             department=department.id,
@@ -705,6 +831,45 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         unit = Unit.query.filter_by(
             descrip='Test').first()
         assert unit is None
+
+
+def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
+        ]
+        form = AddOfficerForm(first_name='Testy',
+                              last_name='McTesty',
+                              middle_initial='T',
+                              suffix='Jr',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              rank='COMMANDER',
+                              department=department.id,
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'McTesty' in rv.data
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesty').one()
+        assert officer.first_name == 'Testy'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert officer.suffix == 'Jr'
 
 
 # def test_find_form_submission(client, mockdata):

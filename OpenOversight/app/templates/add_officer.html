@@ -15,9 +15,11 @@
         {{ wtf.form_field(form.first_name, autofocus="autofocus") }}
         {{ wtf.form_field(form.middle_initial) }}
         {{ wtf.form_field(form.last_name) }}
+        {{ wtf.form_field(form.suffix) }}
         {{ wtf.form_field(form.race) }}
         {{ wtf.form_field(form.gender) }}
         {{ wtf.form_field(form.star_no) }}
+        {{ wtf.form_field(form.unique_internal_identifier) }}
         {{ wtf.form_field(form.rank) }}
         {{ wtf.form_field(form.unit) }}
         <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>
@@ -28,6 +30,13 @@
         <div>
             <legend>{{ form.notes.label }}</legend>
             {% for subform in form.notes %}
+                {% include "partials/subform.html" %}
+            {% endfor %}
+            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+        </div>
+        <div>
+            <legend>{{ form.descriptions.label }}</legend>
+            {% for subform in form.descriptions %}
                 {% include "partials/subform.html" %}
             {% endfor %}
             <button class="btn btn-success js-add-another-button" disabled>Add another link</button>

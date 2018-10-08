@@ -16,7 +16,7 @@ from flask import current_app, url_for
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link, Note)
+                     Incident, Location, LicensePlate, Link, Note, Description)
 
 
 def set_dynamic_default(form_field, value):
@@ -31,6 +31,9 @@ def set_dynamic_default(form_field, value):
 def get_or_create(session, model, defaults=None, **kwargs):
     if 'csrf_token' in kwargs:
         kwargs.pop('csrf_token')
+    # Because id is a keyword in Python, officers member is called oo_id
+    if 'oo_id' in kwargs:
+        kwargs = {'id': kwargs['oo_id']}
     instance = model.query.filter_by(**kwargs).first()
     if instance:
         return instance, False
@@ -86,6 +89,7 @@ def add_officer_profile(form, current_user):
     officer = Officer(first_name=form.first_name.data,
                       last_name=form.last_name.data,
                       middle_initial=form.middle_initial.data,
+                      suffix=form.suffix.data,
                       race=form.race.data,
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
@@ -115,14 +119,25 @@ def add_officer_profile(form, current_user):
     if form.notes.data:
         for note in form.data['notes']:
             # don't try to create with a blank string
-            if note['note']:
+            if note['text_contents']:
                 new_note = Note(
-                    note=note['note'],
+                    note=note['text_contents'],
                     user_id=current_user.id,
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
                 db.session.add(new_note)
+    if form.descriptions.data:
+        for description in form.data['descriptions']:
+            # don't try to create with a blank string
+            if description['text_contents']:
+                new_description = description(
+                    description=description['text_contents'],
+                    user_id=current_user.id,
+                    officer=officer,
+                    date_created=datetime.datetime.now(),
+                    date_updated=datetime.datetime.now())
+                db.session.add(new_description)
 
     db.session.commit()
     return officer
@@ -341,9 +356,9 @@ def create_incident(self, form):
         fields['address'] = address
 
     if 'officers' in form.data:
-        for officer_id in form.data['officers']:
-            if officer_id:
-                of = Officer.query.filter_by(id=int(officer_id)).first()
+        for officer in form.data['officers']:
+            if officer['oo_id']:
+                of, _ = get_or_create(db.session, Officer, **officer)
                 if of:
                     fields['officers'].append(of)
 
@@ -375,7 +390,16 @@ def create_incident(self, form):
 
 def create_note(self, form):
     return Note(
-        note=form.note.data,
+        text_contents=form.text_contents.data,
+        creator_id=form.creator_id.data,
+        officer_id=form.officer_id.data,
+        date_created=datetime.datetime.now(),
+        date_updated=datetime.datetime.now())
+
+
+def create_description(self, form):
+    return Description(
+        text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
         date_created=datetime.datetime.now(),

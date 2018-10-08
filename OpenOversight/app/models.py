@@ -37,11 +37,24 @@ class Note(db.Model):
     __tablename__ = 'notes'
 
     id = db.Column(db.Integer, primary_key=True)
-    note = db.Column(db.Text())
+    text_contents = db.Column(db.Text())
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     creator = db.relationship('User', backref='notes')
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     officer = db.relationship('Officer', back_populates='notes')
+    date_created = db.Column(db.DateTime)
+    date_updated = db.Column(db.DateTime)
+
+
+class Description(db.Model):
+    __tablename__ = 'descriptions'
+
+    creator = db.relationship('User', backref='descriptions')
+    officer = db.relationship('Officer', back_populates='descriptions')
+    id = db.Column(db.Integer, primary_key=True)
+    text_contents = db.Column(db.Text())
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     date_created = db.Column(db.DateTime)
     date_updated = db.Column(db.DateTime)
 
@@ -53,14 +66,16 @@ class Officer(db.Model):
     last_name = db.Column(db.String(120), index=True, unique=False)
     first_name = db.Column(db.String(120), index=True, unique=False)
     middle_initial = db.Column(db.String(120), unique=False, nullable=True)
+    suffix = db.Column(db.String(120), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
     gender = db.Column(db.String(120), index=True, unique=False)
-    employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
+    unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
     # we don't expect to pull up officers via link often so we make it lazy.
     links = db.relationship(
         'Link',
@@ -68,17 +83,24 @@ class Officer(db.Model):
         lazy='subquery',
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
+    descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
 
     def full_name(self):
         if self.middle_initial:
-            return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+            if self.suffix:
+                return '{} {}. {} {}'.format(self.first_name, self.middle_initial, self.last_name, self.suffix)
+            else:
+                return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+        if self.suffix:
+                return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
-        return '<Officer ID {}: {} {} {}>'.format(self.id,
-                                                  self.first_name,
-                                                  self.middle_initial,
-                                                  self.last_name)
+        return '<Officer ID {}: {} {} {} {}>'.format(self.id,
+                                                     self.first_name,
+                                                     self.middle_initial,
+                                                     self.last_name,
+                                                     self.suffix)
 
 
 class Assignment(db.Model):
@@ -90,8 +112,8 @@ class Assignment(db.Model):
     star_no = db.Column(db.String(120), index=True, unique=False)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
-    star_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
-    resign_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
         return '<Assignment: ID {} : {}>'.format(self.officer_id,

@@ -32,7 +32,10 @@
       <h4>Officer name: {{ officer_first_name.lower()|title }}
       {% if officer_middle_initial %}{{ officer_middle_initial }}.
       {% endif %}
-      {{ officer_last_name.lower()|title }} </h4>
+      {{ officer_last_name.lower()|title }} 
+      {% if officer_suffix %}{{ officer_suffix }}.
+      {% endif %}
+      </h4>
       <h4>Officer badge number: #{{ officer_star }}</h4>
     </div>
   </div>
