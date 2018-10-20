@@ -305,33 +305,34 @@ def edit_department(department_id):
         return render_template('add_edit_department.html', form=form, update=True)
 
 
-@main.route('/department/<int:department_id>', methods=['GET', 'POST'])
+@main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, from_search=False, race='Not Sure', gender='Not Sure', rank='Not Sure', min_age='16', max_age='100'):
     form = BrowseForm()
     form_data = form.data
+    form_data['race'] = race
+    form_data['gender'] = gender
+    form_data['rank'] = rank
+    form_data['min_age'] = min_age
+    form_data['max_age'] = max_age
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
     if not department:
         abort(404)
 
-    # If we got here from submit, page is 1 and ignore the URL officer params
-    if form.submit.data:
-        page = 1
-    else:
-        # Set form data based on URL
-        if request.args.get('race') and request.args.get('race') in [rc[0] for rc in RACE_CHOICES]:
-            form_data['race'] = request.args.get('race')
-        if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
-            form_data['gender'] = request.args.get('gender')
-        if request.args.get('rank') and request.args.get('rank') in [rc[0] for rc in RANK_CHOICES]:
-            form_data['rank'] = request.args.get('rank')
-        if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
-            form_data['min_age'] = request.args.get('min_age')
-        if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
-            form_data['max_age'] = request.args.get('max_age')
-        if request.args.get('page'):
-            page = int(request.args.get('page'))
+    # Set form data based on URL
+    if request.args.get('race') and request.args.get('race') in [rc[0] for rc in RACE_CHOICES]:
+        form_data['race'] = request.args.get('race')
+    if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
+        form_data['gender'] = request.args.get('gender')
+    if request.args.get('rank') and request.args.get('rank') in [rc[0] for rc in RANK_CHOICES]:
+        form_data['rank'] = request.args.get('rank')
+    if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['min_age'] = request.args.get('min_age')
+    if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['max_age'] = request.args.get('max_age')
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
 
     officers = filter_by_form(form_data, Officer.query, True).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
 

@@ -2,7 +2,7 @@
     <ul class="pager">
       {% if paginate.has_prev %}
         <li class="previous">
-          <a role="button" id="prev_url_btn">
+          <a role="button" href="{{ prev_url }}">
             <span aria-hidden="true">&larr;</span>
             Previous
           </a>
@@ -11,7 +11,7 @@
       {% if paginate.has_next %}
       Showing {{(paginate.page-1)*paginate.per_page + 1 }}-{{(paginate.page)*paginate.per_page}} of {{paginate.total}}
       <li class="next">
-        <a role="button" id="next_url_btn">
+        <a role="button" href="{{ next_url }}">
           Next
           <span aria-hidden="true">&rarr;</span>
         </a>
