@@ -969,7 +969,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         data = process_form_data(form.data)
 
-        rv = client.post(
+        rv = client.get(
             url_for('main.list_officer', department_id=department_id),
             data=data,
             follow_redirects=True
