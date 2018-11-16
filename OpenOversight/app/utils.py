@@ -1,3 +1,9 @@
+from future.moves.urllib.request import urlretrieve
+from future.utils import iteritems
+
+from builtins import bytes
+from io import open
+
 import boto3
 import botocore
 import datetime
@@ -6,7 +12,6 @@ import os
 import random
 import sys
 import tempfile
-import urllib
 from traceback import format_exc
 
 from sqlalchemy import func
@@ -38,7 +43,7 @@ def get_or_create(session, model, defaults=None, **kwargs):
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in kwargs.iteritems())
+        params = dict((k, v) for k, v in iteritems(kwargs))
         params.update(defaults or {})
         instance = model(**params)
         session.add(instance)
@@ -144,7 +149,7 @@ def add_officer_profile(form, current_user):
 
 
 def edit_officer_profile(officer, form):
-    for field, data in form.data.iteritems():
+    for field, data in iteritems(form.data):
         if field == 'links':
             for link in data:
                 # don't try to create with a blank string
@@ -181,7 +186,7 @@ def serve_image(filepath):
 
 
 def compute_hash(data_to_hash):
-    return hashlib.sha256(data_to_hash).hexdigest()
+    return hashlib.sha256(bytes(data_to_hash)).hexdigest()
 
 
 def upload_file(safe_local_path, src_filename, dest_filename):
@@ -416,7 +421,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
     original_filename = original_image.filepath.split('/')[-1]
     safe_local_path0 = os.path.join(tmpdir, original_filename)
     # get the original image and save it locally
-    urllib.urlretrieve(original_image.filepath, safe_local_path0)
+    urlretrieve(original_image.filepath, safe_local_path0)
     # import pdb; pdb.set_trace()
     pimage = Pimage.open(safe_local_path0)
     SIZE = 300, 300
@@ -434,7 +439,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
     # TODO: For faster implementation,
     # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
     cropped_image.save(fp=safe_local_path)
-    file = open(safe_local_path)
+    file = open(safe_local_path, 'rb')
 
     # See if there is a matching photo already in the db
     hash_img = compute_hash(file.read())

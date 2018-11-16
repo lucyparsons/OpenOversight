@@ -97,7 +97,7 @@ def test_filter_by_badge_no(mockdata):
 
 
 def test_compute_hash(mockdata):
-    hash_result = OpenOversight.app.utils.compute_hash('bacon')
+    hash_result = OpenOversight.app.utils.compute_hash(b'bacon')
     expected_hash = '9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4'
     assert hash_result == expected_hash
 
