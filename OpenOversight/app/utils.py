@@ -470,7 +470,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
         rm_dirs()
         return None
