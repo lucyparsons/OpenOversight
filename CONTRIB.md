@@ -39,6 +39,8 @@ Once you're done, `make stop` and `make clean` to stop and remove the containers
 
 ## Database commands
 
+Running `make dev` will create the database and persist it into your local filesystem.
+
 You can access your PostgreSQL development database via psql using:
 
 ```sh
@@ -46,13 +48,6 @@ psql  -h localhost -d openoversight-dev -U openoversight --password
 ```
 
 with the password `terriblepassword`.
-
-
-In the Docker environment, you'll need to run the script to create the database:
-
-```sh
-$ python create_db.py
-```
 
 In the event that you need to create or delete the test data, you can do that with
 `$ python test_data.py --populate` to create the data
