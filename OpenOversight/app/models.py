@@ -237,6 +237,20 @@ class Location(db.Model):
     def validate_state(self, key, state):
         return state_validator(state)
 
+    def __repr__(self):
+        if self.street_name and self.cross_street2:
+            return 'Intersection of {} and {}, {} {}'.format(
+                self.street_name, self.cross_street2, self.city, self.state)
+        elif self.street_name and self.cross_street1:
+            return 'Intersection of {} and {}, {} {}'.format(
+                self.street_name, self.cross_street1, self.city, self.state)
+        elif self.street_name and self.cross_street1 and self.cross_street2:
+            return 'Intersection of {} between {} and {}, {} {}'.format(
+                self.street_name, self.cross_street1, self.cross_street2,
+                self.city, self.state)
+        else:
+            return '{} {}'.format(self.city, self.state)
+
 
 class LicensePlate(db.Model):
     __tablename__ = 'license_plates'
