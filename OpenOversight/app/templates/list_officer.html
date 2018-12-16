@@ -1,20 +1,45 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block content %}
 <div class="container" role="main">
   {% if from_search %}
     <h1>No Results Found</h1>
-    <h4>Sorry, no officers found for your query! <a href="/find">Try again</a></h4>
+    <h4>Sorry, no officers found for your search! <a href="/find">Try again</a></h4>
     <h2>Other Officers from {{ department.name|title }}</h2>
   {% else %}
-    <h4><a href="/find">Search for officers</a></h4>
     <h1>
       {{ department.name|title }} Officers
     </h1>
   {% endif %}
-  {% with paginate=officers, next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search), prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search), location='top'%}
+    <h4>Filter officers</h4>
+    <div>
+      <form class="form" method="get" role="form">
+         <div class="browse-form-input" data-value="{{ race }}">
+          {{ wtf.form_field(form.race) }}
+        </div>
+        <div class="browse-form-input" data-value="{{ gender }}">
+          {{ wtf.form_field(form.gender) }}
+        </div>
+        <div class="browse-form-input" data-value="{{ rank }}">
+          {{ wtf.form_field(form.rank) }}
+        </div>
+        <div class="browse-form-input" data-value="{{ min_age }}">
+          {{ wtf.form_field(form.min_age) }}
+          {{ wtf.form_field(form.min_age).label }}
+        </div>
+        <div class="browse-form-input" data-value="{{ max_age }}">
+          {{ wtf.form_field(form.max_age) }}
+        </div>
+        <br>
+        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+    </div>
+  {% with paginate=officers,
+          next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
+        from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
+          prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
+          from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
+          location='top' %}
     {% include "partials/paginate_nav.html" %}
   {% endwith %}
   <ul class="list-group">
@@ -61,11 +86,17 @@
 
   {% with paginate=officers,
           next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search),
+        from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
           prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search),
+          from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
           location='bottom' %}
     {% include "partials/paginate_nav.html" %}
   {% endwith %}
 </div>
+<script>
+$('.browse-form-input').each(function(i) {
+  $(this).find('select').val($(this).data('value'));
+});
+</script>¬
+</form>
 {% endblock content %}
