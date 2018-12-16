@@ -19,7 +19,7 @@ create_db: start
 	docker-compose run --rm web /usr/local/bin/python ../create_db.py
 
 .PHONY: dev
-dev: build start create_db
+dev: build start create_db populate
 
 .PHONY: populate
 populate: create_db  ## Build and run containers
