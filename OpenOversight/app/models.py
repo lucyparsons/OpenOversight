@@ -69,7 +69,7 @@ class Officer(db.Model):
     suffix = db.Column(db.String(120), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
     gender = db.Column(db.String(120), index=True, unique=False)
-    employment_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
@@ -112,8 +112,8 @@ class Assignment(db.Model):
     star_no = db.Column(db.String(120), index=True, unique=False)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
-    star_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
-    resign_date = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
         return '<Assignment: ID {} : {}>'.format(self.officer_id,
