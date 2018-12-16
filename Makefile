@@ -1,4 +1,4 @@
-default: dev build start test stop clean
+default: build start test stop clean
 
 .PHONY: dev
 dev:  ## Build and run containers
