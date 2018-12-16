@@ -11,11 +11,11 @@ app = create_app('development')
 db.app = app
 
 columns = {
-    'Location': 'location',
+    # 'Location': 'location',
     'EMPLID': 'employee_id',
     'Last Name': 'last_name',
     'First Name': 'first_name',
-    'Middle Name': 'middle_initial',
+    # 'Middle Name': 'middle_initial',
     'SEX': 'sex',
     'Ethnic Group': 'ethnic_group',
     'Service Date': 'service_date',
@@ -24,12 +24,12 @@ columns = {
     'Job Code': 'job_code',
     'Job Title': 'job_title',
     'Supv ID': 'supervisor_employee_id',
-    'In Lieu': 'in_lieu',
+    # 'In Lieu': 'in_lieu',
     'Position Number': 'position_number',
     'Grade': 'grade',
     'GL Pay Type': 'gl_pay_type',
-    'Locatlity': 'locality', # sic
-    'SEQ# (A99 only)': 'seq_no'
+    # 'Locatlity': 'locality', # sic
+    'SEQ#': 'seq_no'
 }
 
 def load(filename):
@@ -72,7 +72,8 @@ def load(filename):
                 department_id = bpd.id,
                 last_name = pig.last_name,
                 first_name = pig.first_name,
-                middle_initial = pig.middle_initial.strip() if type(pig.middle_initial) == unicode else None,
+                race = pig.ethnic_group,
+                # middle_initial = pig.middle_initial.strip() if type(pig.middle_initial) == unicode else None,
                 gender = pig.sex,
                 employment_date = pig.service_date,
                 unique_internal_identifier = pig.seq_no
@@ -92,4 +93,4 @@ def load(filename):
     print("Finished data import!")
 
 if __name__ == '__main__':
-    load('Active_employees_as_of_May_3_2018.xlsx')
+    load('Employee_Information_for_Release_10.31.2018.xlsx')
