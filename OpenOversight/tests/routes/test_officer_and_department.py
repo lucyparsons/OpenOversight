@@ -1,7 +1,7 @@
 # Routing and view tests
 import pytest
 import random
-import datetime
+from datetime import datetime
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
@@ -12,7 +12,9 @@ from .route_helpers import login_admin, login_ac, process_form_data
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
                                           EditOfficerForm, LinkForm,
-                                          EditDepartmentForm, BrowseForm)
+                                          EditDepartmentForm, IncidentForm,
+                                          LocationForm, LicensePlateForm,
+                                          BrowseForm)
 
 from OpenOversight.app.models import Department, Unit, Officer
 
@@ -873,6 +875,84 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
         assert officer.suffix == 'Jr'
 
 
+def test_officer_csv(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+        ]
+        form = AddOfficerForm(first_name='CKtVwe2gqhAIc',
+                              last_name='FVkcjigWUeUyA',
+                              middle_initial='T',
+                              suffix='Jr',
+                              race='WHITE',
+                              gender='M',
+                              star_no=90009,
+                              rank='PO',
+                              department=department.id,
+                              birth_year=1910,
+                              links=links)
+        # add the officer
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=process_form_data(form.data),
+            follow_redirects=True
+        )
+        # dump officer csv
+        rv = client.get(
+            url_for('main.download_dept_csv', department_id=department.id),
+            follow_redirects=True
+        )
+        # get csv entry matching officer last name
+        csv = filter(lambda row: form.last_name.data in row, rv.data.split("\n"))
+        assert len(csv) == 1
+        assert form.first_name.data in csv[0]
+        assert form.last_name.data in csv[0]
+        assert form.rank.data in csv[0]
+
+
+def test_incidents_csv(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        incident_date = datetime(2000, 5, 25, 1, 45)
+        report_number = '42'
+
+        address_form = LocationForm(street_name='ABCDE', city='FGHI', state='IA')
+        link_form = LinkForm(url='http://example.com', link_type='video')
+        license_plates_form = LicensePlateForm(state='AZ')
+        form = IncidentForm(
+            date_field=str(incident_date.date()),
+            time_field=str(incident_date.time()),
+            report_number=report_number,
+            description='Something happened',
+            department=str(department.id),
+            department_id=department.id,
+            address=address_form.data,
+            links=[link_form.data],
+            license_plates=[license_plates_form.data],
+            officers=[]
+        )
+        # add the incident
+        rv = client.post(
+            url_for('main.incident_api') + 'new',
+            data=process_form_data(form.data),
+            follow_redirects=True
+        )
+        assert "created" in rv.data
+        # dump incident csv
+        rv = client.get(
+            url_for('main.download_incidents_csv', department_id=department.id),
+            follow_redirects=True
+        )
+        # print(rv.data)
+        # get the csv entry with matching report number
+        csv = filter(lambda row: report_number in row, rv.data.split("\n"))
+        assert len(csv) == 1
+        assert form.description.data in csv[0]
+
+
 def test_browse_filtering_filters_bad(client, mockdata, session):
     with current_app.test_request_context():
         race_list = ["BLACK", "WHITE"]
@@ -964,8 +1044,8 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         form = BrowseForm(race='WHITE',
                           gender='M',
                           rank='COMMANDER',
-                          min_age=datetime.datetime.now().year - 1991,
-                          max_age=datetime.datetime.now().year - 1989)
+                          min_age=datetime.now().year - 1991,
+                          max_age=datetime.now().year - 1989)
 
         data = process_form_data(form.data)
 
@@ -983,7 +1063,6 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         filter_list = rv.data.split("<dt>Gender</dt>")[1:]
         assert any("<dd>M</dd>" in token for token in filter_list)
-
 
 # def test_find_form_submission(client, mockdata):
 #     with current_app.test_request_context():
