@@ -8,8 +8,8 @@ dev:  ## Build and run containers
 .PHONY: build
 build:  ## Build containers
 	docker-compose build postgres
-	docker-compose up -d postgres
 	docker-compose build web
+	docker-compose up -d postgres
 	docker-compose up -d web
 	docker-compose run --rm web /usr/local/bin/python ../create_db.py
 	docker-compose run --rm web /usr/local/bin/python ../test_data.py -p
