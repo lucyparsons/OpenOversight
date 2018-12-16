@@ -15,7 +15,7 @@ flickr = flickrapi.FlickrAPI(api_key, secret, format='parsed-json')
 
 os.system('clear')
 group_url = raw_input("Enter a Flickr Group URL: ")
-group_id = group_url.split('/')[-2]
+group_id = group_url.strip('/').split('/')[-1]
 print " "
 print "Files will be saved in folder " + group_id
 time.sleep(1)
