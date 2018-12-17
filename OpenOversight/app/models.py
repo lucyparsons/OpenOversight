@@ -109,7 +109,7 @@ class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id'))
     baseofficer = db.relationship('Officer')
-    star_no = db.Column(db.String(120), index=True, unique=False)
+    star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
     star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
