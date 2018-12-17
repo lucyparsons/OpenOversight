@@ -88,4 +88,5 @@ def create_app(config_name='default'):
 
     return app
 
+
 app = create_app()
