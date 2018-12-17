@@ -33,7 +33,10 @@ populate: create_db  ## Build and run containers
 
 .PHONY: test
 test: start  ## Run tests
-	docker-compose run --rm web /usr/local/bin/pytest -v tests/
+	if [ -z "$(name)" ]; \
+	    then docker-compose run --rm web /usr/local/bin/pytest -v tests/; \
+	    else docker-compose run --rm web /usr/local/bin/pytest -v tests/ -k $(name); \
+	fi
 
 .PHONY: stop
 stop:  ## Stop containers
