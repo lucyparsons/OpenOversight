@@ -1,3 +1,4 @@
+import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -79,6 +80,11 @@ def create_app(config_name='default'):
     @app.template_filter('capfirst')
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
+
+    @app.template_filter('get_age')
+    def get_age_from_birth_year(birth_year):
+        if birth_year:
+            return int(datetime.datetime.now().year - birth_year)
 
     return app
 
