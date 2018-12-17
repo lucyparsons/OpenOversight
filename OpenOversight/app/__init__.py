@@ -83,7 +83,8 @@ def create_app(config_name='default'):
 
     @app.template_filter('get_age')
     def get_age_from_birth_year(birth_year):
-        return int(datetime.datetime.now().year - birth_year)
+        if birth_year:
+            return int(datetime.datetime.now().year - birth_year)
 
     return app
 
