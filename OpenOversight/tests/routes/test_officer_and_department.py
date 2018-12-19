@@ -904,8 +904,8 @@ def test_officer_csv(mockdata, client, session):
             url_for('main.download_dept_csv', department_id=department.id),
             follow_redirects=True
         )
-        # get csv entry matching officer last name
-        csv = filter(lambda row: form.last_name.data in row, rv.data.split("\n"))
+        # get csv entry matching officer last n"createdame
+        csv = list(filter(lambda row: form.last_name.data in row, rv.data.decode('utf-8').split("\n")))
         assert len(csv) == 1
         assert form.first_name.data in csv[0]
         assert form.last_name.data in csv[0]
@@ -940,7 +940,7 @@ def test_incidents_csv(mockdata, client, session):
             data=process_form_data(form.data),
             follow_redirects=True
         )
-        assert "created" in rv.data
+        assert "created" in rv.data.decode('utf-8')
         # dump incident csv
         rv = client.get(
             url_for('main.download_incidents_csv', department_id=department.id),
@@ -948,7 +948,7 @@ def test_incidents_csv(mockdata, client, session):
         )
         # print(rv.data)
         # get the csv entry with matching report number
-        csv = filter(lambda row: report_number in row, rv.data.split("\n"))
+        csv = list(filter(lambda row: report_number in row, rv.data.decode('utf-8').split("\n")))
         assert len(csv) == 1
         assert form.description.data in csv[0]
 
