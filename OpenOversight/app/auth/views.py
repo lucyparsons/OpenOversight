@@ -1,3 +1,5 @@
+from future.utils import iteritems
+
 from flask import render_template, redirect, request, url_for, flash, current_app
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
@@ -218,7 +220,7 @@ class UserAPI(MethodView):
         user = User.query.get(user_id)
 
         if user and form.validate_on_submit():
-            for field, data in form.data.iteritems():
+            for field, data in iteritems(form.data):
                 setattr(user, field, data)
 
             db.session.add(user)
