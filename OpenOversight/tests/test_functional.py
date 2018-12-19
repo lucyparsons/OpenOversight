@@ -128,8 +128,6 @@ def test_lastname_capitalization(mockdata, browser):
 
         # check result
         wait_for_element(browser, By.TAG_NAME, "tbody")
-        # assumes the page-header field is of the form:
-        # <div class="page-header"><h1>Officer Detail: <b>McDonald</b></h1></div>
-        rendered_field = browser.find_element_by_class_name("page-header").text
+        rendered_field = browser.find_element_by_tag_name("h1").text
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output
