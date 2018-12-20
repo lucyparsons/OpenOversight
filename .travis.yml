@@ -17,7 +17,7 @@ before_script:
   - pip install coveralls
   - cd OpenOversight
 script:
-  - py.test -v --cov=app
+  - py.test -v -n 4 --dist=loadfile --cov=app
   - cd .. && flake8 --ignore=E501,E722
 after_success:
   - coveralls
