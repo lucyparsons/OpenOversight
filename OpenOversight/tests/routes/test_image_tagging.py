@@ -85,7 +85,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
             url_for('main.sort_images', department_id=1),
             follow_redirects=True
         )
-        assert b'Do you see law enforcement officers in the photo' in rv.data
+        assert b'Do you see uniformed law enforcement officers in the photo' in rv.data
 
 
 def test_user_can_view_submission(mockdata, client, session):
