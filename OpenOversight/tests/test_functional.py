@@ -1,3 +1,4 @@
+from __future__ import division
 from contextlib import contextmanager
 import pytest
 from selenium.common.exceptions import TimeoutException
@@ -87,13 +88,13 @@ def test_officer_browse_pagination(mockdata, browser):
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total / perpage) + 1
+    last_page_index = (total // perpage) + 1
     browser.get("http://localhost:5000/department/{}?from_search=False&page={}"
                 .format(dept_id, last_page_index))
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = ('Showing {}-{} of {}'
-                .format(perpage * (total / perpage) + 1, total, total))
+                .format(perpage * (total // perpage) + 1, total, total))
     assert expected in page_text
 
 
@@ -128,8 +129,6 @@ def test_lastname_capitalization(mockdata, browser):
 
         # check result
         wait_for_element(browser, By.TAG_NAME, "tbody")
-        # assumes the page-header field is of the form:
-        # <div class="page-header"><h1>Officer Detail: <b>McDonald</b></h1></div>
-        rendered_field = browser.find_element_by_class_name("page-header").text
+        rendered_field = browser.find_element_by_tag_name("h1").text
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output

@@ -36,7 +36,7 @@ def test_admin_can_update_users_to_ac(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'updated!' in rv.data
+        assert 'updated!' in rv.data.decode('utf-8')
         assert user.is_area_coordinator is True
 
 
@@ -95,7 +95,7 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
             follow_redirects=True
         )
 
-        assert 'updated!' not in rv.data
+        assert 'updated!' not in rv.data.decode('utf-8')
         assert user.is_area_coordinator is False
 
 
@@ -117,5 +117,5 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
 #             follow_redirects=True
 #         )
 
-#         assert 'updated!' in rv.data
+#         assert 'updated!' in rv.data.decode('utf-8')
 #         assert user.is_administrator is True

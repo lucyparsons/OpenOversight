@@ -2,7 +2,10 @@
 import pytest
 from mock import MagicMock, patch
 from flask import url_for, current_app
-from urlparse import urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 from ..conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac
 from OpenOversight.app.main import views
@@ -82,7 +85,7 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
             url_for('main.sort_images', department_id=1),
             follow_redirects=True
         )
-        assert 'Do you see law enforcement officers in the photo' in rv.data
+        assert b'Do you see law enforcement officers in the photo' in rv.data
 
 
 def test_user_can_view_submission(mockdata, client, session):
@@ -93,7 +96,7 @@ def test_user_can_view_submission(mockdata, client, session):
             url_for('main.display_submission', image_id=1),
             follow_redirects=True
         )
-        assert 'Image ID' in rv.data
+        assert b'Image ID' in rv.data
 
 
 def test_user_can_view_tag(mockdata, client, session):
@@ -104,7 +107,7 @@ def test_user_can_view_tag(mockdata, client, session):
             url_for('main.display_tag', tag_id=1),
             follow_redirects=True
         )
-        assert 'Tag' in rv.data
+        assert b'Tag' in rv.data
 
 
 def test_admin_can_delete_tag(mockdata, client, session):
@@ -115,7 +118,7 @@ def test_admin_can_delete_tag(mockdata, client, session):
             url_for('main.delete_tag', tag_id=1),
             follow_redirects=True
         )
-        assert 'Deleted this tag' in rv.data
+        assert b'Deleted this tag' in rv.data
 
 
 def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
@@ -129,7 +132,7 @@ def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
             url_for('main.delete_tag', tag_id=tag_id),
             follow_redirects=True
         )
-        assert 'Deleted this tag' in rv.data
+        assert b'Deleted this tag' in rv.data
 
         # test tag was deleted from database
         deleted_tag = Face.query.filter_by(id=tag_id).first()
@@ -175,7 +178,7 @@ def test_user_can_add_tag(mockdata, client, session, monkeypatch):
                 follow_redirects=True
             )
             views.get_uploaded_cropped_image.assert_called_once()
-            assert 'Tag added to database' in rv.data
+            assert b'Tag added to database' in rv.data
 
 
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
@@ -194,7 +197,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
             data=form.data,
             follow_redirects=True
         )
-        assert 'Tag already exists between this officer and image! Tag not added.' in rv.data
+        assert b'Tag already exists between this officer and image! Tag not added.' in rv.data
 
 
 def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
@@ -213,7 +216,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             data=form.data,
             follow_redirects=True
         )
-        assert 'Invalid officer ID' in rv.data
+        assert b'Invalid officer ID' in rv.data
 
 
 def test_user_can_finish_tagging(mockdata, client, session):
@@ -224,7 +227,7 @@ def test_user_can_finish_tagging(mockdata, client, session):
             url_for('main.complete_tagging', image_id=4),
             follow_redirects=True
         )
-        assert 'Marked image as completed.' in rv.data
+        assert b'Marked image as completed.' in rv.data
 
 
 def test_user_can_view_leaderboard(mockdata, client, session):
@@ -235,7 +238,7 @@ def test_user_can_view_leaderboard(mockdata, client, session):
             url_for('main.leaderboard'),
             follow_redirects=True
         )
-        assert 'Top Users by Number of Images Sorted' in rv.data
+        assert b'Top Users by Number of Images Sorted' in rv.data
 
 
 def test_user_is_redirected_to_correct_department_after_tagging(mockdata, client, session):

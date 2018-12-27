@@ -9,7 +9,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify)
+                   flash, current_app, jsonify, Response)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -610,6 +610,83 @@ def submit_data():
         preferred_dept_id = Department.query.first().id
         form = AddImageForm()
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
+
+
+def check_input(str_input):
+    if str_input is None or str_input == "Not Sure":
+        return ""
+    else:
+        return str(str_input).replace(",", " ")  # no commas allowed
+
+
+@main.route('/download/department/<int:department_id>', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    records = Officer.query.filter_by(department_id=department_id).all()
+    if not department or not records:
+        abort(404)
+    dept_name = records[0].department.name.replace(" ", "_")
+    first_row = "id, last, first, middle, suffix, gender, "\
+                "race, born, employment_date, assignments\n"
+
+    assign_dict = {}
+    assign_records = Assignment.query.all()
+    for r in assign_records:
+        if r.officer_id not in assign_dict:
+            assign_dict[r.officer_id] = []
+        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.rank), check_input(r.unit), check_input(r.star_date), check_input(r.resign_date)))
+
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
+                   (str(record.id),
+                    check_input(record.last_name),
+                    check_input(record.first_name),
+                    check_input(record.middle_initial),
+                    check_input(record.suffix),
+                    check_input(record.gender),
+                    check_input(record.race),
+                    check_input(record.birth_year),
+                    check_input(record.employment_date),
+                    " ".join(assign_dict.get(record.id, [])),
+                    ) for record in records]
+
+    csv_name = dept_name + "_Officers.csv"
+    csv = first_row + "".join(record_list)
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv, mimetype="text/csv", headers=csv_headers)
+
+
+@main.route('/download/department/<int:department_id>/incidents', methods=['GET'])
+@limiter.limit('5/minute')
+def download_incidents_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    records = Incident.query.filter_by(department_id=department.id).all()
+    if not department or not records:
+        abort(404)
+    dept_name = records[0].department.name.replace(" ", "_")
+    first_row = "id,report_num,date,description,location,licences,links,officers\n"
+
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s\n" %
+                   (str(record.id),
+                    check_input(record.report_number),
+                    check_input(record.date),
+                    check_input(record.description),
+                    check_input(record.address),
+                    " ".join(map(lambda x: str(x), record.license_plates)),
+                    " ".join(map(lambda x: str(x), record.links)),
+                    " ".join(map(lambda x: str(x), record.officers)),
+                    ) for record in records]
+
+    csv_name = dept_name + "_Incidents.csv"
+    csv = first_row + "".join(record_list)
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv, mimetype="text/csv", headers=csv_headers)
+
+
+@main.route('/download/all', methods=['GET'])
+def all_data():
+    departments = Department.query.all()
+    return render_template('all_depts.html', departments=departments)
 
 
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
