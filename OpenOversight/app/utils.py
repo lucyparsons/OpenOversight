@@ -476,13 +476,13 @@ def get_uploaded_cropped_image(original_image, crop_data):
         return None
 
 
-def officer_exists(department_id, star_no, first_name, last_name):
-    """Checks if a given officer name and badge combo exists already for a department."""
+def get_officer(department_id, star_no, first_name, last_name):
+    """Returns first officer with the given name and badge combo in the department, if they exist"""
     officers = Officer.query.filter_by(department_id=department_id,
                                        first_name=first_name,
                                        last_name=last_name).all()
     if officers:
         for assignment in Assignment.query.filter_by(star_no=star_no).all():
             if assignment.baseofficer in officers:
-                return True
-    return False
+                return assignment.baseofficer
+    return None
