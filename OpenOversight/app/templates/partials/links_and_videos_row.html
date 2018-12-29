@@ -2,7 +2,7 @@
 	{% for type, list in obj.links|groupby('link_type') %}
 		{% if type == 'link' %}
 		<div class="col-sm-12 col-md-6">
-			<h5>Links</h5>
+			<h3>Links</h3>
 			<ul class='list-group'>
 				{% for link in list %}
 					<li class='list-group-item'>
@@ -23,37 +23,37 @@
 		</div>
 		{% endif %}
 		{% if type == 'video' %}
-			<div class="col-sm-12 col-md-6">
-				<ul class='list-group'>
-					<h5>Videos</h5>
-					{% for link in list %}
-						{% with link_url = link.url.split('v=')[1] %}
-							<li class='list-group-item'>
-								{% if link.title %}
-									<h5>{{ link.title }}</h5>
-								{% endif %}
-								<div class='video-container'>
-									<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ link_url }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+		<div class="col-sm-12 col-md-6">
+			<ul class='list-group'>
+				<h3>Videos</h3>
+				{% for link in list %}
+					{% with link_url = link.url.split('v=')[1] %}
+						<li class='list-group-item'>
+							{% if link.title %}
+								<h5>{{ link.title }}</h5>
+							{% endif %}
+							<div class='video-container'>
+								<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ link_url }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+							</div>
+							{% if link.description or link.author %}
+								<div>
+									{% if link.description %}
+											{{ link.description }}
+									{% endif %}
+									{% if link.author %}
+										{% if link.description %}- {% endif %}<em>{{ link.author }}</em>
+									{% endif %}
 								</div>
-								{% if link.description or link.author %}
-									<div>
-										{% if link.description %}
-												{{ link.description }}
-										{% endif %}
-										{% if link.author %}
-											{% if link.description %}- {% endif %}<em>{{ link.author }}</em>
-										{% endif %}
-									</div>
-								{% endif %}
-							</li>
-						{% endwith%}
-					{% endfor %}
-				</ul>
-			</div>
+							{% endif %}
+						</li>
+					{% endwith%}
+				{% endfor %}
+			</ul>
+		</div>
 		{% endif %}
 		{% if type == 'other_video' %}
 		<div class="col-sm-12 col-md-6">
-			<h5>Other videos</h5>
+			<h3>Other videos</h3>
 			<ul class='list-group'>
 				{% for link in list %}
 					<li class='list-group-item'>
