@@ -5,7 +5,7 @@
 
   <div class="page-header">
       <ol class="breadcrumb">
-          <li><a href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></li>
+          <li><a href="{{url_for('main.list_officer',department_id=officer.department.id)}}">{{ officer.department.name|title }}</a></li>
           <li class="active">{% include 'partials/officer_name.html' %}</li>
       </ol>
       <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
