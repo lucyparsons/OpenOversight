@@ -10,7 +10,7 @@ start: build  ## Run containers
 
 .PHONY: create_db
 create_db: start
-	@until docker exec -it openoversight_postgres_1 psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
+	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
 	done
@@ -23,7 +23,7 @@ dev: build start create_db populate
 
 .PHONY: populate
 populate: create_db  ## Build and run containers
-	@until docker exec -it openoversight_postgres_1 psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
+	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
 	done
@@ -44,8 +44,7 @@ stop:  ## Stop containers
 
 .PHONY: clean
 clean: stop  ## Remove containers
-	docker rm openoversight_web_1 || true
-	docker rm openoversight_postgres_1 || true
+	docker-compose rm -f
 
 .PHONY: clean_all
 clean_all: clean stop ## Wipe database
