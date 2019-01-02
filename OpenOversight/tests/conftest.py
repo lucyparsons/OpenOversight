@@ -7,6 +7,7 @@ import time
 import threading
 from xvfbwrapper import Xvfb
 from faker import Faker
+import csv
 
 from OpenOversight.app import create_app
 from OpenOversight.app import models
@@ -83,7 +84,6 @@ def generate_officer():
 def build_assignment(officer, unit):
     return models.Assignment(star_no=pick_star(), rank=pick_rank(),
                              officer=officer)
-
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
@@ -335,6 +335,53 @@ def mockdata(session, request):
         session.flush()
 
     return assignments[0].star_no
+
+
+@pytest.fixture
+def csvfile(mockdata, tmp_path, request):
+    csv_path = tmp_path / "dept1.csv"
+    try:
+        tmp_path.rmdir()
+    except:
+        pass
+    tmp_path.mkdir()
+
+    fieldnames = [
+        'department_id',
+        'unique_internal_identifier',
+        'first_name',
+        'last_name',
+        'middle_initial',
+        'suffix',
+        'gender',
+        'race',
+        'employment_date',
+        'birth_year',
+        'badge',
+        'rank',
+        'unit',
+        'star_date',
+        'resign_date'
+    ]
+
+    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
+    with open(csv_path, 'w', newline='') as csvf:
+        writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+        for officer in officers_dept1:
+            if len(list(officer.assignments)) > 0:
+                assignment = officer.assignments[0]
+                towrite = {**vars(officer), **vars(assignment), 'department_id': 1}
+            else:
+                towrite = {**vars(officer), 'department_id': 1}
+            writer.writerow(towrite)
+
+    def teardown():
+        csv_path.unlink()
+        tmp_path.rmdir()
+
+    request.addfinalizer(teardown)
+    return csv_path
 
 
 @pytest.fixture

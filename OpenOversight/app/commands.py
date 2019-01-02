@@ -109,7 +109,7 @@ def bulk_add_officers(filename):
         for field in required_fields:
             if field not in csvfile.fieldnames:
                 raise Exception('Missing required field {}'.format(field))
-        if 'badge' not in csvfile.fieldnames and 'unique_internal_identifier' not in csvfile.fieldnames:
+        if 'star_no' not in csvfile.fieldnames and 'unique_internal_identifier' not in csvfile.fieldnames:
             raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
 
         for line in csvfile:
@@ -128,8 +128,8 @@ def bulk_add_officers(filename):
                     department_id=department_id,
                     unique_internal_identifier=line['unique_internal_identifier']
                 ).one_or_none()
-            elif 'badge' in csvfile.fieldnames and line['badge']:
-                officer = get_officer(department_id, line['badge'],
+            elif 'star_no' in csvfile.fieldnames and line['star_no']:
+                officer = get_officer(department_id, line['star_no'],
                                       line['first_name'], line['last_name'])
             else:
                 raise Exception('Officer {} {} missing badge number and unique identifier'.format(line['first_name'],
@@ -165,7 +165,7 @@ def bulk_add_officers(filename):
                 # Don't need to add officer to db.session b/c object already in session
 
                 assignment_fields = [
-                    'badge',
+                    'star_no',
                     'rank',
                     'unit',
                     'star_date',
@@ -187,8 +187,8 @@ def bulk_add_officers(filename):
                     # create new assignment
                     assignment = Assignment()
                     assignment.officer_id = officer.id
-                    if 'badge' in csvfile.fieldnames:
-                        assignment.star_no = line['badge']
+                    if 'star_no' in csvfile.fieldnames:
+                        assignment.star_no = line['star_no']
                     if 'rank' in csvfile.fieldnames:
                         assignment.rank = line['rank']
                     if 'unit' in csvfile.fieldnames:
@@ -226,8 +226,8 @@ def bulk_add_officers(filename):
 
                 assignment = Assignment()
                 assignment.officer_id = officer.id
-                if 'badge' in csvfile.fieldnames:
-                    assignment.star_no = line['badge']
+                if 'star_no' in csvfile.fieldnames:
+                    assignment.star_no = line['star_no']
                 if 'rank' in csvfile.fieldnames:
                     assignment.rank = line['rank']
                 if 'unit' in csvfile.fieldnames:
