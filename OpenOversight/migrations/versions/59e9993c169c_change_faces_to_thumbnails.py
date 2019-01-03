@@ -5,9 +5,14 @@ Revises: bd0398fe4aab
 Create Date: 2018-06-04 19:04:23.524079
 
 """
+from flask import current_app
+import os
+import sys
+# Add our Flask app to the search paths for modules
+sys.path.insert(0, os.path.dirname(current_app.root_path))
 
-from app.models import Face, db
-from app.utils import get_uploaded_cropped_image
+from app.models import Face, db  # noqa: E402
+from app.utils import get_uploaded_cropped_image  # noqa: E402
 
 
 # revision identifiers, used by Alembic.

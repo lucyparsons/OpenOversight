@@ -56,53 +56,66 @@ or
 
 ### Migrating the Database
 
-If you e.g. add a new column or table, you'll need to migrate the database.
-
-You can use the management interface to first generate migrations:
+If you e.g. add a new column or table, you'll need to migrate the database using the Flask CLI. First we need to 'stamp' the current version of the database:
 
 ```sh
-$ python manage.py db migrate
+$ cd OpenOversight/  # change directory to source dir
+$ flask db stamp head
+```
+
+(Hint: If you get errors when running `flask` commands, e.g. because of differing Python versions, you may need to run the commands in the docker container by prefacing them as so: `docker exec -it openoversight_web_1 flask db stamp head`)
+
+Next make your changes to the database models in `models.py`. You'll then generate the migrations:
+
+```sh
+$ flask db migrate
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
 
 ```sh
-$ python manage.py db upgrade
+$ flask db upgrade
 ```
 
-You can also downgrade the database using `python manage.py db downgrade`.
+You can also downgrade the database using `flask db downgrade`.
 
 ## OpenOversight Management Interface
 
-In addition to running the development server, `manage.py` (OpenOversight's management interface) can be used to do the following:
+In addition to generating database migrations, the Flask CLI can be used to run additional commands:
 
 ```sh
-$ python manage.py
---------------------------------------------------------------------------------
-INFO in __init__ [/vagrant/OpenOversight/app/__init__.py:57]:
-OpenOversight startup
---------------------------------------------------------------------------------
-usage: manage.py [-?]
-                 {runserver,db,shell,make_admin_user,link_images_to_department}
-                 ...
+$ flask --help
+Usage: flask [OPTIONS] COMMAND [ARGS]...
 
-positional arguments:
-  {runserver,db,shell,make_admin_user,link_images_to_department}
-    runserver           Runs the Flask development server i.e. app.run()
-    db                  Perform database migrations
-    shell               Runs a Python shell inside Flask application context.
-    make_admin_user     Add confirmed administrator account
-    link_images_to_department
-                        Link existing images to first department
+  A general utility script for Flask applications.
 
-optional arguments:
-  -?, --help            show this help message and exit
+  Provides commands from Flask, extensions, and the application. Loads the
+  application defined in the FLASK_APP environment variable, or from a
+  wsgi.py file. Setting the FLASK_ENV environment variable to 'development'
+  will enable debug mode.
+
+    $ export FLASK_APP=hello.py
+    $ export FLASK_ENV=development
+    $ flask run
+
+Options:
+  --version  Show the flask version
+  --help     Show this message and exit.
+
+Commands:
+  db                           Perform database migrations.
+  link-images-to-department    Link existing images to first department
+  link-officers-to-department  Links officers and units to first department
+  make-admin-user              Add confirmed administrator account
+  routes                       Show the routes for the app.
+  run                          Runs a development server.
+  shell                        Runs a shell in the app context.
 ```
 
 In development, you can make an administrator account without having to confirm your email:
 
 ```sh
-$ python manage.py make_admin_user
+$ flask make-admin-user
 Username: redshiftzero
 Email: jen@redshiftzero.com
 Password:
