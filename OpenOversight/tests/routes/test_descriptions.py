@@ -50,7 +50,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
         )
 
         assert rv.status_code == 200
-        assert 'created' in rv.data
+        assert 'created' in rv.data.decode('utf-8')
 
         created_description = Description.query.filter_by(text_contents=text_contents).first()
         assert created_description is not None
@@ -76,7 +76,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
         )
 
         assert rv.status_code == 200
-        assert 'created' in rv.data
+        assert 'created' in rv.data.decode('utf-8')
 
         created_description = Description.query.filter_by(text_contents=description).first()
         assert created_description is not None
@@ -110,7 +110,7 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
         assert description.text_contents == new_description
         assert description.date_updated > original_date
@@ -144,7 +144,7 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
         assert description.text_contents == new_description
         assert description.date_updated > original_date
@@ -178,7 +178,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
         assert description.text_contents == new_description
         assert description.date_updated > original_date
@@ -296,7 +296,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Update' in rv.data
+        assert 'Update' in rv.data.decode('utf-8')
 
 
 def test_acs_can_get_others_edit_form(mockdata, client, session):
@@ -318,7 +318,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Update' in rv.data
+        assert 'Update' in rv.data.decode('utf-8')
 
 
 def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
@@ -361,7 +361,7 @@ def test_users_can_see_descriptions(mockdata, client, session):
         # ensures we're looking for a description that exists
         assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents in rv.data
+        assert text_contents in rv.data.decode('utf-8')
 
 
 def test_admins_can_see_descriptions(mockdata, client, session):
@@ -385,7 +385,7 @@ def test_admins_can_see_descriptions(mockdata, client, session):
         assert description in officer.descriptions
         assert rv.status_code == 200
         # import pdb; pdb.set_trace()
-        assert text_contents in rv.data
+        assert text_contents in rv.data.decode('utf-8')
 
 
 def test_acs_can_see_descriptions_in_their_department(mockdata, client, session):
@@ -409,7 +409,7 @@ def test_acs_can_see_descriptions_in_their_department(mockdata, client, session)
         # ensures we're looking for a description that exists
         assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents in rv.data
+        assert text_contents in rv.data.decode('utf-8')
 
 
 def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, session):
@@ -432,4 +432,4 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         # ensures we're looking for a description that exists
         assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents in rv.data
+        assert text_contents in rv.data.decode('utf-8')

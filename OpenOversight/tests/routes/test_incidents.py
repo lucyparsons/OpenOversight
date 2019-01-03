@@ -78,7 +78,7 @@ def test_admins_can_create_basic_incidents(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'created' in rv.data
+        assert 'created' in rv.data.decode('utf-8')
 
         inc = Incident.query.filter_by(date=date).first()
         assert inc is not None
@@ -121,7 +121,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'successfully updated' in rv.data
+        assert 'successfully updated' in rv.data.decode('utf-8')
         updated = Incident.query.get(inc_id)
         assert updated.date == new_date
         assert updated.address.street_name == street_name
@@ -168,7 +168,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'successfully updated' in rv.data
+        assert 'successfully updated' in rv.data.decode('utf-8')
         # old links are still there
         for link in old_links:
             assert link in inc.links
@@ -211,7 +211,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Incidents prior to 1900 not allowed.' in rv.data
+        assert 'Incidents prior to 1900 not allowed.' in rv.data.decode('utf-8')
 
 
 def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
@@ -248,7 +248,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Must select a state.' in rv.data
+        assert 'Must select a state.' in rv.data.decode('utf-8')
         assert incident_count_before == Incident.query.count()
 
 
@@ -294,9 +294,9 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(mockdata, 
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Must also select a state.' in rv.data
-        assert 'Zip codes must have 5 digits.' in rv.data
-        assert rv.data.count('This field is required.') >= 3
+        assert 'Must also select a state.' in rv.data.decode('utf-8')
+        assert 'Zip codes must have 5 digits.' in rv.data.decode('utf-8')
+        assert rv.data.decode('utf-8').count('This field is required.') >= 3
         assert incident_count_before == Incident.query.count()
 
 
@@ -342,7 +342,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'successfully updated' in rv.data
+        assert 'successfully updated' in rv.data.decode('utf-8')
         for officer in old_officers:
             assert officer in inc.officers
         assert new_officer.id in [off.id for off in inc.officers]
@@ -389,7 +389,7 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Not a valid officer id' in rv.data
+        assert 'Not a valid officer id' in rv.data.decode('utf-8')
         for officer in old_officers:
             assert officer in inc.officers
 
@@ -430,7 +430,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'successfully updated' in rv.data
+        assert 'successfully updated' in rv.data.decode('utf-8')
         assert inc.date == new_date
         assert inc.address.street_name == street_name
 
@@ -525,7 +525,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Update' in rv.data
+        assert 'Update' in rv.data.decode('utf-8')
 
 
 def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
@@ -549,30 +549,30 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
 
         # Requires that report numbers in test data not include other report numbers
         for incident in department_incidents:
-            assert incident.report_number in rv.data
+            assert incident.report_number in rv.data.decode('utf-8')
         for incident in non_department_incidents:
-            assert incident.report_number not in rv.data
+            assert incident.report_number not in rv.data.decode('utf-8')
 
 
 def test_admins_can_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         rv = client.get(url_for('main.incident_api', obj_id=1))
-        assert 'Creator' in rv.data
+        assert 'Creator' in rv.data.decode('utf-8')
 
 
 def test_acs_cannot_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for('main.incident_api', obj_id=1))
-        assert 'Creator' not in rv.data
+        assert 'Creator' not in rv.data.decode('utf-8')
 
 
 def test_users_cannot_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for('main.incident_api', obj_id=1))
-        assert 'Creator' not in rv.data
+        assert 'Creator' not in rv.data.decode('utf-8')
 
 
 def test_form_with_officer_id_prepopulates(mockdata, client, session):
@@ -580,4 +580,4 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
         login_admin(client)
         officer_id = '1234'
         rv = client.get(url_for('main.incident_api') + 'new?officer_id={}'.format(officer_id))
-        assert officer_id in rv.data
+        assert officer_id in rv.data.decode('utf-8')

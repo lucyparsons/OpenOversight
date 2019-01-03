@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 # Copyright 2015 Google, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,8 +109,8 @@ if __name__ == '__main__':
         filesize = statinfo.st_size
         if filesize > 8000000:
             basewidth = 6000
-            print statinfo.st_size
-            print file
+            print(statinfo.st_size)
+            print(file)
             img = Image.open(file)
             wpercent = (basewidth / float(img.size[0]))
             hsize = int((float(img.size[1]) * float(wpercent)))
@@ -117,8 +118,8 @@ if __name__ == '__main__':
             img.save(file)
         if filesize > 4000000:
             basewidth = 4000
-            print statinfo.st_size
-            print file
+            print(statinfo.st_size)
+            print(file)
             img = Image.open(file)
             wpercent = (basewidth / float(img.size[0]))
             hsize = int((float(img.size[1]) * float(wpercent)))

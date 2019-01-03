@@ -4,7 +4,11 @@
 <div class="container" role="main">
 
   <div class="page-header">
-    <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
+      <ol class="breadcrumb">
+          <li><a href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></li>
+          <li class="active">{% include 'partials/officer_name.html' %}</li>
+      </ol>
+      <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
   </div>
 
   <div class="row">
@@ -35,6 +39,10 @@
           <table class="table table-hover">
             <tbody>
               <tr>
+                <td><b>Name</b></td>
+                <td>{% include 'partials/officer_name.html' %}</td>
+              </tr>
+              <tr>
                 <td><b>OpenOversight ID</b></td>
                 <td>{{ officer.id }}</td>
               </tr>
@@ -55,8 +63,8 @@
                 <td>{{ officer.gender }}</td>
               </tr>
               <tr>
-                <td><b>Birth Year</b></td>
-                <td>{{ officer.birth_year }}</td>
+                <td><b>Birth Year (Age)</b></td>
+                <td>{{ officer.birth_year }} ({{ officer.birth_year|get_age }})</td>
               </tr>
               <tr>
                 <td><b>First Employment Date</b></td>

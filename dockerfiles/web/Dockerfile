@@ -1,18 +1,19 @@
-FROM python:2
+FROM python:3
 
 WORKDIR /usr/src/app
 
 ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
+ENV GECKODRIVER_VERSION="v0.23.0"
 RUN apt-get update && apt-get install -y xvfb firefox-esr
 
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
 RUN mkdir geckodriver
-RUN tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
+RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r dev-requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r dev-requirements.txt
 
 RUN mkdir /var/www && chmod a+xw /var/www
 
