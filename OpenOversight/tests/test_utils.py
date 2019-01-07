@@ -2,6 +2,9 @@ from mock import patch, Mock, MagicMock
 import os
 import OpenOversight
 from OpenOversight.app.models import Image
+from OpenOversight.app.commands import bulk_add_officers
+import pytest
+import pandas as pd
 
 
 # Utils tests
@@ -186,3 +189,10 @@ def test_get_uploaded_cropped_image_s3_error(mockdata):
     cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
 
     assert cropped_image is None
+
+
+def test_csv_missing_required_field(csvfile):
+    df = pd.read_csv(csvfile)
+    df.drop(columns='first_name').to_csv(csvfile)
+    with pytest.raises(Exception, match='Missing required field'):
+        bulk_add_officers([csvfile])

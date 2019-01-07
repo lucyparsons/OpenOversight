@@ -90,10 +90,11 @@ def create_app(config_name='default'):
     # Add commands
     Migrate(app, db)  # Adds 'db' command
     from .commands import (make_admin_user, link_images_to_department,
-                           link_officers_to_department)
+                           link_officers_to_department, bulk_add_officers)
     app.cli.add_command(make_admin_user)
     app.cli.add_command(link_images_to_department)
     app.cli.add_command(link_officers_to_department)
+    app.cli.add_command(bulk_add_officers)
 
     return app
 

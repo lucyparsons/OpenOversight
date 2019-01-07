@@ -340,10 +340,18 @@ def mockdata(session, request):
 @pytest.fixture
 def csvfile(mockdata, tmp_path, request):
     csv_path = tmp_path / "dept1.csv"
-    try:
-        tmp_path.rmdir()
-    except:
-        pass
+
+    def teardown():
+        try:
+            csv_path.unlink()
+        except:
+            pass
+        try:
+            tmp_path.rmdir()
+        except:
+            pass
+
+    teardown()
     tmp_path.mkdir()
 
     fieldnames = [
@@ -381,7 +389,7 @@ def csvfile(mockdata, tmp_path, request):
         tmp_path.rmdir()
 
     request.addfinalizer(teardown)
-    return csv_path
+    return str(csv_path)
 
 
 @pytest.fixture
