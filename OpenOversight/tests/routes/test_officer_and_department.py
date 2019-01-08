@@ -1069,6 +1069,26 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>M</dd>" in token for token in filter_list)
 
+
+def test_edit_officers_without_uids(mockdata, client, session):
+    session.execute(
+        Officer.__table__.update().values(unique_internal_identifier=None))
+    session.commit()
+    officers = Officer.query.limit(2).all()
+    assert officers[0].unique_internal_identifier is None
+    assert officers[1].unique_internal_identifier is None
+    with current_app.test_request_context():
+        login_admin(client)
+        form = EditOfficerForm(last_name='Changed')
+        data = process_form_data(form.data)
+        for officer in officers:
+            rv = client.post(
+                url_for('main.edit_officer', officer_id=officer.id),
+                data=data,
+                follow_redirects=True
+            )
+            assert 'Changed' in rv.data.decode('utf-8')
+
 # def test_find_form_submission(client, mockdata):
 #     with current_app.test_request_context():
 #         form = FindOfficerForm()
