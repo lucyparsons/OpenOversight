@@ -9,6 +9,7 @@ from xvfbwrapper import Xvfb
 from faker import Faker
 import csv
 import uuid
+import sys
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -375,7 +376,12 @@ def csvfile(mockdata, tmp_path, request):
     ]
 
     officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
-    with open(csv_path, 'w', newline='') as csvf:
+
+    if sys.version_info.major == 2:
+        csvf = open(str(csv_path), 'w')
+    else:
+        csvf = open(str(csv_path), 'w', newline='')
+    try:
         writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction='ignore')
         writer.writeheader()
         for officer in officers_dept1:
@@ -387,6 +393,10 @@ def csvfile(mockdata, tmp_path, request):
             else:
                 towrite = merge_dicts(vars(officer), {'department_id': 1})
             writer.writerow(towrite)
+    except:
+        raise
+    finally:
+        csvf.close()
 
     request.addfinalizer(teardown)
     return str(csv_path)
