@@ -487,3 +487,14 @@ def get_officer(department_id, star_no, first_name, last_name):
             if assignment.baseofficer in officers:
                 return assignment.baseofficer
     return None
+
+
+def merge_dicts(*dict_args):
+    """
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    """
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result

@@ -10,8 +10,8 @@ from faker import Faker
 import csv
 import uuid
 
-from OpenOversight.app import create_app
-from OpenOversight.app import models
+from OpenOversight.app import create_app, models
+from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db
 
 factory = Faker()
@@ -383,9 +383,9 @@ def csvfile(mockdata, tmp_path, request):
                 officer.unique_internal_identifier = str(uuid.uuid4())
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = {**vars(officer), **vars(assignment), 'department_id': 1}
+                towrite = merge_dicts(vars(officer), vars(assignment), {'department_id': 1})
             else:
-                towrite = {**vars(officer), 'department_id': 1}
+                towrite = merge_dicts(vars(officer), {'department_id': 1})
             writer.writerow(towrite)
 
     request.addfinalizer(teardown)
