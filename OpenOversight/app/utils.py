@@ -482,6 +482,7 @@ def get_officer(department_id, star_no, first_name, last_name):
                                        first_name=first_name,
                                        last_name=last_name).all()
     if officers:
+        star_no = str(star_no)
         for assignment in Assignment.query.filter_by(star_no=star_no).all():
             if assignment.baseofficer in officers:
                 return assignment.baseofficer

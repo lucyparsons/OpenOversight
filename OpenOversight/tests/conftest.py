@@ -8,6 +8,7 @@ import threading
 from xvfbwrapper import Xvfb
 from faker import Faker
 import csv
+import uuid
 
 from OpenOversight.app import create_app
 from OpenOversight.app import models
@@ -84,6 +85,7 @@ def generate_officer():
 def build_assignment(officer, unit):
     return models.Assignment(star_no=pick_star(), rank=pick_rank(),
                              officer=officer)
+
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
@@ -277,7 +279,7 @@ def mockdata(session, request):
             address=test_addresses[0],
             license_plates=test_license_plates,
             links=test_links,
-            officers=[generate_officer() for o in range(4)],
+            officers=[all_officers[o] for o in range(4)],
             creator_id=1,
             last_updated_id=1
         ),
@@ -289,7 +291,7 @@ def mockdata(session, request):
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
             links=test_links,
-            officers=[generate_officer() for o in range(3)],
+            officers=[all_officers[o] for o in range(3)],
             creator_id=2,
             last_updated_id=1
         ),
@@ -344,11 +346,11 @@ def csvfile(mockdata, tmp_path, request):
     def teardown():
         try:
             csv_path.unlink()
-        except:
+        except:  # noqa: E722
             pass
         try:
             tmp_path.rmdir()
-        except:
+        except:  # noqa: E722
             pass
 
     teardown()
@@ -365,7 +367,7 @@ def csvfile(mockdata, tmp_path, request):
         'race',
         'employment_date',
         'birth_year',
-        'badge',
+        'star_no',
         'rank',
         'unit',
         'star_date',
@@ -377,16 +379,14 @@ def csvfile(mockdata, tmp_path, request):
         writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction='ignore')
         writer.writeheader()
         for officer in officers_dept1:
+            if not officer.unique_internal_identifier:
+                officer.unique_internal_identifier = str(uuid.uuid4())
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
                 towrite = {**vars(officer), **vars(assignment), 'department_id': 1}
             else:
                 towrite = {**vars(officer), 'department_id': 1}
             writer.writerow(towrite)
-
-    def teardown():
-        csv_path.unlink()
-        tmp_path.rmdir()
 
     request.addfinalizer(teardown)
     return str(csv_path)

@@ -3,6 +3,7 @@ from builtins import input
 from getpass import getpass
 import sys
 import csv
+from datetime import datetime
 
 import click
 from flask.cli import with_appcontext
@@ -154,14 +155,17 @@ def bulk_add_officers(filename):
                     'birth_year'
                 ]
                 for fieldname in static_fields:
-                    if fieldname in csvfile.fieldnames and getattr(officer, fieldname) != line[fieldname]:
-                        raise Exception('Officer {} {} has differing {} field. Old: {}, new: {}'.format(
-                            officer.first_name,
-                            officer.last_name,
-                            fieldname,
-                            getattr(officer, fieldname),
-                            line[fieldname]
-                        ))
+                    if fieldname in csvfile.fieldnames:
+                        if line[fieldname] == '':
+                            line[fieldname] = None
+                        if str(getattr(officer, fieldname)) != str(line[fieldname]):
+                            raise Exception('Officer {} {} has differing {} field. Old: {}, new: {}'.format(
+                                officer.first_name,
+                                officer.last_name,
+                                fieldname,
+                                getattr(officer, fieldname),
+                                line[fieldname]
+                            ))
                 # Don't need to add officer to db.session b/c object already in session
 
                 assignment_fields = [
@@ -193,11 +197,12 @@ def bulk_add_officers(filename):
                         assignment.rank = line['rank']
                     if 'unit' in csvfile.fieldnames:
                         assignment.unit = line['unit']
-                    if 'star_date' in csvfile.fieldnames:
-                        assignment.star_date = line['star_date']
-                    if 'resign_date' in csvfile.fieldnames:
-                        assignment.resign_date = line['resign_date']
+                    if 'star_date' in csvfile.fieldnames and line['star_date'] != '':
+                        assignment.star_date = datetime.strptime(line['star_date'], '%Y-%m-%d').date()
+                    if 'resign_date' in csvfile.fieldnames and line['resign_date'] != '':
+                        assignment.resign_date = datetime.strptime(line['resign_date'], '%Y-%m-%d').date()
                     db.session.add(assignment)
+                    db.session.flush()
 
                 n_updated += 1
             else:
@@ -215,11 +220,11 @@ def bulk_add_officers(filename):
                     officer.race = line['race']
                 if 'gender' in csvfile.fieldnames:
                     officer.gender = line['gender']
-                if 'employment_date' in csvfile.fieldnames:
-                    officer.employment_date = line['employment_date']
+                if 'employment_date' in csvfile.fieldnames and line['employment_date'] != '':
+                    officer.employment_date = datetime.strptime(line['employment_date'], '%Y-%m-%d').date()
                 if 'birth_year' in csvfile.fieldnames:
                     officer.birth_year = line['birth_year']
-                if 'unique_internal_identifier' in csvfile.fieldnames:
+                if 'unique_internal_identifier' in csvfile.fieldnames and line['unique_internal_identifier'] != '':
                     officer.unique_internal_identifier = line['unique_internal_identifier']
                 db.session.add(officer)
                 db.session.flush()
@@ -232,11 +237,12 @@ def bulk_add_officers(filename):
                     assignment.rank = line['rank']
                 if 'unit' in csvfile.fieldnames:
                     assignment.unit = line['unit']
-                if 'star_date' in csvfile.fieldnames:
-                    assignment.star_date = line['star_date']
-                if 'resign_date' in csvfile.fieldnames:
-                    assignment.resign_date = line['resign_date']
+                if 'star_date' in csvfile.fieldnames and line['star_date'] != '':
+                    assignment.star_date = datetime.strptime(line['star_date'], '%Y-%m-%d').date()
+                if 'resign_date' in csvfile.fieldnames and line['resign_date'] != '':
+                    assignment.resign_date = datetime.strptime(line['resign_date'], '%Y-%m-%d').date()
                 db.session.add(assignment)
+                db.session.flush()
 
                 print('Added new officer {} {}'.format(officer.first_name, officer.last_name))
                 n_created += 1
@@ -244,3 +250,5 @@ def bulk_add_officers(filename):
         db.session.commit()
         print('Created {} officers'.format(n_created))
         print('Updated {} officers'.format(n_updated))
+
+        return n_created, n_updated
