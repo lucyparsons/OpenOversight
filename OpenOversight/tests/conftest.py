@@ -393,7 +393,7 @@ def csvfile(mockdata, tmp_path, request):
             else:
                 towrite = merge_dicts(vars(officer), {'department_id': 1})
             writer.writerow(towrite)
-    except:
+    except:  # noqa E722
         raise
     finally:
         csvf.close()
