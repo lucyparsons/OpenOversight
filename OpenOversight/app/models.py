@@ -107,6 +107,21 @@ class Officer(db.Model):
                                                      self.suffix)
 
 
+class Salary(db.Model):
+    __tablename__ = 'salary'
+
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    total_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    year = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+
+    def __repr__(self):
+        return 'Salary: ID {} : {}'.format(self.officer_id, self.salary)
+
+
 class Assignment(db.Model):
     __tablename__ = 'assignments'
 
