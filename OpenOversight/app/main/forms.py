@@ -10,7 +10,7 @@ from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
-from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, STATE_CHOICES, LINK_CHOICES, AGE_CHOICES
+from .choices import SUFFIX_CHOICES, GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES, LINK_CHOICES, AGE_CHOICES
 from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
@@ -45,8 +45,7 @@ class FindOfficerForm(Form):
                                                          Length(max=10)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
-    rank = SelectField('rank', default='Not Sure', choices=RANK_CHOICES,
-                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    rank = StringField('rank', default='Not Sure', validators=[Optional()])
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,
@@ -90,8 +89,8 @@ class FaceTag(Form):
 class AssignmentForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
-    rank = SelectField('Rank', default='COMMANDER', choices=RANK_CHOICES,
-                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    rank = StringField('Rank', default='', validators=[
+        DataRequired(), Regexp('\w*')])
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip')
     star_date = DateField('Assignment start date', validators=[Optional()])
@@ -192,8 +191,8 @@ class AddOfficerForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
-    rank = SelectField('Rank', default='PO', choices=RANK_CHOICES,
-                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    rank = StringField('rank', default='', validators=[
+        Optional(), Regexp('\w*')])
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'Unknown unit')
@@ -395,8 +394,8 @@ class IncidentForm(DateFieldForm):
 
 
 class BrowseForm(Form):
-    rank = SelectField('rank', default='Not Sure', choices=RANK_CHOICES,
-                       validators=[AnyOf(allowed_values(RANK_CHOICES))])
+    rank = QuerySelectField('rank', validators=[Optional()], get_label='rank',
+                            get_pk=lambda rank: rank.rank)  # query set in view function
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,

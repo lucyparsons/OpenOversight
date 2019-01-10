@@ -57,7 +57,7 @@
                 {% endfor %}
 
                 <br>
-                <button id="activate-step-2" class="btn btn-primary btn-lg">Next Step</button>
+                <button id="activate-step-2" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" class="btn btn-primary btn-lg">Next Step</button>
             </div>
         </div>
     </div>

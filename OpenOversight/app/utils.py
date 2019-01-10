@@ -260,15 +260,8 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                 Officer.birth_year == None))  # noqa
 
     officer_query = officer_query.outerjoin(Assignment)
-    if form['rank'] == 'PO':
-        officer_query = officer_query.filter(
-            db.or_(Assignment.rank.like('%%PO%%'),
-                   Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == 'Not Sure')  # noqa
-        )
-    if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
-                        'COMMANDER', 'DEP CHIEF', 'CHIEF', 'DEPUTY SUPT',
-                        'SUPT OF POLICE'):
+
+    if form['rank'] and str(form['rank']) != 'Not Sure':
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
                    Assignment.rank == 'Not Sure')  # noqa

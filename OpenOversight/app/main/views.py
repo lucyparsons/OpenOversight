@@ -28,10 +28,10 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm)
 from .model_view import ModelView
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, AGE_CHOICES
+from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note,
-                      Description, Salary)
+                      Description, Salary, Rank)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -363,6 +363,7 @@ def edit_department(department_id):
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, from_search=False, race='Not Sure', gender='Not Sure', rank='Not Sure', min_age='16', max_age='100'):
     form = BrowseForm()
+    form.rank.query = Rank.query.filter_by(department_id=department_id).order_by(Rank.order.asc()).all()
     form_data = form.data
     form_data['race'] = race
     form_data['gender'] = gender
@@ -380,7 +381,7 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
         form_data['race'] = request.args.get('race')
     if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
         form_data['gender'] = request.args.get('gender')
-    if request.args.get('rank') and request.args.get('rank') in [rc[0] for rc in RANK_CHOICES]:
+    if request.args.get('rank'):
         form_data['rank'] = request.args.get('rank')
     if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
         form_data['min_age'] = request.args.get('min_age')
@@ -408,6 +409,15 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
         rank=form_data['rank'],
         min_age=form_data['min_age'],
         max_age=form_data['max_age'])
+
+
+@main.route('/department/<int:department_id>/ranks')
+@main.route('/ranks')
+def get_dept_ranks(department_id=None):
+    if not department_id:
+        department_id = request.args.get('department_id')
+    ranks = Rank.query.filter_by(department_id=department_id).order_by(Rank.order.asc()).all()
+    return jsonify([rank.rank for rank in ranks])  # lol
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])

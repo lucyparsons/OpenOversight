@@ -37,6 +37,22 @@ class Department(db.Model):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
 
+class Rank(db.Model):
+    __tablename__ = 'ranks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    rank = db.Column(db.String(255), index=True, unique=False, nullable=False)
+    order = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='ranks')
+
+    def __repr__(self):
+        return '<Rank ID {}: {}>'.format(self.id, self.rank)
+
+    def __str__(self):
+        return self.rank
+
+
 class Note(db.Model):
     __tablename__ = 'notes'
 
