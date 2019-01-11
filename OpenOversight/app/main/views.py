@@ -329,6 +329,24 @@ def add_department():
                                     short_name=form.short_name.data)
             db.session.add(department)
             db.session.commit()
+            if form.ranks.data:
+                Rank.query.filter_by(department_id=department.id).delete()
+                db.session.commit()
+                db.session.add(Rank(
+                    rank='Not Sure',
+                    order=0,
+                    department_id=department.id
+                ))
+                order = 1
+                for rank in form.data['ranks']:
+                    if rank:
+                        db.session.add(Rank(
+                            rank=rank,
+                            order=order,
+                            department_id=department.id
+                        ))
+                        order += 1
+                db.session.commit()
             flash('New department {} added to OpenOversight'.format(department.name))
         else:
             flash('Department {} already exists'.format(form.name.data))
@@ -354,6 +372,24 @@ def edit_department(department_id):
         department.name = new_name
         department.short_name = form.short_name.data
         db.session.commit()
+        if form.ranks.data:
+            Rank.query.filter_by(department_id=department_id).delete()
+            db.session.commit()
+            db.session.add(Rank(
+                rank='Not Sure',
+                order=0,
+                department_id=department_id
+            ))
+            order = 1
+            for rank in form.data['ranks']:
+                if rank:
+                    db.session.add(Rank(
+                        rank=rank,
+                        order=order,
+                        department_id=department_id
+                    ))
+                    order += 1
+            db.session.commit()
         flash('Department {} edited'.format(department.name))
         return redirect(url_for('main.list_officer', department_id=department.id))
     else:

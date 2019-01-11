@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+
 {% block title %}OpenOversight Admin - {% if update %} Update {% else %} Add {% endif %} Department{% endblock %}
 
 {% block content %}
@@ -15,10 +16,49 @@
 
         {{ wtf.form_field(form.name, autofocus="autofocus") }}
         {{ wtf.form_field(form.short_name) }}
+        <div>
+          <legend>{{ form.ranks.label }}</legend>
+          <div>
+            <h5>Enter ranks in hierarchical order:</h5>
+          </div>
+          <div class="text-danger">
+            {{ wtf.form_errors(form.ranks, hiddens="only") }}
+          </div>
+          {% if form.ranks|length > 1 %}
+            {% for subfield in (form.ranks|sort(attribute='data.order'))[1:] %}
+            <fieldset>
+              <div class="input-group {% if subfield.errors %} has-error{% endif -%}
+                         {%- if subfield.flags.required %} required{% endif -%}">
+                {{ subfield(class="form-control")|safe}}
+                <span class="input-group-btn">
+                  <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;" disabled>Remove</button>
+                </span>
+                {%- if subfield.errors %}
+                  {%- for error in subfield.errors %}
+                    <p class="help-block">{{error}}</p>
+                  {%- endfor %}
+                {%- endif %}
+              </div>
+            </fieldset>
+            {% endfor %}
+          {% else %}
+            <fieldset>
+              <div class="form-group ">
+                <input class="form-control" custom_name="ranks-1" id="ranks-1" name="ranks-1" type="text" value="">
+              </div>
+              <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;">Remove</button>
+            </fieldset>
+          {% endif %}
+          <button class="btn btn-success js-add-another-button" disabled>Add another rank</button>
+        </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>
     <br>
 </div>
 
 </div>
+{% endblock %}
+
+{% block js_footer %}
+    <script src="{{ url_for('static', filename='js/deptRanks.js') }}"></script>
 {% endblock %}

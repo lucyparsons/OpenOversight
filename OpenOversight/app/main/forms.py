@@ -126,6 +126,8 @@ class DepartmentForm(Form):
         'Shortened acronym for law enforcement agency, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
+    ranks = FieldList(StringField('Rank', default='', validators=[
+        Regexp('\w*')]))
     submit = SubmitField(label='Add')
 
 
