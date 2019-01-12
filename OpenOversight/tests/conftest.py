@@ -25,6 +25,8 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
+RANK_CHOICES = ['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure']
+
 AC_DEPT = 1
 
 
@@ -58,7 +60,7 @@ def pick_name():
 
 
 def pick_rank():
-    return random.choice(['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure'])
+    return random.choice(RANK_CHOICES)
 
 
 def pick_star():
@@ -194,6 +196,19 @@ def mockdata(session):
     department2 = models.Department(name='Chicago Police Department',
                                     short_name='CPD')
     session.add(department2)
+    session.commit()
+
+    i = 0
+    rank_choices = [_ for _ in RANK_CHOICES]
+    rank_choices.insert(0, 'Not Sure')
+    for rank in rank_choices:
+        for department_id in [1, 2]:
+            session.add(models.Rank(
+                rank=rank,
+                order=i,
+                department_id=department_id
+            ))
+        i += 1
     session.commit()
 
     # Ensure test data is deterministic

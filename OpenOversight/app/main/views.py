@@ -329,14 +329,13 @@ def add_department():
                                     short_name=form.short_name.data)
             db.session.add(department)
             db.session.commit()
+            db.session.add(Rank(
+                rank='Not Sure',
+                order=0,
+                department_id=department.id
+            ))
+            db.session.commit()
             if form.ranks.data:
-                Rank.query.filter_by(department_id=department.id).delete()
-                db.session.commit()
-                db.session.add(Rank(
-                    rank='Not Sure',
-                    order=0,
-                    department_id=department.id
-                ))
                 order = 1
                 for rank in form.data['ranks']:
                     if rank:

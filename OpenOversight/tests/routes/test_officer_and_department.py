@@ -168,13 +168,12 @@ def test_admin_can_edit_officer_badge_number(mockdata, client, session):
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>1234</td>' in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no='12345')
+        form = AssignmentForm(star_no='12345', rank='PO')
         officer = Officer.query.filter_by(id=3).one()
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
@@ -205,13 +204,12 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no=new_star_no)
+        form = AssignmentForm(star_no=new_star_no, rank='PO')
         officer = Officer.query.filter_by(id=officer.id).one()
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
