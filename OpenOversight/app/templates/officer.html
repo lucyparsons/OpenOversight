@@ -44,31 +44,74 @@
               </tr>
               <tr>
                 <td><b>OpenOversight ID</b></td>
-                <td>{{ officer.id }}</td>
+                <td>
+                  {% if officer.id: %}
+                  {{ officer.id }}
+                  {% else %}
+                  Unknown
+                  {% endif %}
+                </td>
               </tr>
               <tr>
                 <td><b>Unique Internal Identifier</b></td>
-                <td>{{ officer.unique_internal_identifier }}</td>
+                <td>
+                    {% if officer.unique_internal_identifier: %}
+                    {{ officer.unique_internal_identifier }}
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                </td>
               </tr>
               <tr>
                 <td><b>Department</b></td>
-                <td>{{ officer.department.name }}</td>
+                <td>
+                    {% if officer.department.name: %}
+                    {{ officer.department.name }}
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                </td>
               </tr>
               <tr>
                 <td><b>Race</b></td>
-                <td>{{ officer.race }}</td>
+                <td>
+                    {% if officer.race: %}
+                    {{ officer.race }}
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                  </td>
               </tr>
               <tr>
                 <td><b>Gender</b></td>
-                <td>{{ officer.gender }}</td>
+                <td>
+                    {{ officer.gender }}
+                    {% if officer.gender %}
+                    {{ officer.gender }}
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                </td>
               </tr>
               <tr>
                 <td><b>Birth Year (Age)</b></td>
-                <td>{{ officer.birth_year }} ({{ officer.birth_year|get_age }})</td>
+                <td>
+                    {% if officer.birth_year: %}
+                    {{ officer.birth_year }} ({{ officer.birth_year|get_age }})
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                </td>
               </tr>
               <tr>
                 <td><b>First Employment Date</b></td>
-                <td>{{ officer.employment_date }}</td>
+                <td>{{ officer.employment_date }}
+                    {% if officer.employement_date: %}
+                    {{ officer.employement_date }}
+                    {% else %}
+                    Unknown
+                    {% endif %}
+                </td>
               </tr>
             </tbody>
           </table>
