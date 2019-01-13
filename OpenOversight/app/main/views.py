@@ -128,6 +128,18 @@ def officer_profile(officer_id):
     form = AssignmentForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
+        if officer.department is None:
+            officer.department = "Unknown"
+        if officer.unique_internal_identifier is None:
+            officer.unique_internal_identifier = "Unknown"
+        if officer.race is None:
+            officer.race = "Unknown"
+        if officer.gender is None:
+            officer.gender = "Unknown"
+        if officer.birth_year is None:
+            officer.birth_year = "Unknown"
+        if officer.employment_date is None:
+            officer.employment_date = "Unknown"
     except NoResultFound:
         abort(404)
     except:  # noqa
@@ -159,6 +171,7 @@ def officer_profile(officer_id):
 def add_assignment(officer_id):
     form = AssignmentForm()
     officer = Officer.query.filter_by(id=officer_id).first()
+
     if not officer:
         flash('Officer not found')
         abort(404)
