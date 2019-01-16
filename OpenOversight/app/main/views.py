@@ -708,7 +708,7 @@ def upload(department_id):
     # Save temporarily on local filesystem
     tmpdir = tempfile.mkdtemp()
     safe_local_path = os.path.join(tmpdir, new_filename)
-    with open(safe_local_path, 'w') as tmp:
+    with open(safe_local_path, 'wb') as tmp:
         tmp.write(image_data)
     os.umask(SAVED_UMASK)
 

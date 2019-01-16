@@ -37,6 +37,24 @@ $ docker exec -it openoversight_web_1 /bin/bash
 
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
+## Testing S3 Functionality
+
+We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
+then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
+on Amazon Web Services.
+
+Once you have done this, you can put your AWS credentials in the following environmental variables:
+
+```sh
+$ export S3_BUCKET_NAME=openoversight-test
+$ export AWS_ACCESS_KEY_ID=testtest
+$ export AWS_SECRET_ACCESS_KEY=testtest
+$ export AWS_DEFAULT_REGION=us-east-1
+```
+
+Now when you run `make dev` as usual in the same session, you will be able to submit images to
+your test bucket.
+
 ## Database commands
 
 Running `make dev` will create the database and persist it into your local filesystem.
