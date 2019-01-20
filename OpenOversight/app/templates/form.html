@@ -15,7 +15,7 @@
 		{% block page_header %}
 		{% endblock %}
 
-		<div class="col-md-6 col-xs-12">
+		<div class="">
 			{% block form %}
 				{{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
 				<br>

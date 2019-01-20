@@ -4,30 +4,31 @@
 <div class="container" role="main">
 
   <div class="">
-      <ol class="breadcrumb">
-          <li><a href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></li>
-          <li class="active">{% include 'partials/officer_name.html' %}</li>
+      <ol class="list ma0 pa4">
+          <li class="dib"><a class="link gray underline" href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></li>
+          /
+          <li class="dib gray underline">{% include 'partials/officer_name.html' %}</li>
       </ol>
   </div>
 
+
+  <h3 class="f1 pa0 mh4 mv3 dark-gray">
+    {% include 'partials/officer_name.html' %}
+
+    {% if current_user.is_administrator %}
+      #{{ officer.unique_internal_identifier }}
+    {% endif %}
+    {% if current_user.is_administrator
+      or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+    <a href="{{ url_for('main.edit_officer', officer_id=officer.id) }}">
+      <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+    </a>
+    {% endif %}
+  </h3>
+
   <div class="row">
-    <div class="col-sm-6">
-      <div class="">
+    <div class="w-50 fl ph3 ph4-ns">
         <div class="">
-          <h3>
-            {% include 'partials/officer_name.html' %}
-
-            {% if current_user.is_administrator %}
-              #{{ officer.unique_internal_identifier }}
-            {% endif %}
-            {% if current_user.is_administrator
-              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-            <a href="{{ url_for('main.edit_officer', officer_id=officer.id) }}">
-              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-            </a>
-            {% endif %}
-          </h3>
-
           <p class="">
             <u>
               {% if "M" in officer.gender %}
@@ -52,22 +53,22 @@
             {% endif %}
           </p>
 
-          <div class="">
-            <div><b>Current assignment</b></div>
-            <div><u><a href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></u></div>
-            <div><u>TODO: RANK</u> in <u>TODO: AREA</u> since {{ officer.employment_date.strftime('%B %e, %Y') }}</div>
+          <div class="lh-title dark-gray">
+            <div class=""><b>Current assignment</b></div>
+            <div class=""><u><a class="dark-gray" href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></u></div>
+            <div class=""><u>TODO: RANK</u> in <u>TODO: AREA</u> since {{ officer.employment_date.strftime('%B %e, %Y') }}</div>
             {% if officer.unique_internal_identifier %}
-              <div>Badge/Identifier #{{ officer.unique_internal_identifier }}</div>
+              <div class="">Badge/Identifier #{{ officer.unique_internal_identifier }}</div>
             {% endif %}
-            <div>OpenOversight ID:{{ officer.id }}</div>
-
-            <a href="#" class="btn btn-default">Contribute Information</a>
+            <div class="f7 mt2">OpenOversight ID:{{ officer.id }}</div>
+            <div class="">
+              <a href="#" class="mt3 link b--dark-gray dib dark-gray pa3 br4 bg-white ba ">Contribute Information</a>
+            </div>
           </div>
-        </div>
       </div>
     </div> {# end col #}
 
-    <div class="col-sm-6">
+    <div class="w-50 fl ph2 ph5-ns">
       {% if path %}
         {% for path in paths %}
         {% if current_user.is_administrator
@@ -82,13 +83,14 @@
         {% endfor %}
       {% else %}
         No known photos.
-        <img src="https://via.placeholder.com/600x600" alt="No submissions">
+        <img class="db w-100 mt2" src="https://via.placeholder.com/600x600" alt="No submissions">
+        <img class="db w-100 mt2" src="https://via.placeholder.com/320x600" alt="No submissions">
       {% endif %}
     </div>
   </div> {# end row #}
 
   <div class="row">
-    <div class="col-sm-6">
+    <div class="w-50">
       <h3>Assignment History</h3>
       {% if current_user.is_administrator
         or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
@@ -126,50 +128,6 @@
         </td>
       </div>
       {% endfor %}
-
-
-      <!-- <table class="table table-hover">
-          <tr>
-            <th><b>Rank</b></th>
-            <th><b>Badge No.</b></th>
-            <th><b>Unit</b></th>
-            <th><b>Assignment Date</b></th>
-            {% if current_user.is_administrator
-              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-            <th><b>Edit</b></th>
-            {% endif %}
-          </tr>
-        <tbody>
-          {% for assignment in assignments %}
-          <tr>
-            <td>{{ assignment.rank }}</td>
-            <td>{{ assignment.star_no }}</td>
-            <td>{% if assignment.unit: %}
-                {{ assignment.unit }}
-                {% else %}
-                Unknown
-                {% endif %}
-            </td>
-            <td>{% if assignment.star_date: %}
-                {{ assignment.star_date }}
-                {% else %}
-                Unknown
-                {% endif %}
-            </td>
-            <td>
-              {% if current_user.is_administrator
-                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-              <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
-                          assignment_id=assignment.id) }}">
-                <span class='sr-only'>Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-              </a>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table> -->
 
       {% if current_user.is_administrator
           or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
@@ -291,7 +249,7 @@
     </div>{# end col #}
     {% if current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-      <div class='col-sm-12 col-md-6'>
+      <div class='w-100 w-50-ns'>
         <h3>Notes</h3>
         <ul class="list-group">
           {% for note in officer.notes %}
