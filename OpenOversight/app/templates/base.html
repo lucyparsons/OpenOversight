@@ -31,19 +31,19 @@
     {% block head %}{% endblock %}
   </head>
 
-  <body role="document" class="sans-serif pa0">
+  <body role="document" class="sans-serif pa0 bg-near-white">
 
     <!-- Fixed navbar -->
     <nav class="">
       <div class="container">
         <div id="navbar" class="bb">
           <ul class="list dib nav navbar-nav pv0 ph4">
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" class="" href="/">OpenOversight</a></li>
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" href="/browse">Browse</a></li>
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" href="/find">Find an Officer</a></li>
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" href="/submit">Submit Images</a></li>
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" href="/label">Volunteer</a></li>
-            <li class="f6 f5-ns dib mr3"><a class="f4 link dark-gray" href="/about">About</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" class="" href="/">OpenOversight</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" href="/browse">Browse</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" href="/find">Find an Officer</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" href="/submit">Submit Images</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" href="/label">Volunteer</a></li>
+            <li class="f2 f4-ns dib mr3"><a class="f4 link dark-gray" href="/about">About</a></li>
             {% if current_user and current_user.is_administrator %}
               <li class="f6 f5-ns dib mr3"><a href="/auth/users">Users</a></li>
             {% endif%}

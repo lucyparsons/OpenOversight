@@ -2,34 +2,28 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 
-<div class="container theme-showcase" role="main">
-  <div class="text-center frontpage-leads">
-    <h1><small>Browse a Department</small></h1>
-  </div>
+<div class="w-50-l center pa2 tc" role="main">
+  <h1 class="f1 dib pb3 bb">Browse a Department</h1>
 
-  <div class="text-center frontpage-leads">
+  <div class="lh-copy">
   {% for department in departments %}
-    <p>
-      <div class="btn-group">
-        <h2>{{ department.name }}
-        {% if current_user.is_administrator %}
-            <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
-              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-            </a>
-        {% endif %}
-       </h2>
-          <p>
-          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
-             Officers
-          </a>
-          {% if department.incidents %}
-            <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
-               Incidents
-            </a>
-        </p>
-        {% endif %}
-      </div>
+    <h2 class="f2-ns dib ma0 bb b--light-gray pb1 mt4-ns">{{ department.name }}
+    {% if current_user.is_administrator %}
+        <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
+          <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+        </a>
+    {% endif %}
+   </h2>
+      <p>
+      <a class="pa3 dib ma1 ba link f3 br2 white bg-black" href="{{ url_for('main.list_officer', department_id=department.id) }}">
+         Officers
+      </a>
+      {% if department.incidents %}
+        <a class="pa3 dib ma1 ba link f3 br2 white bg-black" href="{{ url_for('main.incident_api', department_id=department.id) }}">
+           Incidents
+        </a>
     </p>
+    {% endif %}
   {% endfor %}
   </div>
 </div>

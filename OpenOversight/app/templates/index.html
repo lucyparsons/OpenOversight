@@ -1,45 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="theme-showcase" role="main">
-
-    <div class="text-center">
+<div class="" role="main">
+    <div class="tc">
         <div class="hero-section">
-            <div class="hero">Help Us Build Transparency</div>
-            <div class="subhero">OpenOversight: A public, searchable database of law enforcement officers.</div>
+            <div class="f1">Help Us Build Transparency</div>
+            <div class="f3 o-60">OpenOversight: A public, searchable database of law enforcement officers.</div>
         </div>
 
-        <div class="row display-flex vertical-padding horizontal-padding sink-row text-left">
-            <div class="col-lg-6 col-half-border bg-white">
-                <h1>
-                    <small>Browse or Find a Law Enforcement Officer</small>
-                </h1>
-                <div class="text-gray-lighter">Search the database</div>
+        <div class="cf">
+            <div class="w-50-ns fl pa3 pb6-ns pa6-l tl bg-light-gray">
+                <h1 class="">Browse or Find a Law Enforcement Officer</h1>
+                <div class="o-80">Search the database</div>
 
                 <p>
                     Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
 
                 </p>
-                <a href="/browse" class="btn btn-lg btn-primary">
+                <a href="/browse" class="mt3 link b--dark-gray dib dark-gray pa3 br4 bg-white ba bw2">
                     Browse officers
                 </a>
                 <div class="small-horizontal-padding"></div>
-                <a href="/find" id="cpd" class="btn btn-lg btn-primary">
+                <a href="/find" id="cpd" class="mt3 link b--dark-gray dib dark-gray pa3 br4 bg-white ba bw2">
                     Identify officers
                 </a>
             </div>
 
-            <div class="col-lg-6 col-half-border bg-white">
-                <h1>
-                    <small>Submit an Image</small>
-                </h1>
-                <div class="text-gray-lighter">Contribute to the database</div>
+            <div class="w-50-ns fl pa3 mb5 pa6-l tl">
+                <h1>Submit an Image</h1>
+                <div class="o-80">Contribute to the database</div>
                 <p>
                     Have a photo containing faces and/or badge numbers of uniformed law enforcement officers? Drop them here.
                     Alternatively, for very high security uploads of photos or videos, you can use our
                     <a href="https://lucyparsonslabs.com/securedrop/" target="_blank">SecureDrop</a> tool.
                 </p>
-                <a class="btn btn-lg btn-primary" href="{{ url_for('main.submit_data') }}">
+                <a class="mt3 link b--dark-gray dib dark-gray pa3 br4 bg-white ba bw2" href="{{ url_for('main.submit_data') }}">
                     Submit Image
                 </a>
             </div>
@@ -51,7 +46,7 @@
     </div>
 
     <div class="row display-flex">
-        <div class="col-lg-6 bg-light-gray col-half-no-border text-left">
+        <div class="pa3">
             <h1>
                 <small>Volunteer</small>
             </h1>
@@ -59,11 +54,11 @@
                 We're looking for volunteers to help us sort through images. If you're interested in helping out, please
                 sign up!
             </p>
-            <a class="btn btn-lg btn-secondary" href="{{ url_for('main.get_started_labeling') }}">
+            <a class="mt3 link dib white pa3 br4 bg-black" href="{{ url_for('main.get_started_labeling') }}">
                 Put me to work
             </a>
         </div>
-        <div class="col-lg-6 bg-blue-gray col-half-no-border text-left">
+        <div class="pa3">
             <h1>
                 <small>Donate</small>
             </h1>
@@ -74,7 +69,7 @@
                 <br>
                 Note: We are an IRS 501(c)3 not-for-profit and all donations are tax deductible!
             </p>
-            <a class="btn btn-lg btn-secondary" href="https://lucyparsonslabs.com/support/" target="_blank">
+            <a class="mt3 link dib white pa3 br4 bg-black" href="https://lucyparsonslabs.com/support/" target="_blank">
                 Donate
             </a>
         </div>

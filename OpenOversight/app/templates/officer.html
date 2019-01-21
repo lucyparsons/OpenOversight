@@ -27,7 +27,7 @@
   </h3>
 
   <div class="row">
-    <div class="w-50 fl ph3 ph4-ns">
+    <div class="w-40 w-50-ns fl ph2 ph4-ns">
         <div class="">
           <p class="">
             <u>
@@ -68,7 +68,7 @@
       </div>
     </div> {# end col #}
 
-    <div class="w-50 fl ph2 ph5-ns">
+    <div class="w-60 w-50-ns fl ph2 ph5-ns">
       {% if path %}
         {% for path in paths %}
         {% if current_user.is_administrator
@@ -82,9 +82,7 @@
         {% endif %}
         {% endfor %}
       {% else %}
-        No known photos.
-        <img class="db w-100 mt2" src="https://via.placeholder.com/600x600" alt="No submissions">
-        <img class="db w-100 mt2" src="https://via.placeholder.com/320x600" alt="No submissions">
+        <img class="ba db w-100 mt2" src="/static/images/placeholder.png" alt="No submissions">
       {% endif %}
     </div>
   </div> {# end row #}
