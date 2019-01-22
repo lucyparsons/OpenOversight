@@ -37,6 +37,13 @@ $(document).ready(function() {
     //     $(this).remove();
     // })
 
+    $('#step-1').on('click', function(e) {
+      e.preventDefault()
+      document.querySelector('#step-1').scrollIntoView({
+        behavior: 'smooth'
+      });
+    })
+
     // Generate loading notification
     $("#user-notification").on("click", function(){
        $("#loader").show();

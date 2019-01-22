@@ -1,18 +1,20 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
-<form class="form" method="post" role="form">
+<form class="form pa2 tc tl-ns w-two-thirds-ns center-ns" method="post" role="form">
 			{{ form.hidden_tag() }}
-			<div class='text-danger'>
+			<div class='pa2 red'>
 				{{ wtf.form_errors(form, hiddens="only") }}
 			</div>
-			{{ wtf.form_field(form.date_field, autofocus="autofocus") }}
-			{{ wtf.form_field(form.time_field) }}
-			{{ wtf.form_field(form.report_number) }}
-			{{ wtf.form_field(form.department) }}
-			{{ wtf.form_field(form.description) }}
+			{{ wtf.form_field(form.date_field, autofocus="autofocus", class="form-control center db f3 pv2 pa2-ns w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+			{{ wtf.form_field(form.time_field, class="form-control center db f3 pv2 pa2-ns w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+			{{ wtf.form_field(form.report_number, class="form-control center db f3 pv2 pa2-ns w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+			{{ wtf.form_field(form.department, class="form-control center db f3 pv2 pa2-ns w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+			{{ wtf.form_field(form.description, class="form-control center db f3 pv2 pa2-ns w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
 			{% with subform=form.address, no_remove=True %}
 				{% include "partials/subform.html" %}
 			{% endwith %}
+
+			<button class="dn mv3 link dark-gray pa3 br4 bg-white ba bw2 b--dark-gray hover" disabled>Add another license plate</button>
 			<div>
 				<legend>{{ form.license_plates.label }}</legend>
 				{% for subform in form.license_plates %}
@@ -21,22 +23,23 @@
 					{% endwith %}
 				{% endfor %}
 				{# buttons are disabled until the DOM loads and click handlers are added #}
-				<button class="btn btn-success js-add-another-button" disabled>Add another license plate</button>
 			</div>
-            <legend>{{ form.officers.label }}</legend>
-				{% for subform in form.officers %}
-					{% with id="js-officer", number=loop.index %}
-					   {% include "partials/subform.html" %}
-					{% endwith %}
-				{% endfor %}
-				<button class="btn btn-success js-add-another-button" disabled>Add another officer</button>
-			<div>
+
+      <legend>{{ form.officers.label }}</legend>
+			{% for subform in form.officers %}
+				{% with id="js-officer", number=loop.index %}
+				   {% include "partials/subform.html" %}
+				{% endwith %}
+			{% endfor %}
+			<button class="dn mv3 link dark-gray pa3 br4 bg-white ba bw2 b--dark-gray hover" disabled>Add another officer</button>
+
+			<div class="">
 				<legend>{{ form.links.label }}</legend>
 				{% for subform in form.links %}
 					{% include "partials/subform.html" %}
 				{% endfor %}
-				<button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+				<button class="dn mv3 link dark-gray pa3 br4 bg-white ba bw2 b--dark-gray hover" disabled>Add another link</button>
 			</div>
 
-			{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+			{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}, class="bg-white ba pa3 f3 b--black input-reset black mv2 w-100 bw3") }}
 </form>

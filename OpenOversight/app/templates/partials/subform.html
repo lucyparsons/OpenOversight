@@ -2,10 +2,9 @@
 
 <fieldset
   {% if id and number %}id="{{id}}-{{number}}"{% endif %}
-  class='well'
->
+  class='well bn mh0 ph0 bg-white mt2 mb5 mh0'>
   {{ subform.hidden_tag() }}
-  <div class="text-danger">
+  <div class="red">
     {{ wtf.form_errors(subform, hiddens="only") }}
   </div>
   {% for subfield in subform %}
@@ -13,10 +12,11 @@
       {{ wtf.form_field(subfield,
                     form_type=form_type,
                     horizontal_columns=horizontal_columns,
-                    button_map=button_map) }}
+                    button_map=button_map,
+                    class="form-control db f3 pa2 w-100 input-reset bg-light-gray mv3 bn") }}
     {% endif %}
   {% endfor %}
   {% if not no_remove %}
-  	<button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;" disabled>Remove</button>
+  	<button class="dn mt3 f5 link dark-gray pa2 red br4 bg-white ba b--red" style="margin-bottom: 2rem;" disabled>Remove</button>
   {% endif %}
 </fieldset>

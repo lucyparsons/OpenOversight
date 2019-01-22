@@ -3,22 +3,22 @@
 {% block title %}OpenOversight Admin - {% if update %} Update {% else %} Add {% endif %} Department{% endblock %}
 
 {% block content %}
-<div class="container theme-showcase" role="main">
+<div class="w-50-l center" role="main">
 
-<div class="page-header">
-    <h1>{% if update %} Update {% else %} Add {% endif %} Department</h1>
-</div>
-<div class="col-md-6">
-    <form class="form" method="post" role="form">
-        {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
+  <div class="page-header">
+      <h1>{% if update %} Update {% else %} Add {% endif %} Department</h1>
+  </div>
+  <div class="col-md-6">
+      <form class="form" method="post" role="form">
+          {{ form.hidden_tag() }}
+          {{ wtf.form_errors(form, hiddens="only") }}
 
-        {{ wtf.form_field(form.name, autofocus="autofocus") }}
-        {{ wtf.form_field(form.short_name) }}
-        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
-    </form>
-    <br>
-</div>
+          {{ wtf.form_field(form.name, autofocus="autofocus", class="f2 pa3 w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+          {{ wtf.form_field(form.short_name, class="f2 pa3 w-100 input-reset bg-light-gray mv3 ba b--dark-gray") }}
+          {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}, class="f2 pa3 w-100 input-reset bg-dark-gray white mv3 ba b--dark-gray mv2")}}
+      </form>
+      <br>
+  </div>
 
 </div>
 {% endblock %}

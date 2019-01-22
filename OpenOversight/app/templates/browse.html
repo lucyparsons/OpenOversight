@@ -7,10 +7,10 @@
 
   <div class="lh-copy">
   {% for department in departments %}
-    <h2 class="f2-ns dib ma0 bb b--light-gray pb1 mt4-ns">{{ department.name }}
+    <h2 class="f2-ns dib ma0 bb b--light-gray pa0 mt4-ns">{{ department.name }}
     {% if current_user.is_administrator %}
-        <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
-          <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+        <a class="link black db" href="{{ url_for('main.edit_department', department_id=department.id) }}">
+          <small class="f4 dark-gray">Edit <i class="fa fa-pencil-square-o" aria-hidden="true"></i></small>
         </a>
     {% endif %}
    </h2>
