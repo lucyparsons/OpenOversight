@@ -16,7 +16,7 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           LocationForm, LicensePlateForm,
                                           BrowseForm)
 
-from OpenOversight.app.models import Department, Unit, Officer
+from OpenOversight.app.models import Department, Unit, Officer, Incident
 
 
 @pytest.mark.parametrize("route", [
@@ -916,6 +916,10 @@ def test_incidents_csv(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+
+        # Delete existing incidents for chosen department
+        Incident.query.filter_by(department_id=department.id).delete()
+
         incident_date = datetime(2000, 5, 25, 1, 45)
         report_number = '42'
 
@@ -946,9 +950,10 @@ def test_incidents_csv(mockdata, client, session):
             url_for('main.download_incidents_csv', department_id=department.id),
             follow_redirects=True
         )
-        # print(rv.data)
+
         # get the csv entry with matching report number
         csv = list(filter(lambda row: report_number in row, rv.data.decode('utf-8').split("\n")))
+        print(csv)
         assert len(csv) == 1
         assert form.description.data in csv[0]
 
