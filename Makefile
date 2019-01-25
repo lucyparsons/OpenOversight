@@ -34,8 +34,8 @@ populate: create_db  ## Build and run containers
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then docker-compose run --rm web /usr/local/bin/pytest -n 4 --dist=loadfile -v tests/; \
-	    else docker-compose run --rm web /usr/local/bin/pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    then FLASK_ENV=testing docker-compose run --rm web /usr/local/bin/pytest -n 4 --dist=loadfile -v tests/; \
+	    else FLASK_ENV=testing docker-compose run --rm web /usr/local/bin/pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
 .PHONY: stop
