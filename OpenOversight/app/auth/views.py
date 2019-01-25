@@ -335,10 +335,3 @@ auth.add_url_rule(
     '/users/<int:user_id>/approve',
     view_func=user_view,
     methods=['GET'])
-
-# Approve button only shows up if configured to require approval
-# if not configured to require approval, user.approval = True immediately upon registration
-
-# add way to configure whether approval required or not
-
-# make sure admins get email about all new registrations (if approval required) and all confirmations
