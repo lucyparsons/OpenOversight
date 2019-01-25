@@ -108,10 +108,11 @@ class Officer(db.Model):
 
 
 class Salary(db.Model):
-    __tablename__ = 'salary'
+    __tablename__ = 'salaries'
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer = db.relationship('Officer', backref='salaries')
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
     total_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
