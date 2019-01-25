@@ -274,34 +274,46 @@ class UserAPI(MethodView):
         return render_template('auth/user_delete.html', user=user)
 
     def enable(self, user):
-        user.is_disabled = False
-        db.session.add(user)
-        db.session.commit()
-        flash('User {} has been enabled!'.format(user.username))
+        if not user.is_disabled:
+            flash('User {} is already enabled.'.format(user.username))
+        else:
+            user.is_disabled = False
+            db.session.add(user)
+            db.session.commit()
+            flash('User {} has been enabled!'.format(user.username))
         return redirect(url_for('auth.user_api'))
 
     def disable(self, user):
-        user.is_disabled = True
-        db.session.add(user)
-        db.session.commit()
-        flash('User {} has been disabled!'.format(user.username))
+        if user.is_disabled:
+            flash('User {} is already disabled.'.format(user.username))
+        else:
+            user.is_disabled = True
+            db.session.add(user)
+            db.session.commit()
+            flash('User {} has been disabled!'.format(user.username))
         return redirect(url_for('auth.user_api'))
 
     def resend(self, user):
-        token = user.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
-                   'auth/email/confirm', user=user, token=token)
-        flash('A new confirmation email has been sent to {}.'.format(user.email))
+        if user.confirmed:
+            flash('User {} is already confirmed.'.format(user.username))
+        else:
+            token = user.generate_confirmation_token()
+            send_email(user.email, 'Confirm Your Account',
+                       'auth/email/confirm', user=user, token=token)
+            flash('A new confirmation email has been sent to {}.'.format(user.email))
         return redirect(url_for('auth.user_api'))
 
     def approve(self, user):
-        user.approved = True
-        db.session.add(user)
-        db.session.commit()
-        token = user.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
-                   'auth/email/confirm', user=user, token=token)
-        flash('User {} has been approved!'.format(user.username))
+        if user.approved:
+            flash('User {} is already approved.'.format(user.username))
+        else:
+            user.approved = True
+            db.session.add(user)
+            db.session.commit()
+            token = user.generate_confirmation_token()
+            send_email(user.email, 'Confirm Your Account',
+                       'auth/email/confirm', user=user, token=token)
+            flash('User {} has been approved!'.format(user.username))
         return redirect(url_for('auth.user_api'))
 
 
