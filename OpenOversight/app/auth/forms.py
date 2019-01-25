@@ -84,10 +84,10 @@ class ChangeDefaultDepartmentForm(Form):
 
 
 class EditUserForm(Form):
-    is_area_coordinator = BooleanField('Is area coordinator?')
+    is_area_coordinator = BooleanField('Is area coordinator?', false_values={'False', 'false', ''})
     ac_department = QuerySelectField('Department', validators=[Optional()],
                                      query_factory=dept_choices, get_label='name', allow_blank=True)
-    is_administrator = BooleanField('Is administrator?')
+    is_administrator = BooleanField('Is administrator?', false_values={'False', 'false', ''})
     submit = SubmitField(label='Update')
 
     def validate(self):

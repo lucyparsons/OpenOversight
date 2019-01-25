@@ -99,23 +99,22 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
         assert user.is_area_coordinator is False
 
 
-# def test_admin_can_update_users_to_admin(mockdata, client, session):
-#     with current_app.test_request_context():
-#         login_admin(client)
+def test_admin_can_update_users_to_admin(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
 
-#         deparment = Department.query.get(AC_DEPT)
-#         user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
-#         user_id = user.id
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+        user_id = user.id
 
-#         form = EditUserForm(
-#             is_area_coordinator=False,
-#             is_administrator=True)
+        form = EditUserForm(
+            is_area_coordinator=False,
+            is_administrator=True)
 
-#         rv = client.post(
-#             url_for('auth.user_api', user_id=user_id),
-#             data=form.data,
-#             follow_redirects=True
-#         )
+        rv = client.post(
+            url_for('auth.user_api', user_id=user_id),
+            data=form.data,
+            follow_redirects=True
+        )
 
-#         assert 'updated!' in rv.data.decode('utf-8')
-#         assert user.is_administrator is True
+        assert 'updated!' in rv.data.decode('utf-8')
+        assert user.is_administrator is True
