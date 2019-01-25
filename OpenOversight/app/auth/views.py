@@ -27,7 +27,10 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('auth/unconfirmed.html')
+    if current_app.config['APPROVE_REGISTRATIONS']:
+        return render_template('auth/unapproved.html')
+    else:
+        return render_template('auth/unconfirmed.html')
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -57,13 +60,22 @@ def register():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)
+                    password=form.password.data,
+                    approved=False if current_app.config['APPROVE_REGISTRATIONS'] else True)
         db.session.add(user)
         db.session.commit()
-        token = user.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
-                   'auth/email/confirm', user=user, token=token)
-        flash('A confirmation email has been sent to you.')
+        if current_app.config['APPROVE_REGISTRATIONS']:
+            admins = User.query.filter_by(is_administrator=True).all()
+            for admin in admins:
+                send_email(admin.email, 'New user registered',
+                           'auth/email/new_registration', user=user, admin=admin)
+            flash('Once an administrator approves your registration, you will '
+                  'receive a confirmation email to activate your account.')
+        else:
+            token = user.generate_confirmation_token()
+            send_email(user.email, 'Confirm Your Account',
+                       'auth/email/confirm', user=user, token=token)
+            flash('A confirmation email has been sent to you.')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form, jsloads=jsloads)
 
@@ -74,6 +86,10 @@ def confirm(token):
     if current_user.confirmed:
         return redirect(url_for('main.index'))
     if current_user.confirm(token):
+        admins = User.query.filter_by(is_administrator=True).all()
+        for admin in admins:
+            send_email(admin.email, 'New user confirmed',
+                       'auth/email/new_confirmation', user=current_user, admin=admin)
         flash('You have confirmed your account. Thanks!')
     else:
         flash('The confirmation link is invalid or has expired.')
@@ -99,6 +115,7 @@ def change_password():
         if current_user.verify_password(form.old_password.data):
             current_user.password = form.password.data
             db.session.add(current_user)
+            db.session.commit()
             flash('Your password has been updated.')
             return redirect(url_for('main.index'))
         else:
@@ -183,6 +200,7 @@ def change_dept():
         except AttributeError:
             current_user.dept_pref = None
         db.session.add(current_user)
+        db.session.commit()
         flash('Updated!')
         return redirect(url_for('main.index'))
     return render_template('auth/change_dept_pref.html', form=form)
@@ -192,6 +210,9 @@ class UserAPI(MethodView):
     decorators = [admin_required]
 
     def get(self, user_id):
+        # isolate the last part of the url
+        end_of_url = request.url.split('/')[-1].split('?')[0]
+
         if user_id is None:
             if request.args.get('page'):
                 page = int(request.args.get('page'))
@@ -204,26 +225,36 @@ class UserAPI(MethodView):
             return render_template('auth/users.html', objects=users)
         else:
             user = User.query.get(user_id)
+            if not user:
+                return render_template('403.html'), 403
 
-            if user:
+            actions = ['delete', 'enable', 'disable', 'resend', 'approve']
+            if end_of_url in actions:
+                action = getattr(self, end_of_url, None)
+                return action(user)
+            else:
                 form = EditUserForm(
                     email=user.email,
                     is_area_coordinator=user.is_area_coordinator,
                     ac_department=user.ac_department,
                     is_administrator=user.is_administrator)
                 return render_template('auth/user.html', user=user, form=form)
-            else:
-                return render_template('403.html'), 403
 
     def post(self, user_id):
-        form = EditUserForm()
-        user = User.query.get(user_id)
+        # isolate the last part of the url
+        end_of_url = request.url.split('/')[-1].split('?')[0]
 
-        if user and form.validate_on_submit():
+        user = User.query.get(user_id)
+        form = EditUserForm()
+
+        if user and end_of_url and end_of_url == 'delete':
+            return self.delete(user)
+        elif user and form.validate_on_submit():
             for field, data in iteritems(form.data):
                 setattr(user, field, data)
 
             db.session.add(user)
+            db.session.commit()
             flash('{} has been updated!'.format(user.username))
             return redirect(url_for('auth.user_api'))
         elif not form.validate_on_submit():
@@ -232,8 +263,46 @@ class UserAPI(MethodView):
         else:
             return render_template('403.html'), 403
 
-    def delete(self, user_id):
-        pass
+    def delete(self, user):
+        if request.method == 'POST':
+            username = user.username
+            db.session.delete(user)
+            db.session.commit()
+            flash('User {} has been deleted!'.format(username))
+            return redirect(url_for('auth.user_api'))
+
+        return render_template('auth/user_delete.html', user=user)
+
+    def enable(self, user):
+        user.is_disabled = False
+        db.session.add(user)
+        db.session.commit()
+        flash('User {} has been enabled!'.format(user.username))
+        return redirect(url_for('auth.user_api'))
+
+    def disable(self, user):
+        user.is_disabled = True
+        db.session.add(user)
+        db.session.commit()
+        flash('User {} has been disabled!'.format(user.username))
+        return redirect(url_for('auth.user_api'))
+
+    def resend(self, user):
+        token = user.generate_confirmation_token()
+        send_email(user.email, 'Confirm Your Account',
+                   'auth/email/confirm', user=user, token=token)
+        flash('A new confirmation email has been sent to {}.'.format(user.email))
+        return redirect(url_for('auth.user_api'))
+
+    def approve(self, user):
+        user.approved = True
+        db.session.add(user)
+        db.session.commit()
+        token = user.generate_confirmation_token()
+        send_email(user.email, 'Confirm Your Account',
+                   'auth/email/confirm', user=user, token=token)
+        flash('User {} has been approved!'.format(user.username))
+        return redirect(url_for('auth.user_api'))
 
 
 user_view = UserAPI.as_view('user_api')
@@ -246,3 +315,30 @@ auth.add_url_rule(
     '/users/<int:user_id>',
     view_func=user_view,
     methods=['GET', 'POST'])
+auth.add_url_rule(
+    '/users/<int:user_id>/delete',
+    view_func=user_view,
+    methods=['GET', 'POST'])
+auth.add_url_rule(
+    '/users/<int:user_id>/enable',
+    view_func=user_view,
+    methods=['GET'])
+auth.add_url_rule(
+    '/users/<int:user_id>/disable',
+    view_func=user_view,
+    methods=['GET'])
+auth.add_url_rule(
+    '/users/<int:user_id>/resend',
+    view_func=user_view,
+    methods=['GET'])
+auth.add_url_rule(
+    '/users/<int:user_id>/approve',
+    view_func=user_view,
+    methods=['GET'])
+
+# Approve button only shows up if configured to require approval
+# if not configured to require approval, user.approval = True immediately upon registration
+
+# add way to configure whether approval required or not
+
+# make sure admins get email about all new registrations (if approval required) and all confirmations
