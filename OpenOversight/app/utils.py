@@ -474,3 +474,27 @@ def get_uploaded_cropped_image(original_image, crop_data):
         ))
         rm_dirs()
         return None
+
+
+def get_officer(department_id, star_no, first_name, last_name):
+    """Returns first officer with the given name and badge combo in the department, if they exist"""
+    officers = Officer.query.filter_by(department_id=department_id,
+                                       first_name=first_name,
+                                       last_name=last_name).all()
+    if officers:
+        star_no = str(star_no)
+        for assignment in Assignment.query.filter_by(star_no=star_no).all():
+            if assignment.baseofficer in officers:
+                return assignment.baseofficer
+    return None
+
+
+def merge_dicts(*dict_args):
+    """
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    """
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result

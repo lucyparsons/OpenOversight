@@ -1,17 +1,13 @@
-"""empty message
-
+"""Add cascading foreign key constraint to assignments
 Revision ID: 9e2827dae28c
-Revises: 7bb53dee8ac9
+Revises: 0acbb0f0b1ef
 Create Date: 2018-08-13 13:18:15.381300
-
 """
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '9e2827dae28c'
-down_revision = '7bb53dee8ac9'
+down_revision = '0acbb0f0b1ef'
 branch_labels = None
 depends_on = None
 

@@ -17,16 +17,16 @@ class BaseConfig(object):
 
     # Form Settings
     WTF_CSRF_ENABLED = True
-    SECRET_KEY = 'changemeplzorelsehax'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'changemeplzorelsehax')
 
     # Mail Settings
-    MAIL_SERVER = os.environ.get('MAIL_SERVER','smtp.googlemail.com')
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    OO_MAIL_SUBJECT_PREFIX = os.environ.get('OO_MAIL_SUBJECT_PREFIX','[OpenOversight]')
-    OO_MAIL_SENDER = os.environ.get('OO_MAIL_SENDER','OpenOversight <OpenOversight@gmail.com>')
+    OO_MAIL_SUBJECT_PREFIX = os.environ.get('OO_MAIL_SUBJECT_PREFIX', '[OpenOversight]')
+    OO_MAIL_SENDER = os.environ.get('OO_MAIL_SENDER', 'OpenOversight <OpenOversight@gmail.com>')
     # OO_ADMIN = os.environ.get('OO_ADMIN')
 
     # AWS Settings
