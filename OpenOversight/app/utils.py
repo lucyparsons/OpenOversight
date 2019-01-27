@@ -442,7 +442,7 @@ def create_description(self, form):
 
 def get_uploaded_image(image, crop_data=None, department_id=None):
     """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
-
+    
     tmpdir = tempfile.mkdtemp()
     # if there is cropdata, we're receiving an image object
     if crop_data:
@@ -464,15 +464,19 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
         os.remove(safe_local_path)
         os.rmdir(tmpdir)
 
+    SIZE = 300, 300
     if crop_data:
         pimage = Pimage.open(safe_local_path)
-        SIZE = 300, 300
         cropped_image = pimage.crop(crop_data)
         cropped_image.thumbnail(SIZE)
 
         # TODO: For faster implementation,
         # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
         cropped_image.save(fp=safe_local_path)
+    else:
+        pimage = Pimage.open(safe_local_path)
+        pimage.thumbnail(SIZE)
+        pimage.save(fp=safe_local_path)
 
     file = open(safe_local_path)
 
@@ -495,18 +499,10 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
         # Update the database to add the image
         # If we're cropping an image, get data from the original image,
         # else, use data given to us.
-        if crop_data:
-            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
-                              date_image_inserted=datetime.datetime.now(),
-                              department_id=image.department_id,
-                              date_image_taken=image.date_image_taken)
-        else:
-            new_image = Image(filepath=url, hash_img=hash_img,
-                              is_tagged=False,
-                              date_image_inserted=datetime.datetime.now(),
-                              department_id=department_id,
-                              # TODO: Get the following field from exif datas
-                              date_image_taken=datetime.datetime.now())
+        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
+                            date_image_inserted=datetime.datetime.now(),
+                            department_id=image.department_id,
+                            date_image_taken=image.date_image_taken)
         db.session.add(new_image)
         db.session.commit()
         return new_image
