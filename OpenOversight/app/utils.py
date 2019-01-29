@@ -488,7 +488,6 @@ def get_officer(department_id, star_no, first_name, last_name):
                 return assignment.baseofficer
     return None
 
-
 def merge_dicts(*dict_args):
     """
     Given any number of dicts, shallow copy and merge into a new dict,
@@ -498,3 +497,14 @@ def merge_dicts(*dict_args):
     for dictionary in dict_args:
         result.update(dictionary)
     return result
+
+def officer_exists(department_id, first_name, last_name, middle_initial=None, suffix=None):
+    """officer_exists checks if a given full name exists already for a department."""
+    return True if Officer.query.filter_by(
+        department_id=department_id,
+        first_name=first_name,
+        last_name=last_name,
+        middle_initial=middle_initial,
+        suffix=suffix
+    ).one_or_none() else False
+

@@ -89,6 +89,8 @@ class Officer(db.Model):
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
 
+    __table_args__ = (UniqueConstraint('first_name', 'middle_initial', 'last_name', 'suffix'), )
+
     def full_name(self):
         if self.middle_initial:
             if self.suffix:
@@ -114,6 +116,7 @@ class Assignment(db.Model):
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     baseofficer = db.relationship('Officer')
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
+    supervisor_star_no = db.Column(db.String(120), index=True, unique=False)
     rank = db.Column(db.String(120), index=True, unique=False)
     unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
     star_date = db.Column(db.Date, index=True, unique=False, nullable=True)

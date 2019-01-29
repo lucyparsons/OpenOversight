@@ -84,6 +84,7 @@
           <tr>
             <th><b>Rank</b></th>
             <th><b>Badge No.</b></th>
+            <th><b>Supervisor No.</b></th>
             <th><b>Unit</b></th>
             <th><b>Assignment Date</b></th>
             {% if current_user.is_administrator
@@ -96,6 +97,12 @@
           <tr>
             <td>{{ assignment.rank }}</td>
             <td>{{ assignment.star_no }}</td>
+            <td>{% if assignment.supervisor_star_no: %}
+                {{ assignment.supervisor_star_no }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
             <td>{% if assignment.unit: %}
                 {{ assignment.unit }}
                 {% else %}
@@ -135,6 +142,15 @@
             <td><b>New badge number:</b></td>
             <td>{{ form.star_no }}
                   {% for error in form.star_no.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>New supervisor number:</b></td>
+            <td>{{ form.supervisor_star_no }}
+                  {% for error in form.supervisor_star_no.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
             </td>
