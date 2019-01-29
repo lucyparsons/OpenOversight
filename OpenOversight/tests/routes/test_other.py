@@ -28,11 +28,11 @@ def test_user_can_access_profile(mockdata, client, session):
             url_for('main.profile', username='test_user'),
             follow_redirects=True
         )
-        assert 'test_user' in rv.data
+        assert 'test_user' in rv.data.decode('utf-8')
         # User email should not appear
-        assert 'User Email' not in rv.data
+        assert 'User Email' not in rv.data.decode('utf-8')
         # Toggle button should not appear for this non-admin user
-        assert 'Toggle (Disable/Enable) User' not in rv.data
+        assert 'Toggle (Disable/Enable) User' not in rv.data.decode('utf-8')
 
 
 def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
@@ -43,11 +43,11 @@ def test_admin_sees_toggle_button_on_profiles(mockdata, client, session):
             url_for('main.profile', username='test_user'),
             follow_redirects=True
         )
-        assert 'test_user' in rv.data
+        assert 'test_user' in rv.data.decode('utf-8')
         # User email should appear
-        assert 'User Email' in rv.data
+        assert 'User Email' in rv.data.decode('utf-8')
         # Admin should be able to see the Toggle button
-        assert 'Toggle (Disable/Enable) User' in rv.data
+        assert 'Toggle (Disable/Enable) User' in rv.data.decode('utf-8')
 
 
 def test_admin_can_toggle_user(mockdata, client, session):
@@ -58,7 +58,7 @@ def test_admin_can_toggle_user(mockdata, client, session):
             url_for('main.toggle_user', uid=1),
             follow_redirects=True
         )
-        assert 'Disabled' in rv.data
+        assert 'Disabled' in rv.data.decode('utf-8')
 
 
 def test_ac_cannot_toggle_user(mockdata, client, session):

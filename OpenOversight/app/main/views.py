@@ -9,7 +9,7 @@ from traceback import format_exc
 from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify)
+                   flash, current_app, jsonify, Response)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -20,14 +20,15 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note,
-                     get_uploaded_cropped_image, create_description)
+                     set_dynamic_default, create_note, get_uploaded_cropped_image,
+                     create_description, filter_by_form)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm)
+                    AddImageForm, EditDepartmentForm, BrowseForm)
 from .model_view import ModelView
+from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note,
                       Description)
@@ -150,7 +151,7 @@ def officer_profile(officer_id):
         ))
 
     return render_template('officer.html', officer=officer, paths=face_paths,
-                           assignments=assignments, form=form)
+                           faces=faces, assignments=assignments, form=form)
 
 
 @main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
@@ -305,9 +306,35 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, from_search=False):
+def list_officer(department_id, page=1, from_search=False, race='Not Sure', gender='Not Sure', rank='Not Sure', min_age='16', max_age='100'):
+    form = BrowseForm()
+    form_data = form.data
+    form_data['race'] = race
+    form_data['gender'] = gender
+    form_data['rank'] = rank
+    form_data['min_age'] = min_age
+    form_data['max_age'] = max_age
+
+    OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    # Set form data based on URL
+    if request.args.get('race') and request.args.get('race') in [rc[0] for rc in RACE_CHOICES]:
+        form_data['race'] = request.args.get('race')
+    if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
+        form_data['gender'] = request.args.get('gender')
+    if request.args.get('rank') and request.args.get('rank') in [rc[0] for rc in RANK_CHOICES]:
+        form_data['rank'] = request.args.get('rank')
+    if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['min_age'] = request.args.get('min_age')
+    if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['max_age'] = request.args.get('max_age')
     if request.args.get('page'):
         page = int(request.args.get('page'))
+
+    officers = filter_by_form(form_data, Officer.query, True).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
 
     if request.args.get('from_search'):
         if request.args.get('from_search') == 'True':
@@ -315,19 +342,17 @@ def list_officer(department_id, page=1, from_search=False):
         else:
             from_search = False
 
-    OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-    department = Department.query.filter_by(id=department_id).first()
-    if not department:
-        abort(404)
-
-    officers = Officer.query.filter(Officer.department_id == department_id) \
-        .order_by(Officer.last_name) \
-        .paginate(page, OFFICERS_PER_PAGE, False)
     return render_template(
         'list_officer.html',
+        form=form,
         department=department,
         officers=officers,
-        from_search=from_search)
+        from_search=from_search,
+        race=form_data['race'],
+        gender=form_data['gender'],
+        rank=form_data['rank'],
+        min_age=form_data['min_age'],
+        max_age=form_data['max_age'])
 
 
 @main.route('/department/<int:department_id>/network')
@@ -633,6 +658,83 @@ def submit_data():
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
+def check_input(str_input):
+    if str_input is None or str_input == "Not Sure":
+        return ""
+    else:
+        return str(str_input).replace(",", " ")  # no commas allowed
+
+
+@main.route('/download/department/<int:department_id>', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    records = Officer.query.filter_by(department_id=department_id).all()
+    if not department or not records:
+        abort(404)
+    dept_name = records[0].department.name.replace(" ", "_")
+    first_row = "id, last, first, middle, suffix, gender, "\
+                "race, born, employment_date, assignments\n"
+
+    assign_dict = {}
+    assign_records = Assignment.query.all()
+    for r in assign_records:
+        if r.officer_id not in assign_dict:
+            assign_dict[r.officer_id] = []
+        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.rank), check_input(r.unit), check_input(r.star_date), check_input(r.resign_date)))
+
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
+                   (str(record.id),
+                    check_input(record.last_name),
+                    check_input(record.first_name),
+                    check_input(record.middle_initial),
+                    check_input(record.suffix),
+                    check_input(record.gender),
+                    check_input(record.race),
+                    check_input(record.birth_year),
+                    check_input(record.employment_date),
+                    " ".join(assign_dict.get(record.id, [])),
+                    ) for record in records]
+
+    csv_name = dept_name + "_Officers.csv"
+    csv = first_row + "".join(record_list)
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv, mimetype="text/csv", headers=csv_headers)
+
+
+@main.route('/download/department/<int:department_id>/incidents', methods=['GET'])
+@limiter.limit('5/minute')
+def download_incidents_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    records = Incident.query.filter_by(department_id=department.id).all()
+    if not department or not records:
+        abort(404)
+    dept_name = records[0].department.name.replace(" ", "_")
+    first_row = "id,report_num,date,description,location,licences,links,officers\n"
+
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s\n" %
+                   (str(record.id),
+                    check_input(record.report_number),
+                    check_input(record.date),
+                    check_input(record.description),
+                    check_input(record.address),
+                    " ".join(map(lambda x: str(x), record.license_plates)),
+                    " ".join(map(lambda x: str(x), record.links)),
+                    " ".join(map(lambda x: str(x), record.officers)),
+                    ) for record in records]
+
+    csv_name = dept_name + "_Incidents.csv"
+    csv = first_row + "".join(record_list)
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv, mimetype="text/csv", headers=csv_headers)
+
+
+@main.route('/download/all', methods=['GET'])
+def all_data():
+    departments = Department.query.all()
+    return render_template('all_depts.html', departments=departments)
+
+
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
 @limiter.limit('250/minute')
 def upload(department_id):
@@ -655,7 +757,7 @@ def upload(department_id):
     # Save temporarily on local filesystem
     tmpdir = tempfile.mkdtemp()
     safe_local_path = os.path.join(tmpdir, new_filename)
-    with open(safe_local_path, 'w') as tmp:
+    with open(safe_local_path, 'wb') as tmp:
         tmp.write(image_data)
     os.umask(SAVED_UMASK)
 
@@ -664,11 +766,19 @@ def upload(department_id):
         url = upload_file(safe_local_path, original_filename,
                           new_filename)
         # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                          date_image_inserted=datetime.datetime.now(),
-                          department_id=department_id,
-                          # TODO: Get the following field from exif data
-                          date_image_taken=datetime.datetime.now())
+        try:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now(),
+                              user_id=current_user.id)
+        except AttributeError:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
         db.session.commit()
         return jsonify(success="Success!"), 200

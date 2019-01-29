@@ -1,3 +1,9 @@
+from future.moves.urllib.request import urlretrieve
+from future.utils import iteritems
+
+from builtins import bytes
+from io import open
+
 import boto3
 import botocore
 import datetime
@@ -6,7 +12,6 @@ import os
 import random
 import sys
 import tempfile
-import urllib
 from traceback import format_exc
 
 from sqlalchemy import func
@@ -38,7 +43,7 @@ def get_or_create(session, model, defaults=None, **kwargs):
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in kwargs.iteritems())
+        params = dict((k, v) for k, v in iteritems(kwargs))
         params.update(defaults or {})
         instance = model(**params)
         session.add(instance)
@@ -144,7 +149,7 @@ def add_officer_profile(form, current_user):
 
 
 def edit_officer_profile(officer, form):
-    for field, data in form.data.iteritems():
+    for field, data in iteritems(form.data):
         if field == 'links':
             for link in data:
                 # don't try to create with a blank string
@@ -181,7 +186,7 @@ def serve_image(filepath):
 
 
 def compute_hash(data_to_hash):
-    return hashlib.sha256(data_to_hash).hexdigest()
+    return hashlib.sha256(bytes(data_to_hash)).hexdigest()
 
 
 def upload_file(safe_local_path, src_filename, dest_filename):
@@ -208,26 +213,33 @@ def upload_file(safe_local_path, src_filename, dest_filename):
     return url
 
 
-def filter_by_form(form, officer_query):
-    if form['name']:
-        officer_query = officer_query.filter(
-            Officer.last_name.ilike('%%{}%%'.format(form['name']))
-        )
+def filter_by_form(form, officer_query, is_browse_filter=False):
+    if (not is_browse_filter):
+        if form['name']:
+            officer_query = officer_query.filter(
+                Officer.last_name.ilike('%%{}%%'.format(form['name']))
+            )
+        if form['dept']:
+            officer_query = officer_query.filter(
+                Officer.department_id == form['dept'].id
+            )
+        if form['badge']:
+            officer_query = officer_query.filter(
+                cast(Assignment.star_no, db.String)
+                .like('%%{}%%'.format(form['badge']))
+            )
+
     if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
-                        'PACIFIC ISLANDER'):
+                        'PACIFIC ISLANDER', 'Other'):
         officer_query = officer_query.filter(db.or_(
             Officer.race.like('%%{}%%'.format(form['race'])),
             Officer.race == 'Not Sure',  # noqa
             Officer.race == None  # noqa
         ))
-    if form['gender'] in ('M', 'F'):
+    if form['gender'] in ('M', 'F', 'Other'):
         officer_query = officer_query.filter(db.or_(Officer.gender == form['gender'],
                                                     Officer.gender == 'Not Sure',
                                                     Officer.gender == None))  # noqa
-    if form['dept']:
-        officer_query = officer_query.filter(
-            Officer.department_id == form['dept'].id
-        )
 
     current_year = datetime.datetime.now().year
     min_birth_year = current_year - int(form['min_age'])
@@ -237,11 +249,6 @@ def filter_by_form(form, officer_query):
                                                 Officer.birth_year == None))  # noqa
 
     officer_query = officer_query.outerjoin(Assignment)
-    if form['badge']:
-        officer_query = officer_query.filter(
-            cast(Assignment.star_no, db.String)
-            .like('%%{}%%'.format(form['badge']))
-        )
     if form['rank'] == 'PO':
         officer_query = officer_query.filter(
             db.or_(Assignment.rank.like('%%PO%%'),
@@ -257,7 +264,8 @@ def filter_by_form(form, officer_query):
         )
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
-    officer_query = officer_query.outerjoin(Face).order_by(Face.officer_id.asc()).order_by(Officer.id.desc())
+    if (not is_browse_filter):
+        officer_query = officer_query.outerjoin(Face).order_by(Face.officer_id.asc()).order_by(Officer.id.desc())
     return officer_query
 
 
@@ -413,7 +421,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
     original_filename = original_image.filepath.split('/')[-1]
     safe_local_path0 = os.path.join(tmpdir, original_filename)
     # get the original image and save it locally
-    urllib.urlretrieve(original_image.filepath, safe_local_path0)
+    urlretrieve(original_image.filepath, safe_local_path0)
     # import pdb; pdb.set_trace()
     pimage = Pimage.open(safe_local_path0)
     SIZE = 300, 300
@@ -431,7 +439,7 @@ def get_uploaded_cropped_image(original_image, crop_data):
     # TODO: For faster implementation,
     # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
     cropped_image.save(fp=safe_local_path)
-    file = open(safe_local_path)
+    file = open(safe_local_path, 'rb')
 
     # See if there is a matching photo already in the db
     hash_img = compute_hash(file.read())
@@ -462,11 +470,33 @@ def get_uploaded_cropped_image(original_image, crop_data):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
         rm_dirs()
         return None
 
+
+def get_officer(department_id, star_no, first_name, last_name):
+    """Returns first officer with the given name and badge combo in the department, if they exist"""
+    officers = Officer.query.filter_by(department_id=department_id,
+                                       first_name=first_name,
+                                       last_name=last_name).all()
+    if officers:
+        star_no = str(star_no)
+        for assignment in Assignment.query.filter_by(star_no=star_no).all():
+            if assignment.baseofficer in officers:
+                return assignment.baseofficer
+    return None
+
+def merge_dicts(*dict_args):
+    """
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    """
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
 
 def officer_exists(department_id, first_name, last_name, middle_initial=None, suffix=None):
     """officer_exists checks if a given full name exists already for a department."""
@@ -477,3 +507,4 @@ def officer_exists(department_id, first_name, last_name, middle_initial=None, su
         middle_initial=middle_initial,
         suffix=suffix
     ).one_or_none() else False
+

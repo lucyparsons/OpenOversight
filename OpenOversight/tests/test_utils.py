@@ -1,7 +1,12 @@
 from mock import patch, Mock, MagicMock
 import os
 import OpenOversight
-from OpenOversight.app.models import Image
+from OpenOversight.app.models import Image, Officer, Assignment
+from OpenOversight.app.commands import bulk_add_officers
+from OpenOversight.app.utils import get_officer
+import pytest
+import pandas as pd
+import uuid
 
 
 # Utils tests
@@ -97,7 +102,7 @@ def test_filter_by_badge_no(mockdata):
 
 
 def test_compute_hash(mockdata):
-    hash_result = OpenOversight.app.utils.compute_hash('bacon')
+    hash_result = OpenOversight.app.utils.compute_hash(b'bacon')
     expected_hash = '9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4'
     assert hash_result == expected_hash
 
@@ -186,3 +191,189 @@ def test_get_uploaded_cropped_image_s3_error(mockdata):
     cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
 
     assert cropped_image is None
+
+
+def test_csv_import_new(csvfile):
+    # Delete all current officers and assignments
+    Assignment.query.delete()
+    Officer.query.delete()
+
+    assert Officer.query.count() == 0
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+
+    assert n_created > 0
+    assert Officer.query.count() == n_created
+    assert n_updated == 0
+
+
+def test_csv_import_update(csvfile):
+    n_existing = Officer.query.count()
+
+    assert n_existing > 0
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+
+    assert n_created == 0
+    assert n_updated > 0
+    assert Officer.query.count() == n_existing
+
+
+def test_csv_import_idempotence(csvfile):
+    # Delete all current officers and assignments
+    Assignment.query.delete()
+    Officer.query.delete()
+
+    assert Officer.query.count() == 0
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created > 0
+    assert n_updated == 0
+    assert Officer.query.count() == n_created
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created == 0
+    assert n_updated > 0
+    assert Officer.query.count() == n_updated
+
+
+def test_csv_missing_required_field(csvfile):
+    df = pd.read_csv(csvfile)
+    df.drop(columns='first_name').to_csv(csvfile)
+
+    with pytest.raises(Exception) as exc:
+        bulk_add_officers([csvfile])
+    assert 'Missing required field' in str(exc.value)
+
+
+def test_csv_missing_badge_and_uid(csvfile):
+    df = pd.read_csv(csvfile)
+    df.drop(columns=['star_no', 'unique_internal_identifier']).to_csv(csvfile)
+
+    with pytest.raises(Exception) as exc:
+        bulk_add_officers([csvfile])
+    assert 'CSV file must include either badge numbers or unique identifiers for officers' in str(exc.value)
+
+
+def test_csv_non_existant_dept_id(csvfile):
+    df = pd.read_csv(csvfile)
+    df['department_id'] = 666
+    df.to_csv(csvfile)
+
+    with pytest.raises(Exception) as exc:
+        bulk_add_officers([csvfile])
+    assert 'Department ID 666 not found' in str(exc.value)
+
+
+def test_csv_officer_missing_badge_and_uid(csvfile):
+    df = pd.read_csv(csvfile)
+    df.loc[0, 'star_no'] = None
+    df.loc[0, 'unique_internal_identifier'] = None
+    df.to_csv(csvfile)
+
+    with pytest.raises(Exception) as exc:
+        bulk_add_officers([csvfile])
+    assert 'missing badge number and unique identifier' in str(exc.value)
+
+
+def test_csv_changed_static_field(csvfile):
+    df = pd.read_csv(csvfile)
+    df.loc[0, 'birth_year'] = 666
+    df.to_csv(csvfile)
+
+    with pytest.raises(Exception) as exc:
+        bulk_add_officers([csvfile])
+    assert 'has differing birth_year field' in str(exc.value)
+
+
+def test_csv_new_assignment(csvfile):
+    # Delete all current officers and assignments
+    Assignment.query.delete()
+    Officer.query.delete()
+
+    assert Officer.query.count() == 0
+
+    df = pd.read_csv(csvfile)
+    df.loc[0, 'rank'] = 'COMMANDER'
+    df.to_csv(csvfile)
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created > 0
+    assert n_updated == 0
+    assert Officer.query.count() == n_created
+
+    officer = get_officer(1, df.loc[0, 'star_no'], df.loc[0, 'first_name'], df.loc[0, 'last_name'])
+    assert officer
+    officer_id = officer.id
+    assert len(list(officer.assignments)) == 1
+
+    # Update rank
+    df.loc[0, 'rank'] = 'CAPTAIN'
+    df.to_csv(csvfile)
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created == 0
+    assert n_updated > 0
+    assert Officer.query.count() == n_updated
+
+    officer = Officer.query.filter_by(id=officer_id).one()
+    assert len(list(officer.assignments)) == 2
+    for assignment in officer.assignments:
+        assert assignment.rank == 'COMMANDER' or assignment.rank == 'CAPTAIN'
+
+
+def test_csv_new_name(csvfile):
+    df = pd.read_csv(csvfile)
+    officer_uid = df.loc[0, 'unique_internal_identifier']
+    assert officer_uid
+
+    df.loc[0, 'first_name'] = 'FOO'
+    df.to_csv(csvfile)
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created == 0
+    assert n_updated > 0
+
+    officer = Officer.query.filter_by(unique_internal_identifier=officer_uid).one()
+
+    assert officer.first_name == 'FOO'
+
+
+def test_csv_new_officer(csvfile):
+    df = pd.read_csv(csvfile)
+
+    n_rows = len(df.index)
+    assert n_rows > 0
+
+    n_officers = Officer.query.count()
+    assert n_officers > 0
+
+    new_uid = str(uuid.uuid4())
+    new_officer = {  # Must match fields in csvfile
+        'department_id': 1,
+        'unique_internal_identifier': new_uid,
+        'first_name': 'FOO',
+        'last_name': 'BAR',
+        'middle_initial': None,
+        'suffix': None,
+        'gender': 'F',
+        'race': 'BLACK',
+        'employment_date': None,
+        'birth_year': None,
+        'star_no': 666,
+        'rank': 'CAPTAIN',
+        'unit': None,
+        'star_date': None,
+        'resign_date': None
+    }
+    df = df.append([new_officer])
+    df.to_csv(csvfile)
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created == 1
+    assert n_updated == n_rows
+
+    officer = Officer.query.filter_by(unique_internal_identifier=new_uid).one()
+
+    assert officer.first_name == 'FOO'
+    assert Officer.query.count() == n_officers + 1

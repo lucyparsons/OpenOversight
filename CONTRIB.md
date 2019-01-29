@@ -14,9 +14,7 @@ Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the descript
 
 ## Development Environment
 
-You can use our Docker or Vagrant/VirtualBox development environments.
-
-### Docker
+You can use our Docker-compose environment to stand up a development OpenOversight.
 
 You will need to have Docker installed in order to use the Docker development environment.
 
@@ -39,88 +37,27 @@ $ docker exec -it openoversight_web_1 /bin/bash
 
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
-### VirtualBox + Vagrant
+## Testing S3 Functionality
 
-Our standard development environment is an Ubuntu 14 VM. We manage it with Vagrant, which means you'll need Vagrant and VirtualBox installed to start out.
+We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
+then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
+on Amazon Web Services.
 
-* Install Vagrant: https://www.vagrantup.com/downloads.html
-* Install VirtualBox: https://www.virtualbox.org/wiki/Downloads
+Once you have done this, you can put your AWS credentials in the following environmental variables:
 
-Make sure you've started VirtualBox, and then in your project directory, run:
-
-`vagrant up`
-
-This creates a new, pristine virtual machine and provisions it to be an almost-copy of production with a local test database. (Behind the scenes, this is all happening via the files in vagrant/puppet.) If everything works, you should get a webserver listening at `http://localhost:5000` that you can browse to on your host machine.
-
-In addition, you can now SSH into it:
-
-`vagrant ssh`
-
-The provisioning step creates a virtual environment (venv) in `~/oovirtenv`. If you will be running lots of python-related commands, you can 'activate' the virtual environment (override the built-in python and pip commands and add pytest and fab to your path) by activating it:
 ```sh
-vagrant@vagrant-ubuntu-trusty-64:~$ source /home/vagrant/oovirtenv/bin/activate
+$ export S3_BUCKET_NAME=openoversight-test
+$ export AWS_ACCESS_KEY_ID=testtest
+$ export AWS_SECRET_ACCESS_KEY=testtest
+$ export AWS_DEFAULT_REGION=us-east-1
 ```
 
-You can tell that your virtual environment is activated by seeing the addition of `(oovirtenv)` to your prompt:
-```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$
-```
-When this is done, you no longer need to preface python commands (as below) with `~/oovirtenv/bin`.
-
-In the VM instance, your code is copied to a folder inside of `/vagrant`, so you'll want to run this:
-```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight
-```
-
-Tests can be run with:
-```sh
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/$ cd tests
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight/tests$ pytest
-```
-
-*Note:* the photo upload functionality - which uses an S3 bucket - and the email functionality - which
-requires an email account - do not work in the development environment as they require some environment
-variables to be configured.
-
-#### Dynamically reloading changes
-
-The app, as provisioned, is running under gunicorn, which means that it does not dynamically reload your changes.
-
-If you run the app in debug mode, you can see these changes take effect on every update, but certain changes will kill the server in a way some of us find really irritating. To do this:
-
-`vagrant ssh` (if you're not already there)
-```sh
-$ sudo service gunicorn stop
- * Stopping Gunicorn workers
- [oo] *
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:~$ cd /vagrant/OpenOversight/ # (again, if you're not already there)
-(oovirtenv)vagrant@vagrant-ubuntu-trusty-64:/vagrant/OpenOversight$ python manage.py runserver --host 0.0.0.0
- * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
- * Restarting with stat
- * Debugger is active!
-```
-
-#### Changing the Development Environment
-
-If you're making massive changes to the development environment provisioning, you should know that Vagrant and the Puppet modules that provision the box use Ruby, so you'll want some reasonably-modern Ruby. Anything in the 2.0-2.2 area should work. Puppet has some annoying interactions where puppet 3 doesn't work with ruby 2.2, though, so you might have to get creative on modern OSes.
-
-If you don't have bundler installed:
-
-`gem install bundler`
-
-If you don't have rake installed:
-
-`bundle install`
-
-Then provision the VM:
-
-`rake vagrant:provision`
-
-Puppet modules are dropped into place by librarian-puppet, and there's a rake task that'll do it without the headache of remembering all the paths and such:
-
-`rake vagrant:build_puppet`
+Now when you run `make dev` as usual in the same session, you will be able to submit images to
+your test bucket.
 
 ## Database commands
+
+Running `make dev` will create the database and persist it into your local filesystem.
 
 You can access your PostgreSQL development database via psql using:
 
@@ -130,13 +67,6 @@ psql  -h localhost -d openoversight-dev -U openoversight --password
 
 with the password `terriblepassword`.
 
-
-In the Docker environment, you'll need to run the script to create the database:
-
-```sh
-$ python create_db.py
-```
-
 In the event that you need to create or delete the test data, you can do that with
 `$ python test_data.py --populate` to create the data
 or
@@ -144,53 +74,66 @@ or
 
 ### Migrating the Database
 
-If you e.g. add a new column or table, you'll need to migrate the database.
-
-You can use the management interface to first generate migrations:
+If you e.g. add a new column or table, you'll need to migrate the database using the Flask CLI. First we need to 'stamp' the current version of the database:
 
 ```sh
-$ python manage.py db migrate
+$ cd OpenOversight/  # change directory to source dir
+$ flask db stamp head
+```
+
+(Hint: If you get errors when running `flask` commands, e.g. because of differing Python versions, you may need to run the commands in the docker container by prefacing them as so: `docker exec -it openoversight_web_1 flask db stamp head`)
+
+Next make your changes to the database models in `models.py`. You'll then generate the migrations:
+
+```sh
+$ flask db migrate
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
 
 ```sh
-$ python manage.py db upgrade
+$ flask db upgrade
 ```
 
-You can also downgrade the database using `python manage.py db downgrade`.
+You can also downgrade the database using `flask db downgrade`.
 
 ## OpenOversight Management Interface
 
-In addition to running the development server, `manage.py` (OpenOversight's management interface) can be used to do the following:
+In addition to generating database migrations, the Flask CLI can be used to run additional commands:
 
 ```sh
-$ python manage.py
---------------------------------------------------------------------------------
-INFO in __init__ [/vagrant/OpenOversight/app/__init__.py:57]:
-OpenOversight startup
---------------------------------------------------------------------------------
-usage: manage.py [-?]
-                 {runserver,db,shell,make_admin_user,link_images_to_department}
-                 ...
+$ flask --help
+Usage: flask [OPTIONS] COMMAND [ARGS]...
 
-positional arguments:
-  {runserver,db,shell,make_admin_user,link_images_to_department}
-    runserver           Runs the Flask development server i.e. app.run()
-    db                  Perform database migrations
-    shell               Runs a Python shell inside Flask application context.
-    make_admin_user     Add confirmed administrator account
-    link_images_to_department
-                        Link existing images to first department
+  A general utility script for Flask applications.
 
-optional arguments:
-  -?, --help            show this help message and exit
+  Provides commands from Flask, extensions, and the application. Loads the
+  application defined in the FLASK_APP environment variable, or from a
+  wsgi.py file. Setting the FLASK_ENV environment variable to 'development'
+  will enable debug mode.
+
+    $ export FLASK_APP=hello.py
+    $ export FLASK_ENV=development
+    $ flask run
+
+Options:
+  --version  Show the flask version
+  --help     Show this message and exit.
+
+Commands:
+  db                           Perform database migrations.
+  link-images-to-department    Link existing images to first department
+  link-officers-to-department  Links officers and units to first department
+  make-admin-user              Add confirmed administrator account
+  routes                       Show the routes for the app.
+  run                          Runs a development server.
+  shell                        Runs a shell in the app context.
 ```
 
 In development, you can make an administrator account without having to confirm your email:
 
 ```sh
-$ python manage.py make_admin_user
+$ flask make-admin-user
 Username: redshiftzero
 Email: jen@redshiftzero.com
 Password:

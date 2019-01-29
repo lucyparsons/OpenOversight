@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import input
+
 # creates a folder in the current directory and downloads pics and csv into it.
 # need to fix last loop so very last entry doesn't generate error
 
@@ -7,19 +10,18 @@ import time
 import io
 import os
 
-
 api_key = ''
 secret = ''
 flickr = flickrapi.FlickrAPI(api_key, secret, format='parsed-json')
 
 
 os.system('clear')
-group_url = raw_input("Enter a Flickr Group URL: ")
-group_id = group_url.split('/')[-2]
-print " "
-print "Files will be saved in folder " + group_id
+group_url = input("Enter a Flickr Group URL: ")
+group_id = group_url.strip('/').split('/')[-1]
+print(" ")
+print("Files will be saved in folder " + group_id)
 time.sleep(1)
-print "Retrieving ID's. Please wait."
+print("Retrieving ID's. Please wait.")
 group_pool_photos = []
 
 page = 1
@@ -35,7 +37,7 @@ with io.FileIO(group_id + "/" + "list.csv", "w") as file:
     while True:
         response = flickr.groups.pools.getPhotos(group_id=group_id, page=page, perpage=perpage)
         if response['stat'] != 'ok':
-            print 'Error occurred in flickr.groups.pools.getPhotos'
+            print('Error occurred in flickr.groups.pools.getPhotos')
             print(response)
             success = False
             break
@@ -47,10 +49,10 @@ with io.FileIO(group_id + "/" + "list.csv", "w") as file:
         page += 1
 
     if success:
-        print 'Photos: {}'.format(len(group_pool_photos))
+        print('Photos: {}'.format(len(group_pool_photos)))
         time.sleep(1)
-        print 'Downloading now.'
-        print " "
+        print('Downloading now.')
+        print(" ")
         file.write('PICID, PICURL, TAKEN, LOCATION, REALNAME, TITLE, DESCRIPTION, PATH_ALIAS')
         file.write('\r\n')
         for line in group_pool_photos:
