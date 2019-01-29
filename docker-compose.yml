@@ -23,12 +23,14 @@ services:
      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+     FLASK_APP: app
+     FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
-     - ./OpenOversight/:/usr/src/app/OpenOversight/
+     - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    links:
      - postgres:postgres
    expose:
      - "3000"
-   command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:3000 app:app
+   command: flask run --host=0.0.0.0 --port=3000
    ports:
      - "3000:3000"

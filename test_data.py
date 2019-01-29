@@ -111,15 +111,15 @@ def populate():
     db.session.commit()
 
     # Add images from Springfield Police Department
-    image1 = models.Image(filepath='static/images/test_cop1.png',
+    image1 = models.Image(filepath='/static/images/test_cop1.png',
                           department_id=department1.id)
-    image2 = models.Image(filepath='static/images/test_cop2.png',
+    image2 = models.Image(filepath='/static/images/test_cop2.png',
                           department_id=department1.id)
-    image3 = models.Image(filepath='static/images/test_cop3.png',
+    image3 = models.Image(filepath='/static/images/test_cop3.png',
                           department_id=department2.id)
-    image4 = models.Image(filepath='static/images/test_cop4.png',
+    image4 = models.Image(filepath='/static/images/test_cop4.png',
                           department_id=department2.id)
-    image5 = models.Image(filepath='static/images/test_cop5.jpg',
+    image5 = models.Image(filepath='/static/images/test_cop5.jpg',
                           department_id=department2.id)
 
     test_images = [image1, image2, image3, image4, image5]

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -7,8 +8,9 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
 
-from config import config
+from .config import config
 
 
 bootstrap = Bootstrap()
@@ -79,6 +81,20 @@ def create_app(config_name='default'):
     @app.template_filter('capfirst')
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
+
+    @app.template_filter('get_age')
+    def get_age_from_birth_year(birth_year):
+        if birth_year:
+            return int(datetime.datetime.now().year - birth_year)
+
+    # Add commands
+    Migrate(app, db)  # Adds 'db' command
+    from .commands import (make_admin_user, link_images_to_department,
+                           link_officers_to_department, bulk_add_officers)
+    app.cli.add_command(make_admin_user)
+    app.cli.add_command(link_images_to_department)
+    app.cli.add_command(link_officers_to_department)
+    app.cli.add_command(bulk_add_officers)
 
     return app
 

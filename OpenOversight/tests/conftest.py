@@ -7,9 +7,12 @@ import time
 import threading
 from xvfbwrapper import Xvfb
 from faker import Faker
+import csv
+import uuid
+import sys
 
-from OpenOversight.app import create_app
-from OpenOversight.app import models
+from OpenOversight.app import create_app, models
+from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db
 
 factory = Faker()
@@ -277,7 +280,7 @@ def mockdata(session, request):
             address=test_addresses[0],
             license_plates=test_license_plates,
             links=test_links,
-            officers=[generate_officer() for o in range(4)],
+            officers=[all_officers[o] for o in range(4)],
             creator_id=1,
             last_updated_id=1
         ),
@@ -289,7 +292,7 @@ def mockdata(session, request):
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
             links=test_links,
-            officers=[generate_officer() for o in range(3)],
+            officers=[all_officers[o] for o in range(3)],
             creator_id=2,
             last_updated_id=1
         ),
@@ -335,6 +338,68 @@ def mockdata(session, request):
         session.flush()
 
     return assignments[0].star_no
+
+
+@pytest.fixture
+def csvfile(mockdata, tmp_path, request):
+    csv_path = tmp_path / "dept1.csv"
+
+    def teardown():
+        try:
+            csv_path.unlink()
+        except:  # noqa: E722
+            pass
+        try:
+            tmp_path.rmdir()
+        except:  # noqa: E722
+            pass
+
+    teardown()
+    tmp_path.mkdir()
+
+    fieldnames = [
+        'department_id',
+        'unique_internal_identifier',
+        'first_name',
+        'last_name',
+        'middle_initial',
+        'suffix',
+        'gender',
+        'race',
+        'employment_date',
+        'birth_year',
+        'star_no',
+        'rank',
+        'unit',
+        'star_date',
+        'resign_date'
+    ]
+
+    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
+
+    if sys.version_info.major == 2:
+        csvf = open(str(csv_path), 'w')
+    else:
+        csvf = open(str(csv_path), 'w', newline='')
+    try:
+        writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+        for officer in officers_dept1:
+            if not officer.unique_internal_identifier:
+                officer.unique_internal_identifier = str(uuid.uuid4())
+            if len(list(officer.assignments)) > 0:
+                assignment = officer.assignments[0]
+                towrite = merge_dicts(vars(officer), vars(assignment), {'department_id': 1})
+            else:
+                towrite = merge_dicts(vars(officer), {'department_id': 1})
+            writer.writerow(towrite)
+    except:  # noqa E722
+        raise
+    finally:
+        csvf.close()
+
+    request.addfinalizer(teardown)
+    return str(csv_path)
 
 
 @pytest.fixture

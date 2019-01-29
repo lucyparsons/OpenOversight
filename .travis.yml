@@ -5,6 +5,7 @@ addons:
   firefox: "45.4.0esr"
 python:
   - "2.7"
+  - "3.6"
 before_install:
   - wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
   - mkdir geckodriver
@@ -16,7 +17,7 @@ before_script:
   - pip install coveralls
   - cd OpenOversight
 script:
-  - py.test -v --cov=app
+  - py.test -v -n 4 --dist=loadfile --cov=app
   - cd .. && flake8 --ignore=E501,E722
 after_success:
   - coveralls

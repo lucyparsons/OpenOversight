@@ -1,5 +1,6 @@
 from pytest import raises
 import time
+import datetime
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User, db, Department, Location, Link,
                                       LicensePlate, Incident)
@@ -287,3 +288,17 @@ def test_incident_m2m_license_plates(mockdata):
     db.session.commit()
     assert license_plate in incident.license_plates
     assert incident in license_plate.incidents
+
+
+def test_images_added_with_user_id(mockdata):
+    user_id = 1
+    new_image = Image(filepath="http://www.example.com", hash_img="1234",
+                      is_tagged=False,
+                      date_image_inserted=datetime.datetime.now(),
+                      department_id=1,
+                      date_image_taken=datetime.datetime.now(),
+                      user_id=user_id)
+    db.session.add(new_image)
+    db.session.commit()
+    saved = Image.query.filter_by(user_id=user_id).first()
+    assert saved is not None
