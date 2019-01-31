@@ -126,6 +126,10 @@
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
-    {% block js_footer %}{% endblock %}
+    {% block js_footer %}
+      {% for item in jsloads %}
+      <script src="{{ url_for('static', filename=item) }}"></script>
+      {% endfor %}
+    {% endblock %}
   </body>
 </html>
