@@ -16,7 +16,7 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs
 RUN npm install -g yarn
 
-RUN pip install --no-cache-dir virtualenv
+RUN pip3 install --no-cache-dir virtualenv
 RUN virtualenv /ve
 ENV PATH=/ve/bin:$PATH
 
@@ -30,10 +30,9 @@ USER www-data
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir -r dev-requirements.txt
 
 ARG DOCKER_BUILD_ENV
-RUN test "${DOCKER_BUILD_ENV}" = production || pip install --no-cache-dir -r dev-requirements.txt
+RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r dev-requirements.txt
 
 CMD ["/bin/bash"]
 COPY package.json /usr/src/app/
