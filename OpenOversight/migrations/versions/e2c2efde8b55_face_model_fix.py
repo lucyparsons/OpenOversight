@@ -1,7 +1,7 @@
-"""empty message
+"""Fix typo in Face model
 
 Revision ID: e2c2efde8b55
-Revises: 0acbb0f0b1ef
+Revises: 9e2827dae28c
 Create Date: 2019-01-07 21:57:48.495757
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'e2c2efde8b55'
-down_revision = '0acbb0f0b1ef'
+down_revision = '9e2827dae28c'
 branch_labels = None
 depends_on = None
 
