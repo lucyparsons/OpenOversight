@@ -1,7 +1,5 @@
 version: "3"
 
-volumes:
-   cache_dir:
 services:
  postgres:
    restart: always
@@ -29,11 +27,8 @@ services:
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      FLASK_APP: app
      FLASK_ENV: "${FLASK_ENV:-development}"
-     HMR: 1
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
-     - cache_dir:/usr/src/app/.cache
-     - /usr/src/app/OpenOversight/static/dist/
    links:
      - postgres:postgres
    expose:
