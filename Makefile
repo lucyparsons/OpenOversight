@@ -20,7 +20,7 @@ create_db: start
 
 .PHONY: assets
 assets:
-	yarn build
+	docker-compose run --rm web yarn build
 
 .PHONY: dev
 dev: build start create_db populate
