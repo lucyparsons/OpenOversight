@@ -140,11 +140,11 @@ def bulk_add_officers(filename):
                 # Name and gender are the only potentially changeable fields, so update those
                 officer.last_name = line['last_name']
                 officer.first_name = line['first_name']
-                if 'middle_initial' in csvfile.fieldnames:
+                if 'middle_initial' in csvfile.fieldnames and line['middle_initial']:
                     officer.middle_initial = line['middle_initial']
-                if 'suffix' in csvfile.fieldnames:
+                if 'suffix' in csvfile.fieldnames and line['suffix']:
                     officer.suffix = line['suffix']
-                if 'gender' in csvfile.fieldnames:
+                if 'gender' in csvfile.fieldnames and line['gender']:
                     officer.gender = line['gender']
 
                 # The rest should be static
@@ -159,14 +159,13 @@ def bulk_add_officers(filename):
                         if line[fieldname] == '':
                             line[fieldname] = None
                         if str(getattr(officer, fieldname)) != str(line[fieldname]):
-                            raise Exception('Officer {} {} has differing {} field. Old: {}, new: {}'.format(
+                            msg = 'Officer {} {} has differing {} field. Old: {}, new: {}'.format(
                                 officer.first_name,
                                 officer.last_name,
                                 fieldname,
                                 getattr(officer, fieldname),
-                                line[fieldname]
-                            ))
-                # Don't need to add officer to db.session b/c object already in session
+                                line[fieldname])
+                            raise Exception(msg)
 
                 assignment_fields = [
                     'star_no',
@@ -183,23 +182,25 @@ def bulk_add_officers(filename):
                 for assignment in assignments:
                     i = 0
                     for fieldname in assignment_fields:
-                        if getattr(assignment, fieldname) == line[fieldname]:
+                        if str(getattr(assignment, fieldname)).lower() == line[fieldname].lower() \
+                                or not getattr(assignment, fieldname) and not line[fieldname]:
                             i += 1
                     if i == len(assignment_fields):
                         match_assignment = True
+
                 if not match_assignment:
                     # create new assignment
                     assignment = Assignment()
                     assignment.officer_id = officer.id
-                    if 'star_no' in csvfile.fieldnames:
+                    if 'star_no' in csvfile.fieldnames and line['star_no']:
                         assignment.star_no = line['star_no']
-                    if 'rank' in csvfile.fieldnames:
+                    if 'rank' in csvfile.fieldnames and line['rank']:
                         assignment.rank = line['rank']
-                    if 'unit' in csvfile.fieldnames:
+                    if 'unit' in csvfile.fieldnames and line['unit']:
                         assignment.unit = line['unit']
-                    if 'star_date' in csvfile.fieldnames and line['star_date'] != '':
+                    if 'star_date' in csvfile.fieldnames and line['star_date']:
                         assignment.star_date = datetime.strptime(line['star_date'], '%Y-%m-%d').date()
-                    if 'resign_date' in csvfile.fieldnames and line['resign_date'] != '':
+                    if 'resign_date' in csvfile.fieldnames and line['resign_date']:
                         assignment.resign_date = datetime.strptime(line['resign_date'], '%Y-%m-%d').date()
                     db.session.add(assignment)
                     db.session.flush()
@@ -212,34 +213,34 @@ def bulk_add_officers(filename):
                 officer.last_name = line['last_name']
                 officer.first_name = line['first_name']
 
-                if 'middle_initial' in csvfile.fieldnames:
+                if 'middle_initial' in csvfile.fieldnames and line['middle_initial']:
                     officer.middle_initial = line['middle_initial']
-                if 'suffix' in csvfile.fieldnames:
+                if 'suffix' in csvfile.fieldnames and line['suffix']:
                     officer.suffix = line['suffix']
-                if 'race' in csvfile.fieldnames:
+                if 'race' in csvfile.fieldnames and line['race']:
                     officer.race = line['race']
-                if 'gender' in csvfile.fieldnames:
+                if 'gender' in csvfile.fieldnames and line['gender']:
                     officer.gender = line['gender']
-                if 'employment_date' in csvfile.fieldnames and line['employment_date'] != '':
+                if 'employment_date' in csvfile.fieldnames and line['employment_date']:
                     officer.employment_date = datetime.strptime(line['employment_date'], '%Y-%m-%d').date()
-                if 'birth_year' in csvfile.fieldnames:
+                if 'birth_year' in csvfile.fieldnames and line['birth_year']:
                     officer.birth_year = line['birth_year']
-                if 'unique_internal_identifier' in csvfile.fieldnames and line['unique_internal_identifier'] != '':
+                if 'unique_internal_identifier' in csvfile.fieldnames and line['unique_internal_identifier']:
                     officer.unique_internal_identifier = line['unique_internal_identifier']
                 db.session.add(officer)
                 db.session.flush()
 
                 assignment = Assignment()
                 assignment.officer_id = officer.id
-                if 'star_no' in csvfile.fieldnames:
+                if 'star_no' in csvfile.fieldnames and line['star_no']:
                     assignment.star_no = line['star_no']
-                if 'rank' in csvfile.fieldnames:
+                if 'rank' in csvfile.fieldnames and line['rank']:
                     assignment.rank = line['rank']
-                if 'unit' in csvfile.fieldnames:
+                if 'unit' in csvfile.fieldnames and line['unit']:
                     assignment.unit = line['unit']
-                if 'star_date' in csvfile.fieldnames and line['star_date'] != '':
+                if 'star_date' in csvfile.fieldnames and line['star_date']:
                     assignment.star_date = datetime.strptime(line['star_date'], '%Y-%m-%d').date()
-                if 'resign_date' in csvfile.fieldnames and line['resign_date'] != '':
+                if 'resign_date' in csvfile.fieldnames and line['resign_date']:
                     assignment.resign_date = datetime.strptime(line['resign_date'], '%Y-%m-%d').date()
                 db.session.add(assignment)
                 db.session.flush()
