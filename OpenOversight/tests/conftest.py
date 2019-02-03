@@ -70,6 +70,10 @@ def pick_department():
     return random.choice(departments)
 
 
+def pick_uid():
+    return str(uuid.uuid4())
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -79,7 +83,8 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=pick_department().id
+        department_id=pick_department().id,
+        unique_internal_identifier=pick_uid()
     )
 
 
@@ -158,7 +163,7 @@ def session(db, request):
 
 
 @pytest.fixture
-def mockdata(session, request):
+def mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
                                    short_name='SPD')
@@ -174,8 +179,8 @@ def mockdata(session, request):
 
     unit1 = models.Unit(descrip="test")
 
-    test_images = [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
-        [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
+    test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
+        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
 
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
     session.add_all(officers)
@@ -198,6 +203,7 @@ def mockdata(session, request):
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
+    session.commit()
     session.add_all(assignments)
     session.add_all(faces1)
     session.add_all(faces2)
@@ -325,17 +331,6 @@ def mockdata(session, request):
         session.add(description)
 
     session.commit()
-
-    def teardown():
-        # Cleanup tables
-        models.User.query.delete()
-        models.Officer.query.delete()
-        models.Image.query.delete()
-        models.Face.query.delete()
-        models.Unit.query.delete()
-        models.Department.query.delete()
-        session.commit()
-        session.flush()
 
     return assignments[0].star_no
 

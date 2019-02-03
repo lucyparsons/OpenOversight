@@ -182,7 +182,7 @@ def serve_image(filepath):
     if 'http' in filepath:
         return filepath
     if 'static' in filepath:
-        return url_for('static', filename=filepath.replace('static/', ''))
+        return url_for('static', filename=filepath.replace('static/', '').lstrip('/'))
 
 
 def compute_hash(data_to_hash):
