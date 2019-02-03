@@ -5,7 +5,7 @@
 
   <div class="page-header">
       <ol class="breadcrumb">
-          <li><a href={{url_for('main.list_officer',department_id=officer.department.id)}}>{{ officer.department.name|title }}</a></li>
+          <li><a href="{{url_for('main.list_officer',department_id=officer.department.id)}}">{{ officer.department.name|title }}</a></li>
           <li class="active">{% include 'partials/officer_name.html' %}</li>
       </ol>
       <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
@@ -25,7 +25,7 @@
       {% endif %}
       {% endfor %}
     </div>
-    <div class="col-sm-6 col-md-4">
+    <div class="col-sm-6">
       <div class="thumbnail">
         <div class="caption">
           <h3>General Information
@@ -78,7 +78,7 @@
   </div> {# end row #}
 
   <div class="row">
-    <div class="col-sm-6">
+    <div class="col-sm-12 col-md-6">
       <h3>Assignment History</h3>
       <table class="table table-hover">
           <tr>
@@ -180,36 +180,39 @@
     </div> {# end col #}
     {% if officer.incidents or current_user.is_administrator or
 	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-    	<div class='col-sm-12 col-md-6'>
-      	<h3>Incidents</h3>
-      	<ul class="list-group">
-        	{% for incident in officer.incidents %}
-          	<li class="list-group-item">
-            	<h4>
-                	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
-                	Incident {{ incident.report_number }}
-              	</a>
-              	{% if current_user.is_administrator
-                	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
-               	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
-                	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-              	</a>
-              	{% endif %}
-            	</h4>
-            	{% include 'partials/incident_fields.html' %}
-          	</li>
-        	{% endfor %}
-      	</ul>
-      	{% if current_user.is_administrator
-          	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-        	<a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
-      	{% endif %}
-    	</div>{# end col #}
+  	<div class='col-sm-12 col-md-6'>
+    	<h3>Incidents</h3>
+      {% if officer.incidents %}
+    	<ul class="list-group">
+      	{% for incident in officer.incidents %}
+        	<li class="list-group-item">
+          	<h4>
+              	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
+              	Incident {{ incident.report_number }}
+            	</a>
+            	{% if current_user.is_administrator
+              	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
+             	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
+              	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            	</a>
+            	{% endif %}
+          	</h4>
+          	{% include 'partials/incident_fields.html' %}
+        	</li>
+      	{% endfor %}
+    	</ul>
+      {% endif %}
+    	{% if current_user.is_administrator
+        	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
+    	{% endif %}
+  	</div>{# end col #}
     {% endif %}
+    {% if officer.descriptions or current_user.is_administrator or
+	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
     <div class='col-sm-12 col-md-6'>
-       {% if officer.descriptions %}
        <h3>Descriptions</h3>
-       {% endif %}
+       {% if officer.descriptions %}
        <ul class="list-group">
           {% for description in officer.descriptions %}
           <li class="list-group-item">
@@ -227,53 +230,48 @@
                 <span class='sr-only'>Delete</span>
                 <i class="fa fa-trash-o" aria-hidden="true"></i>
                 </a>
-             </a>
              {% endif %}
           </li>
           {% endfor %}
        </ul>
+       {% endif %}
        {% if current_user.is_administrator
                    or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-       {% if not officer.descriptions %}
-       <h3>Descriptions</h3>
-       {% endif %}
        <a href="{{ url_for('main.description_api', officer_id=officer.id) }}" class='btn btn-primary'>New description</a>
-       </div>
        {% endif %}
     </div>{# end col #}
+    {% endif %}
     {% if current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-      <div class='col-sm-12 col-md-6'>
-        <h3>Notes</h3>
-        <ul class="list-group">
-          {% for note in officer.notes %}
-            <li class="list-group-item">
-                <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
-                {{ note.text_contents }} <br/>
-                <em>{{ note.creator.username }} </em>
-              {% if note.creator_id == current_user.id or current_user.is_administrator %}
-                <a href="{{ url_for('main.note_api', officer_id=officer.id,
-                          obj_id=note.id) + '/edit' }}">
-                  <span class='sr-only'>Edit</span>
-                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-                </a>
-                <a href="{{ url_for('main.note_api', officer_id=officer.id,
-                          obj_id=note.id) + '/delete' }}">
-                  <span class='sr-only'>Delete</span>
-                  <i class="fa fa-trash-o" aria-hidden="true"></i>
-                </a>
+    <div class='col-sm-12 col-md-6'>
+      <h3>Notes</h3>
+      <ul class="list-group">
+        {% for note in officer.notes %}
+          <li class="list-group-item">
+              <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
+              {{ note.text_contents }} <br/>
+              <em>{{ note.creator.username }} </em>
+            {% if note.creator_id == current_user.id or current_user.is_administrator %}
+              <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                        obj_id=note.id) + '/edit' }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
               </a>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-        <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
-      </div>
-    {% endif %}
+              <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                        obj_id=note.id) + '/delete' }}">
+                <span class='sr-only'>Delete</span>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
     </div>{# end col #}
-    {% with obj=officer %}
-      {% include "partials/links_and_videos_row.html" %}
-    {% endwith %}
+    {% endif %}
   </div> {# end row #}
+  {% with obj=officer %}
+    {% include "partials/links_and_videos_row.html" %}
+  {% endwith %}
 </div> {# end container #}
 {% endblock %}

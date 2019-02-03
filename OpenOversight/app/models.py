@@ -156,8 +156,9 @@ class Face(db.Model):
             'raw_images.id',
             ondelete='SET NULL',
             onupdate='CASCADE',
-            use_alter=True),
-        name='fk_face_original_image_id')
+            use_alter=True,
+            name='fk_face_original_image_id')
+    )
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
