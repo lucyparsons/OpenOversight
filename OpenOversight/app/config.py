@@ -39,6 +39,9 @@ class BaseConfig(object):
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
+    # User settings
+    APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
+
     SEED = 666
 
     @staticmethod
@@ -57,6 +60,7 @@ class TestingConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     NUM_OFFICERS = 120
+    APPROVE_REGISTRATIONS = False
 
 
 class ProductionConfig(BaseConfig):
