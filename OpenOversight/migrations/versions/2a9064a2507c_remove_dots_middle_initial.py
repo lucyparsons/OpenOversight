@@ -1,7 +1,7 @@
 """remove_dots_middle_initial
 
 Revision ID: 2a9064a2507c
-Revises: e2c2efde8b55
+Revises: 5c5b80cab45e
 Create Date: 2019-02-03 05:33:05.296642
 
 """
@@ -15,7 +15,7 @@ from app.models import Officer, db  # noqa: E402
 
 # revision identifiers, used by Alembic.
 revision = '2a9064a2507c'
-down_revision = 'e2c2efde8b55'
+down_revision = '5c5b80cab45e'
 branch_labels = None
 depends_on = None
 
