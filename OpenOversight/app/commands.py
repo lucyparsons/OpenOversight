@@ -170,6 +170,7 @@ def bulk_add_officers(filename):
 
                 assignment_fields = [
                     'star_no',
+                    'supervisor_star_no',
                     'rank',
                     'unit',
                     'star_date',
@@ -193,6 +194,8 @@ def bulk_add_officers(filename):
                     assignment.officer_id = officer.id
                     if 'star_no' in csvfile.fieldnames:
                         assignment.star_no = line['star_no']
+                    if 'supervisor_star_no' in csvfile.fieldnames:
+                        assignment.star_no = line['supervisor_star_no']
                     if 'rank' in csvfile.fieldnames:
                         assignment.rank = line['rank']
                     if 'unit' in csvfile.fieldnames:
@@ -233,6 +236,8 @@ def bulk_add_officers(filename):
                 assignment.officer_id = officer.id
                 if 'star_no' in csvfile.fieldnames:
                     assignment.star_no = line['star_no']
+                if 'supervisor_star_no' in csvfile.fieldnames:
+                    assignment.supervisor_star_no = line['supervisor_star_no']
                 if 'rank' in csvfile.fieldnames:
                     assignment.rank = line['rank']
                 if 'unit' in csvfile.fieldnames:

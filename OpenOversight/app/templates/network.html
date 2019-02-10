@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block head %}
+    <link href="{{ url_for('static', filename='css/network.css') }}" rel="stylesheet">
+{% endblock head %}
+{% block content %}
+
+<div class="container" role="main">
+  <h1>{{ department.name|title }}</h1>
+  <svg width="1000" height="650"></svg>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src={{ url_for('static', filename='js/network.js') }}></script>
+  <script>
+    var nodes = {{ graph_nodes | tojson | safe }};
+    var links = {{ graph_links | tojson | safe }};
+    drawGraph(nodes,links);
+  </script>
+</div>
+
+{% endblock content %}
