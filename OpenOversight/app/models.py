@@ -156,8 +156,9 @@ class Face(db.Model):
             'raw_images.id',
             ondelete='SET NULL',
             onupdate='CASCADE',
-            use_alter=True),
-        name='fk_face_original_image_id')
+            use_alter=True,
+            name='fk_face_original_image_id')
+    )
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
@@ -322,6 +323,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    approved = db.Column(db.Boolean, default=False)
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     ac_department = db.relationship('Department', backref='coordinators', foreign_keys=[ac_department_id])

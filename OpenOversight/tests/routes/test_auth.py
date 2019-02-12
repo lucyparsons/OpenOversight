@@ -302,6 +302,7 @@ def login_unconfirmed_user(client):
         data=form.data,
         follow_redirects=False
     )
+    assert b'Invalid username or password' not in rv.data
     return rv
 
 

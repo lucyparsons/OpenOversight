@@ -1,191 +1,15 @@
 #!/usr/bin/python
 
 import argparse
-from datetime import datetime
-import sys
-import random
 
-from OpenOversight.app import create_app, models
+from OpenOversight.app import create_app
 from OpenOversight.app.models import db
+from OpenOversight.tests.conftest import mockdata
 
 app = create_app('development')
+ctx = app.app_context()
+ctx.push()
 db.app = app
-
-NUM_OFFICERS = app.config['NUM_OFFICERS']
-random.seed(app.config['SEED'])
-
-
-OFFICERS = [('IVANA', '', 'TINKLE'),
-            ('SEYMOUR', '', 'BUTZ'),
-            ('HAYWOOD', 'U', 'CUDDLEME'),
-            ('BEA', '', 'O\'PROBLEM'),
-            ('URA', '', 'SNOTBALL'),
-            ('HUGH', '', 'JASS'),
-            ('OFFICER', '', 'BACON')]
-
-
-def pick_birth_date():
-    return random.randint(1950, 2000)
-
-
-def pick_race():
-    return random.choice(['WHITE', 'BLACK', 'HISPANIC', 'ASIAN',
-                          'PACIFIC ISLANDER', 'Not Sure'])
-
-
-def pick_gender():
-    return random.choice(['M', 'F', 'Not Sure'])
-
-
-def pick_first():
-    return random.choice(OFFICERS)[0]
-
-
-def pick_middle():
-    return random.choice(OFFICERS)[1]
-
-
-def pick_last():
-    return random.choice(OFFICERS)[2]
-
-
-def pick_name():
-    return (pick_first(), pick_middle(), pick_last())
-
-
-def pick_rank():
-    return random.choice(['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure'])
-
-
-def pick_star():
-    return random.randint(1, 9999)
-
-
-def pick_department():
-    departments = models.Department.query.all()
-    return random.choice(departments)
-
-
-def generate_officer():
-    year_born = pick_birth_date()
-    f_name, m_initial, l_name = pick_name()
-    return models.Officer(
-        last_name=l_name, first_name=f_name,
-        middle_initial=m_initial,
-        race=pick_race(), gender=pick_gender(),
-        birth_year=year_born,
-        employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=pick_department().id
-    )
-
-
-def build_assignment(officer):
-    return models.Assignment(star_no=pick_star(),
-                             rank=pick_rank(),
-                             officer=officer)
-
-
-def assign_faces(officer, images):
-    random_int = random.uniform(0, 1)
-    if random_int >= 0.5:
-        return models.Face(officer_id=officer.id,
-                           img_id=random.choice(images).id)
-    else:
-        return False
-
-
-def populate():
-    """ Populate database with test data"""
-
-    departments = models.Department.query.all()
-    if len(departments) > 0:
-        print('Test data already inserted, skipping...')
-        sys.exit(0)
-
-    department1 = models.Department(name='Springfield Police Department',
-                                    short_name='SPD')
-    db.session.add(department1)
-    department2 = models.Department(name='Gotham Police Department',
-                                    short_name='GPD')
-    db.session.add(department2)
-    db.session.commit()
-
-    # Add images from Springfield Police Department
-    image1 = models.Image(filepath='/static/images/test_cop1.png',
-                          department_id=department1.id)
-    image2 = models.Image(filepath='/static/images/test_cop2.png',
-                          department_id=department1.id)
-    image3 = models.Image(filepath='/static/images/test_cop3.png',
-                          department_id=department2.id)
-    image4 = models.Image(filepath='/static/images/test_cop4.png',
-                          department_id=department2.id)
-    image5 = models.Image(filepath='/static/images/test_cop5.jpg',
-                          department_id=department2.id)
-
-    test_images = [image1, image2, image3, image4, image5]
-    db.session.add_all(test_images)
-    db.session.commit()
-
-    officers = [generate_officer() for o in range(NUM_OFFICERS)]
-    db.session.add_all(officers)
-    db.session.commit()
-
-    assignments = [build_assignment(officer) for officer in officers]
-    db.session.add_all(assignments)
-    db.session.commit()
-
-    faces = [assign_faces(officer, test_images) for officer in officers]
-    faces = [f for f in faces if f]
-
-    db.session.add_all(faces)
-    db.session.commit()
-
-    test_user = models.User(email='test@example.org',
-                            username='test_user',
-                            password='testtest',
-                            is_administrator=True,
-                            confirmed=True)
-    db.session.add(test_user)
-    db.session.commit()
-
-    test_units = [models.Unit(descrip='District 13', department_id=1),
-                  models.Unit(descrip='Bureau of Organized Crime', department_id=1)]
-    db.session.add_all(test_units)
-    db.session.commit()
-
-
-def cleanup():
-    """ Cleanup database"""
-
-    faces = models.Face.query.all()
-    for face in faces:
-        db.session.delete(face)
-
-    departments = models.Department.query.all()
-    for dept in departments:
-        db.session.delete(dept)
-
-    officers = models.Officer.query.all()
-    for po in officers:
-        db.session.delete(po)
-
-    assignments = models.Assignment.query.all()
-    for assn in assignments:
-        db.session.delete(assn)
-
-    faces = models.Face.query.all()
-    for face in faces:
-        db.session.delete(face)
-
-    users = models.User.query.all()
-    for user in users:
-        db.session.delete(user)
-
-    units = models.Unit.query.all()
-    for unit in units:
-        db.session.delete(unit)
-    # TODO: Reset primary keys on all these tables
-    db.session.commit()
 
 
 if __name__ == "__main__":
@@ -198,20 +22,11 @@ if __name__ == "__main__":
 
     if args.populate:
         print("[*] Populating database with test data...")
-        try:
-            populate()
-            print("[*] Completed successfully!")
-        except Exception as e:
-            print("[!] Encountered an unknown issue, exiting.")
-            print(e)
-            sys.exit(1)
+        mockdata(db.session)
+        print("[*] Completed successfully!")
 
     if args.cleanup:
         print("[*] Cleaning up database...")
-        try:
-            cleanup()
-            print("[*] Completed successfully!")
-        except Exception as e:
-            print("[!] Encountered an unknown issue, exiting.")
-            print(e)
-            sys.exit(1)
+        db.drop_all()
+        db.create_all()
+        print("[*] Completed successfully!")
