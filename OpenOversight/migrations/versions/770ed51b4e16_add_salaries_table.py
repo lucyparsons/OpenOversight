@@ -1,7 +1,7 @@
 """Add salaries table
 
 Revision ID: 770ed51b4e16
-Revises: 9e2827dae28c
+Revises: 2a9064a2507c
 Create Date: 2019-01-25 15:47:13.812837
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '770ed51b4e16'
-down_revision = '9e2827dae28c'
+down_revision = '2a9064a2507c'
 branch_labels = None
 depends_on = None
 
