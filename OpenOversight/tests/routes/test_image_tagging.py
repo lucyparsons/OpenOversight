@@ -178,7 +178,7 @@ def test_user_can_add_tag(mockdata, client, session, monkeypatch):
                 follow_redirects=True
             )
             views.get_uploaded_image.assert_called_once()
-            assert 'Tag added to database' in rv.data
+            assert b'Tag added to database' in rv.data
 
 
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):

@@ -18,7 +18,7 @@
   <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}" class="dropzone" id="my-cop-dropzone">
   </form>
     <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
-    <a class="btn btn-primary" href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+    <a id="submit-officer-images" class="btn btn-primary" href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
       Done uploading images
     </a>
 </div>

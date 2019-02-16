@@ -9,7 +9,7 @@ services:
      POSTGRES_PASSWORD: terriblepassword
      POSTGRES_DB: openoversight-dev
    volumes:
-     - ./container_data/postgres:/var/lib/postgresql/data:z
+     - ./container_data/postgres:/var/lib/postgresql/data
    ports:
      - "5432:5432"
 
@@ -27,7 +27,7 @@ services:
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      FLASK_APP: app
-     FLASK_ENV: development
+     FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    links:

@@ -12,15 +12,14 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (grab_officers, roster_lookup,
+from ..utils import (grab_officers,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
-                     create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note,
-                     create_description, filter_by_form, set_dynamic_default,
-                     get_uploaded_image, compute_hash, upload_file, roster_lookup)
+                     create_incident, get_or_create, replace_list, create_note, 
+                     set_dynamic_default, compute_hash, upload_file, roster_lookup,
+                     create_description, filter_by_form, get_uploaded_image)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -837,6 +836,10 @@ def download_incidents_csv(department_id):
 def all_data():
     departments = Department.query.all()
     return render_template('all_depts.html', departments=departments)
+
+
+@main.route('/submit_officer_images/officer/<int:officer_id>', methods=['GET', 'POST'])
+@login_required
 @ac_or_admin_required
 def submit_officer_images(officer_id):
     officer = Officer.query.get_or_404(officer_id)
