@@ -178,6 +178,53 @@
       </table>
       {% endif %}
     </div> {# end col #}
+
+    {% if officer.salaries or current_user.is_administrator or
+	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+  	<div class='col-sm-12 col-md-6'>
+    	<h3>Salary</h3>
+      {% if officer.salaries %}
+      <table class="table table-hover">
+          <tr>
+            <th><b>Annual Salary</b></th>
+            <th><b>Overtime</b></th>
+            <th><b>Total Pay</b></th>
+            <th><b>Year</b></th>
+            {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <th><b>Edit</b></th>
+            {% endif %}
+          </tr>
+        <tbody>
+          {% for salary in officer.salaries %}
+          <tr>
+            <td>{{ salary.salary }}</td>
+            <td>{{ salary.overtime_pay }}</td>
+            <td>{{ salary.total_pay }}</td>
+            <td>{% if salary.is_fiscal_year: %}FY {% endif %}{{ salary.year }}</td>
+
+            {% if current_user.is_administrator
+                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <td>
+              <a href="{{ url_for('main.edit_salary', officer_id=officer.id,
+                          salary_id=salary.id) }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    	{% if current_user.is_administrator
+        	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.add_salary', officer_id=officer.id) }}" class='btn btn-primary'>New Salary</a>
+    	{% endif %}
+  	</div>{# end col #}
+    {% endif %}
+
     {% if officer.incidents or current_user.is_administrator or
 	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
   	<div class='col-sm-12 col-md-6'>
