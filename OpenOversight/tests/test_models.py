@@ -3,7 +3,7 @@ import time
 import datetime
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User, db, Department, Location, Link,
-                                      LicensePlate, Incident)
+                                      LicensePlate, Incident, Salary)
 
 
 def test_department_repr(mockdata):
@@ -39,6 +39,11 @@ def test_unit_repr(mockdata):
 def test_user_repr(mockdata):
     user = User(username='bacon')
     assert user.__repr__() == "<User '{}'>".format(user.username)
+
+
+def test_salary_repr(mockdata):
+    salary = Salary.query.first()
+    assert salary.__repr__() == '<Salary: ID {} : {}'.format(salary.officer_id, salary.salary)
 
 
 def test_password_not_printed(mockdata):
