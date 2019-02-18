@@ -115,12 +115,11 @@ class Salary(db.Model):
     officer = db.relationship('Officer', backref='salaries')
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
-    total_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return 'Salary: ID {} : {}'.format(self.officer_id, self.salary)
+        return '<Salary: ID {} : {}'.format(self.officer_id, self.salary)
 
 
 class Assignment(db.Model):

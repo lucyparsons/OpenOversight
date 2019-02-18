@@ -203,7 +203,6 @@ def edit_assignment(officer_id, assignment_id):
 def add_salary(officer_id):
     form = SalaryForm()
     officer = Officer.query.filter_by(id=officer_id).first()
-    form.officer_id.data = officer.id
     if not officer:
         flash('Officer not found')
         abort(404)
@@ -216,15 +215,15 @@ def add_salary(officer_id):
                 officer_id=officer_id,
                 salary=form.salary.data,
                 overtime_pay=form.overtime_pay.data,
-                total_pay=form.total_pay.data,
                 year=form.year.data,
                 is_fiscal_year=form.is_fiscal_year.data
             )
             db.session.add(new_salary)
             db.session.commit()
             flash('Added new salary!')
-        except IntegrityError:
-            flash('Salary already exists')
+        except IntegrityError as e:
+            db.session.rollback()
+            flash('Error adding new salary: {}'.format(e))
         return redirect(url_for('main.officer_profile',
                                 officer_id=officer_id), code=302)
     elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
@@ -246,11 +245,7 @@ def edit_salary(officer_id, salary_id):
     salary = Salary.query.filter_by(id=salary_id).one()
     form = SalaryForm(obj=salary)
     if form.validate_on_submit():
-        salary.salary = form.salary.data
-        salary.overtime_pay = form.overtime_pay.data
-        salary.total_pay = form.total_pay.data
-        salary.year = form.year.data
-        salary.is_fiscal_year = form.is_fiscal_year.data
+        form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
         flash('Edited officer salary ID {}'.format(salary.id))
@@ -429,6 +424,12 @@ def add_officer():
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
             abort(403)
     if form.validate_on_submit():
+        # Work around for WTForms limitation with boolean fields in FieldList
+        new_formdata = request.form.copy()
+        for key in new_formdata.keys():
+            if re.fullmatch(r'salaries-\d+-is_fiscal_year', key):
+                new_formdata[key] = 'y'
+        form = AddOfficerForm(new_formdata)
         officer = add_officer_profile(form, current_user)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))

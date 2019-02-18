@@ -23,7 +23,7 @@ def allowed_values(choices, empty_allowed=True):
 
 
 def validate_money(form, field):
-    if not re.fullmatch(r'\d+(\.\d\d)?', str(field.data)):
+    if not re.fullmatch(r'\d+(\.\d\d)?0*', str(field.data)):
         raise ValidationError('Invalid monetary value')
 
 
@@ -98,21 +98,24 @@ class AssignmentForm(Form):
 
 
 class SalaryForm(Form):
-    officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
     salary = DecimalField('Salary', validators=[
         NumberRange(min=0, max=1000000), validate_money
     ])
     overtime_pay = DecimalField('Overtime Pay', validators=[
         NumberRange(min=0, max=1000000), validate_money
     ])
-    total_pay = DecimalField('Total Pay', validators=[
-        NumberRange(min=0, max=1000000), validate_money
-    ])
-    year = IntegerField('Year', default=2019, validators=[
+    year = IntegerField('Year', default=datetime.datetime.now().year, validators=[
         NumberRange(min=1900, max=2100)
     ])
     is_fiscal_year = BooleanField('Is fiscal year?', default=False)
-    submit = SubmitField(label='Submit')
+
+    def validate(form, extra_validators=()):
+        if not form.data.get('salary') and not form.data.get('overtime_pay'):
+            return True
+        return super(SalaryForm, form).validate()
+
+    # def process(self, *args, **kwargs):
+        # raise Exception(args[0])
 
 
 class DepartmentForm(Form):
@@ -214,6 +217,12 @@ class AddOfficerForm(Form):
         BaseTextForm,
         widget=FormFieldWidget()),
         description='This description of the officer will be attributed to your username.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    salaries = FieldList(FormField(
+        SalaryForm,
+        widget=FormFieldWidget()),
+        description='Officer salaries',
         min_entries=1,
         widget=BootstrapListWidget())
 

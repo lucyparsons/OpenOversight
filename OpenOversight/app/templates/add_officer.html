@@ -39,14 +39,14 @@
             {% for subform in form.notes %}
                 {% include "partials/subform.html" %}
             {% endfor %}
-            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+            <button class="btn btn-success js-add-another-button" disabled>Add another note</button>
         </div>
         <div>
             <legend>{{ form.descriptions.label }}</legend>
             {% for subform in form.descriptions %}
                 {% include "partials/subform.html" %}
             {% endfor %}
-            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+            <button class="btn btn-success js-add-another-button" disabled>Add another description</button>
         </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>
