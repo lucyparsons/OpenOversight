@@ -14,9 +14,9 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           EditOfficerForm, LinkForm,
                                           EditDepartmentForm, IncidentForm,
                                           LocationForm, LicensePlateForm,
-                                          BrowseForm)
+                                          BrowseForm, SalaryForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment
+from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary
 
 
 @pytest.mark.parametrize("route", [
@@ -128,8 +128,8 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
         assert 'Added new assignment' in rv.data.decode('utf-8')
 
         # test that assignment exists in database
-        assignment = Officer.query.filter(Officer.assignments.any(star_no='S1234'))
-        assert assignment is not None
+        officer = Officer.query.filter(Officer.assignments.any(star_no='S1234')).first()
+        assert officer is not None
 
 
 def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
@@ -1116,3 +1116,196 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
         assert 'Officer Changed edited' in rv.data.decode('utf-8')
         assert officer2.last_name == 'Changed'
         assert officer2.unique_internal_identifier is None
+
+
+def test_admin_can_add_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        print(rv.data.decode('utf-8'))
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_edit_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=1).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=1).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=1,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        print(rv.data.decode('utf-8'))
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=1).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        officer_id = officer.id
+
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        officer_id = officer.id
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        login_admin(client)
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        login_ac(client)
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert float(officer.salaries[0].salary) == 123456.78
