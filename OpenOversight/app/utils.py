@@ -21,7 +21,7 @@ from flask import current_app, url_for
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link, Note, Description)
+                     Incident, Location, LicensePlate, Link, Note, Description, Salary)
 
 
 def set_dynamic_default(form_field, value):
@@ -136,13 +136,24 @@ def add_officer_profile(form, current_user):
         for description in form.data['descriptions']:
             # don't try to create with a blank string
             if description['text_contents']:
-                new_description = description(
+                new_description = Description(
                     description=description['text_contents'],
                     user_id=current_user.id,
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
                 db.session.add(new_description)
+    if form.salaries.data:
+        for salary in form.data['salaries']:
+            # don't try to create with a blank string
+            if salary['salary']:
+                new_salary = Salary(
+                    officer=officer,
+                    salary=salary['salary'],
+                    overtime_pay=salary['overtime_pay'],
+                    year=salary['year'],
+                    is_fiscal_year=salary['is_fiscal_year'])
+                db.session.add(new_salary)
 
     db.session.commit()
     return officer
