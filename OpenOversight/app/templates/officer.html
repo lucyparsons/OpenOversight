@@ -70,6 +70,18 @@
                 <td><b>First Employment Date</b></td>
                 <td>{{ officer.employment_date }}</td>
               </tr>
+              {% if officer.last_employment_date %}
+                <tr>
+                  <td><b>Last Employment Date</b></td>
+                  <td>{{ officer.last_employment_date }}</td>
+                </tr>
+              {% endif %}
+              {% if officer.last_employment_details %}
+                <tr>
+                  <td><b>Last Employment Date Details</b></td>
+                  <td>{{ officer.last_employment_details }}</td>
+                </tr>
+              {% endif %}              
             </tbody>
           </table>
         </div>

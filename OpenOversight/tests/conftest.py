@@ -73,14 +73,17 @@ def pick_department():
 def pick_uid():
     return str(uuid.uuid4())
 
+
 def pick_last_employment_date():
     first_random_date = datetime(2018, 2, 23, 0, 0).strftime('%m/%d/%Y')
     second_random_date = datetime(2019, 1, 30, 0, 0).strftime('%m/%d/%Y')
     third_random_date = datetime(2016, 8, 15, 0, 0).strftime('%m/%d/%Y')
     random.choice(['n/a', first_random_date, second_random_date, third_random_date])
 
-def pick_last_employment_details():    
+
+def pick_last_employment_details():
     random.choice(['', 'quit, no other info available', 'released by department', 'unknown'])
+
 
 def generate_officer():
     year_born = pick_birth_date()
