@@ -13,8 +13,11 @@ def test_department_repr(mockdata):
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
-    assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
+    assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix, officer.last_employment_date, officer.last_employment_details)
 
+def test_officer_last_employment_date_default(mockdata):
+    officer = Officer.query.first()
+    assert officer.last_employment_date == "n/a"
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
