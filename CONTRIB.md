@@ -121,6 +121,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
+  bulk-add-officers            Bulk adds officers.
   db                           Perform database migrations.
   link-images-to-department    Link existing images to first department
   link-officers-to-department  Links officers and units to first department
