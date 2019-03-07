@@ -100,6 +100,13 @@ class Officer(db.Model):
         return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
+        if self.unique_internal_identifier:
+            return '<Officer ID {}: {} {} {} {} ({})>'.format(self.id,
+                                                              self.first_name,
+                                                              self.middle_initial,
+                                                              self.last_name,
+                                                              self.suffix,
+                                                              self.unique_internal_identifier)
         return '<Officer ID {}: {} {} {} {}>'.format(self.id,
                                                      self.first_name,
                                                      self.middle_initial,

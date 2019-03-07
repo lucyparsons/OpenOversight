@@ -1,7 +1,7 @@
 from mock import patch, Mock, MagicMock
 import os
 import OpenOversight
-from OpenOversight.app.models import Image, Officer, Assignment
+from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
 from OpenOversight.app.utils import get_officer
 import pytest
@@ -194,8 +194,7 @@ def test_get_uploaded_cropped_image_s3_error(mockdata):
 
 
 def test_csv_import_new(csvfile):
-    # Delete all current officers and assignments
-    Assignment.query.delete()
+    # Delete all current officers
     Officer.query.delete()
 
     assert Officer.query.count() == 0
@@ -215,13 +214,12 @@ def test_csv_import_update(csvfile):
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
 
     assert n_created == 0
-    assert n_updated > 0
+    assert n_updated == 0
     assert Officer.query.count() == n_existing
 
 
 def test_csv_import_idempotence(csvfile):
-    # Delete all current officers and assignments
-    Assignment.query.delete()
+    # Delete all current officers
     Officer.query.delete()
 
     assert Officer.query.count() == 0
@@ -229,12 +227,13 @@ def test_csv_import_idempotence(csvfile):
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
     assert n_created > 0
     assert n_updated == 0
-    assert Officer.query.count() == n_created
+    officer_count = Officer.query.count()
+    assert officer_count == n_created
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
     assert n_created == 0
-    assert n_updated > 0
-    assert Officer.query.count() == n_updated
+    assert n_updated == 0
+    assert Officer.query.count() == officer_count
 
 
 def test_csv_missing_required_field(csvfile):
@@ -313,8 +312,7 @@ def test_csv_new_assignment(csvfile):
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
     assert n_created == 0
-    assert n_updated > 0
-    assert Officer.query.count() == n_updated
+    assert n_updated == 1
 
     officer = Officer.query.filter_by(id=officer_id).one()
     assert len(list(officer.assignments)) == 2
@@ -332,7 +330,7 @@ def test_csv_new_name(csvfile):
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
     assert n_created == 0
-    assert n_updated > 0
+    assert n_updated == 1
 
     officer = Officer.query.filter_by(unique_internal_identifier=officer_uid).one()
 
@@ -364,16 +362,58 @@ def test_csv_new_officer(csvfile):
         'rank': 'CAPTAIN',
         'unit': None,
         'star_date': None,
-        'resign_date': None
+        'resign_date': None,
+        'salary': 1.23,
+        'salary_year': 2019,
+        'salary_is_fiscal_year': True,
+        'overtime_pay': 4.56
     }
     df = df.append([new_officer])
     df.to_csv(csvfile)
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
     assert n_created == 1
-    assert n_updated == n_rows
+    assert n_updated == 0
 
     officer = Officer.query.filter_by(unique_internal_identifier=new_uid).one()
 
     assert officer.first_name == 'FOO'
     assert Officer.query.count() == n_officers + 1
+
+
+def test_csv_new_salary(csvfile):
+    # Delete all current officers and salaries
+    Salary.query.delete()
+    Officer.query.delete()
+
+    assert Officer.query.count() == 0
+
+    df = pd.read_csv(csvfile)
+    df.loc[0, 'salary'] = '123456.78'
+    df.to_csv(csvfile)
+
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created > 0
+    assert n_updated == 0
+    officer_count = Officer.query.count()
+    assert officer_count == n_created
+
+    officer = get_officer(1, df.loc[0, 'star_no'], df.loc[0, 'first_name'], df.loc[0, 'last_name'])
+    assert officer
+    officer_id = officer.id
+    assert len(list(officer.salaries)) == 1
+
+    # Update salary
+    df.loc[0, 'salary'] = '150000'
+    df.to_csv(csvfile)
+
+    assert Officer.query.count() > 0
+    n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
+    assert n_created == 0
+    assert n_updated == 1
+    assert Officer.query.count() == officer_count
+
+    officer = Officer.query.filter_by(id=officer_id).one()
+    assert len(list(officer.salaries)) == 2
+    for salary in officer.salaries:
+        assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
