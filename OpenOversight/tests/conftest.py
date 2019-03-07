@@ -392,7 +392,11 @@ def csvfile(mockdata, tmp_path, request):
         'rank',
         'unit',
         'star_date',
-        'resign_date'
+        'resign_date',
+        'salary',
+        'salary_year',
+        'salary_is_fiscal_year',
+        'overtime_pay'
     ]
 
     officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
@@ -407,11 +411,18 @@ def csvfile(mockdata, tmp_path, request):
         for officer in officers_dept1:
             if not officer.unique_internal_identifier:
                 officer.unique_internal_identifier = str(uuid.uuid4())
+            towrite = merge_dicts(vars(officer), {'department_id': 1})
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = merge_dicts(vars(officer), vars(assignment), {'department_id': 1})
-            else:
-                towrite = merge_dicts(vars(officer), {'department_id': 1})
+                towrite = merge_dicts(towrite, vars(assignment))
+            if len(list(officer.salaries)) > 0:
+                salary = officer.salaries[0]
+                towrite = merge_dicts(towrite, {
+                    'salary': salary.salary,
+                    'salary_year': salary.year,
+                    'salary_is_fiscal_year': salary.is_fiscal_year,
+                    'overtime_pay': salary.overtime_pay
+                })
             writer.writerow(towrite)
     except:  # noqa E722
         raise
