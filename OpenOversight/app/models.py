@@ -88,6 +88,7 @@ class Officer(db.Model):
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
+    salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
 
     def full_name(self):
         if self.middle_initial:
@@ -119,7 +120,7 @@ class Salary(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
-    officer = db.relationship('Officer', backref='salaries')
+    officer = db.relationship('Officer', back_populates='salaries')
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
