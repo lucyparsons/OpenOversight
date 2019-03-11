@@ -60,7 +60,7 @@ def add_salary(officer, matches, year):
 def import_salaries(directory):
     salary_sets = {}
     for csvfile in glob.glob(directory + '/*.csv'):
-        year = int(re.search(r'20\d\d', csvfile)[0])
+        year = int(re.search(r'20\d\d', csvfile).group(0))
         # read in CSV, parse out parts of name
         df = pd.read_csv(csvfile)
         # # Only want A99 department IDs
