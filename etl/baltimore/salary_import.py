@@ -1,10 +1,3 @@
-# match first name and hire date
-# if multiple matches, match (first letter of) middle initial
-# if multiple matches, match last name
-    # if no matches, print all matched so far and throw warning/error
-    # if multiple matches, match suffix (from list of possible suffixes)
-        # if no matches, print all matched so far and throw warning/error
-
 import pandas as pd
 import os
 import sys
@@ -64,11 +57,11 @@ def import_salaries(directory):
         # read in CSV, parse out parts of name
         df = pd.read_csv(csvfile)
         # # Only want A99 department IDs
-        df = df[df.iloc[:,AGENCY_ID_COL].str.startswith('A99')]
+        df = df[df.iloc[:, AGENCY_ID_COL].str.startswith('A99')]
         # Skip officers with redacted names
-        df = df[~df.iloc[:,NAME_COL].str.startswith('BPD ')]
+        df = df[~df.iloc[:, NAME_COL].str.startswith('BPD ')]
         # Split name into multiple columns
-        df = df.join(df.iloc[:,0].str.extract(name_re))
+        df = df.join(df.iloc[:, 0].str.extract(name_re))
         # Normalize suffixes
         df = df.replace('jr', 'Jr').replace('sr', 'Sr')\
             .replace('2nd', 'II').replace('3rd', 'III')\
@@ -86,7 +79,7 @@ def import_salaries(directory):
             # Match on first name, last name, hire date
             matches = df[df['first_name'].str.match(officer.first_name)]\
                 [lambda df: df['last_name'].str.match(officer.last_name)]\
-                [lambda df: df.iloc[:,HIRE_DATE_COL].str.startswith(hire_date)]
+                [lambda df: df.iloc[:, HIRE_DATE_COL].str.startswith(hire_date)]
             if matches.empty:
                 continue
             elif len(matches) == 1:
