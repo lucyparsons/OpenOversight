@@ -179,3 +179,17 @@ Password:
 Type your password again:
 Administrator redshiftzero successfully added
 ```
+
+## Debugging OpenOversight - Use pdb with the app itself
+Debugging OpenOversight requires a few minor changes to `docker-compose.yml`.  Add the below two lines to the `web` service in the `docker-compose.yml`, below the line that specifies the port.
+```yml
+   stdin_open: true
+   tty: true    
+```
+To set a breakpoint in OpenOversight, add `import pbd` to the file you want to debug, then write `pdb.set_trace()` where you want to drop a breakpoint.
+Next, in your terminal run `docker ps` to find the container id of the `openoversight_web` image, then run `docker attach ${container_id}` to connect to the debugger in your terminal.  You can now use pdb prompts to step through the app.
+
+## Debugging OpenOversight - Use pdb with a test
+If you want to run an individual test in debug mode, use the below command.
+`docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>`
+Again, add `import pdb` to the file you want to debug, then write `pdb.set_trace()` wherever you want to drop a breakpoint.  Once the test is up and running in your terminal, you can debug it using pdb prompts.
