@@ -444,7 +444,6 @@ def get_uploaded_cropped_image(original_image, crop_data):
     safe_local_path0 = os.path.join(tmpdir, original_filename)
     # get the original image and save it locally
     urlretrieve(original_image.filepath, safe_local_path0)
-    # import pdb; pdb.set_trace()
     pimage = Pimage.open(safe_local_path0)
     SIZE = 300, 300
     cropped_image = pimage.crop(crop_data)

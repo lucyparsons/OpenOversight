@@ -384,7 +384,6 @@ def test_admins_can_see_descriptions(mockdata, client, session):
         )
         assert description in officer.descriptions
         assert rv.status_code == 200
-        # import pdb; pdb.set_trace()
         assert text_contents in rv.data.decode('utf-8')
 
 
