@@ -15,7 +15,7 @@ def test_department_filter(mockdata):
     results = OpenOversight.app.utils.grab_officers(
         {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
-         'dept': department}
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assert element.department == department
@@ -24,7 +24,9 @@ def test_department_filter(mockdata):
 def test_race_filter_select_all_black_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'race': ['BLACK'], 'dept': department}
+        {'race': 'BLACK', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assert element.race in ('BLACK', 'Not Sure')
@@ -33,7 +35,9 @@ def test_race_filter_select_all_black_officers(mockdata):
 def test_gender_filter_select_all_male_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'gender': ['M'], 'dept': department}
+        {'race': 'Not Sure', 'gender': 'M', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assert element.gender in ('M', 'Not Sure')
@@ -42,7 +46,9 @@ def test_gender_filter_select_all_male_officers(mockdata):
 def test_rank_filter_select_all_commanders(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'rank': ['Commander'], 'dept': department}
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'COMMANDER',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assignment = element.assignments.first()
@@ -52,7 +58,9 @@ def test_rank_filter_select_all_commanders(mockdata):
 def test_rank_filter_select_all_police_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'rank': ['Police Officer'], 'dept': department}
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'PO',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assignment = element.assignments.first()
@@ -62,7 +70,9 @@ def test_rank_filter_select_all_police_officers(mockdata):
 def test_filter_by_name(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'name': 'J', 'dept': department}
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': 'J', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assert 'J' in element.last_name
@@ -72,7 +82,9 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officer = OpenOversight.app.models.Officer(first_name='Rachel', last_name='S', department=department, birth_year=1992)
     results = OpenOversight.app.utils.grab_officers(
-        {'name': 'S', 'dept': department}
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': 'S', 'badge': '',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     assert officer in results.all()
 
@@ -80,11 +92,40 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
 def test_filter_by_badge_no(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'badge': '12', 'dept': department}
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '12',
+         'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
         assignment = element.assignments.first()
         assert '12' in str(assignment.star_no)
+
+
+def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    target_unique_internal_id = OpenOversight.app.models.Officer.query.first().unique_internal_identifier
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': target_unique_internal_id}
+    )
+    for element in results:
+        returned_unique_internal_id = element.unique_internal_identifier
+        assert returned_unique_internal_id == target_unique_internal_id
+
+
+def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    identifier = OpenOversight.app.models.Officer.query.first().unique_internal_identifier
+    partial_identifier = identifier[:len(identifier) // 2]
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'unique_internal_identifier': partial_identifier}
+    )
+    for element in results:
+        returned_identifier = element.unique_internal_identifier
+        assert returned_identifier == identifier
 
 
 def test_compute_hash(mockdata):
