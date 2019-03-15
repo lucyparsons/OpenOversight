@@ -199,8 +199,13 @@
           {% for salary in officer.salaries %}
           <tr>
             <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+            {% if salary.overtime_pay %}
             <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
             <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
+            {% else %}
+            <td></td>
+            <td></td>
+            {% endif %}
             <td>{% if salary.is_fiscal_year: %}FY {% endif %}{{ salary.year }}</td>
 
             {% if current_user.is_administrator
