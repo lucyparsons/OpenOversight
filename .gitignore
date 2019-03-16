@@ -88,3 +88,6 @@ vagrant/puppet/.tmp
 .idea/
 
 fabfile.py
+
+# Docker container volumes
+container_data
