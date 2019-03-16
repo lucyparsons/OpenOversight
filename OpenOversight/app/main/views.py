@@ -134,7 +134,7 @@ def officer_profile(officer_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error finding officer: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
 
     try:
@@ -147,7 +147,7 @@ def officer_profile(officer_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
 
     return render_template('officer.html', officer=officer, paths=face_paths,
@@ -255,7 +255,7 @@ def classify_submission(image_id, contains_cops):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error classifying image: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
@@ -442,7 +442,7 @@ def delete_tag(tag_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error classifying image: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
     return redirect(url_for('main.index'))
 
@@ -708,7 +708,7 @@ def upload(department_id):
     # Save temporarily on local filesystem
     tmpdir = tempfile.mkdtemp()
     safe_local_path = os.path.join(tmpdir, new_filename)
-    with open(safe_local_path, 'w') as tmp:
+    with open(safe_local_path, 'wb') as tmp:
         tmp.write(image_data)
     os.umask(SAVED_UMASK)
 
@@ -717,11 +717,19 @@ def upload(department_id):
         url = upload_file(safe_local_path, original_filename,
                           new_filename)
         # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                          date_image_inserted=datetime.datetime.now(),
-                          department_id=department_id,
-                          # TODO: Get the following field from exif data
-                          date_image_taken=datetime.datetime.now())
+        try:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now(),
+                              user_id=current_user.id)
+        except AttributeError:
+            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
+                              date_image_inserted=datetime.datetime.now(),
+                              department_id=department_id,
+                              # TODO: Get the following field from exif data
+                              date_image_taken=datetime.datetime.now())
         db.session.add(new_image)
         db.session.commit()
         return jsonify(success="Success!"), 200
@@ -729,7 +737,7 @@ def upload(department_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
         return jsonify(error="Server error encountered. Try again later."), 500
     os.remove(safe_local_path)

@@ -1,0 +1,12 @@
+<p>Dear {{ admin.username }},</p>
+<p>A new user account with the following information has been confirmed:</p>
+<ul>
+  <li>Username: {{ user.username }}</li>
+  <li>Email: {{ user.email }}</li>
+</ul>
+<p>To view or delete this user, please <a href="{{ url_for('auth.user_api', _external=True) }}">click here</a>.</p>
+<p>Alternatively, you can paste the following link in your browser's address bar:</p>
+<p>{{ url_for('auth.user_api', _external=True) }}</p>
+<p>Sincerely,</p>
+<p>The OpenOversight Team</p>
+<p><small>Note: replies to this email address are not monitored.</small></p>
