@@ -254,7 +254,21 @@ def add_mockdata(session):
     test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
         [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
 
+    test_officer_links = [
+        models.Link(
+            url='https://openoversight.com/',
+            link_type='link',
+            title='OpenOversight',
+            description='A public, searchable database of law enforcement officers.'),
+        models.Link(
+            url='http://www.youtube.com/?v=help',
+            link_type='video',
+            title='Youtube',
+            author='the internet'),
+    ]
+
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
+    officers[0].links = test_officer_links
     session.add_all(officers)
     session.add_all(test_images)
 
@@ -347,12 +361,12 @@ def add_mockdata(session):
     session.add_all(test_license_plates)
     session.commit()
 
-    test_links = [
+    test_incident_links = [
         models.Link(url='https://stackoverflow.com/', link_type='link', user=test_admin, user_id=test_admin.id),
         models.Link(url='http://www.youtube.com/?v=help', link_type='video', user=test_admin, user_id=test_admin.id)
     ]
 
-    session.add_all(test_links)
+    session.add_all(test_incident_links)
     session.commit()
 
     test_incidents = [
@@ -364,7 +378,7 @@ def add_mockdata(session):
             department_id=1,
             address=test_addresses[0],
             license_plates=test_license_plates,
-            links=test_links,
+            links=test_incident_links,
             officers=[all_officers[o] for o in range(4)],
             creator_id=1,
             last_updated_id=1
@@ -377,7 +391,7 @@ def add_mockdata(session):
             department_id=2,
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
-            links=test_links,
+            links=test_incident_links,
             officers=[all_officers[o] for o in range(3)],
             creator_id=2,
             last_updated_id=1

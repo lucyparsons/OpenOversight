@@ -187,15 +187,7 @@ def add_officer_profile(form, current_user):
 
 def edit_officer_profile(officer, form):
     for field, data in iteritems(form.data):
-        if field == 'links':
-            for link in data:
-                # don't try to create with a blank string
-                if link['url']:
-                    li, _ = get_or_create(db.session, Link, **link)
-                    if li:
-                        officer.links.append(li)
-        else:
-            setattr(officer, field, data)
+        setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
@@ -461,7 +453,6 @@ def create_description(self, form):
         date_created=datetime.datetime.now(),
         date_updated=datetime.datetime.now())
 
-
 def crop_image(image, crop_data=None, department_id=None):
     if 'http' in image.filepath:
         with urlopen(image.filepath) as response:
@@ -472,6 +463,21 @@ def crop_image(image, crop_data=None, department_id=None):
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
     pimage = Pimage.open(image_buf)
+
+def create_link(self, form):
+    link = Link(
+        title=form.title.data,
+        url=form.url.data,
+        link_type=form.link_type.data,
+        description=form.description.data,
+        author=form.author.data,
+        creator_id=form.creator_id.data)
+    if hasattr(form, 'officer_id'):
+        link.officer_id = form.officer_id.data
+    return link
+
+def get_uploaded_cropped_image(original_image, crop_data):
+    """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
 
     SIZE = 300, 300
     if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
