@@ -161,15 +161,7 @@ def add_officer_profile(form, current_user):
 
 def edit_officer_profile(officer, form):
     for field, data in iteritems(form.data):
-        if field == 'links':
-            for link in data:
-                # don't try to create with a blank string
-                if link['url']:
-                    li, _ = get_or_create(db.session, Link, **link)
-                    if li:
-                        officer.links.append(li)
-        else:
-            setattr(officer, field, data)
+        setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
@@ -423,6 +415,19 @@ def create_description(self, form):
         officer_id=form.officer_id.data,
         date_created=datetime.datetime.now(),
         date_updated=datetime.datetime.now())
+
+
+def create_link(self, form):
+    link = Link(
+        title=form.title.data,
+        url=form.url.data,
+        link_type=form.link_type.data,
+        description=form.description.data,
+        author=form.author.data,
+        creator_id=form.creator_id.data)
+    if hasattr(form, 'officer_id'):
+        link.officer_id = form.officer_id.data
+    return link
 
 
 def get_uploaded_cropped_image(original_image, crop_data):
