@@ -398,6 +398,9 @@ class IncidentForm(DateFieldForm):
 class BrowseForm(Form):
     rank = QuerySelectField('rank', validators=[Optional()], get_label='job_title',
                             get_pk=lambda job: job.job_title)  # query set in view function
+    name = StringField('Last name')
+    badge = StringField('Badge number')
+    unique_internal_identifier = StringField('Unique ID')
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,

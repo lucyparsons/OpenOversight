@@ -22,6 +22,7 @@ from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
+from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 
 def set_dynamic_default(form_field, value):
@@ -231,7 +232,7 @@ def upload_file(safe_local_path, src_filename, dest_filename):
     return url
 
 
-def filter_by_form(form, officer_query, is_browse_filter=False):
+def filter_by_form(form, officer_query, department_id=None):
     # Some SQL acrobatics to left join only the most recent assignment per officer
     row_num_col = func.row_number().over(
         partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
@@ -244,64 +245,66 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
     ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
     officer_query = officer_query.outerjoin(subq)
 
-    if (not is_browse_filter):
-        if form['name']:
-            officer_query = officer_query.filter(
-                Officer.last_name.ilike('%%{}%%'.format(form['name']))
-            )
-        if form['dept']:
-            officer_query = officer_query.filter(
-                Officer.department_id == form['dept'].id
-            )
-        if form['badge']:
-            officer_query = officer_query.filter(
-                cast(Assignment.star_no, db.String)
-                .like('%%{}%%'.format(form['badge']))
-            )
+    if form.get('name'):
+        officer_query = officer_query.filter(
+            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+        )
+    if not department_id and form.get('dept'):
+        department_id = form['dept'].id
+        officer_query = officer_query.filter(
+            Officer.department_id == department_id
+        )
+    if form.get('badge'):
+        officer_query = officer_query.filter(
+            cast(Assignment.star_no, db.String)
+            .like('%%{}%%'.format(form['badge']))
+        )
+    if form.get('unique_internal_identifier'):
+        officer_query = officer_query.filter(
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
+        )
+    race_values = [x for x,_ in RACE_CHOICES]
+    if form.get('race') and all(race in race_values for race in form['race']):
+        if 'Not Sure' in form['race']:
+            form['race'].append(None)
+        officer_query = officer_query.filter(Officer.race.in_(form['race']))
+    gender_values = [x for x,_ in GENDER_CHOICES]
+    if form.get('gender') and all(gender in gender_values for gender in form['gender']):
+        if 'Not Sure' in form['gender']:
+            form['gender'].append(None)
+        officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
 
-    if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
-                        'PACIFIC ISLANDER', 'Other'):
-        officer_query = officer_query.filter(db.or_(
-            Officer.race.like('%%{}%%'.format(form['race'])),
-            Officer.race == 'Not Sure',  # noqa
-            Officer.race == None  # noqa
-        ))
-    if form['gender'] in ('M', 'F', 'Other'):
-        officer_query = officer_query.filter(db.or_(Officer.gender == form['gender'],
-                                                    Officer.gender == 'Not Sure',
-                                                    Officer.gender == None))  # noqa
-
-    current_year = datetime.datetime.now().year
-    min_birth_year = current_year - int(form['min_age'])
-    max_birth_year = current_year - int(form['max_age'])
-    officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
-                                                        Officer.birth_year >= max_birth_year),
-                                                Officer.birth_year == None))  # noqa
+    if form.get('min_age') and form.get('max_age'):
+        current_year = datetime.datetime.now().year
+        min_birth_year = current_year - int(form['min_age'])
+        max_birth_year = current_year - int(form['max_age'])
+        officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
+                                                            Officer.birth_year >= max_birth_year),
+                                                    Officer.birth_year == None))  # noqa
 
     officer_query = officer_query.outerjoin(Assignment).outerjoin(Job, Assignment.job)
+    rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]
+    if form.get('rank') and all(rank in rank_values for rank in form['rank']):
+        if 'Not Sure' in form['rank']:
+            form['rank'].append(None)
+        officer_query = officer_query.filter(Job.job_title.in_(form['rank']))
 
-    if form['rank'] and str(form['rank']) != 'Not Sure':
-        officer_query = officer_query.filter(Job.job_title.in_([form['rank'], 'Not Sure']))
-
-    # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
-    if (not is_browse_filter):
-        officer_query = officer_query.outerjoin(Face).order_by(Face.officer_id.asc()).order_by(Officer.id.desc())
     return officer_query
 
 
 def filter_roster(form, officer_query):
-    if form['name']:
+    if 'name' in form and form['name']:
         officer_query = officer_query.filter(
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
         )
 
     officer_query = officer_query.outerjoin(Assignment)
-    if form['badge']:
+    if 'badge' in form and form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
             .like('%%{}%%'.format(form['badge']))
         )
-    if form['dept']:
+    if 'dept' in form and form['dept']:
         officer_query = officer_query.filter(
             Officer.department_id == form['dept'].id
         )

@@ -80,7 +80,7 @@ def test_officer_browse_pagination(mockdata, browser):
     perpage = BaseConfig.OFFICERS_PER_PAGE
 
     # first page of results
-    browser.get("http://localhost:5000/department/{}?from_search=False&page=1"
+    browser.get("http://localhost:5000/department/{}?page=1"
                 .format(dept_id))
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
@@ -89,7 +89,7 @@ def test_officer_browse_pagination(mockdata, browser):
 
     # last page of results
     last_page_index = (total // perpage) + 1
-    browser.get("http://localhost:5000/department/{}?from_search=False&page={}"
+    browser.get("http://localhost:5000/department/{}?page={}"
                 .format(dept_id, last_page_index))
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text

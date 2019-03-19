@@ -432,7 +432,7 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, from_search=False, race='Not Sure', gender='Not Sure', rank='Not Sure', min_age='16', max_age='100'):
+def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -441,6 +441,9 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
     form_data['rank'] = rank
     form_data['min_age'] = min_age
     form_data['max_age'] = max_age
+    form_data['name'] = name
+    form_data['badge'] = badge
+    form_data['unique_internal_identifier'] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
@@ -448,38 +451,42 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
         abort(404)
 
     # Set form data based on URL
-    if request.args.get('race') and request.args.get('race') in [rc[0] for rc in RACE_CHOICES]:
-        form_data['race'] = request.args.get('race')
-    if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
-        form_data['gender'] = request.args.get('gender')
-    if request.args.get('rank'):
-        form_data['rank'] = request.args.get('rank')
     if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
         form_data['min_age'] = request.args.get('min_age')
     if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
         form_data['max_age'] = request.args.get('max_age')
     if request.args.get('page'):
         page = int(request.args.get('page'))
+    if request.args.get('name'):
+        form_data['name'] = request.args.get('name')
+    if request.args.get('badge'):
+        form_data['badge'] = request.args.get('badge')
+    if request.args.get('unique_internal_identifier'):
+        form_data['unique_internal_identifier'] = request.args.get('unique_internal_identifier')
+    if request.args.get('race') and all(race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist('race')):
+        form_data['race'] = request.args.getlist('race')
+    if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
+        form_data['gender'] = request.args.getlist('gender')
 
-    officers = filter_by_form(form_data, Officer.query, True).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
+    if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
+        form_data['rank'] = request.args.getlist('rank')
 
-    if request.args.get('from_search'):
-        if request.args.get('from_search') == 'True':
-            from_search = True
-        else:
-            from_search = False
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+
+    choices = {
+        'race': RACE_CHOICES,
+        'gender': GENDER_CHOICES,
+        'rank': [(rc,rc) for rc in rank_choices]
+    }
 
     return render_template(
         'list_officer.html',
         form=form,
         department=department,
         officers=officers,
-        from_search=from_search,
-        race=form_data['race'],
-        gender=form_data['gender'],
-        rank=form_data['rank'],
-        min_age=form_data['min_age'],
-        max_age=form_data['max_age'])
+        form_data=form_data,
+        choices=choices)
 
 
 @main.route('/department/<int:department_id>/ranks')
@@ -725,8 +732,7 @@ def get_gallery(page=1):
         if not officers.items:
             return redirect(url_for(
                 'main.list_officer',
-                department_id=form_data['dept'].id,
-                from_search=True)
+                department_id=form_data['dept'].id)
             )
 
         return render_template('gallery.html',
