@@ -22,6 +22,7 @@ from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description)
+from .main.choices import RACE_CHOICES, GENDER_CHOICES, RANK_CHOICES
 
 
 def set_dynamic_default(form_field, value):
@@ -214,32 +215,33 @@ def upload_file(safe_local_path, src_filename, dest_filename):
 
 
 def filter_by_form(form, officer_query, is_browse_filter=False):
-    if (not is_browse_filter):
-        if form['name']:
-            officer_query = officer_query.filter(
-                Officer.last_name.ilike('%%{}%%'.format(form['name']))
-            )
-        if form['dept']:
-            officer_query = officer_query.filter(
-                Officer.department_id == form['dept'].id
-            )
-        if form['badge']:
-            officer_query = officer_query.filter(
-                cast(Assignment.star_no, db.String)
-                .like('%%{}%%'.format(form['badge']))
-            )
-
-    if form['race'] in ('BLACK', 'WHITE', 'ASIAN', 'HISPANIC',
-                        'PACIFIC ISLANDER', 'Other'):
-        officer_query = officer_query.filter(db.or_(
-            Officer.race.like('%%{}%%'.format(form['race'])),
-            Officer.race == 'Not Sure',  # noqa
-            Officer.race == None  # noqa
-        ))
-    if form['gender'] in ('M', 'F', 'Other'):
-        officer_query = officer_query.filter(db.or_(Officer.gender == form['gender'],
-                                                    Officer.gender == 'Not Sure',
-                                                    Officer.gender == None))  # noqa
+    if 'name' in form and form['name']:
+        officer_query = officer_query.filter(
+            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+        )
+    if 'dept' in form and form['dept']:
+        officer_query = officer_query.filter(
+            Officer.department_id == form['dept'].id
+        )
+    if 'badge' in form and form['badge']:
+        officer_query = officer_query.filter(
+            cast(Assignment.star_no, db.String)
+            .like('%%{}%%'.format(form['badge']))
+        )
+    if 'unique_internal_identifier' in form and form['unique_internal_identifier']:
+        officer_query = officer_query.filter(
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
+        )
+    race_values = [x for x,_ in RACE_CHOICES]
+    if form['race'] and all(race in race_values for race in form['race']):
+        if 'Not Sure' in form['race']:
+            form['race'].append(None)
+        officer_query = officer_query.filter(Officer.race.in_(form['race']))
+    gender_values = [x for x,_ in GENDER_CHOICES]
+    if form['gender'] and all(gender in gender_values for gender in form['gender']):
+        if 'Not Sure' in form['gender']:
+            form['gender'].append(None)
+        officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
 
     current_year = datetime.datetime.now().year
     min_birth_year = current_year - int(form['min_age'])
@@ -249,19 +251,11 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                 Officer.birth_year == None))  # noqa
 
     officer_query = officer_query.outerjoin(Assignment)
-    if form['rank'] == 'PO':
-        officer_query = officer_query.filter(
-            db.or_(Assignment.rank.like('%%PO%%'),
-                   Assignment.rank.like('%%POLICE OFFICER%%'),
-                   Assignment.rank == 'Not Sure')  # noqa
-        )
-    if form['rank'] in ('FIELD', 'SERGEANT', 'LIEUTENANT', 'CAPTAIN',
-                        'COMMANDER', 'DEP CHIEF', 'CHIEF', 'DEPUTY SUPT',
-                        'SUPT OF POLICE'):
-        officer_query = officer_query.filter(
-            db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == 'Not Sure')  # noqa
-        )
+    rank_values = [x for x,_ in RANK_CHOICES]
+    if form['rank'] and all(rank in rank_values for rank in form['rank']):
+        if 'Not Sure' in form['rank']:
+            form['rank'].append(None)
+        officer_query = officer_query.filter(Assignment.rank.in_(form['rank']))
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
     if (not is_browse_filter):
@@ -270,18 +264,18 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
 
 
 def filter_roster(form, officer_query):
-    if form['name']:
+    if 'name' in form and form['name']:
         officer_query = officer_query.filter(
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
         )
 
     officer_query = officer_query.outerjoin(Assignment)
-    if form['badge']:
+    if 'badge' in form and form['badge']:
         officer_query = officer_query.filter(
             cast(Assignment.star_no, db.String)
             .like('%%{}%%'.format(form['badge']))
         )
-    if form['dept']:
+    if 'dept' in form and form['dept']:
         officer_query = officer_query.filter(
             Officer.department_id == form['dept'].id
         )

@@ -362,6 +362,9 @@ class IncidentForm(DateFieldForm):
 
 
 class BrowseForm(Form):
+    name = StringField('Last name')
+    badge = StringField('Badge number')
+    unique_internal_identifier = StringField('Unique ID')
     rank = SelectField('rank', default='Not Sure', choices=RANK_CHOICES,
                        validators=[AnyOf(allowed_values(RANK_CHOICES))])
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,

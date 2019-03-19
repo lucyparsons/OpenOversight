@@ -3,100 +3,188 @@
 
 {% block content %}
 <div class="container" role="main">
-  {% if from_search %}
-    <h1>No Results Found</h1>
-    <h4>Sorry, no officers found for your search! <a href="/find">Try again</a></h4>
-    <h2>Other Officers from {{ department.name|title }}</h2>
-  {% else %}
-    <h1>
-      {{ department.name|title }} Officers
-    </h1>
-  {% endif %}
-    <h4>Filter officers</h4>
-    <div>
+  <h1>{{ department.name|title }} Officers</h1>
+  <div class="row">
+    <div class="filter-sidebar col-sm-3">
+      <h3 class="sidebar-title">Filter officers</h3>
       <form class="form" method="get" role="form">
-         <div class="browse-form-input" data-value="{{ race }}">
-          {{ wtf.form_field(form.race) }}
-        </div>
-        <div class="browse-form-input" data-value="{{ gender }}">
-          {{ wtf.form_field(form.gender) }}
-        </div>
-        <div class="browse-form-input" data-value="{{ rank }}">
-          {{ wtf.form_field(form.rank) }}
-        </div>
-        <div class="browse-form-input" data-value="{{ min_age }}">
-          {{ wtf.form_field(form.min_age) }}
-          {{ wtf.form_field(form.min_age).label }}
-        </div>
-        <div class="browse-form-input" data-value="{{ max_age }}">
-          {{ wtf.form_field(form.max_age) }}
-        </div>
-        <br>
-        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
-    </div>
-  {% with paginate=officers,
-          next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
-          prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
-          location='top' %}
-    {% include "partials/paginate_nav.html" %}
-  {% endwith %}
-  <ul class="list-group">
-    {% for officer in officers.items %}
-      {% if officer.face.first() is none %}
-          {% set officer_image = '/static/images/placeholder.png' %}
-        {% else %}
-          {% set officer_image = officer.face.first().image.filepath %}
-        {% endif %}
-      {% set assignment = officer.assignments.first() %}
-      <li class="list-group-item">
-          <div class="row">
-            <div class="col-md-6 col-xs-12">
-              <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+        <div class="panel">
+          <div class="panel-heading{% if not form_data['name'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-name">
+            <h3 class="panel-title accordion-toggle">Last name</h3>
+          </div>
+          <div class="collapse{% if form_data['name'] %} in{% endif %}" id="filter-name">
+            <div class="panel-body">
+              <div class="form-group">
+                <input type="text" class="form-control" id="name" name="name" value="{{ form_data['name'] or '' }}" />
+              </div>
             </div>
-            <div class="col-md-6 col-xs-12">
-              <h2>
-                <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{% include "partials/officer_name.html" %}</a>
-                <small>#{{ assignment.star_no }}</small>
-              </h2>
-              <div class="row">
-                <div class="col-md-6 col-xs-6">
-                  <dl>
-                    <dt>Rank</dt>
-                    <dd>{{ assignment.rank|default('Unknown') }}</dd>
-                    <dt>Race</dt>
-                    <dd>{{ officer.race|default('Unknown')|lower|title }}</dd>
-                  </dl>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-badge">
+            <h3 class="panel-title accordion-toggle">Badge</h3>
+          </div>
+          <div class="collapse{% if form_data['badge'] %} in{% endif %}" id="filter-badge">
+            <div class="panel-body">
+              <div class="form-group">
+                <input type="text" class="form-control" id="badge" name="badge" value="{{ form_data['badge'] or '' }}" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading{% if not form_data['unique_internal_identifier'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-unique_internal_identifier">
+            <h3 class="panel-title accordion-toggle">Unique ID</h3>
+          </div>
+          <div class="collapse{% if form_data['unique_internal_identifier'] %} in{% endif %}" id="filter-unique_internal_identifier">
+            <div class="panel-body">
+              <div class="form-group">
+                <input type="text" class="form-control" id="unique_internal_identifier" name="unique_internal_identifier" value="{{ form_data['unique_internal_identifier'] or '' }}" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-race">
+            <h3 class="panel-title accordion-toggle">Race</h3>
+          </div>
+          <div class="collapse in" id="filter-race">
+            <div class="panel-body">
+              <div class="form-group checkbox">
+                {% for choice in choices['race'] %}
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" id="race-{{ choice[0] }}" name="race" value="{{ choice[0] }}" {% if choice[0] in form_data['race'] %}checked="checked" {% endif %}/>{{ choice[1] }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-gender">
+            <h3 class="panel-title accordion-toggle">Gender</h3>
+          </div>
+          <div class="collapse in" id="filter-gender">
+            <div class="panel-body">
+              <div class="form-group checkbox">
+                {% for choice in choices['gender'] %}
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" id="gender-{{ choice[0] }}" name="gender" value="{{ choice[0] }}" {% if choice[0] in form_data['gender'] %}checked="checked" {% endif %}/>{{ choice[1] }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-rank">
+            <h3 class="panel-title accordion-toggle">Rank</h3>
+          </div>
+          <div class="collapse in" id="filter-rank">
+            <div class="panel-body">
+              <div class="form-group checkbox">
+                {% for choice in choices['rank'] %}
+                  <label class="form-check">
+                    <input type="checkbox" class="form-check-input" id="rank-{{ choice[0] }}" name="rank" value="{{ choice[0] }}" {% if choice[0] in form_data['rank'] %}checked="checked" {% endif %}/>{{ choice[1] }}
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-age">
+            <h3 class="panel-title accordion-toggle">Age range</h3>
+          </div>
+          <div class="collapse in" id="filter-age">
+            <div class="panel-body">
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Min</label>
+                  <input type="number" class="form-control" id="min_age" name="min_age" value="{{ form_data['min_age'] or 16 }}" />
                 </div>
-                <div class="col-md-6 col-xs-6">
-                  <dl>
-                    <dt>Gender</dt>
-                    <dd>{{ officer.gender|default('Unknown') }}</dd>
-                    <dt>Number of Photos</dt>
-                    <dd>{{ officer.face.count() }}</dd>
-                  </dl>
+                <div class="form-group col-md-6 text-right">
+                  <label>Max</label>
+                  <input type="number" class="form-control" id="max_age" name="max_age" value="{{ form_data['max_age'] or 100 }}" />
                 </div>
               </div>
             </div>
           </div>
-      </li>
-    {% endfor %}
-  </ul>
-
-  {% with paginate=officers,
-          next_url=url_for('main.list_officer', department_id=department.id, page=officers.next_num,
-        from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
-          prev_url=url_for('main.list_officer', department_id=department.id, page=officers.prev_num,
-          from_search=from_search, race=race, gender=gender, rank=rank, min_age=min_age, max_age=max_age),
-          location='bottom' %}
-    {% include "partials/paginate_nav.html" %}
-  {% endwith %}
-</div>
-<script>
-$('.browse-form-input').each(function(i) {
-  $(this).find('select').val($(this).data('value'));
-});
-</script>¬
-</form>
+        </div>
+        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+      </form>
+    </div>
+    <div class="search-results col-sm-9">
+    {% with paginate=officers,
+        next_url=url_for('main.list_officer', department_id=department.id,
+          page=officers.next_num, from_search=from_search, race=form_data['race'],
+          gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
+          max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
+          unique_internal_identifier=form_data['unique_internal_identifier']),
+        prev_url=url_for('main.list_officer', department_id=department.id,
+          page=officers.prev_num, from_search=from_search, race=form_data['race'],
+          gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
+          max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
+          unique_internal_identifier=form_data['unique_internal_identifier']),
+        location='top' %}
+      {% include "partials/paginate_nav.html" %}
+    {% endwith %}
+    <ul class="list-group">
+      {% for officer in officers.items %}
+        {% if officer.face.first() is none %}
+            {% set officer_image = '/static/images/placeholder.png' %}
+          {% else %}
+            {% set officer_image = officer.face.first().image.filepath %}
+          {% endif %}
+        {% set assignment = officer.assignments.first() %}
+        <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-6 col-xs-12">
+                <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+              </div>
+              <div class="col-md-6 col-xs-12">
+                <h2>
+                  <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{% include "partials/officer_name.html" %}</a>
+                  <small>#{{ assignment.star_no }}</small>
+                </h2>
+                <div class="row">
+                  <div class="col-md-6 col-xs-6">
+                    <dl>
+                      <dt>Rank</dt>
+                      <dd>{{ assignment.rank|default('Unknown') }}</dd>
+                      <dt>Race</dt>
+                      <dd>{{ officer.race|default('Unknown')|lower|title }}</dd>
+                    </dl>
+                  </div>
+                  <div class="col-md-6 col-xs-6">
+                    <dl>
+                      <dt>Gender</dt>
+                      <dd>{{ officer.gender|default('Unknown') }}</dd>
+                      <dt>Number of Photos</dt>
+                      <dd>{{ officer.face.count() }}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </li>
+      {% endfor %}
+    </ul>
+    {% with paginate=officers,
+        next_url=url_for('main.list_officer', department_id=department.id,
+          page=officers.next_num, from_search=from_search, race=form_data['race'],
+          gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
+          max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
+          unique_internal_identifier=form_data['unique_internal_identifier']),
+        prev_url=url_for('main.list_officer', department_id=department.id,
+          page=officers.prev_num, from_search=from_search, race=form_data['race'],
+          gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
+          max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
+          unique_internal_identifier=form_data['unique_internal_identifier']),
+        location='bottom' %}
+      {% include "partials/paginate_nav.html" %}
+    {% endwith %}
+  </div> <!-- /.search-results -->
+  </div> <!-- /.row -->
+</div> <!-- /.container -->
 {% endblock content %}

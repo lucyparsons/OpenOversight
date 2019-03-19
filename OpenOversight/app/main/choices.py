@@ -12,12 +12,12 @@ RACE_CHOICES = [('BLACK', 'Black'), ('WHITE', 'White'), ('ASIAN', 'Asian'),
 GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
                   ('Not Sure', 'Not Sure')]
 
-RANK_CHOICES = [('Not Sure', 'Not Sure'), ('SUPT OF POLICE', 'Superintendent'),
+RANK_CHOICES = [('SUPT OF POLICE', 'Superintendent'),
                 ('DEPUTY SUPT', 'Deputy Superintendent'), ('CHIEF', 'Chief'),
                 ('DEP CHIEF', 'Deputy Chief'), ('COMMANDER', 'Commander'),
                 ('CAPTAIN', 'Captain'), ('LIEUTENANT', 'Lieutenant'),
                 ('SERGEANT', 'Sergeant'), ('FIELD', 'Field Training Officer'),
-                ('PO', 'Police Officer')]
+                ('PO', 'Police Officer'), ('Not Sure', 'Not Sure')]
 
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
 LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]
