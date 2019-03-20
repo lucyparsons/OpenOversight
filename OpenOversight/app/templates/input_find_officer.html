@@ -79,12 +79,11 @@
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
                 </div>
-
                 <h2><small>Do you know any part of the Officer's unique internal identifier?*</small></h2>
                 <h4><small>*This term varies by department, for example, in Baltimore it is the sequence number and in New York City it is the tax registry number.</small></h4>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
                   {{ form.unique_internal_identifier(class="form-control") }}
-                  {% for error in form.badge.errors %}
+                  {% for error in form.unique_internal_identifier.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
                 </div>
