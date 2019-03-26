@@ -100,7 +100,6 @@ def test_officer_browse_pagination(mockdata, browser):
 
 def test_last_name_capitalization(mockdata, browser):
     browser.get("http://localhost:5000/auth/login")
-    wait_for_page_load(browser)
 
     # get past the login page
     elem = browser.find_element_by_id("email")
@@ -108,8 +107,9 @@ def test_last_name_capitalization(mockdata, browser):
     elem.send_keys("test@example.org")
     elem = browser.find_element_by_id("password")
     elem.clear()
-    elem.send_keys("testtest")
-    browser.find_element_by_id("submit").click()
+    elem.send_keys("cat")
+    with wait_for_page_load(browser):
+        browser.find_element_by_id("submit").click()
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("mcDonald", "McDonald"), ("Mei-Ying", "Mei-Ying")]
@@ -124,23 +124,24 @@ def test_last_name_capitalization(mockdata, browser):
         elem = browser.find_element_by_id("last_name")
         elem.clear()
         elem.send_keys(test_input)
-        browser.find_element_by_id("submit").click()
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
 
         # get past the "Submit images" page
         wait_for_element(browser, By.ID, "submit-officer-images")
-        images_button = browser.find_element_by_css_selector("#submit-officer-images")        
-        images_button.click()
+        images_button = browser.find_element_by_css_selector("#submit-officer-images")
+        with wait_for_page_load(browser):
+            images_button.click()
 
         # check result
         wait_for_element(browser, By.TAG_NAME, "h1")
         rendered_field = browser.find_element_by_tag_name("h1").text
-        print(rendered_field)
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output
 
+
 def test_last_name_capitalization_short_name(mockdata, browser):
     browser.get("http://localhost:5000/auth/login")
-    wait_for_page_load(browser)
 
     # get past the login page
     elem = browser.find_element_by_id("email")
@@ -149,7 +150,8 @@ def test_last_name_capitalization_short_name(mockdata, browser):
     elem = browser.find_element_by_id("password")
     elem.clear()
     elem.send_keys("cat")
-    browser.find_element_by_id("submit").click()
+    with wait_for_page_load(browser):
+        browser.find_element_by_id("submit").click()
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("G", "G"), ("oh", "Oh")]
@@ -164,17 +166,18 @@ def test_last_name_capitalization_short_name(mockdata, browser):
         elem = browser.find_element_by_id("last_name")
         elem.clear()
         elem.send_keys(test_input)
-        browser.find_element_by_id("submit").click()
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
 
         # get past the "Submit images" page
         wait_for_element(browser, By.ID, "submit-officer-images")
         images_button = browser.find_element_by_css_selector("#submit-officer-images")
-        images_button.click()
+        with wait_for_page_load(browser):
+            images_button.click()
 
         # check result
         wait_for_element(browser, By.TAG_NAME, "h1")
         rendered_field = browser.find_element_by_tag_name("h1").text
-        print(rendered_field)
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output
 
