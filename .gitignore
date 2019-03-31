@@ -86,3 +86,6 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
+
+
+container_data/postgres/*
