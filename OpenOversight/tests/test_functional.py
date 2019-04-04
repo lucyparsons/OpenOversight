@@ -40,7 +40,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     assert "Find an Officer" in page_text
 
 
-def test_user_can_use_form_to_get_to_gallery(mockdata, browser):
+def test_user_can_use_form_to_get_to_browse(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
     # Complainant selects department and proceeds to next step
@@ -59,7 +59,7 @@ def test_user_can_use_form_to_get_to_gallery(mockdata, browser):
         browser.find_element_by_name("submit-officer-search-form").click()
 
     page_text = browser.find_element_by_tag_name("body").text
-    assert "Digital Gallery" in page_text
+    assert "Filter officers" in page_text
     assert browser.find_element_by_id("officer-profile-1")
 
 

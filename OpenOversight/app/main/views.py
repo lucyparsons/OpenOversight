@@ -14,7 +14,7 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
+from ..utils import (roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
@@ -63,7 +63,17 @@ def get_officer():
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
 
     if form.validate_on_submit():
-        return redirect(url_for('main.get_gallery'), code=307)
+        return redirect(url_for(
+            'main.list_officer',
+            department_id=form.data['dept'].id,
+            race=form.data['race'] if form.data['race'] != 'Not Sure' else None,
+            gender=form.data['gender'] if form.data['gender'] != 'Not Sure' else None,
+            rank=form.data['rank'] if form.data['rank'] != 'Not Sure' else None,
+            min_age=form.data['min_age'],
+            max_age=form.data['max_age'],
+            name=form.data['name'],
+            badge=form.data['badge']),
+            code=302)
     return render_template('input_find_officer.html', form=form)
 
 
@@ -566,30 +576,6 @@ def get_tagger_gallery(page=1):
                                form_data=form_data)
     else:
         return redirect(url_for('main.get_ooid'), code=307)
-
-
-@main.route('/gallery/<int:page>', methods=['GET', 'POST'])
-@main.route('/gallery', methods=['GET', 'POST'])
-def get_gallery(page=1):
-    form = FindOfficerForm()
-    if form.validate_on_submit():
-        OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-        form_data = form.data
-        officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
-        # If no officers are found, go to a list of all department officers
-        if not officers.items:
-            return redirect(url_for(
-                'main.list_officer',
-                department_id=form_data['dept'].id,
-                from_search=True)
-            )
-
-        return render_template('gallery.html',
-                               officers=officers,
-                               form=form,
-                               form_data=form_data)
-    else:
-        return redirect(url_for('main.get_officer'))
 
 
 @main.route('/complaint', methods=['GET', 'POST'])

@@ -232,12 +232,12 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
         officer_query = officer_query.filter(
             Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
         )
-    race_values = [x for x,_ in RACE_CHOICES]
+    race_values = [x for x, _ in RACE_CHOICES]
     if form['race'] and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
             form['race'].append(None)
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
-    gender_values = [x for x,_ in GENDER_CHOICES]
+    gender_values = [x for x, _ in GENDER_CHOICES]
     if form['gender'] and all(gender in gender_values for gender in form['gender']):
         if 'Not Sure' in form['gender']:
             form['gender'].append(None)
@@ -251,7 +251,7 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                 Officer.birth_year == None))  # noqa
 
     officer_query = officer_query.outerjoin(Assignment)
-    rank_values = [x for x,_ in RANK_CHOICES]
+    rank_values = [x for x, _ in RANK_CHOICES]
     if form['rank'] and all(rank in rank_values for rank in form['rank']):
         if 'Not Sure' in form['rank']:
             form['rank'].append(None)
