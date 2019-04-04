@@ -472,6 +472,7 @@ tr:hover .row-actions {
     background-color: transparent;
     border-bottom: none;
     padding: 5px 0;
+    cursor: pointer;
 }
 
 .filter-sidebar .panel-body {
