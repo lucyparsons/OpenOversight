@@ -136,7 +136,7 @@
           {% else %}
             {% set officer_image = officer.face.first().image.filepath %}
           {% endif %}
-        {% set assignment = officer.assignments.first() %}
+        {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
         <li class="list-group-item">
             <div class="row">
               <div class="col-md-6 col-xs-12">

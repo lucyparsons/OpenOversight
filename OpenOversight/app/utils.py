@@ -250,7 +250,11 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.outerjoin(Assignment)
+    # Some SQL acrobatics to left join only the most recent assignment per officer
+    row_num_col = func.row_number().over(partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc())
+    subq = db.session.query(Assignment.officer_id, Assignment.rank, Assignment.star_date).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(subq)
+
     rank_values = [x for x, _ in RANK_CHOICES]
     if form['rank'] and all(rank in rank_values for rank in form['rank']):
         if 'Not Sure' in form['rank']:
