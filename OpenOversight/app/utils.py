@@ -215,6 +215,18 @@ def upload_file(safe_local_path, src_filename, dest_filename):
 
 
 def filter_by_form(form, officer_query, is_browse_filter=False):
+    # Some SQL acrobatics to left join only the most recent assignment per officer
+    row_num_col = func.row_number().over(
+        partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
+    ).label('row_num')
+    subq = db.session.query(
+        Assignment.officer_id,
+        Assignment.rank,
+        Assignment.star_date,
+        Assignment.star_no
+    ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(subq)
+
     if 'name' in form and form['name']:
         officer_query = officer_query.filter(
             Officer.last_name.ilike('%%{}%%'.format(form['name']))
@@ -225,41 +237,36 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
         )
     if 'badge' in form and form['badge']:
         officer_query = officer_query.filter(
-            cast(Assignment.star_no, db.String)
-            .like('%%{}%%'.format(form['badge']))
+            subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
         )
     if 'unique_internal_identifier' in form and form['unique_internal_identifier']:
         officer_query = officer_query.filter(
             Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
         )
     race_values = [x for x, _ in RACE_CHOICES]
-    if form['race'] and all(race in race_values for race in form['race']):
+    if 'race' in form and form['race'] and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
             form['race'].append(None)
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
     gender_values = [x for x, _ in GENDER_CHOICES]
-    if form['gender'] and all(gender in gender_values for gender in form['gender']):
+    if 'gender' in form and form['gender'] and all(gender in gender_values for gender in form['gender']):
         if 'Not Sure' in form['gender']:
             form['gender'].append(None)
         officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
 
-    current_year = datetime.datetime.now().year
-    min_birth_year = current_year - int(form['min_age'])
-    max_birth_year = current_year - int(form['max_age'])
-    officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
-                                                        Officer.birth_year >= max_birth_year),
-                                                Officer.birth_year == None))  # noqa
-
-    # Some SQL acrobatics to left join only the most recent assignment per officer
-    row_num_col = func.row_number().over(partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc())
-    subq = db.session.query(Assignment.officer_id, Assignment.rank, Assignment.star_date).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
-    officer_query = officer_query.outerjoin(subq)
+    if 'min_age' in form and form['min_age'] and 'max_age' in form and form['max_age']:
+        current_year = datetime.datetime.now().year
+        min_birth_year = current_year - int(form['min_age'])
+        max_birth_year = current_year - int(form['max_age'])
+        officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
+                                                            Officer.birth_year >= max_birth_year),
+                                                    Officer.birth_year == None))  # noqa
 
     rank_values = [x for x, _ in RANK_CHOICES]
-    if form['rank'] and all(rank in rank_values for rank in form['rank']):
+    if 'rank' in form and form['rank'] and all(rank in rank_values for rank in form['rank']):
         if 'Not Sure' in form['rank']:
             form['rank'].append(None)
-        officer_query = officer_query.filter(Assignment.rank.in_(form['rank']))
+        officer_query = officer_query.filter(subq.c.assignments_rank.in_(form['rank']))
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
     if (not is_browse_filter):
