@@ -12,6 +12,9 @@ before_install:
   - tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
 install:
+  - wget https://www.sqlite.org/2019/sqlite-autoconf-3270200.tar.gz
+  - tar xvf sqlite-autoconf-3270200.tar.gz
+  - pushd sqlite-autoconf-3270200 && ./configure --prefix=/usr && make && sudo make install && popd
 before_script:
   - pip install -r dev-requirements.txt
   - pip install coveralls
