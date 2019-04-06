@@ -256,8 +256,7 @@ def filter_by_form(form, officer_query, department_id=None):
         )
     if form.get('badge'):
         officer_query = officer_query.filter(
-            cast(Assignment.star_no, db.String)
-            .like('%%{}%%'.format(form['badge']))
+            subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
         )
     if form.get('unique_internal_identifier'):
         officer_query = officer_query.filter(
