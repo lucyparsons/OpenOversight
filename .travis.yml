@@ -17,6 +17,7 @@ install:
   - pushd sqlite-autoconf-3270200 && ./configure --prefix=/usr && make && sudo make install && popd
 before_script:
   - pip install -r dev-requirements.txt
+  - pip install -r requirements.txt
   - pip install coveralls
   - cd OpenOversight
 script:
