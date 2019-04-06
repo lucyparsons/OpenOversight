@@ -1,27 +1,24 @@
 language: python
 dist: trusty
-sudo: false
-addons:
-  firefox: "45.4.0esr"
 python:
   - "2.7"
   - "3.6"
+services:
+  - docker
+env:
+  - DOCKER_COMPOSE_VERSION=1.24.0
 before_install:
-  - wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
-  - mkdir geckodriver
-  - tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
-  - export PATH=$PATH:$PWD/geckodriver
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 install:
-  - wget https://www.sqlite.org/2019/sqlite-autoconf-3270200.tar.gz
-  - tar xvf sqlite-autoconf-3270200.tar.gz
-  - pushd sqlite-autoconf-3270200 && ./configure --prefix=/usr && make && sudo make install && popd
+  - true
 before_script:
-  - pip install -r dev-requirements.txt
-  - pip install -r requirements.txt
-  - pip install coveralls
-  - cd OpenOversight
+  - pip install coveralls flake8==3.5.0
+  - sudo service postgresql stop
 script:
-  - py.test -v -n 4 --dist=loadfile --cov=app
-  - cd .. && flake8 --ignore=E501,E722
+  - sudo make test
+  - flake8 --ignore=E501,E722
 after_success:
   - coveralls
