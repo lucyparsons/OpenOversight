@@ -36,7 +36,8 @@
 			</ul>
 			{% endif %}
 		{% endfor %}
-		{% if officer %}
+		{% if officer and (current_user.is_administrator
+				or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)) %}
 		<a href="{{ url_for('main.link_api_new', officer_id=officer.id) }}" class='btn btn-primary'>New Link/Video</a>
 		{% endif %}
 	</div>
