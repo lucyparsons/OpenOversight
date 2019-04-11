@@ -18,8 +18,14 @@ $(document).ready(function() {
             $target.show();
         }
     });
+    
+    let $deptSelectionId = $('#dept').val()
 
     $('ul.setup-panel li.active a').trigger('click');
+
+    $('#dept').on('click', function(e) {
+        $deptSelectionId = $('#dept').val();
+    })
 
     $('#activate-step-2').on('click', function(e) {
         var dept_id = $('#dept').val();
@@ -40,6 +46,14 @@ $(document).ready(function() {
 
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
+        // temporarily hardcoding data that should be passed from the template
+        const depts_with_uii = [{id: 1, uii: 'uii_1'}, {id: 2, uii: 'uii_2'}]
+
+        let targetDept = depts_with_uii.find(function(element) {
+            return element.id == $deptSelectionId
+        });
+        let targetDeptUii = targetDept.uii
+        $('#current-uii').text(targetDeptUii);
         $(this).remove();
     })
     $('#activate-step-3').on('click', function(e) {
