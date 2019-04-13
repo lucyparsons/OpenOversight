@@ -52,7 +52,11 @@ $(document).ready(function() {
             return element.id == $deptSelectionId
         });
         let targetDeptUii = targetDept.uii
-        $('#current-uii').text(targetDeptUii);
+        if (targetDeptUii) {
+            $('#current-uii').text(targetDeptUii);
+        } else {
+            $('#uii-question').hide();    
+        }
         $(this).remove();
     })
     $('#activate-step-3').on('click', function(e) {
