@@ -24,6 +24,7 @@ $(document).ready(function() {
     $('ul.setup-panel li.active a').trigger('click');
 
     $('#dept').on('click', function(e) {
+        e.preventDefault();
         $deptSelectionId = $('#dept').val();
     })
 
@@ -46,9 +47,7 @@ $(document).ready(function() {
 
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
-        // temporarily hardcoding data that should be passed from the template
-        const depts_with_uii = [{id: 1, uii: 'uii_1'}, {id: 2, uii: 'uii_2'}]
-
+        const depts_with_uii = $("#current-uii").data("departments");
         let targetDept = depts_with_uii.find(function(element) {
             return element.id == $deptSelectionId
         });
