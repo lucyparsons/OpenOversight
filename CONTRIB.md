@@ -97,6 +97,44 @@ $ flask db upgrade
 
 You can also downgrade the database using `flask db downgrade`.
 
+## Using a Virtual Environment
+One way to avoid hitting version incompatibility errors when running `flask` commands is to use a virtualenv.  See [Python Packaging user guidelines](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/) for instructions on installing virtualenv.  After installing virtualenv, you can create a virtual environment by navigating to the OpenOversight directory and running the below
+
+```bash
+python3 -m virtualenv env
+```
+
+Confirm you're in the virtualenv by running 
+
+```bash
+which python  
+```
+
+The response should point to your `env` directory.  
+If you want to exit the virtualenv, run 
+
+```bash
+deactivate
+```
+
+To reactivate the virtualenv, run
+
+```bash
+source env/bin/activate
+```
+
+While in the virtualenv, you can install project dependencies by running 
+
+```bash
+pip install -r requirements.txt
+```
+
+and
+
+```bash
+pip install -r dev-requirements.txt
+```
+
 ## OpenOversight Management Interface
 
 In addition to generating database migrations, the Flask CLI can be used to run additional commands:
