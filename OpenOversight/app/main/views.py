@@ -451,7 +451,12 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
 def get_dept_ranks(department_id=None):
     if not department_id:
         department_id = request.args.get('department_id')
-    ranks = Rank.query.filter_by(department_id=department_id).order_by(Rank.order.asc()).all()
+
+    if department_id:
+        ranks = Rank.query.filter_by(department_id=department_id).order_by(Rank.order.asc()).all()
+    else:
+        ranks = Rank.query.all()
+
     return jsonify([rank.rank for rank in ranks])  # lol
 
 
