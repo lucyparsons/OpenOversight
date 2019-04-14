@@ -10,8 +10,8 @@
 
     <title>OpenOversight - a Lucy Parsons Labs project</title>
 
-    <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+    <!-- Bundled CSS -->
+    <link href="{{ url_for('static', filename='dist/index.css') }}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='css/openoversight.css') }}" rel="stylesheet">
@@ -19,60 +19,52 @@
     <!-- Embedded video styles -->
     <link href="{{ url_for('static', filename='css/responsive_embed.css') }}" rel="stylesheet">
 
-    <!-- jQuery -->
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-
     <!-- Font Awesome -->
     <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
-
-    {% for item in jsloads %}
-    <script src="{{ url_for('static', filename=item) }}"></script>
-    {% endfor %}
 
     {% block head %}{% endblock %}
   </head>
 
   <body role="document">
 
-    <!-- Fixed navbar -->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <div class="navbar-header navbar-default">
+          <button type="button" class="navbar-default navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
 
-          <a class="navbar-brand" href="/">OpenOversight</a>
+          <a class="navbar-link navbar-brand" href="/">OpenOversight</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/browse">Browse</a></li>
-            <li><a href="/find">Find an Officer</a></li>
-            <li><a href="/submit">Submit Images</a></li>
-            <li><a href="/label">Volunteer</a></li>
-            <li><a href="/about">About</a></li>
+            <li><a class="navbar-link" href="/browse">Browse</a></li>
+            <li><a class="navbar-link" href="/find">Find an Officer</a></li>
+            <li><a class="navbar-link" href="/submit">Submit Images</a></li>
+            <li><a class="navbar-link" href="/label">Volunteer</a></li>
+            <li><a class="navbar-link" href="/about">About</a></li>
             {% if current_user and current_user.is_administrator %}
-              <li><a href="/auth/users">Users</a></li>
+              <li><a class="navbar-link" href="/auth/users">Users</a></li>
             {% endif%}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if current_user and current_user.is_authenticated %}
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+              <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a></li>
-                <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
-                <li><a href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
+                <li><a class="navbar-link" href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a></li>
+                <li><a class="navbar-link" href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+                <li><a class="navbar-link" href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
 		<li><a href="{{ url_for('auth.change_dept') }}">Change Default Department</a></li>
-                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+                <li><a class="navbar-link" href="{{ url_for('auth.logout') }}">Log Out</a></li>
               </ul>
             </li>
             {% else %}
-            <li><a href="{{ url_for('auth.register') }}"> Register</a></li>
-            <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+            <li><a class="navbar-link" href="{{ url_for('auth.register') }}"> Register</a></li>
+            <li><a class="navbar-link" href="{{ url_for('auth.login') }}">Log In</a></li>
             {% endif %}
           </ul>
         </div>
@@ -133,8 +125,14 @@
 
     </footer>
 
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
-    {% block js_footer %}{% endblock %}
+    {% block js_footer %}
+      {% for item in jsloads %}
+      <script src="{{ url_for('static', filename=item) }}"></script>
+      {% endfor %}
+    {% endblock %}
   </body>
 </html>

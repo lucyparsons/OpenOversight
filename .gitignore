@@ -86,3 +86,5 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
+node_modules/
+OpenOverSight/app/static/dist/

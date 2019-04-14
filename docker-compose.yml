@@ -17,6 +17,8 @@ services:
    restart: always
    build:
       context: .
+      args:
+      - DOCKER_BUILD_ENV
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
@@ -32,6 +34,6 @@ services:
      - postgres:postgres
    expose:
      - "3000"
-   command: flask run --host=0.0.0.0 --port=3000
+   command: scripts/entrypoint.sh
    ports:
      - "3000:3000"
