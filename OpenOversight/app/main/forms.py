@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
                      SelectField, IntegerField, SubmitField,
-                     HiddenField, FormField, FieldList)
+                     HiddenField, FormField, FieldList, BooleanField)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
@@ -15,10 +15,16 @@ from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
 import datetime
+import re
 
 
 def allowed_values(choices, empty_allowed=True):
     return [x[0] for x in choices if empty_allowed or x[0]]
+
+
+def validate_money(form, field):
+    if not re.fullmatch(r'\d+(\.\d\d)?0*', str(field.data)):
+        raise ValidationError('Invalid monetary value')
 
 
 class HumintContribution(Form):
@@ -89,6 +95,27 @@ class AssignmentForm(Form):
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip')
     star_date = DateField('Assignment start date', validators=[Optional()])
+
+
+class SalaryForm(Form):
+    salary = DecimalField('Salary', validators=[
+        NumberRange(min=0, max=1000000), validate_money
+    ])
+    overtime_pay = DecimalField('Overtime Pay', validators=[
+        NumberRange(min=0, max=1000000), validate_money
+    ])
+    year = IntegerField('Year', default=datetime.datetime.now().year, validators=[
+        NumberRange(min=1900, max=2100)
+    ])
+    is_fiscal_year = BooleanField('Is fiscal year?', default=False)
+
+    def validate(form, extra_validators=()):
+        if not form.data.get('salary') and not form.data.get('overtime_pay'):
+            return True
+        return super(SalaryForm, form).validate()
+
+    # def process(self, *args, **kwargs):
+        # raise Exception(args[0])
 
 
 class DepartmentForm(Form):
@@ -190,6 +217,12 @@ class AddOfficerForm(Form):
         BaseTextForm,
         widget=FormFieldWidget()),
         description='This description of the officer will be attributed to your username.',
+        min_entries=1,
+        widget=BootstrapListWidget())
+    salaries = FieldList(FormField(
+        SalaryForm,
+        widget=FormFieldWidget()),
+        description='Officer salaries',
         min_entries=1,
         widget=BootstrapListWidget())
 

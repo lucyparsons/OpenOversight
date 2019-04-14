@@ -74,6 +74,10 @@ def pick_uid():
     return str(uuid.uuid4())
 
 
+def pick_salary():
+    return random.randint(100, 100000000) / 100
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -95,12 +99,31 @@ def build_assignment(officer, unit):
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
-    return models.Note(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Note(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
 
 
 def build_description(officer, user):
     date = factory.date_time_this_year()
-    return models.Description(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Description(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
+
+
+def build_salary(officer):
+    return models.Salary(
+        officer_id=officer.id,
+        salary=pick_salary(),
+        overtime_pay=pick_salary(),
+        year=random.randint(2000, 2019),
+        is_fiscal_year=True if random.randint(0, 1) else False)
 
 
 def assign_faces(officer, images):
@@ -198,6 +221,7 @@ def mockdata(session):
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
 
     assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
     faces1 = [f for f in faces_dept1 if f]
@@ -205,6 +229,7 @@ def mockdata(session):
     session.add(unit1)
     session.commit()
     session.add_all(assignments)
+    session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
 
@@ -367,7 +392,11 @@ def csvfile(mockdata, tmp_path, request):
         'rank',
         'unit',
         'star_date',
-        'resign_date'
+        'resign_date',
+        'salary',
+        'salary_year',
+        'salary_is_fiscal_year',
+        'overtime_pay'
     ]
 
     officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
@@ -382,11 +411,18 @@ def csvfile(mockdata, tmp_path, request):
         for officer in officers_dept1:
             if not officer.unique_internal_identifier:
                 officer.unique_internal_identifier = str(uuid.uuid4())
+            towrite = merge_dicts(vars(officer), {'department_id': 1})
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = merge_dicts(vars(officer), vars(assignment), {'department_id': 1})
-            else:
-                towrite = merge_dicts(vars(officer), {'department_id': 1})
+                towrite = merge_dicts(towrite, vars(assignment))
+            if len(list(officer.salaries)) > 0:
+                salary = officer.salaries[0]
+                towrite = merge_dicts(towrite, {
+                    'salary': salary.salary,
+                    'salary_year': salary.year,
+                    'salary_is_fiscal_year': salary.is_fiscal_year,
+                    'overtime_pay': salary.overtime_pay
+                })
             writer.writerow(towrite)
     except:  # noqa E722
         raise
