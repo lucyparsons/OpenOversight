@@ -1329,3 +1329,5 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
         )
         data = json.loads(rv.data.decode('utf-8'))
         assert 'COMMANDER' in data
+
+        assert data.count('COMMANDER') == 1

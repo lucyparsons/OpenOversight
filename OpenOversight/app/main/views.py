@@ -454,10 +454,12 @@ def get_dept_ranks(department_id=None):
 
     if department_id:
         ranks = Rank.query.filter_by(department_id=department_id).order_by(Rank.order.asc()).all()
+        rank_list = [rank.rank for rank in ranks]
     else:
         ranks = Rank.query.all()
+        rank_list = list(set([rank.rank for rank in ranks]))  # Prevent duplicate ranks
 
-    return jsonify([rank.rank for rank in ranks])  # lol
+    return jsonify(rank_list)
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])
