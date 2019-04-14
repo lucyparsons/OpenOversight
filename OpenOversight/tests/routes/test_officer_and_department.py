@@ -1,4 +1,5 @@
 # Routing and view tests
+import json
 import pytest
 import random
 from datetime import datetime
@@ -1307,3 +1308,24 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
 
         officer = Officer.query.filter_by(id=officer_id).one()
         assert float(officer.salaries[0].salary) == 123456.78
+
+
+def test_get_department_ranks_with_specific_department_id(mockdata, client, session):
+    with current_app.test_request_context():
+        department = Department.query.first()
+        rv = client.get(
+            url_for('main.get_dept_ranks', department_id=department.id),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        assert 'COMMANDER' in data
+
+
+def test_get_department_ranks_with_no_department(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.get_dept_ranks'),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        assert 'COMMANDER' in data
