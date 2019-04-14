@@ -32,6 +32,14 @@ make dev
 
 And open `http://localhost:3000` in your favorite browser!
 
+If you need to log in, use the auto-generated test account
+credentials:
+
+```
+Email: test@example.org
+Password: testtest
+```
+
 Please see [CONTRIB.md](/CONTRIB.md) for the full developer setup instructions.
 
 ## Documentation Quickstart
