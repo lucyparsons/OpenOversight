@@ -1,7 +1,7 @@
 """Add ranks table
 
 Revision ID: 117fa0e07387
-Revises: 9e2827dae28c
+Revises: 2a9064a2507c
 Create Date: 2019-01-09 20:26:58.960113
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '117fa0e07387'
-down_revision = '9e2827dae28c'
+down_revision = '2a9064a2507c'
 branch_labels = None
 depends_on = None
 
