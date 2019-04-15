@@ -1,6 +1,6 @@
 language: python
-dist: trusty
-sudo: false
+dist: xenial
+sudo: required
 addons:
   firefox: "45.4.0esr"
 python:
