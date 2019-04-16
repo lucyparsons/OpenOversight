@@ -1078,7 +1078,6 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             data=data,
             follow_redirects=True
         )
-
         filter_list = rv.data.decode('utf-8').split("<dt>Race</dt>")[1:]
         assert any("<dd>White</dd>" in token for token in filter_list)
 
