@@ -51,7 +51,7 @@ $(document).ready(function() {
         let targetDept = depts_with_uii.find(function(element) {
             return element.id == $deptSelectionId
         });
-        let targetDeptUii = targetDept.uii
+        let targetDeptUii = targetDept.unique_internal_identifier_label
         if (targetDeptUii) {
             $('#current-uii').text(targetDeptUii);
         } else {

@@ -137,7 +137,7 @@ def test_lastname_capitalization(mockdata, browser):
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
-    dept_with_uii = Department.query.filter(Department.uii != None).one_or_none()
+    dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label != None).one_or_none()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
@@ -151,12 +151,13 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
-    dept_without_uii = Department.query.filter_by(uii=None).one_or_none()
+    dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).one_or_none()
     dept_id = str(dept_without_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
     dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
+    with wait_for_page_load(browser):
+        browser.find_element_by_id("activate-step-2").click()
 
     page_text = browser.find_element_by_tag_name("body").text
     assert "Do you know any part of the Officer's" not in page_text
