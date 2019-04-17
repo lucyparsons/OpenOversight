@@ -189,7 +189,7 @@ def session(db, request):
 def mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD', uii='homer_number')
+                                   short_name='SPD', unique_internal_identifier_label='homer_number')
     session.add(department)
     department2 = models.Department(name='Chicago Police Department',
                                     short_name='CPD')
