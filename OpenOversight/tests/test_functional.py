@@ -156,8 +156,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
     dept_selector = Select(browser.find_element_by_id("dept"))
     dept_selector.select_by_value(dept_id)
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("activate-step-2").click()
+    browser.find_element_by_id("activate-step-2").click()
 
-    page_text = browser.find_element_by_tag_name("body").text
-    assert "Do you know any part of the Officer's" not in page_text
+    results = browser.find_elements_by_id("#uii-question")
+    assert len(results) is 0
