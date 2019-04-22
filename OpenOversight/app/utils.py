@@ -442,7 +442,8 @@ def create_description(self, form):
 
 def get_uploaded_image(image, crop_data=None, department_id=None):
     """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
-
+    if department_id is None:
+        department_id = image.department_id
     tmpdir = tempfile.mkdtemp()
     # if there is cropdata, we're receiving an image object
     if crop_data:
@@ -465,8 +466,9 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
         os.rmdir(tmpdir)
 
     SIZE = 300, 300
+    pimage = Pimage.open(safe_local_path)
+    date_taken = find_date_taken(pimage)
     if crop_data:
-        pimage = Pimage.open(safe_local_path)
         cropped_image = pimage.crop(crop_data)
         cropped_image.thumbnail(SIZE)
 
@@ -474,7 +476,6 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
         # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
         cropped_image.save(fp=safe_local_path)
     else:
-        pimage = Pimage.open(safe_local_path)
         pimage.thumbnail(SIZE)
         pimage.save(fp=safe_local_path)
 
@@ -501,8 +502,8 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
         # else, use data given to us.
         new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
                           date_image_inserted=datetime.datetime.now(),
-                          department_id=image.department_id,
-                          date_image_taken=image.date_image_taken)
+                          department_id=department_id,
+                          date_image_taken=date_taken)
         db.session.add(new_image)
         db.session.commit()
         return new_image
@@ -513,6 +514,16 @@ def get_uploaded_image(image, crop_data=None, department_id=None):
                       format_exc()])
         ))
         rm_dirs()
+        return None
+
+
+def find_date_taken(pimage):
+    if pimage.filename.split('.')[-1] == 'png':
+        return None
+    if pimage._getexif():
+        if 36867 in pimage._getexif():
+            return pimage._getexif()[36867]
+    else:
         return None
 
 

@@ -107,7 +107,7 @@ def test_last_name_capitalization(mockdata, browser):
     elem.send_keys("test@example.org")
     elem = browser.find_element_by_id("password")
     elem.clear()
-    elem.send_keys("cat")
+    elem.send_keys("testtest")
     with wait_for_page_load(browser):
         browser.find_element_by_id("submit").click()
     wait_for_element(browser, By.ID, "cpd")
@@ -146,10 +146,10 @@ def test_last_name_capitalization_short_name(mockdata, browser):
     # get past the login page
     elem = browser.find_element_by_id("email")
     elem.clear()
-    elem.send_keys("redshiftzero@example.org")
+    elem.send_keys("test@example.org")
     elem = browser.find_element_by_id("password")
     elem.clear()
-    elem.send_keys("cat")
+    elem.send_keys("testtest")
     with wait_for_page_load(browser):
         browser.find_element_by_id("submit").click()
     wait_for_element(browser, By.ID, "cpd")

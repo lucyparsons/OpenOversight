@@ -14,11 +14,9 @@ from .route_helpers import login_user, login_admin, login_ac, process_form_data
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
                                           EditOfficerForm, LinkForm,
-                                          EditDepartmentForm, IncidentForm,
-                                          LocationForm, LicensePlateForm,
-                                          BrowseForm, SalaryForm)
+                                          EditDepartmentForm, SalaryForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary, Job, Image
+from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job
 
 @pytest.mark.parametrize("route", [
     ('/submit'),
@@ -1055,13 +1053,56 @@ def test_browse_filtering_allows_good(client, mockdata, session):
                               department=department_id,
                               birth_year=1990,
                               links=links)
-# TODO: NVESTIGATE WHETHER OR NOT THIS FIX IS BOGUS
+
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'A' in rv.data.decode('utf-8')
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='A').one()
+        assert officer.first_name == 'A'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+
+        # Check that added officer appears when filtering for this race, gender, rank and age
+        form = BrowseForm(race='WHITE',
+                          gender='M',
+                          rank=job_title,
+                          min_age=datetime.now().year - 1991,
+                          max_age=datetime.now().year - 1989)
+
+        data = process_form_data(form.data)
+
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id),
+            data=data,
+            follow_redirects=True
+        )
+
+        filter_list = rv.data.decode('utf-8').split("<dt>Race</dt>")[1:]
+        assert any("<dd>White</dd>" in token for token in filter_list)
+
+        filter_list = rv.data.decode('utf-8').split("<dt>Job Title</dt>")[1:]
+        assert any("<dd>{}</dd>".format(job_title) in token for token in filter_list)
+
+        filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
+        assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
 def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        officer = department.officers[2]
+        officer = department.officers[4]
         officer_face_count = officer.face.count()
 
         mock = MagicMock(return_value=Image.query.first())
@@ -1077,7 +1118,6 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
             assert officer.face.count() == officer_face_count + 1
 
 
-# TODO: INVESTIGATE WHETHER OR NOT THIS FIX IS BOGUS
 def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
