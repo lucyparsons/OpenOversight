@@ -186,7 +186,7 @@ def add_assignment(officer_id):
     elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
         abort(403)
 
-    return redirect(url_for('main.officer_profile'), officer_id=officer_id)
+    return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
@@ -789,7 +789,7 @@ def download_dept_csv(department_id):
     for r in assign_records:
         if r.officer_id not in assign_dict:
             assign_dict[r.officer_id] = []
-        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.rank), check_input(r.unit_id), check_input(r.star_date), check_input(r.resign_date)))
+        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.job_id), check_input(r.unit_id), check_input(r.star_date), check_input(r.resign_date)))
 
     record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
                    (str(record.id),

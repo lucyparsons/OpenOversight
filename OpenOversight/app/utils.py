@@ -238,7 +238,7 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
     ).label('row_num')
     subq = db.session.query(
         Assignment.officer_id,
-        Assignment.rank,
+        Assignment.job_id,
         Assignment.star_date,
         Assignment.star_no
     ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
@@ -278,10 +278,10 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.outerjoin(Assignment).join(Job, Assignment.job)
+    officer_query = officer_query.outerjoin(Assignment).outerjoin(Job, Assignment.job)
 
     if form['rank'] and str(form['rank']) != 'Not Sure':
-        officer_query = officer_query.filter(subq.c.assignments_rank.in_([form['rank'], 'Not Sure']))
+        officer_query = officer_query.filter(Job.job_title.in_([form['rank'], 'Not Sure']))
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
     if (not is_browse_filter):

@@ -25,7 +25,9 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
-RANK_CHOICES = ['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure']
+RANK_CHOICES_1 = ['Not Sure', 'Police Officer', 'Captain', 'Commander']
+RANK_CHOICES_2 = ['Not Sure', 'Police Officer', 'Lieutenant', 'Sergeant', 'Commander', 'Chief']
+
 
 AC_DEPT = 1
 
@@ -59,8 +61,11 @@ def pick_name():
     return (pick_first(), pick_middle(), pick_last())
 
 
-def pick_rank():
-    return random.choice(RANK_CHOICES)
+def pick_rank(department_id):
+    if department_id == 1:
+        return random.choice(range(0, len(RANK_CHOICES_1)))
+    else:
+        return random.choice(range(0, len(RANK_CHOICES_2)))
 
 
 def pick_star():
@@ -95,7 +100,7 @@ def generate_officer():
 
 
 def build_assignment(officer, unit):
-    return models.Assignment(star_no=pick_star(), rank=pick_rank(),
+    return models.Assignment(star_no=pick_star(), job_id=pick_rank(officer.department_id),
                              officer=officer)
 
 
@@ -199,15 +204,23 @@ def mockdata(session):
     session.commit()
 
     i = 0
-    rank_choices = [_ for _ in RANK_CHOICES]
-    rank_choices.insert(0, 'Not Sure')
-    for rank in rank_choices:
-        for department_id in [1, 2]:
-            session.add(models.Rank(
-                rank=rank,
-                order=i,
-                department_id=department_id
-            ))
+    for rank in RANK_CHOICES_1:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=1
+        ))
+        i += 1
+
+    i = 0
+    for rank in RANK_CHOICES_2:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=2
+        ))
         i += 1
     session.commit()
 
@@ -404,8 +417,8 @@ def csvfile(mockdata, tmp_path, request):
         'employment_date',
         'birth_year',
         'star_no',
-        'rank',
-        'unit',
+        'job_title',
+        'unit_id',
         'star_date',
         'resign_date',
         'salary',
@@ -429,7 +442,13 @@ def csvfile(mockdata, tmp_path, request):
             towrite = merge_dicts(vars(officer), {'department_id': 1})
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = merge_dicts(towrite, vars(assignment))
+                towrite = merge_dicts(towrite, {
+                    'star_no': assignment.star_no,
+                    'job_title': assignment.job.job_title if assignment.job else None,
+                    'unit_id': assignment.unit_id,
+                    'star_date': assignment.star_date,
+                    'resign_date': assignment.resign_date
+                })
             if len(list(officer.salaries)) > 0:
                 salary = officer.salaries[0]
                 towrite = merge_dicts(towrite, {

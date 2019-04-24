@@ -69,7 +69,7 @@ def link_images_to_department():
 @click.command()
 @with_appcontext
 def link_officers_to_department():
-    """Links officers and units to first department"""
+    """Links officers and unit_ids to first department"""
     from app.models import Officer, Unit, db
 
     officers = Officer.query.all()
@@ -223,7 +223,7 @@ def process_assignment(row, officer, compare=False):
         'required': ['job_title'],
         'optional': [
             'star_no',
-            'unit',
+            'unit_id',
             'star_date',
             'resign_date']
     }
@@ -238,7 +238,7 @@ def process_assignment(row, officer, compare=False):
                             .filter_by(officer_id=officer.id)\
                             .all()
             for (assignment, job) in assignments:
-                assignment_fieldnames = ['star_no', 'unit', 'star_date', 'resign_date']
+                assignment_fieldnames = ['star_no', 'unit_id', 'star_date', 'resign_date']
                 i = 0
                 for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
@@ -271,7 +271,7 @@ def process_assignment(row, officer, compare=False):
             assignment.officer_id = officer.id
             assignment.job_id = job.id
             set_field_from_row(row, assignment, 'star_no')
-            set_field_from_row(row, assignment, 'unit')
+            set_field_from_row(row, assignment, 'unit_id')
             set_field_from_row(row, assignment, 'star_date', allow_blank=False)
             set_field_from_row(row, assignment, 'resign_date', allow_blank=False)
             db.session.add(assignment)

@@ -17,7 +17,7 @@ def test_department_filter(mockdata):
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assert element.department == department
 
 
@@ -28,7 +28,7 @@ def test_race_filter_select_all_black_officers(mockdata):
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assert element.race in ('BLACK', 'Not Sure')
 
 
@@ -39,32 +39,32 @@ def test_gender_filter_select_all_male_officers(mockdata):
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assert element.gender in ('M', 'Not Sure')
 
 
 def test_rank_filter_select_all_commanders(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'COMMANDER',
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Commander',
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assignment = element.assignments.first()
-        assert assignment.rank in ('COMMANDER', 'Not Sure')
+        assert assignment.job.job_title in ('Commander', 'Not Sure')
 
 
 def test_rank_filter_select_all_police_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'PO',
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Police Officer',
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assignment = element.assignments.first()
-        assert assignment.rank in ('PO', 'Not Sure')
+        assert assignment.job.job_title in ('Police Officer', 'Not Sure')
 
 
 def test_filter_by_name(mockdata):
@@ -74,7 +74,7 @@ def test_filter_by_name(mockdata):
          'min_age': 16, 'max_age': 85, 'name': 'J', 'badge': '',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assert 'J' in element.last_name
 
 
@@ -86,7 +86,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
          'min_age': 16, 'max_age': 85, 'name': 'S', 'badge': '',
          'dept': department}
     )
-    assert officer in results
+    assert officer in results.all()
 
 
 def test_filter_by_badge_no(mockdata):
@@ -96,7 +96,7 @@ def test_filter_by_badge_no(mockdata):
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '12',
          'dept': department}
     )
-    for element in results:
+    for element in results.all():
         assignment = element.assignments.first()
         assert '12' in str(assignment.star_no)
 
@@ -293,7 +293,7 @@ def test_csv_new_assignment(csvfile):
     assert Officer.query.count() == 0
 
     df = pd.read_csv(csvfile)
-    df.loc[0, 'rank'] = 'COMMANDER'
+    df.loc[0, 'job_title'] = 'Commander'
     df.to_csv(csvfile)
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
@@ -306,8 +306,8 @@ def test_csv_new_assignment(csvfile):
     officer_id = officer.id
     assert len(list(officer.assignments)) == 1
 
-    # Update rank
-    df.loc[0, 'rank'] = 'CAPTAIN'
+    # Update job_title
+    df.loc[0, 'job_title'] = 'CAPTAIN'
     df.to_csv(csvfile)
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
@@ -317,7 +317,7 @@ def test_csv_new_assignment(csvfile):
     officer = Officer.query.filter_by(id=officer_id).one()
     assert len(list(officer.assignments)) == 2
     for assignment in officer.assignments:
-        assert assignment.rank == 'COMMANDER' or assignment.rank == 'CAPTAIN'
+        assert assignment.job.job_title == 'Commander' or assignment.job.job_title == 'CAPTAIN'
 
 
 def test_csv_new_name(csvfile):
@@ -359,7 +359,7 @@ def test_csv_new_officer(csvfile):
         'employment_date': None,
         'birth_year': None,
         'star_no': 666,
-        'rank': 'CAPTAIN',
+        'job_title': 'CAPTAIN',
         'unit': None,
         'star_date': None,
         'resign_date': None,
