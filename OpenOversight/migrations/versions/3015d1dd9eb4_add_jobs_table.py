@@ -42,7 +42,7 @@ SELECT DISTINCT
 FROM
   assignments
   INNER JOIN officers ON assignments.officer_id = officers.id""")
-    op.add_column('assignments', sa.Column('job_id', sa.Integer(), nullable=True)) # False
+    op.add_column('assignments', sa.Column('job_id', sa.Integer(), nullable=True))
     op.create_foreign_key('fk_job_assignment', 'assignments', 'jobs', ['job_id'], ['id'])
     op.execute("""
 UPDATE

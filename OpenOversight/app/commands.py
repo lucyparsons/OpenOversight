@@ -9,7 +9,7 @@ import click
 from flask.cli import with_appcontext
 from flask import current_app
 
-from .models import db, Assignment, Department, Officer, User, Salary
+from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer
 
 

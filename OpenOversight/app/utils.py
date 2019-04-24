@@ -66,19 +66,9 @@ def add_new_assignment(officer_id, form):
         unit = None
 
     job = Job.query\
-             .filter_by(department_id=form.job_title.data.department_id, 
+             .filter_by(department_id=form.job_title.data.department_id,
                         job_title=form.job_title.data.job_title)\
              .one_or_none()
-    if not job:
-        # create new job
-        job = Job(
-            job_title=form.job_title.data,
-            is_sworn_officer=False,
-            department_id=officer_id,
-        )
-        set_field_from_row(row, job, 'job_title', allow_blank=False)
-        db.session.add(job)
-        db.session.flush()
 
     new_assignment = Assignment(officer_id=officer_id,
                                 star_no=form.star_no.data,
@@ -93,16 +83,6 @@ def edit_existing_assignment(assignment, form):
     assignment.star_no = form.star_no.data
 
     job = form.job_title.data
-    if not job:
-        # create new job
-        job = Job(
-            job_title=form.job_title.data,
-            is_sworn_officer=False,
-            department_id=officer_id,
-        )
-        set_field_from_row(row, job, 'job_title', allow_blank=False)
-        db.session.add(job)
-        db.session.flush()
     assignment.job_id = job.id
 
     if form.unit.data:
