@@ -33,7 +33,7 @@ $(document).ready(function() {
             for (i = 0; i < ranks.length; i++) {
                 console.log(ranks[i]);
                 $('select#rank').append(
-                    $('<option></option>').attr("value", ranks[i]).text(ranks[i])
+                    $('<option></option>').attr("value", ranks[i][1]).text(ranks[i][1])
                 );
             }
         });
@@ -58,7 +58,7 @@ $(document).ready(function() {
        $("#loader").show();
     });
 
-    // Show/hide ranks
+    // Show/hide rank shoulder patches
     $("#show_img").on("click", function(){
        $("#hidden_img").show();
        $("#show_img_div").hide();

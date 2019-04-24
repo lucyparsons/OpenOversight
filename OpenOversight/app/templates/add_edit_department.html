@@ -17,15 +17,15 @@
         {{ wtf.form_field(form.name, autofocus="autofocus") }}
         {{ wtf.form_field(form.short_name) }}
         <div>
-          <legend>{{ form.ranks.label }}</legend>
+          <legend>{{ form.jobs.label }}</legend>
           <div>
             <h5>Enter ranks in hierarchical order:</h5>
           </div>
           <div class="text-danger">
-            {{ wtf.form_errors(form.ranks, hiddens="only") }}
+            {{ wtf.form_errors(form.jobs, hiddens="only") }}
           </div>
-          {% if form.ranks|length > 1 %}
-            {% for subfield in (form.ranks|sort(attribute='data.order'))[1:] %}
+          {% if form.jobs|length > 1 %}
+            {% for subfield in (form.jobs|rejectattr('data.is_sworn_officer','eq',False)|sort(attribute='data.order')|list)[1:] %}
             <fieldset>
               <div class="input-group {% if subfield.errors %} has-error{% endif -%}
                          {%- if subfield.flags.required %} required{% endif -%}">
@@ -43,10 +43,12 @@
             {% endfor %}
           {% else %}
             <fieldset>
-              <div class="form-group ">
-                <input class="form-control" custom_name="ranks-1" id="ranks-1" name="ranks-1" type="text" value="">
+              <div class="input-group">
+                <input class="form-control" id="jobs-1" name="jobs-1" type="text" value="">
+                <span class="input-group-btn">
+                  <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;">Remove</button>
+                </span>
               </div>
-              <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;">Remove</button>
             </fieldset>
           {% endif %}
           <button class="btn btn-success js-add-another-button" disabled>Add another rank</button>
@@ -57,8 +59,4 @@
 </div>
 
 </div>
-{% endblock %}
-
-{% block js_footer %}
-    <script src="{{ url_for('static', filename='js/deptRanks.js') }}"></script>
 {% endblock %}

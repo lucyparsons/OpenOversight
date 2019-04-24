@@ -20,7 +20,7 @@ import imghdr as imghdr
 from flask import current_app, url_for
 from PIL import Image as Pimage
 
-from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
+from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
 
 
@@ -65,9 +65,24 @@ def add_new_assignment(officer_id, form):
     else:
         unit = None
 
+    job = Job.query\
+             .filter_by(department_id=form.job_title.data.department_id, 
+                        job_title=form.job_title.data.job_title)\
+             .one_or_none()
+    if not job:
+        # create new job
+        job = Job(
+            job_title=form.job_title.data,
+            is_sworn_officer=False,
+            department_id=officer_id,
+        )
+        set_field_from_row(row, job, 'job_title', allow_blank=False)
+        db.session.add(job)
+        db.session.flush()
+
     new_assignment = Assignment(officer_id=officer_id,
                                 star_no=form.star_no.data,
-                                rank=form.rank.data,
+                                job_id=job.id,
                                 unit=unit,
                                 star_date=form.star_date.data)
     db.session.add(new_assignment)
@@ -76,14 +91,26 @@ def add_new_assignment(officer_id, form):
 
 def edit_existing_assignment(assignment, form):
     assignment.star_no = form.star_no.data
-    assignment.rank = form.rank.data
+
+    job = form.job_title.data
+    if not job:
+        # create new job
+        job = Job(
+            job_title=form.job_title.data,
+            is_sworn_officer=False,
+            department_id=officer_id,
+        )
+        set_field_from_row(row, job, 'job_title', allow_blank=False)
+        db.session.add(job)
+        db.session.flush()
+    assignment.job_id = job.id
 
     if form.unit.data:
         officer_unit = form.unit.data.id
     else:
         officer_unit = None
 
-    assignment.unit = officer_unit
+    assignment.unit_id = officer_unit
     assignment.star_date = form.star_date.data
     db.session.add(assignment)
     db.session.commit()
@@ -110,7 +137,7 @@ def add_officer_profile(form, current_user):
 
     assignment = Assignment(baseofficer=officer,
                             star_no=form.star_no.data,
-                            rank=form.rank.data,
+                            job_id=form.job_title.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
     db.session.add(assignment)
@@ -259,12 +286,12 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
                                                         Officer.birth_year >= max_birth_year),
                                                 Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.outerjoin(Assignment)
+    officer_query = officer_query.outerjoin(Assignment).join(Job, Assignment.job)
 
     if form['rank'] and str(form['rank']) != 'Not Sure':
         officer_query = officer_query.filter(
-            db.or_(Assignment.rank.like('%%{}%%'.format(form['rank'])),
-                   Assignment.rank == 'Not Sure')  # noqa
+            db.or_(Job.job_title.like('%%{}%%'.format(form['rank'])),
+                   Job.job_title == 'Not Sure')  # noqa
         )
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list

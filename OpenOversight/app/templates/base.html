@@ -22,6 +22,12 @@
     <!-- Font Awesome -->
     <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
 
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
     {% block head %}{% endblock %}
   </head>
 
@@ -124,10 +130,6 @@
       </div>
 
     </footer>
-
-    <!-- jQuery -->
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
     {% block js_footer %}
       {% for item in jsloads %}

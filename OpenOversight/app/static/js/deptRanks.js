@@ -3,7 +3,6 @@
 $(document).ready(function () {
     $('.js-add-another-button').click(function (event) {
         event.preventDefault()
-        console.log($(event.target.previousElementSibling))
         cloneField($(event.target.previousElementSibling));
     });
     $('.js-remove-button').click(removeField)
@@ -38,7 +37,7 @@ function cloneField(selector) {
 }
 
 
-/* This function checks if it is the last fieldset element in its parent. If it is, it removes all field values before hiding the element, and sets a new click handler and text on the add button. If it has other fieldset siblings, it simply deletes itself. */
+/* This function checks if it is the last fieldset element in its parent. If it is, it removes all field values before hiding the element. If it has other fieldset siblings, it simply deletes itself. */
 
 function removeField(event) {
     event.preventDefault();

@@ -82,7 +82,7 @@
       <h3>Assignment History</h3>
       <table class="table table-hover">
           <tr>
-            <th><b>Rank</b></th>
+            <th><b>Job Title</b></th>
             <th><b>Badge No.</b></th>
             <th><b>Unit</b></th>
             <th><b>Assignment Date</b></th>
@@ -92,16 +92,11 @@
             {% endif %}
           </tr>
         <tbody>
-          {% for assignment in assignments %}
+          {% for assignment in assignments|sort(attribute='star_date') %}
           <tr>
-            <td>{{ assignment.rank }}</td>
+            <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
-            <td>{% if assignment.unit: %}
-                {{ assignment.unit }}
-                {% else %}
-                Unknown
-                {% endif %}
-            </td>
+            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
                 {% else %}
@@ -141,9 +136,9 @@
           </tr>
 
           <tr>
-            <td><b>New rank:</b></td>
-            <td>{{ form.rank }}
-                  {% for error in form.rank.errors %}
+            <td><b>New job title:</b></td>
+            <td>{{ form.job_title }}
+                  {% for error in form.job_title.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
             </td>

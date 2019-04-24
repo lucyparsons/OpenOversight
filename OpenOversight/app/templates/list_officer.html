@@ -63,8 +63,8 @@
               <div class="row">
                 <div class="col-md-6 col-xs-6">
                   <dl>
-                    <dt>Rank</dt>
-                    <dd>{{ assignment.rank|default('Unknown') }}</dd>
+                    <dt>Job Title</dt>
+                    <dd>{{ assignment.job.job_title|default('Unknown') }}</dd>
                     <dt>Race</dt>
                     <dd>{{ officer.race|default('Unknown')|lower|title }}</dd>
                   </dl>
@@ -93,10 +93,20 @@
     {% include "partials/paginate_nav.html" %}
   {% endwith %}
 </div>
+{% block js_footer %}
 <script>
-$('.browse-form-input').each(function(i) {
-  $(this).find('select').val($(this).data('value'));
-});
-</script>¬
+  jQuery(document).ready(function($){
+    $('.browse-form-input').each(function(i) {
+      var input = $(this);
+      var select = input.find('select');
+      select.find('option').each(function(option) {
+        if ($(this).text() == input.data('value')) {
+          select.val($(this).val());
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
 </form>
 {% endblock content %}

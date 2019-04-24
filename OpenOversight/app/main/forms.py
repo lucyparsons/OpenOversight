@@ -45,7 +45,7 @@ class FindOfficerForm(Form):
                                                          Length(max=10)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
-    rank = StringField('rank', default='Not Sure', validators=[Optional()])
+    rank = StringField('rank', default='Not Sure', validators=[Optional()])  # Gets rewritten by Javascript
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,
@@ -89,10 +89,11 @@ class FaceTag(Form):
 class AssignmentForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
-    rank = StringField('Rank', default='', validators=[
-        DataRequired(), Regexp('\w*')])
+    job_title = QuerySelectField('job_title', validators=[Required()],
+                                 get_label='job_title', get_pk=lambda x: x.id)  # query set in view function
     unit = QuerySelectField('Unit', validators=[Optional()],
-                            query_factory=unit_choices, get_label='descrip')
+                            query_factory=unit_choices, get_label='descrip',
+                            allow_blank=True, blank_text=u'None')
     star_date = DateField('Assignment start date', validators=[Optional()])
 
 
@@ -126,8 +127,8 @@ class DepartmentForm(Form):
         'Shortened acronym for law enforcement agency, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
-    ranks = FieldList(StringField('Rank', default='', validators=[
-        Regexp('\w*')]))
+    jobs = FieldList(StringField('Job', default='', validators=[
+        Regexp('\w*')]), label='Ranks')
     submit = SubmitField(label='Add')
 
 
@@ -178,6 +179,8 @@ class TextForm(EditTextForm):
 
 
 class AddOfficerForm(Form):
+    department = QuerySelectField('Department', validators=[DataRequired()],
+                                  query_factory=dept_choices, get_label='name')
     first_name = StringField('First name', default='', validators=[
         Regexp('\w*'), Length(max=50), Optional()])
     last_name = StringField('Last name', default='', validators=[
@@ -193,15 +196,12 @@ class AddOfficerForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
-    rank = StringField('rank', default='', validators=[
-        Optional(), Regexp('\w*')])
+    job_title = StringField('Job Title')  # Gets rewritten by Javascript
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',
-                            allow_blank=True, blank_text=u'Unknown unit')
+                            allow_blank=True, blank_text=u'None')
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
-    department = QuerySelectField('Department', validators=[Optional()],
-                                  query_factory=dept_choices, get_label='name')
     links = FieldList(FormField(
         LinkForm,
         widget=FormFieldWidget()),
@@ -396,8 +396,8 @@ class IncidentForm(DateFieldForm):
 
 
 class BrowseForm(Form):
-    rank = QuerySelectField('rank', validators=[Optional()], get_label='rank',
-                            get_pk=lambda rank: rank.rank)  # query set in view function
+    rank = QuerySelectField('rank', validators=[Optional()], get_label='job_title',
+                            get_pk=lambda job: job.job_title)  # query set in view function
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
     gender = SelectField('gender', default='Not Sure', choices=GENDER_CHOICES,

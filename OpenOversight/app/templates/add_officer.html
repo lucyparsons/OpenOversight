@@ -9,9 +9,10 @@
     <h1>Add Officer</h1>
 </div>
 <div class="col-md-6">
-    <form class="form" method="post" role="form">
+    <form class="form" method="post" role="form" id="add-officer-form" data-jobs-url="{{ url_for('main.get_dept_ranks') }}">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
+        {{ wtf.form_field(form.department) }}
         {{ wtf.form_field(form.first_name, autofocus="autofocus") }}
         {{ wtf.form_field(form.middle_initial) }}
         {{ wtf.form_field(form.last_name) }}
@@ -20,12 +21,11 @@
         {{ wtf.form_field(form.gender) }}
         {{ wtf.form_field(form.star_no) }}
         {{ wtf.form_field(form.unique_internal_identifier) }}
-        {{ wtf.form_field(form.rank) }}
+        {{ wtf.form_field(form.job_title) }}
         {{ wtf.form_field(form.unit) }}
         <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>
         {{ wtf.form_field(form.employment_date) }}
         {{ wtf.form_field(form.birth_year) }}
-        {{ wtf.form_field(form.department) }}
         <div>
             <legend>{{ form.salaries.label }}</legend>
             {% for subform in form.salaries %}
@@ -54,8 +54,4 @@
 </div>
 
 </div>
-{% endblock %}
-
-{% block js_footer %}
-    <script src="{{ url_for('static', filename='js/incidentAddButtons.js') }}"></script>
 {% endblock %}
