@@ -441,3 +441,12 @@ tr:hover .row-actions {
 .row-actions .delete a {
     color: #a00;
 }
+
+.sortable-fields fieldset > div {
+  margin-bottom: 2rem;
+}
+
+.sortable-fields fieldset .glyphicon {
+  font-size: 14px;
+  cursor: move;
+}

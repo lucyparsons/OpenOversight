@@ -339,7 +339,7 @@ def classify_submission(image_id, contains_cops):
 @login_required
 @admin_required
 def add_department():
-    jsloads = ['js/deptRanks.js']
+    jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
     form = DepartmentForm()
     if form.validate_on_submit():
         departments = [x[0] for x in db.session.query(Department.name).all()]
@@ -379,7 +379,7 @@ def add_department():
 @login_required
 @admin_required
 def edit_department(department_id):
-    jsloads = ['js/deptRanks.js']
+    jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)

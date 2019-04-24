@@ -16,10 +16,10 @@
 
         {{ wtf.form_field(form.name, autofocus="autofocus") }}
         {{ wtf.form_field(form.short_name) }}
-        <div>
+        <div class="sortable sortable-fields">
           <legend>{{ form.jobs.label }}</legend>
           <div>
-            <h5>Enter ranks in hierarchical order:</h5>
+            <h5>Enter ranks in hierarchical order, from lowest to highest rank:</h5>
           </div>
           <div class="text-danger">
             {{ wtf.form_errors(form.jobs, hiddens="only") }}
@@ -29,9 +29,12 @@
             <fieldset>
               <div class="input-group {% if subfield.errors %} has-error{% endif -%}
                          {%- if subfield.flags.required %} required{% endif -%}">
+                <div class="input-group-addon">
+                  <span class="glyphicon glyphicon-sort" aria-hidden="true"></span>
+                </div>
                 {{ subfield(class="form-control")|safe}}
                 <span class="input-group-btn">
-                  <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;" disabled>Remove</button>
+                  <button class="btn btn-danger js-remove-button" disabled>Remove</button>
                 </span>
                 {%- if subfield.errors %}
                   {%- for error in subfield.errors %}
@@ -44,9 +47,9 @@
           {% else %}
             <fieldset>
               <div class="input-group">
-                <input class="form-control" id="jobs-1" name="jobs-1" type="text" value="">
+                <input class="form-control" id="jobs-0" name="jobs-0" type="text" value="">
                 <span class="input-group-btn">
-                  <button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;">Remove</button>
+                  <button class="btn btn-danger js-remove-button">Remove</button>
                 </span>
               </div>
             </fieldset>
