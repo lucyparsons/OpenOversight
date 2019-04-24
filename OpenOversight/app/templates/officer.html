@@ -92,7 +92,30 @@
             {% endif %}
           </tr>
         <tbody>
-          {% for assignment in assignments|sort(attribute='star_date') %}
+          {% for assignment in assignments|rejectattr('star_date','ne',None) %}
+          <tr>
+            <td>{{ assignment.job.job_title }}</td>
+            <td>{{ assignment.star_no }}</td>
+            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
+            <td>{% if assignment.star_date: %}
+                {{ assignment.star_date }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>
+              {% if current_user.is_administrator
+                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+              <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
+                          assignment_id=assignment.id) }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% for assignment in assignments|rejectattr('star_date','none')|sort(attribute='star_date',reverse=True) %}
           <tr>
             <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
