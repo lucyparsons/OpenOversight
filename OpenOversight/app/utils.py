@@ -232,6 +232,18 @@ def upload_file(safe_local_path, src_filename, dest_filename):
 
 
 def filter_by_form(form, officer_query, is_browse_filter=False):
+    # Some SQL acrobatics to left join only the most recent assignment per officer
+    row_num_col = func.row_number().over(
+        partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
+    ).label('row_num')
+    subq = db.session.query(
+        Assignment.officer_id,
+        Assignment.rank,
+        Assignment.star_date,
+        Assignment.star_no
+    ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(subq)
+
     if (not is_browse_filter):
         if form['name']:
             officer_query = officer_query.filter(
@@ -269,10 +281,7 @@ def filter_by_form(form, officer_query, is_browse_filter=False):
     officer_query = officer_query.outerjoin(Assignment).join(Job, Assignment.job)
 
     if form['rank'] and str(form['rank']) != 'Not Sure':
-        officer_query = officer_query.filter(
-            db.or_(Job.job_title.like('%%{}%%'.format(form['rank'])),
-                   Job.job_title == 'Not Sure')  # noqa
-        )
+        officer_query = officer_query.filter(subq.c.assignments_rank.in_([form['rank'], 'Not Sure']))
 
     # This handles the sorting upstream of pagination and pushes officers w/o tagged faces to the end of list
     if (not is_browse_filter):
