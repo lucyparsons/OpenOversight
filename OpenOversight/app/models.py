@@ -88,6 +88,7 @@ class Officer(db.Model):
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
+    salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
 
     def full_name(self):
         if self.middle_initial:
@@ -100,11 +101,33 @@ class Officer(db.Model):
         return '{} {}'.format(self.first_name, self.last_name)
 
     def __repr__(self):
+        if self.unique_internal_identifier:
+            return '<Officer ID {}: {} {} {} {} ({})>'.format(self.id,
+                                                              self.first_name,
+                                                              self.middle_initial,
+                                                              self.last_name,
+                                                              self.suffix,
+                                                              self.unique_internal_identifier)
         return '<Officer ID {}: {} {} {} {}>'.format(self.id,
                                                      self.first_name,
                                                      self.middle_initial,
                                                      self.last_name,
                                                      self.suffix)
+
+
+class Salary(db.Model):
+    __tablename__ = 'salaries'
+
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer = db.relationship('Officer', back_populates='salaries')
+    salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    year = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+
+    def __repr__(self):
+        return '<Salary: ID {} : {}'.format(self.officer_id, self.salary)
 
 
 class Assignment(db.Model):
@@ -156,8 +179,9 @@ class Face(db.Model):
             'raw_images.id',
             ondelete='SET NULL',
             onupdate='CASCADE',
-            use_alter=True),
-        name='fk_face_original_image_id')
+            use_alter=True,
+            name='fk_face_original_image_id')
+    )
     face_position_x = db.Column(db.Integer, unique=False)
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
@@ -322,6 +346,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    approved = db.Column(db.Boolean, default=False)
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     ac_department = db.relationship('Department', backref='coordinators', foreign_keys=[ac_department_id])
@@ -346,7 +371,7 @@ class User(UserMixin, db.Model):
 
     def generate_confirmation_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id})
+        return s.dumps({'confirm': self.id}).decode('utf-8')
 
     def confirm(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -362,7 +387,7 @@ class User(UserMixin, db.Model):
 
     def generate_reset_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id})
+        return s.dumps({'reset': self.id}).decode('utf-8')
 
     def reset_password(self, token, new_password):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -378,7 +403,7 @@ class User(UserMixin, db.Model):
 
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'change_email': self.id, 'new_email': new_email})
+        return s.dumps({'change_email': self.id, 'new_email': new_email}).decode('utf-8')
 
     def change_email(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])

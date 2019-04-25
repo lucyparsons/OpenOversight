@@ -14,9 +14,9 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           EditOfficerForm, LinkForm,
                                           EditDepartmentForm, IncidentForm,
                                           LocationForm, LicensePlateForm,
-                                          BrowseForm)
+                                          BrowseForm, SalaryForm)
 
-from OpenOversight.app.models import Department, Unit, Officer
+from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary
 
 
 @pytest.mark.parametrize("route", [
@@ -128,8 +128,8 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
         assert 'Added new assignment' in rv.data.decode('utf-8')
 
         # test that assignment exists in database
-        assignment = Officer.query.filter(Officer.assignments.any(star_no='S1234'))
-        assert assignment is not None
+        officer = Officer.query.filter(Officer.assignments.any(star_no='S1234')).first()
+        assert officer is not None
 
 
 def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
@@ -153,14 +153,20 @@ def test_admin_can_edit_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
+        # Remove existing assignments
+        Assignment.query.filter_by(officer_id=3).delete()
+
         form = AssignmentForm(star_no='1234',
                               rank='COMMANDER')
 
         rv = client.post(
-            url_for('main.officer_profile', officer_id=3),
+            url_for('main.add_assignment', officer_id=3),
             data=form.data,
             follow_redirects=True
         )
+        # print(rv.data.decode('utf-8'))
+        assert 'Added new assignment' in rv.data.decode('utf-8')
+        assert '<td>1234</td>' in rv.data.decode('utf-8')
 
         form = AssignmentForm(star_no='12345')
         officer = Officer.query.filter_by(id=3).one()
@@ -174,6 +180,7 @@ def test_admin_can_edit_officer_badge_number(mockdata, client, session):
         )
 
         assert 'Edited officer assignment' in rv.data.decode('utf-8')
+        assert '<td>12345</td>' in rv.data.decode('utf-8')
         assert officer.assignments[0].star_no == '12345'
 
 
@@ -187,11 +194,16 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         form = AssignmentForm(star_no=star_no,
                               rank='COMMANDER')
 
+        # Remove existing assignments
+        Assignment.query.filter_by(officer_id=officer.id).delete()
+
         rv = client.post(
-            url_for('main.officer_profile', officer_id=officer.id),
+            url_for('main.add_assignment', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
+        assert 'Added new assignment' in rv.data.decode('utf-8')
+        assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
         form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
@@ -205,12 +217,13 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         )
 
         assert 'Edited officer assignment' in rv.data.decode('utf-8')
+        assert '<td>{}</td>'.format(new_star_no) in rv.data.decode('utf-8')
         assert officer.assignments[0].star_no == new_star_no
 
 
 def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
+        login_admin(client)
 
         star_no = '1234'
         new_star_no = '12345'
@@ -218,11 +231,19 @@ def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client
         form = AssignmentForm(star_no=star_no,
                               rank='COMMANDER')
 
+        # Remove existing assignments
+        Assignment.query.filter_by(officer_id=officer.id).delete()
+
         rv = client.post(
-            url_for('main.officer_profile', officer_id=officer.id),
+            url_for('main.add_assignment', officer_id=officer.id),
             data=form.data,
             follow_redirects=True
         )
+        print(rv.data.decode('utf-8'))
+        assert 'Added new assignment' in rv.data.decode('utf-8')
+        assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
+
+        login_ac(client)
 
         form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
@@ -280,14 +301,16 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
     with current_app.test_request_context():
         login_admin(client)
 
-        form = DepartmentForm(name='Chicago Police Department',
-                              short_name='CPD')
+        form = DepartmentForm(name='Test Police Department',
+                              short_name='TPD')
 
         rv = client.post(
             url_for('main.add_department'),
             data=form.data,
             follow_redirects=True
         )
+
+        assert 'New department' in rv.data.decode('utf-8')
 
         # Try to add the same police department again
         rv = client.post(
@@ -301,8 +324,8 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client,
         # Check that only one department was added to the database
         # one() method will throw exception if more than one department found
         department = Department.query.filter_by(
-            name='Chicago Police Department').one()
-        assert department.short_name == 'CPD'
+            name='Test Police Department').one()
+        assert department.short_name == 'TPD'
 
 
 def test_admin_can_edit_police_department(mockdata, client, session):
@@ -468,7 +491,7 @@ def test_admin_can_add_new_officer(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'McTesterson' in rv.data.decode('utf-8')
+        assert 'New Officer McTesterson added' in rv.data.decode('utf-8')
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(
@@ -495,9 +518,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990,
-                              # because of encoding error, link_type must be set for tests
-                              links=[LinkForm(link_type='link').data])
+                              birth_year=1990)
 
         data = process_form_data(form.data)
 
@@ -508,7 +529,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         )
 
         assert rv.status_code == 200
-        assert last_name in rv.data.decode('utf-8')
+        assert 'New Officer {} added'.format(last_name) in rv.data.decode('utf-8')
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(
@@ -535,9 +556,7 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990,
-                              # because of encoding error, link_type must be set for tests
-                              links=[LinkForm(link_type='link').data])
+                              birth_year=1990)
 
         data = process_form_data(form.data)
 
@@ -591,7 +610,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'Changed' in rv.data.decode('utf-8')
+        assert 'Officer Changed edited' in rv.data.decode('utf-8')
         assert 'Testerinski' not in rv.data.decode('utf-8')
         assert link_url0 in rv.data.decode('utf-8')
         assert link_url1 not in rv.data.decode('utf-8')
@@ -605,10 +624,7 @@ def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
         old_last_name = officer.last_name
 
         new_last_name = 'Shiny'
-        form = EditOfficerForm(
-            last_name=new_last_name,
-            # because of encoding error, link_type must be set for tests
-            links=[LinkForm(link_type='link').data])
+        form = EditOfficerForm(last_name=new_last_name)
 
         data = process_form_data(form.data)
 
@@ -661,9 +677,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990,
-                              # because of encoding error, link_type must be set for tests
-                              links=[LinkForm(link_type='link').data])
+                              birth_year=1990)
 
         data = process_form_data(form.data)
 
@@ -683,9 +697,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             suffix=suffix,
             race=race,
             gender=gender,
-            department=department.id,
-            # because of encoding error, link_type must be set for tests
-            links=[LinkForm(link_type='link').data]
+            department=department.id
         )
         data = process_form_data(form.data)
 
@@ -695,7 +707,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert new_last_name in rv.data.decode('utf-8')
+        assert 'Officer {} edited'.format(new_last_name) in rv.data.decode('utf-8')
         assert last_name not in rv.data.decode('utf-8')
 
         # Check the changes were added to the database
@@ -716,9 +728,7 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
                               star_no=666,
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990,
-                              # because of encoding error, link_type must be set for tests
-                              links=[LinkForm(link_type='link').data])
+                              birth_year=1990)
         data = process_form_data(form.data)
 
         rv = client.post(
@@ -727,7 +737,7 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'McTesty' in rv.data.decode('utf-8')
+        assert 'New Officer McTesty added' in rv.data.decode('utf-8')
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(
@@ -751,9 +761,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
                               star_no='T666',
                               rank='COMMANDER',
                               department=department.id,
-                              birth_year=1990,
-                              # because of encoding error, link_type must be set for tests
-                              links=[LinkForm(link_type='link').data])
+                              birth_year=1990)
         data = process_form_data(form.data)
 
         rv = client.post(
@@ -762,7 +770,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'Testersly' in rv.data.decode('utf-8')
+        assert 'New Officer Testersly added' in rv.data.decode('utf-8')
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(
@@ -864,7 +872,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
             follow_redirects=True
         )
 
-        assert 'McTesty' in rv.data.decode('utf-8')
+        assert 'New Officer McTesty added' in rv.data.decode('utf-8')
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(
@@ -899,6 +907,9 @@ def test_officer_csv(mockdata, client, session):
             data=process_form_data(form.data),
             follow_redirects=True
         )
+
+        assert 'New Officer FVkcjigWUeUyA added' in rv.data.decode('utf-8')
+
         # dump officer csv
         rv = client.get(
             url_for('main.download_dept_csv', department_id=department.id),
@@ -916,6 +927,10 @@ def test_incidents_csv(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+
+        # Delete existing incidents for chosen department
+        Incident.query.filter_by(department_id=department.id).delete()
+
         incident_date = datetime(2000, 5, 25, 1, 45)
         report_number = '42'
 
@@ -946,9 +961,10 @@ def test_incidents_csv(mockdata, client, session):
             url_for('main.download_incidents_csv', department_id=department.id),
             follow_redirects=True
         )
-        # print(rv.data)
+
         # get the csv entry with matching report number
         csv = list(filter(lambda row: report_number in row, rv.data.decode('utf-8').split("\n")))
+        print(csv)
         assert len(csv) == 1
         assert form.description.data in csv[0]
 
@@ -1064,27 +1080,232 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>M</dd>" in token for token in filter_list)
 
-# def test_find_form_submission(client, mockdata):
-#     with current_app.test_request_context():
-#         form = FindOfficerForm()
-#         assert form.validate() == True
-#         rv = client.post(url_for('main.get_officer'), data=form.data, follow_redirects=False)
-#         assert rv.status_code == 307
-#         assert urlparse(rv.location).path == '/gallery'
-#
-#
-# def test_bad_form(client, mockdata):
-#     with current_app.test_request_context():
-#         form = FindOfficerForm(dept='')
-#         assert form.validate() == False
-#         rv = client.post(url_for('main.get_officer'), data=form.data, follow_redirects=False)
-#         assert rv.status_code == 307
-#         assert urlparse(rv.location).path == '/find'
-#
-#
-# def test_find_form_redirect_submission(client, session):
-#     with current_app.test_request_context():
-#         form = FindOfficerForm()
-#         assert form.validate() == True
-#         rv = client.post(url_for('main.get_officer'), data=form.data, follow_redirects=False)
-#         assert rv.status_code == 200
+
+def test_edit_officers_with_blank_uids(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        # Blank out all officer UID's
+        session.execute(
+            Officer.__table__.update().values(unique_internal_identifier=None))
+        session.commit()
+
+        [officer1, officer2] = Officer.query.limit(2).all()
+        assert officer1.unique_internal_identifier is None
+        assert officer2.unique_internal_identifier is None
+
+        form = EditOfficerForm(last_name='Changed', unique_internal_identifier='')
+        data = process_form_data(form.data)
+
+        # Edit first officer
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer1.id),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'Officer Changed edited' in rv.data.decode('utf-8')
+        assert officer1.last_name == 'Changed'
+        assert officer1.unique_internal_identifier is None
+
+        # Edit second officer
+        rv = client.post(
+            url_for('main.edit_officer', officer_id=officer2.id),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'Officer Changed edited' in rv.data.decode('utf-8')
+        assert officer2.last_name == 'Changed'
+        assert officer2.unique_internal_identifier is None
+
+
+def test_admin_can_add_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        print(rv.data.decode('utf-8'))
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_edit_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=1).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=1).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=1,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        print(rv.data.decode('utf-8'))
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=1).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        officer_id = officer.id
+
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        officer_id = officer.id
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        login_admin(client)
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        login_ac(client)
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert float(officer.salaries[0].salary) == 123456.78

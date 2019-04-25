@@ -21,7 +21,7 @@ from flask import current_app, url_for
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Image, Face, User, Unit, Department,
-                     Incident, Location, LicensePlate, Link, Note, Description)
+                     Incident, Location, LicensePlate, Link, Note, Description, Salary)
 
 
 def set_dynamic_default(form_field, value):
@@ -136,13 +136,24 @@ def add_officer_profile(form, current_user):
         for description in form.data['descriptions']:
             # don't try to create with a blank string
             if description['text_contents']:
-                new_description = description(
+                new_description = Description(
                     description=description['text_contents'],
                     user_id=current_user.id,
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
                 db.session.add(new_description)
+    if form.salaries.data:
+        for salary in form.data['salaries']:
+            # don't try to create with a blank string
+            if salary['salary']:
+                new_salary = Salary(
+                    officer=officer,
+                    salary=salary['salary'],
+                    overtime_pay=salary['overtime_pay'],
+                    year=salary['year'],
+                    is_fiscal_year=salary['is_fiscal_year'])
+                db.session.add(new_salary)
 
     db.session.commit()
     return officer
@@ -182,7 +193,7 @@ def serve_image(filepath):
     if 'http' in filepath:
         return filepath
     if 'static' in filepath:
-        return url_for('static', filename=filepath.replace('static/', ''))
+        return url_for('static', filename=filepath.replace('static/', '').lstrip('/'))
 
 
 def compute_hash(data_to_hash):
@@ -474,3 +485,27 @@ def get_uploaded_cropped_image(original_image, crop_data):
         ))
         rm_dirs()
         return None
+
+
+def get_officer(department_id, star_no, first_name, last_name):
+    """Returns first officer with the given name and badge combo in the department, if they exist"""
+    officers = Officer.query.filter_by(department_id=department_id,
+                                       first_name=first_name,
+                                       last_name=last_name).all()
+    if officers:
+        star_no = str(star_no)
+        for assignment in Assignment.query.filter_by(star_no=star_no).all():
+            if assignment.baseofficer in officers:
+                return assignment.baseofficer
+    return None
+
+
+def merge_dicts(*dict_args):
+    """
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    """
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result

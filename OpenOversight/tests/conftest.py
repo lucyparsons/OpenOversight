@@ -7,9 +7,12 @@ import time
 import threading
 from xvfbwrapper import Xvfb
 from faker import Faker
+import csv
+import uuid
+import sys
 
-from OpenOversight.app import create_app
-from OpenOversight.app import models
+from OpenOversight.app import create_app, models
+from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db
 
 factory = Faker()
@@ -67,6 +70,14 @@ def pick_department():
     return random.choice(departments)
 
 
+def pick_uid():
+    return str(uuid.uuid4())
+
+
+def pick_salary():
+    return random.randint(100, 100000000) / 100
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -76,7 +87,8 @@ def generate_officer():
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=pick_department().id
+        department_id=pick_department().id,
+        unique_internal_identifier=pick_uid()
     )
 
 
@@ -87,12 +99,31 @@ def build_assignment(officer, unit):
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
-    return models.Note(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Note(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
 
 
 def build_description(officer, user):
     date = factory.date_time_this_year()
-    return models.Description(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Description(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
+
+
+def build_salary(officer):
+    return models.Salary(
+        officer_id=officer.id,
+        salary=pick_salary(),
+        overtime_pay=pick_salary(),
+        year=random.randint(2000, 2019),
+        is_fiscal_year=True if random.randint(0, 1) else False)
 
 
 def assign_faces(officer, images):
@@ -155,7 +186,7 @@ def session(db, request):
 
 
 @pytest.fixture
-def mockdata(session, request):
+def mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
                                    short_name='SPD')
@@ -171,8 +202,8 @@ def mockdata(session, request):
 
     unit1 = models.Unit(descrip="test")
 
-    test_images = [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
-        [models.Image(filepath='static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
+    test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
+        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
 
     officers = [generate_officer() for o in range(NUM_OFFICERS)]
     session.add_all(officers)
@@ -190,12 +221,15 @@ def mockdata(session, request):
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
 
     assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
+    session.commit()
     session.add_all(assignments)
+    session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
 
@@ -205,9 +239,9 @@ def mockdata(session, request):
                             confirmed=True)
     session.add(test_user)
 
-    test_admin = models.User(email='redshiftzero@example.org',
+    test_admin = models.User(email='test@example.org',
                              username='test_admin',
-                             password='cat',
+                             password='testtest',
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)
@@ -277,7 +311,7 @@ def mockdata(session, request):
             address=test_addresses[0],
             license_plates=test_license_plates,
             links=test_links,
-            officers=[generate_officer() for o in range(4)],
+            officers=[all_officers[o] for o in range(4)],
             creator_id=1,
             last_updated_id=1
         ),
@@ -289,7 +323,7 @@ def mockdata(session, request):
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
             links=test_links,
-            officers=[generate_officer() for o in range(3)],
+            officers=[all_officers[o] for o in range(3)],
             creator_id=2,
             last_updated_id=1
         ),
@@ -323,18 +357,80 @@ def mockdata(session, request):
 
     session.commit()
 
-    def teardown():
-        # Cleanup tables
-        models.User.query.delete()
-        models.Officer.query.delete()
-        models.Image.query.delete()
-        models.Face.query.delete()
-        models.Unit.query.delete()
-        models.Department.query.delete()
-        session.commit()
-        session.flush()
-
     return assignments[0].star_no
+
+
+@pytest.fixture
+def csvfile(mockdata, tmp_path, request):
+    csv_path = tmp_path / "dept1.csv"
+
+    def teardown():
+        try:
+            csv_path.unlink()
+        except:  # noqa: E722
+            pass
+        try:
+            tmp_path.rmdir()
+        except:  # noqa: E722
+            pass
+
+    teardown()
+    tmp_path.mkdir()
+
+    fieldnames = [
+        'department_id',
+        'unique_internal_identifier',
+        'first_name',
+        'last_name',
+        'middle_initial',
+        'suffix',
+        'gender',
+        'race',
+        'employment_date',
+        'birth_year',
+        'star_no',
+        'rank',
+        'unit',
+        'star_date',
+        'resign_date',
+        'salary',
+        'salary_year',
+        'salary_is_fiscal_year',
+        'overtime_pay'
+    ]
+
+    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
+
+    if sys.version_info.major == 2:
+        csvf = open(str(csv_path), 'w')
+    else:
+        csvf = open(str(csv_path), 'w', newline='')
+    try:
+        writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction='ignore')
+        writer.writeheader()
+        for officer in officers_dept1:
+            if not officer.unique_internal_identifier:
+                officer.unique_internal_identifier = str(uuid.uuid4())
+            towrite = merge_dicts(vars(officer), {'department_id': 1})
+            if len(list(officer.assignments)) > 0:
+                assignment = officer.assignments[0]
+                towrite = merge_dicts(towrite, vars(assignment))
+            if len(list(officer.salaries)) > 0:
+                salary = officer.salaries[0]
+                towrite = merge_dicts(towrite, {
+                    'salary': salary.salary,
+                    'salary_year': salary.year,
+                    'salary_is_fiscal_year': salary.is_fiscal_year,
+                    'overtime_pay': salary.overtime_pay
+                })
+            writer.writerow(towrite)
+    except:  # noqa E722
+        raise
+    finally:
+        csvf.close()
+
+    request.addfinalizer(teardown)
+    return str(csv_path)
 
 
 @pytest.fixture

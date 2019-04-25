@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm as Form
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms import (StringField, DecimalField, TextAreaField,
                      SelectField, IntegerField, SubmitField,
-                     HiddenField, FormField, FieldList)
+                     HiddenField, FormField, FieldList, BooleanField)
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
@@ -15,10 +15,16 @@ from ..formfields import TimeField
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from ..models import Officer
 import datetime
+import re
 
 
 def allowed_values(choices, empty_allowed=True):
     return [x[0] for x in choices if empty_allowed or x[0]]
+
+
+def validate_money(form, field):
+    if not re.fullmatch(r'\d+(\.\d\d)?0*', str(field.data)):
+        raise ValidationError('Invalid monetary value')
 
 
 class HumintContribution(Form):
@@ -91,6 +97,27 @@ class AssignmentForm(Form):
     star_date = DateField('Assignment start date', validators=[Optional()])
 
 
+class SalaryForm(Form):
+    salary = DecimalField('Salary', validators=[
+        NumberRange(min=0, max=1000000), validate_money
+    ])
+    overtime_pay = DecimalField('Overtime Pay', validators=[
+        NumberRange(min=0, max=1000000), validate_money
+    ])
+    year = IntegerField('Year', default=datetime.datetime.now().year, validators=[
+        NumberRange(min=1900, max=2100)
+    ])
+    is_fiscal_year = BooleanField('Is fiscal year?', default=False)
+
+    def validate(form, extra_validators=()):
+        if not form.data.get('salary') and not form.data.get('overtime_pay'):
+            return True
+        return super(SalaryForm, form).validate()
+
+    # def process(self, *args, **kwargs):
+        # raise Exception(args[0])
+
+
 class DepartmentForm(Form):
     name = StringField(
         'Full name of law enforcement agency, e.g. Chicago Police Department',
@@ -121,6 +148,7 @@ class LinkForm(Form):
     link_type = SelectField(
         'Link Type',
         choices=LINK_CHOICES,
+        default='',
         validators=[AnyOf(allowed_values(LINK_CHOICES))])
     user_id = HiddenField(validators=[Required(message='Not a valid user ID')])
 
@@ -191,6 +219,12 @@ class AddOfficerForm(Form):
         description='This description of the officer will be attributed to your username.',
         min_entries=1,
         widget=BootstrapListWidget())
+    salaries = FieldList(FormField(
+        SalaryForm,
+        widget=FormFieldWidget()),
+        description='Officer salaries',
+        min_entries=1,
+        widget=BootstrapListWidget())
 
     submit = SubmitField(label='Add')
 
@@ -205,15 +239,18 @@ class EditOfficerForm(Form):
     middle_initial = StringField('Middle initial',
                                  validators=[Regexp('\w*'), Length(max=50),
                                              Optional()])
-    suffix = SelectField('Suffix', choices=SUFFIX_CHOICES,
+    suffix = SelectField('Suffix', choices=SUFFIX_CHOICES, default='',
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
-    race = SelectField('Race', choices=RACE_CHOICES,
+    race = SelectField('Race', choices=RACE_CHOICES, coerce=lambda x: x or None,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', choices=GENDER_CHOICES,
+    gender = SelectField('Gender', choices=GENDER_CHOICES, coerce=lambda x: x or None,
                          validators=[AnyOf(allowed_values(GENDER_CHOICES))])
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
-    unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp('\w*'), Length(max=50)])
+    unique_internal_identifier = StringField('Unique Internal Identifier',
+                                             default='',
+                                             validators=[Regexp('\w*'), Length(max=50)],
+                                             filters=[lambda x: x or None])
     department = QuerySelectField(
         'Department',
         validators=[Optional()],

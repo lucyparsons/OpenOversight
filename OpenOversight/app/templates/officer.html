@@ -45,7 +45,29 @@
             {% else %}
               age unknown,
             {% endif %}
-
+    <div class="col-sm-6">
+      {% for path in paths %}
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">
+      {% endif %}
+      <img src="{{ path }}" alt="Submission">
+      {% if current_user.is_administrator
+        or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div class="col-sm-6">
+      <div class="thumbnail">
+        <div class="caption">
+          <h3>General Information
+            {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <a href="{{ url_for('main.edit_officer', officer_id=officer.id) }}">
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            </a>
+            
             {% if officer.race %}
               {{ officer.race }}.
             {% else %}
@@ -182,38 +204,93 @@
       </table>
       {% endif %}
     </div> {# end col #}
+
+    {% if officer.salaries or current_user.is_administrator or
+	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+  	<div class='col-sm-12 col-md-6'>
+    	<h3>Salary</h3>
+      {% if officer.salaries %}
+      <table class="table table-hover">
+          <tr>
+            <th><b>Annual Salary</b></th>
+            <th><b>Overtime</b></th>
+            <th><b>Total Pay</b></th>
+            <th><b>Year</b></th>
+            {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <th><b>Edit</b></th>
+            {% endif %}
+          </tr>
+        <tbody>
+          {% for salary in officer.salaries %}
+          <tr>
+            <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+            {% if salary.overtime_pay %}
+            <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+            <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
+            {% else %}
+            <td></td>
+            <td></td>
+            {% endif %}
+            <td>{% if salary.is_fiscal_year: %}FY {% endif %}{{ salary.year }}</td>
+
+            {% if current_user.is_administrator
+                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <td>
+              <a href="{{ url_for('main.edit_salary', officer_id=officer.id,
+                          salary_id=salary.id) }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    	{% if current_user.is_administrator
+        	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.add_salary', officer_id=officer.id) }}" class='btn btn-primary'>New Salary</a>
+    	{% endif %}
+  	</div>{# end col #}
+    {% endif %}
+
     {% if officer.incidents or current_user.is_administrator or
 	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-    	<div class='col-sm-12 col-md-6'>
-      	<h3>Incidents</h3>
-      	<ul class="list-group">
-        	{% for incident in officer.incidents %}
-          	<li class="list-group-item">
-            	<h4>
-                	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
-                	Incident {{ incident.report_number }}
-              	</a>
-              	{% if current_user.is_administrator
-                	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
-               	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
-                	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-              	</a>
-              	{% endif %}
-            	</h4>
-            	{% include 'partials/incident_fields.html' %}
-          	</li>
-        	{% endfor %}
-      	</ul>
-      	{% if current_user.is_administrator
-          	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-        	<a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
-      	{% endif %}
-    	</div>{# end col #}
+  	<div class='col-sm-12 col-md-6'>
+    	<h3>Incidents</h3>
+      {% if officer.incidents %}
+    	<ul class="list-group">
+      	{% for incident in officer.incidents %}
+        	<li class="list-group-item">
+          	<h4>
+              	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
+              	Incident {{ incident.report_number }}
+            	</a>
+            	{% if current_user.is_administrator
+              	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
+             	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
+              	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            	</a>
+            	{% endif %}
+          	</h4>
+          	{% include 'partials/incident_fields.html' %}
+        	</li>
+      	{% endfor %}
+    	</ul>
+      {% endif %}
+    	{% if current_user.is_administrator
+        	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.incident_api') + 'new?officer_id={}'.format(officer.id) }}" class='btn btn-primary'>New Incident</a>
+    	{% endif %}
+  	</div>{# end col #}
     {% endif %}
+    {% if officer.descriptions or current_user.is_administrator or
+	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
     <div class='col-sm-12 col-md-6'>
-       {% if officer.descriptions %}
        <h3>Descriptions</h3>
-       {% endif %}
+       {% if officer.descriptions %}
        <ul class="list-group">
           {% for description in officer.descriptions %}
           <li class="list-group-item">
@@ -231,20 +308,17 @@
                 <span class='sr-only'>Delete</span>
                 <i class="fa fa-trash-o" aria-hidden="true"></i>
                 </a>
-             </a>
              {% endif %}
           </li>
           {% endfor %}
        </ul>
+       {% endif %}
        {% if current_user.is_administrator
                    or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
-       {% if not officer.descriptions %}
-       <h3>Descriptions</h3>
-       {% endif %}
        <a href="{{ url_for('main.description_api', officer_id=officer.id) }}" class='btn btn-primary'>New description</a>
-       </div>
        {% endif %}
     </div>{# end col #}
+    {% endif %}
     {% if current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
       <div class='w-100 w-50-ns'>
@@ -266,18 +340,35 @@
                   <span class='sr-only'>Delete</span>
                   <i class="fa fa-trash-o" aria-hidden="true"></i>
                 </a>
+    <div class='col-sm-12 col-md-6'>
+      <h3>Notes</h3>
+      <ul class="list-group">
+        {% for note in officer.notes %}
+          <li class="list-group-item">
+              <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
+              {{ note.text_contents }} <br/>
+              <em>{{ note.creator.username }} </em>
+            {% if note.creator_id == current_user.id or current_user.is_administrator %}
+              <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                        obj_id=note.id) + '/edit' }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
               </a>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-        <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
-      </div>
-    {% endif %}
+              <a href="{{ url_for('main.note_api', officer_id=officer.id,
+                        obj_id=note.id) + '/delete' }}">
+                <span class='sr-only'>Delete</span>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class='btn btn-primary'>New Note</a>
     </div>{# end col #}
-    {% with obj=officer %}
-      {% include "partials/links_and_videos_row.html" %}
-    {% endwith %}
+    {% endif %}
   </div> {# end row #}
+  {% with obj=officer %}
+    {% include "partials/links_and_videos_row.html" %}
+  {% endwith %}
 </div> {# end container #}
 {% endblock %}

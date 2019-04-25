@@ -26,12 +26,12 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm, BrowseForm)
+                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note,
-                      Description)
+                      Description, Salary)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -134,7 +134,7 @@ def officer_profile(officer_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error finding officer: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
 
     try:
@@ -147,7 +147,7 @@ def officer_profile(officer_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error loading officer profile: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
 
     return render_template('officer.html', officer=officer, paths=face_paths,
@@ -196,6 +196,61 @@ def edit_assignment(officer_id, assignment_id):
         flash('Edited officer assignment ID {}'.format(assignment.id))
         return redirect(url_for('main.officer_profile', officer_id=officer_id))
     return render_template('edit_assignment.html', form=form)
+
+
+@main.route('/officer/<int:officer_id>/salary/new', methods=['GET', 'POST'])
+@ac_or_admin_required
+def add_salary(officer_id):
+    form = SalaryForm()
+    officer = Officer.query.filter_by(id=officer_id).first()
+    if not officer:
+        flash('Officer not found')
+        abort(404)
+
+    if form.validate_on_submit() and (current_user.is_administrator or
+                                      (current_user.is_area_coordinator and
+                                       officer.department_id == current_user.ac_department_id)):
+        try:
+            new_salary = Salary(
+                officer_id=officer_id,
+                salary=form.salary.data,
+                overtime_pay=form.overtime_pay.data,
+                year=form.year.data,
+                is_fiscal_year=form.is_fiscal_year.data
+            )
+            db.session.add(new_salary)
+            db.session.commit()
+            flash('Added new salary!')
+        except IntegrityError as e:
+            db.session.rollback()
+            flash('Error adding new salary: {}'.format(e))
+        return redirect(url_for('main.officer_profile',
+                                officer_id=officer_id), code=302)
+    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
+        abort(403)
+    else:
+        return render_template('add_edit_salary.html', form=form)
+
+
+@main.route('/officer/<int:officer_id>/salary/<int:salary_id>',
+            methods=['GET', 'POST'])
+@login_required
+@ac_or_admin_required
+def edit_salary(officer_id, salary_id):
+    if current_user.is_area_coordinator and not current_user.is_administrator:
+        officer = Officer.query.filter_by(id=officer_id).one()
+        if not ac_can_edit_officer(officer, current_user):
+            abort(403)
+
+    salary = Salary.query.filter_by(id=salary_id).one()
+    form = SalaryForm(obj=salary)
+    if form.validate_on_submit():
+        form.populate_obj(salary)
+        db.session.add(salary)
+        db.session.commit()
+        flash('Edited officer salary ID {}'.format(salary.id))
+        return redirect(url_for('main.officer_profile', officer_id=officer_id))
+    return render_template('add_edit_salary.html', form=form, update=True)
 
 
 @main.route('/user/toggle/<int:uid>', methods=['POST'])
@@ -255,7 +310,7 @@ def classify_submission(image_id, contains_cops):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error classifying image: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
@@ -369,6 +424,12 @@ def add_officer():
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
             abort(403)
     if form.validate_on_submit():
+        # Work around for WTForms limitation with boolean fields in FieldList
+        new_formdata = request.form.copy()
+        for key in new_formdata.keys():
+            if re.fullmatch(r'salaries-\d+-is_fiscal_year', key):
+                new_formdata[key] = 'y'
+        form = AddOfficerForm(new_formdata)
         officer = add_officer_profile(form, current_user)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
@@ -442,7 +503,7 @@ def delete_tag(tag_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error classifying image: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
     return redirect(url_for('main.index'))
 
@@ -737,7 +798,7 @@ def upload(department_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
-                      format_exc(full_tback)])
+                      format_exc()])
         ))
         return jsonify(error="Server error encountered. Try again later."), 500
     os.remove(safe_local_path)

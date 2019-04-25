@@ -86,6 +86,6 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
-
-
 container_data/postgres/*
+node_modules/
+OpenOverSight/app/static/dist/

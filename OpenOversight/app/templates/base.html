@@ -10,14 +10,11 @@
 
     <title>OpenOversight - a Lucy Parsons Labs project</title>
 
-    <!-- Bootstrap core CSS -->
-    <!-- <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet"> -->
-
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='css/openoversight.css') }}" rel="stylesheet">
 
-    <!-- jQuery -->
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <!-- Embedded video styles -->
+    <link href="{{ url_for('static', filename='css/responsive_embed.css') }}" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}" rel="stylesheet">
@@ -118,8 +115,13 @@
       </div>
     </footer>
 
-    <!-- <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script> -->
-
-    {% block js_footer %}{% endblock %}
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {% block js_footer %}
+      {% for item in jsloads %}
+      <script src="{{ url_for('static', filename=item) }}"></script>
+      {% endfor %}
+    {% endblock %}
   </body>
 </html>

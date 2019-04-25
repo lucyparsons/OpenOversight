@@ -4,9 +4,6 @@
 	<h1>Incidents</h1>
 	{% if department %}
 		<h2><small>{{ department.name }}</small></h2>
-		<p>
-			<a href="{{ url_for('main.incident_api')}}">All Incidents</a>
-		</p>
 	{% endif %}
 	<ul class="list-group">
 		{% if objects.items %}

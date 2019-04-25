@@ -26,20 +26,27 @@
         {{ wtf.form_field(form.employment_date) }}
         {{ wtf.form_field(form.birth_year) }}
         {{ wtf.form_field(form.department) }}
+        <div>
+            <legend>{{ form.salaries.label }}</legend>
+            {% for subform in form.salaries %}
+                {% include "partials/subform.html" %}
+            {% endfor %}
+            <button class="btn btn-success js-add-another-button" disabled>Add another salary</button>
+        </div>
         {% include "partials/links_subform.html" %}
         <div>
             <legend>{{ form.notes.label }}</legend>
             {% for subform in form.notes %}
                 {% include "partials/subform.html" %}
             {% endfor %}
-            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+            <button class="btn btn-success js-add-another-button" disabled>Add another note</button>
         </div>
         <div>
             <legend>{{ form.descriptions.label }}</legend>
             {% for subform in form.descriptions %}
                 {% include "partials/subform.html" %}
             {% endfor %}
-            <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+            <button class="btn btn-success js-add-another-button" disabled>Add another description</button>
         </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>

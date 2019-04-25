@@ -17,8 +17,8 @@ def login_user(client):
 
 
 def login_admin(client):
-    form = LoginForm(email='redshiftzero@example.org',
-                     password='cat',
+    form = LoginForm(email='test@example.org',
+                     password='testtest',
                      remember_me=True)
     rv = client.post(
         url_for('auth.login'),

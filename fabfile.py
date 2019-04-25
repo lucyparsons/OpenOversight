@@ -53,6 +53,7 @@ def production():
 def deploy():
     with cd(env.code_dir):
         run('su %s -c "git fetch && git status"' % env.unprivileged_user)
+        run('su %s -c "make cleanassets assets"' % env.unprivileged_user)
         if confirm("Update to latest commit in this branch?", default=False):
             run('su %s -c "git pull"' % env.unprivileged_user)
             run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
@@ -62,11 +63,12 @@ def deploy():
 def migrate():
     with cd(env.code_dir):
         run('su %s -c "git fetch && git status"' % env.unprivileged_user)
+        run('su %s -c "make cleanassets assets"' % env.unprivileged_user)
         if confirm("Update to latest commit in this branch?", default=False):
             run('su %s -c "git pull"' % env.unprivileged_user)
             run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
         if confirm("Apply any outstanding database migrations?", default=False):
-            run('su %s -c "cd OpenOversight; %s/bin/python manage.py db upgrade"' % (env.unprivileged_user, env.venv_dir))
+            run('su %s -c "cd OpenOversight; FLASK_APP=OpenOversight.app %s/bin/flask db upgrade"' % (env.unprivileged_user, env.venv_dir))
             run('sudo systemctl restart openoversight')
 
 
