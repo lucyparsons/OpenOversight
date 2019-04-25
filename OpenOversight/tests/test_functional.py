@@ -137,7 +137,7 @@ def test_lastname_capitalization(mockdata, browser):
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
-    dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label != None).one_or_none()
+    dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label.isnot(None)).first()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
