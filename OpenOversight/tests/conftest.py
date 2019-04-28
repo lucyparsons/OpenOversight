@@ -239,9 +239,9 @@ def mockdata(session):
                             confirmed=True)
     session.add(test_user)
 
-    test_admin = models.User(email='redshiftzero@example.org',
+    test_admin = models.User(email='test@example.org',
                              username='test_admin',
-                             password='cat',
+                             password='testtest',
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)

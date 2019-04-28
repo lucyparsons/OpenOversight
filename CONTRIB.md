@@ -97,6 +97,44 @@ $ flask db upgrade
 
 You can also downgrade the database using `flask db downgrade`.
 
+## Using a Virtual Environment
+One way to avoid hitting version incompatibility errors when running `flask` commands is to use a virtualenv.  See [Python Packaging user guidelines](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/) for instructions on installing virtualenv.  After installing virtualenv, you can create a virtual environment by navigating to the OpenOversight directory and running the below
+
+```bash
+python3 -m virtualenv env
+```
+
+Confirm you're in the virtualenv by running 
+
+```bash
+which python  
+```
+
+The response should point to your `env` directory.  
+If you want to exit the virtualenv, run 
+
+```bash
+deactivate
+```
+
+To reactivate the virtualenv, run
+
+```bash
+source env/bin/activate
+```
+
+While in the virtualenv, you can install project dependencies by running 
+
+```bash
+pip install -r requirements.txt
+```
+
+and
+
+```bash
+pip install -r dev-requirements.txt
+```
+
 ## OpenOversight Management Interface
 
 In addition to generating database migrations, the Flask CLI can be used to run additional commands:
@@ -121,6 +159,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
+  bulk-add-officers            Bulk adds officers.
   db                           Perform database migrations.
   link-images-to-department    Link existing images to first department
   link-officers-to-department  Links officers and units to first department
@@ -140,3 +179,25 @@ Password:
 Type your password again:
 Administrator redshiftzero successfully added
 ```
+
+## Debugging OpenOversight - Use pdb with the app itself
+In `docker-compose.yml`, below the line specifying the port number, add the following lines to the `web` service:
+```yml
+   stdin_open: true
+   tty: true    
+```
+Also in `docker-compose.yml`, below the line specifying the `FLASK_ENV`, add the following to the `environment` portion of the `web` service:
+```yml
+  FLASK_DEBUG: 0
+```
+The above line disables the werkzeug reloader, which can otherwise cause a bug when you place a breakpoint in code that loads at import time, such as classes.  The werkzeug reloader will start one pdb process at import time and one when you navigate to the class.  This makes it impossible to interact with the pdb prompt, but we can fix it by disabling the reloader.
+    
+To set a breakpoint in OpenOversight, first import the pdb module by adding `import pdb` to the file you want to debug.  Call `pdb.set_trace()` on its own line wherever you want to break for debugging.
+Next, in your terminal run `docker ps` to find the container id of the `openoversight_web` image, then run `docker attach ${container_id}` to connect to the debugger in your terminal.  You can now use pdb prompts to step through the app.
+
+## Debugging OpenOversight - Use pdb with a test
+If you want to run an individual test in debug mode, use the below command.
+```yml
+`docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>`
+```
+Again, add `import pdb` to the file you want to debug, then write `pdb.set_trace()` wherever you want to drop a breakpoint.  Once the test is up and running in your terminal, you can debug it using pdb prompts.

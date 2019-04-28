@@ -91,3 +91,6 @@ fabfile.py
 
 # Docker container volumes
 container_data
+
+node_modules/
+OpenOverSight/app/static/dist/
