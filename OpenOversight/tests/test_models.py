@@ -21,7 +21,7 @@ def test_officer_repr(mockdata):
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.id, assignment.star_no)
+    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.officer.id, assignment.star_no)
 
 
 def test_image_repr(mockdata):
