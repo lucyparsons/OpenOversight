@@ -21,12 +21,12 @@ from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
                      set_dynamic_default, create_note, get_uploaded_cropped_image,
-                     create_description, filter_by_form)
+                     create_description, filter_by_form, create_link)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm)
+                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -416,7 +416,7 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
 def add_officer():
     form = AddOfficerForm()
     for link in form.links:
-        link.user_id.data = current_user.id
+        link.creator_id.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -443,9 +443,6 @@ def add_officer():
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
-    for link in form.links:
-        if not link.user_id.data:
-            link.user_id.data = current_user.id
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -857,7 +854,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
-            link.user_id.data = current_user.id
+            link.creator_id.data = current_user.id
         return form
 
     def get_edit_form(self, obj):
@@ -867,10 +864,10 @@ class IncidentApi(ModelView):
         no_links = len(obj.links)
         no_officers = len(obj.officers)
         for link in form.links:
-            if link.user_id.data:
+            if link.creator_id.data:
                 continue
             else:
-                link.user_id.data = current_user.id
+                link.creator_id.data = current_user.id
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id
@@ -1032,4 +1029,46 @@ main.add_url_rule(
 main.add_url_rule(
     '/officer/<int:officer_id>/description/<int:obj_id>/delete',
     view_func=description_view,
+    methods=['GET', 'POST'])
+
+
+class LinkApi(ModelView):
+    model = Link
+    model_name = 'link'
+    form = OfficerLinkForm
+    department_check = True
+    create_function = create_link
+
+    def get_new_form(self):
+        form = self.form()
+        form.officer_id.data = self.officer_id
+        return form
+
+    def get_redirect_url(self, *args, **kwargs):
+        return redirect(url_for('main.officer_profile', officer_id=self.officer_id))
+
+    def get_post_delete_url(self, *args, **kwargs):
+        return self.get_redirect_url()
+
+    def dispatch_request(self, *args, **kwargs):
+        if 'officer_id' in kwargs:
+            officer = Officer.query.get_or_404(kwargs['officer_id'])
+            self.officer_id = kwargs.pop('officer_id')
+            self.department_id = officer.department_id
+        return super(LinkApi, self).dispatch_request(*args, **kwargs)
+
+
+# This API only applies to links attached to officer profiles, not links
+# attached to incidents.
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/new',
+    view_func=LinkApi.as_view('link_api_new'),
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/<int:obj_id>/edit',
+    view_func=LinkApi.as_view('link_api_edit'),
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/<int:obj_id>/delete',
+    view_func=LinkApi.as_view('link_api_delete'),
     methods=['GET', 'POST'])

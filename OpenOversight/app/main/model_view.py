@@ -101,7 +101,7 @@ class ModelView(MethodView):
         if request.method == 'POST':
             db.session.delete(obj)
             db.session.commit()
-
+            flash('{} successfully deleted!'.format(self.model_name))
             return self.get_post_delete_url()
 
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
