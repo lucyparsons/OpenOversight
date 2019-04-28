@@ -262,12 +262,12 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(
             Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
         )
-    race_values = [x for x,_ in RACE_CHOICES]
+    race_values = [x for x, _ in RACE_CHOICES]
     if form.get('race') and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
             form['race'].append(None)
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
-    gender_values = [x for x,_ in GENDER_CHOICES]
+    gender_values = [x for x, _ in GENDER_CHOICES]
     if form.get('gender') and all(gender in gender_values for gender in form['gender']):
         if 'Not Sure' in form['gender']:
             form['gender'].append(None)

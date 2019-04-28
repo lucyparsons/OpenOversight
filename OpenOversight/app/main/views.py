@@ -487,7 +487,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     choices = {
         'race': RACE_CHOICES,
         'gender': GENDER_CHOICES,
-        'rank': [(rc,rc) for rc in rank_choices]
+        'rank': [(rc, rc) for rc in rank_choices]
     }
 
     return render_template(
