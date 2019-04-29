@@ -61,9 +61,9 @@ def dept_choices():
 def add_new_assignment(officer_id, form):
     # Resign date should be null
     if form.unit.data:
-        unit = form.unit.data.id
+        unit_id = form.unit.data.id
     else:
-        unit = None
+        unit_id = None
 
     job = Job.query\
              .filter_by(department_id=form.job_title.data.department_id,
@@ -73,7 +73,7 @@ def add_new_assignment(officer_id, form):
     new_assignment = Assignment(officer_id=officer_id,
                                 star_no=form.star_no.data,
                                 job_id=job.id,
-                                unit=unit,
+                                unit_id=unit_id,
                                 star_date=form.star_date.data)
     db.session.add(new_assignment)
     db.session.commit()
