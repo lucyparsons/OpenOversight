@@ -27,7 +27,7 @@ $(document).ready(function() {
         var ranks_url = $(this).data('ranks-url');
         var ranks = $.ajax({
             url: ranks_url,
-            data: {department_id: dept_id}
+            data: {department_id: dept_id, is_sworn_officer: true}
         }).done(function(ranks) {
             $('input#rank').replaceWith('<select class="form-control" id="rank" name="rank">');
             for (i = 0; i < ranks.length; i++) {
