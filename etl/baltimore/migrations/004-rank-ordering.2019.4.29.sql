@@ -1,0 +1,16 @@
+BEGIN;
+UPDATE jobs SET is_sworn_officer = False, "order" = NULL;
+UPDATE jobs SET is_sworn_officer = True, "order" = 13 WHERE job_title = 'Police Commissioner';
+UPDATE jobs SET is_sworn_officer = True, "order" = 12 WHERE job_title = 'Deputy Police Commissioner';
+UPDATE jobs SET is_sworn_officer = True, "order" = 11 WHERE job_title = 'Police Chief';
+UPDATE jobs SET is_sworn_officer = True, "order" = 10 WHERE job_title = 'Police Inspector';
+UPDATE jobs SET is_sworn_officer = True, "order" = 9 WHERE job_title = 'Police Colonel';
+UPDATE jobs SET is_sworn_officer = True, "order" = 8 WHERE job_title = 'Police Lieutenant Colonel';
+UPDATE jobs SET is_sworn_officer = True, "order" = 7 WHERE job_title = 'Police Major';
+UPDATE jobs SET is_sworn_officer = True, "order" = 6 WHERE job_title = 'Police Captain';
+UPDATE jobs SET is_sworn_officer = True, "order" = 5 WHERE job_title = 'Police Lieutenant';
+UPDATE jobs SET is_sworn_officer = True, "order" = 4 WHERE job_title = 'Police Sergeant';
+UPDATE jobs SET is_sworn_officer = True, "order" = 3 WHERE job_title = 'Police Officer';
+UPDATE jobs SET is_sworn_officer = True, "order" = 2 WHERE job_title = 'Police Officer Trainee';
+UPDATE jobs SET is_sworn_officer = True, "order" = 1 WHERE job_title = 'Police Cadet';
+COMMIT;
