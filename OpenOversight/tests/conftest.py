@@ -61,13 +61,6 @@ def pick_name():
     return (pick_first(), pick_middle(), pick_last())
 
 
-def pick_rank(department_id):
-    if department_id == 1:
-        return random.choice(range(0, len(RANK_CHOICES_1)))
-    else:
-        return random.choice(range(0, len(RANK_CHOICES_2)))
-
-
 def pick_star():
     return random.randint(1, 9999)
 
@@ -99,8 +92,8 @@ def generate_officer():
     )
 
 
-def build_assignment(officer, unit):
-    return models.Assignment(star_no=pick_star(), job_id=pick_rank(officer.department_id),
+def build_assignment(officer, unit, jobs):
+    return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
                              officer=officer)
 
 
@@ -245,10 +238,13 @@ def mockdata(session):
 
     # assures that there are some assigned and unassigned images in each department
     assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
-
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
 
-    assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
+    jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+    assignments_dept1 = [build_assignment(officer, unit1, jobs_dept1) for officer in officers_dept1]
+    assignments_dept2 = [build_assignment(officer, unit1, jobs_dept2) for officer in officers_dept2]
+
     salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
@@ -256,7 +252,8 @@ def mockdata(session):
     faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
     session.commit()
-    session.add_all(assignments)
+    session.add_all(assignments_dept1)
+    session.add_all(assignments_dept2)
     session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
@@ -385,7 +382,7 @@ def mockdata(session):
 
     session.commit()
 
-    return assignments[0].star_no
+    return assignments_dept1[0].star_no
 
 
 @pytest.fixture
