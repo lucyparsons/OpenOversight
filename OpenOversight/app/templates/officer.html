@@ -218,7 +218,11 @@
           <tr>
             <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
             {% if salary.overtime_pay %}
-            <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+              {% if salary.overtime_pay > 0 %}
+              <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+              {% else %}
+              <td></td>
+              {% endif %}
             <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
             {% else %}
             <td></td>
