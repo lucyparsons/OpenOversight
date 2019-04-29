@@ -29,7 +29,7 @@
                 </a></li>
                 <li class="disabled"><a href="#step-2">
                     <h4 class="list-group-item-heading">Step 2</h4>
-                    <p class="list-group-item-text">Partial Name or Badge Number</p>
+                    <p class="list-group-item-text">Partial Name or Sequence Number</p>
                 </a></li>
                 <li class="disabled"><a href="#step-3">
                     <h4 class="list-group-item-heading">Step 3</h4>
@@ -72,14 +72,22 @@
                   {% endfor %}
                 </div>
 
-                <h2><small>Do you remember any part of the Officer's badge number?</small></h2>
+                <!-- <h2><small>Do you remember any part of the Officer's badge number?</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
                   {{ form.badge(class="form-control") }}
                   {% for error in form.badge.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
+                </div> -->
+                <div id="uii-question">
+                    <h2><small>Do you know the Officer's Sequence Number?</small></h2>
+                    <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                    {{ form.unique_internal_identifier(class="form-control") }}
+                    {% for error in form.unique_internal_identifier.errors %}
+                        <p><span style="color: red;">[{{ error }}]</span></p>
+                    {% endfor %}
+                    </div>
                 </div>
-
                 <br>
                 <button id="activate-step-3" class="btn btn-primary btn-lg">Next Step</button>
             </div>
