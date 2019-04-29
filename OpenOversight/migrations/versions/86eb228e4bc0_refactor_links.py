@@ -1,7 +1,7 @@
 """Refactor links
 
 Revision ID: 86eb228e4bc0
-Revises: 2a9064a2507c
+Revises: 770ed51b4e16
 Create Date: 2019-03-15 22:40:10.473917
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '86eb228e4bc0'
-down_revision = '2a9064a2507c'
+down_revision = '770ed51b4e16'
 branch_labels = None
 depends_on = None
 
