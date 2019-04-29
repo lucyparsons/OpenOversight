@@ -1078,7 +1078,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         assert any("<dd>COMMANDER</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
-        assert any("<dd>M</dd>" in token for token in filter_list)
+        assert any("<dd>Male</dd>" in token for token in filter_list)
 
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):

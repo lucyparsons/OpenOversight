@@ -99,6 +99,18 @@ class Officer(db.Model):
                 return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
+    def race_label(self):
+        from .main.choices import RACE_CHOICES
+        for race, label in RACE_CHOICES:
+            if self.race == race:
+                return label
+
+    def gender_label(self):
+        from .main.choices import GENDER_CHOICES
+        for gender, label in GENDER_CHOICES:
+            if self.gender == gender:
+                return label
+
     def __repr__(self):
         return '<Officer ID {}: {} {} {} {}>'.format(self.id,
                                                      self.first_name,

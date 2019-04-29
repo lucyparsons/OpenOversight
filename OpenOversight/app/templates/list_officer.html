@@ -153,13 +153,13 @@
                       <dt>Rank</dt>
                       <dd>{{ assignment.rank|default('Unknown') }}</dd>
                       <dt>Race</dt>
-                      <dd>{{ officer.race|default('Unknown')|lower|title }}</dd>
+                      <dd>{{ officer.race_label()|default('Unknown')|lower|title }}</dd>
                     </dl>
                   </div>
                   <div class="col-md-6 col-xs-6">
                     <dl>
                       <dt>Gender</dt>
-                      <dd>{{ officer.gender|default('Unknown') }}</dd>
+                      <dd>{{ officer.gender_label()|default('Unknown') }}</dd>
                       <dt>Number of Photos</dt>
                       <dd>{{ officer.face.count() }}</dd>
                     </dl>
