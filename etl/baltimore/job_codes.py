@@ -23,9 +23,9 @@ if __name__ == '__main__':
             jobs[code] = title
             print('{}: {}'.format(code, title))
         page += 1
-    with open('job_codes.csv', 'w', newline='') as csvfile:
+    with open('scraped_job_codes.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Job Code', 'Job Title'])
         for code, title in jobs.items():
-            writer.writerow([code, title])
+            writer.writerow([code, title.replace('"','')])
     print('Done.')
