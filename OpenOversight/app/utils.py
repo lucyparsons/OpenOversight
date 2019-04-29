@@ -273,7 +273,7 @@ def filter_by_form(form, officer_query, department_id=None):
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.outerjoin(Assignment).outerjoin(Job, Assignment.job)
+    officer_query = officer_query.outerjoin(Job, Assignment.job)
     rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]
     if form.get('rank') and all(rank in rank_values for rank in form['rank']):
         if 'Not Sure' in form['rank']:
