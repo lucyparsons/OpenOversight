@@ -9,7 +9,7 @@ import click
 from flask.cli import with_appcontext
 from flask import current_app
 
-from .models import db, Assignment, Department, Officer, User, Salary
+from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer
 
 
@@ -69,7 +69,7 @@ def link_images_to_department():
 @click.command()
 @with_appcontext
 def link_officers_to_department():
-    """Links officers and units to first department"""
+    """Links officers and unit_ids to first department"""
     from app.models import Officer, Unit, db
 
     officers = Officer.query.all()
@@ -220,11 +220,10 @@ def create_officer_from_row(row, department_id):
 
 def process_assignment(row, officer, compare=False):
     assignment_fields = {
-        'required': [],
+        'required': ['job_title'],
         'optional': [
             'star_no',
-            'rank',
-            'unit',
+            'unit_id',
             'star_date',
             'resign_date']
     }
@@ -234,27 +233,45 @@ def process_assignment(row, officer, compare=False):
         add_assignment = True
         if compare:
             # Get existing assignments for officer and compare to row data
-            assignments = Assignment.query.filter_by(officer_id=officer.id).all()
-            all_assignment_fields = assignment_fields['required'] + assignment_fields['optional']
-            for assignment in assignments:
+            assignments = db.session.query(Assignment, Job)\
+                            .filter(Assignment.job_id == Job.id)\
+                            .filter_by(officer_id=officer.id)\
+                            .all()
+            for (assignment, job) in assignments:
+                assignment_fieldnames = ['star_no', 'unit_id', 'star_date', 'resign_date']
                 i = 0
-                for fieldname in all_assignment_fields:
+                for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
                     if (current and fieldname in row and row[fieldname] == current) or \
                             (not current and (fieldname not in row or not row[fieldname])):
                         i += 1
-                if i == len(all_assignment_fields):
-                    # Found match, so don't add new assignment
-                    add_assignment = False
-
+                if i == len(assignment_fieldnames):
+                    job_title = job.job_title
+                    if (job_title and 'job_title' in row and row['job_title'] == job_title) or \
+                            (not job_title and ('job_title' not in row or not row['job_title'])):
+                        # Found match, so don't add new assignment
+                        add_assignment = False
         if add_assignment:
+            job = Job.query\
+                     .filter_by(job_title=row['job_title'],
+                                department_id=officer.department_id)\
+                     .one_or_none()
+            if not job:
+                # create new job
+                job = Job(
+                    is_sworn_officer=False,
+                    department_id=officer.id
+                )
+                set_field_from_row(row, job, 'job_title', allow_blank=False)
+                db.session.add(job)
+                db.session.flush()
             # create new assignment
             assignment = Assignment()
             assignment.officer_id = officer.id
+            assignment.job_id = job.id
             set_field_from_row(row, assignment, 'star_no')
-            set_field_from_row(row, assignment, 'rank')
-            set_field_from_row(row, assignment, 'unit')
+            set_field_from_row(row, assignment, 'unit_id')
             set_field_from_row(row, assignment, 'star_date', allow_blank=False)
             set_field_from_row(row, assignment, 'resign_date', allow_blank=False)
             db.session.add(assignment)

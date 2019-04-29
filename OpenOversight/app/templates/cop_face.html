@@ -100,7 +100,7 @@
           {% else %}
           <a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">
           {% endif %}
-            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a></p>
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a>
         </div>
         <div class="col-sm-2 text-center">
           <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
@@ -122,9 +122,4 @@
     {% endif %}
 
 </div>
-{% endblock %}
-
-{% block js_footer %}
-  <script src="{{ url_for('static', filename='js/cropper.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/tagger.js') }}"></script>
 {% endblock %}

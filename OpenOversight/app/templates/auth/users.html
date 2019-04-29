@@ -10,10 +10,8 @@
 <div class="container" role="main">
 	<div class="horizontal-padding">
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num,
-        from_search=from_search),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num,
-          from_search=from_search),
+          next_url=url_for('auth.user_api', page=objects.next_num),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num),
           location='top' %}
 	    {% include "partials/paginate_nav.html" %}
 	  {% endwith %}
@@ -82,10 +80,8 @@
 			</table>
 		</div>
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num,
-        from_search=from_search),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num,
-          from_search=from_search),
+          next_url=url_for('auth.user_api', page=objects.next_num),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num),
           location='bottom' %}
 	    {% include "partials/paginate_nav.html" %}
 	  {% endwith %}

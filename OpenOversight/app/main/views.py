@@ -3,6 +3,7 @@ import os
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import text
 import sys
 import tempfile
 from traceback import format_exc
@@ -14,7 +15,7 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (grab_officers, roster_lookup, upload_file, compute_hash,
+from ..utils import (roster_lookup, upload_file, compute_hash,
                      serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
@@ -28,10 +29,10 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
 from .model_view import ModelView
-from .choices import GENDER_CHOICES, RACE_CHOICES, RANK_CHOICES, AGE_CHOICES
+from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
                       Unit, Incident, Location, LicensePlate, Link, Note,
-                      Description, Salary)
+                      Description, Salary, Job)
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
@@ -58,13 +59,24 @@ def browse():
 
 @main.route('/find', methods=['GET', 'POST'])
 def get_officer():
+    jsloads = ['js/find_officer.js']
     form = FindOfficerForm()
     if getattr(current_user, 'dept_pref_rel', None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
 
     if form.validate_on_submit():
-        return redirect(url_for('main.get_gallery'), code=307)
-    return render_template('input_find_officer.html', form=form)
+        return redirect(url_for(
+            'main.list_officer',
+            department_id=form.data['dept'].id,
+            race=form.data['race'] if form.data['race'] != 'Not Sure' else None,
+            gender=form.data['gender'] if form.data['gender'] != 'Not Sure' else None,
+            rank=form.data['rank'] if form.data['rank'] != 'Not Sure' else None,
+            min_age=form.data['min_age'],
+            max_age=form.data['max_age'],
+            name=form.data['name'],
+            badge=form.data['badge']),
+            code=302)
+    return render_template('input_find_officer.html', form=form, jsloads=jsloads)
 
 
 @main.route('/tagger_find', methods=['GET', 'POST'])
@@ -136,6 +148,10 @@ def officer_profile(officer_id):
             ' '.join([str(exception_type), str(value),
                       format_exc()])
         ))
+    form.job_title.query = Job.query\
+                              .filter_by(department_id=officer.department_id)\
+                              .order_by(Job.order.asc())\
+                              .all()
 
     try:
         faces = Face.query.filter_by(officer_id=officer_id).all()
@@ -159,6 +175,10 @@ def officer_profile(officer_id):
 def add_assignment(officer_id):
     form = AssignmentForm()
     officer = Officer.query.filter_by(id=officer_id).first()
+    form.job_title.query = Job.query\
+                              .filter_by(department_id=officer.department_id)\
+                              .order_by(Job.order.asc())\
+                              .all()
     if not officer:
         flash('Officer not found')
         abort(404)
@@ -176,7 +196,7 @@ def add_assignment(officer_id):
     elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
         abort(403)
 
-    return redirect(url_for('main.officer_profile'), officer_id=officer_id)
+    return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
@@ -184,14 +204,23 @@ def add_assignment(officer_id):
 @login_required
 @ac_or_admin_required
 def edit_assignment(officer_id, assignment_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
+
     if current_user.is_area_coordinator and not current_user.is_administrator:
-        officer = Officer.query.filter_by(id=officer_id).one()
         if not ac_can_edit_officer(officer, current_user):
             abort(403)
 
     assignment = Assignment.query.filter_by(id=assignment_id).one()
     form = AssignmentForm(obj=assignment)
+    form.job_title.query = Job.query\
+                              .filter_by(department_id=officer.department_id)\
+                              .order_by(Job.order.asc())\
+                              .all()
+    form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
+    if form.unit.data and type(form.unit.data) == int:
+        form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
     if form.validate_on_submit():
+        form.job_title.data = Job.query.filter_by(id=int(form.job_title.raw_data[0])).one()
         assignment = edit_existing_assignment(assignment, form)
         flash('Edited officer assignment ID {}'.format(assignment.id))
         return redirect(url_for('main.officer_profile', officer_id=officer_id))
@@ -320,6 +349,7 @@ def classify_submission(image_id, contains_cops):
 @login_required
 @admin_required
 def add_department():
+    jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
     form = DepartmentForm()
     if form.validate_on_submit():
         departments = [x[0] for x in db.session.query(Department.name).all()]
@@ -328,19 +358,38 @@ def add_department():
             department = Department(name=form.name.data,
                                     short_name=form.short_name.data)
             db.session.add(department)
-            db.session.commit()
+            db.session.flush()
+            db.session.add(Job(
+                job_title='Not Sure',
+                order=0,
+                department_id=department.id
+            ))
+            db.session.flush()
+            if form.jobs.data:
+                order = 1
+                for job in form.data['jobs']:
+                    if job:
+                        db.session.add(Job(
+                            job_title=job,
+                            order=order,
+                            is_sworn_officer=True,
+                            department_id=department.id
+                        ))
+                        order += 1
+                db.session.commit()
             flash('New department {} added to BPD Watch'.format(department.name))
         else:
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
     else:
-        return render_template('add_edit_department.html', form=form)
+        return render_template('add_edit_department.html', form=form, jsloads=jsloads)
 
 
 @main.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_department(department_id):
+    jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
@@ -353,22 +402,58 @@ def edit_department(department_id):
                                         department_id=department_id))
         department.name = new_name
         department.short_name = form.short_name.data
-        db.session.commit()
+        db.session.flush()
+        if form.jobs.data:
+            current_ranks = Job.query.filter_by(
+                department_id=department_id,
+                is_sworn_officer=True
+            ).filter(Job.job_title != 'Not Sure').all()
+            new_ranks = []
+            order = 1
+            for rank in form.data['jobs']:
+                if rank:
+                    new_ranks.append((rank, order))
+                    order += 1
+            for rank in current_ranks:
+                rank.order = None
+                rank.is_sworn_officer = False
+            for (new_rank, order) in new_ranks:
+                existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
+                if existing_rank:
+                    existing_rank.is_sworn_officer = True
+                    existing_rank.order = order
+                else:
+                    db.session.add(Job(
+                        job_title=new_rank,
+                        order=order,
+                        is_sworn_officer=True,
+                        department_id=department_id
+                    ))
+            db.session.commit()
+
+            # Prune any jobs from department that aren't referenced by any current officers
+            query = text("DELETE FROM jobs WHERE department_id = :department_id AND is_sworn_officer = False AND NOT EXISTS (SELECT 1 FROM assignments WHERE assignments.job_id = jobs.id)")
+            query = query.bindparams(department_id=department_id)
+            db.session.execute(query)
         flash('Department {} edited'.format(department.name))
         return redirect(url_for('main.list_officer', department_id=department.id))
     else:
-        return render_template('add_edit_department.html', form=form, update=True)
+        return render_template('add_edit_department.html', form=form, update=True, jsloads=jsloads)
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, from_search=False, race='Not Sure', gender='Not Sure', rank='Not Sure', min_age='16', max_age='100'):
+def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
     form = BrowseForm()
+    form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
     form_data['race'] = race
     form_data['gender'] = gender
     form_data['rank'] = rank
     form_data['min_age'] = min_age
     form_data['max_age'] = max_age
+    form_data['name'] = name
+    form_data['badge'] = badge
+    form_data['unique_internal_identifier'] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
@@ -376,44 +461,70 @@ def list_officer(department_id, page=1, from_search=False, race='Not Sure', gend
         abort(404)
 
     # Set form data based on URL
-    if request.args.get('race') and request.args.get('race') in [rc[0] for rc in RACE_CHOICES]:
-        form_data['race'] = request.args.get('race')
-    if request.args.get('gender') and request.args.get('gender') in [gc[0] for gc in GENDER_CHOICES]:
-        form_data['gender'] = request.args.get('gender')
-    if request.args.get('rank') and request.args.get('rank') in [rc[0] for rc in RANK_CHOICES]:
-        form_data['rank'] = request.args.get('rank')
     if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
         form_data['min_age'] = request.args.get('min_age')
     if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
         form_data['max_age'] = request.args.get('max_age')
     if request.args.get('page'):
         page = int(request.args.get('page'))
+    if request.args.get('name'):
+        form_data['name'] = request.args.get('name')
+    if request.args.get('badge'):
+        form_data['badge'] = request.args.get('badge')
+    if request.args.get('unique_internal_identifier'):
+        form_data['unique_internal_identifier'] = request.args.get('unique_internal_identifier')
+    if request.args.get('race') and all(race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist('race')):
+        form_data['race'] = request.args.getlist('race')
+    if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
+        form_data['gender'] = request.args.getlist('gender')
 
-    officers = filter_by_form(form_data, Officer.query, True).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
+    if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
+        form_data['rank'] = request.args.getlist('rank')
 
-    if request.args.get('from_search'):
-        if request.args.get('from_search') == 'True':
-            from_search = True
-        else:
-            from_search = False
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+
+    choices = {
+        'race': RACE_CHOICES,
+        'gender': GENDER_CHOICES,
+        'rank': [(rc, rc) for rc in rank_choices]
+    }
 
     return render_template(
         'list_officer.html',
         form=form,
         department=department,
         officers=officers,
-        from_search=from_search,
-        race=form_data['race'],
-        gender=form_data['gender'],
-        rank=form_data['rank'],
-        min_age=form_data['min_age'],
-        max_age=form_data['max_age'])
+        form_data=form_data,
+        choices=choices)
+
+
+@main.route('/department/<int:department_id>/ranks')
+@main.route('/ranks')
+def get_dept_ranks(department_id=None, is_sworn_officer=None):
+    if not department_id:
+        department_id = request.args.get('department_id')
+    if request.args.get('is_sworn_officer'):
+        is_sworn_officer = request.args.get('is_sworn_officer')
+
+    if department_id:
+        ranks = Job.query.filter_by(department_id=department_id)
+        if is_sworn_officer:
+            ranks = ranks.filter_by(is_sworn_officer=True)
+        ranks = ranks.order_by(Job.order.asc()).all()
+        rank_list = [(rank.id, rank.job_title) for rank in ranks]
+    else:
+        ranks = Job.query.all()  # Not filtering by is_sworn_officer
+        rank_list = list(set([(rank.id, rank.job_title) for rank in ranks]))  # Prevent duplicate ranks
+
+    return jsonify(rank_list)
 
 
 @main.route('/officer/new', methods=['GET', 'POST'])
 @login_required
 @ac_or_admin_required
 def add_officer():
+    jsloads = ['js/dynamic_lists.js', 'js/add_officer.js']
     form = AddOfficerForm()
     for link in form.links:
         link.creator_id.data = current_user.id
@@ -434,13 +545,14 @@ def add_officer():
         flash('New Officer {} added to BPD Watch'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
-        return render_template('add_officer.html', form=form)
+        return render_template('add_officer.html', form=form, jsloads=jsloads)
 
 
 @main.route('/officer/<int:officer_id>/edit', methods=['GET', 'POST'])
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
+    jsloads = ['js/dynamic_lists.js']
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
 
@@ -455,7 +567,7 @@ def edit_officer(officer_id):
         flash('Officer {} edited'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
-        return render_template('edit_officer.html', form=form)
+        return render_template('edit_officer.html', form=form, jsloads=jsloads)
 
 
 @main.route('/unit/new', methods=['GET', 'POST'])
@@ -520,6 +632,7 @@ def leaderboard():
 @main.route('/cop_face/', methods=['GET', 'POST'])
 @login_required
 def label_data(department_id=None, image_id=None):
+    jsloads = ['js/cropper.js', 'js/tagger.js']
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -581,7 +694,7 @@ def label_data(department_id=None, image_id=None):
 
     return render_template('cop_face.html', form=form,
                            image=image, path=proper_path,
-                           department=department)
+                           department=department, jsloads=jsloads)
 
 
 @main.route('/image/tagged/<int:image_id>')
@@ -615,30 +728,6 @@ def get_tagger_gallery(page=1):
                                form_data=form_data)
     else:
         return redirect(url_for('main.get_ooid'), code=307)
-
-
-@main.route('/gallery/<int:page>', methods=['GET', 'POST'])
-@main.route('/gallery', methods=['GET', 'POST'])
-def get_gallery(page=1):
-    form = FindOfficerForm()
-    if form.validate_on_submit():
-        OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
-        form_data = form.data
-        officers = grab_officers(form_data).paginate(page, OFFICERS_PER_PAGE, False)
-        # If no officers are found, go to a list of all department officers
-        if not officers.items:
-            return redirect(url_for(
-                'main.list_officer',
-                department_id=form_data['dept'].id,
-                from_search=True)
-            )
-
-        return render_template('gallery.html',
-                               officers=officers,
-                               form=form,
-                               form_data=form_data)
-    else:
-        return redirect(url_for('main.get_officer'))
 
 
 @main.route('/complaint', methods=['GET', 'POST'])
@@ -693,7 +782,7 @@ def download_dept_csv(department_id):
     for r in assign_records:
         if r.officer_id not in assign_dict:
             assign_dict[r.officer_id] = []
-        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.rank), check_input(r.unit), check_input(r.star_date), check_input(r.resign_date)))
+        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.job_id), check_input(r.unit_id), check_input(r.star_date), check_input(r.resign_date)))
 
     record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
                    (str(record.id),

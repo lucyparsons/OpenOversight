@@ -25,6 +25,10 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
 
+RANK_CHOICES_1 = ['Not Sure', 'Police Officer', 'Captain', 'Commander']
+RANK_CHOICES_2 = ['Not Sure', 'Police Officer', 'Lieutenant', 'Sergeant', 'Commander', 'Chief']
+
+
 AC_DEPT = 1
 
 
@@ -55,10 +59,6 @@ def pick_last():
 
 def pick_name():
     return (pick_first(), pick_middle(), pick_last())
-
-
-def pick_rank():
-    return random.choice(['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure'])
 
 
 def pick_star():
@@ -92,8 +92,8 @@ def generate_officer():
     )
 
 
-def build_assignment(officer, unit):
-    return models.Assignment(star_no=pick_star(), rank=pick_rank(),
+def build_assignment(officer, unit, jobs):
+    return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
                              officer=officer)
 
 
@@ -196,6 +196,27 @@ def mockdata(session):
     session.add(department2)
     session.commit()
 
+    i = 0
+    for rank in RANK_CHOICES_1:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=1
+        ))
+        i += 1
+
+    i = 0
+    for rank in RANK_CHOICES_2:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=2
+        ))
+        i += 1
+    session.commit()
+
     # Ensure test data is deterministic
     SEED = current_app.config['SEED']
     random.seed(SEED)
@@ -231,10 +252,13 @@ def mockdata(session):
 
     # assures that there are some assigned and unassigned images in each department
     assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
-
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
 
-    assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
+    jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+    assignments_dept1 = [build_assignment(officer, unit1, jobs_dept1) for officer in officers_dept1]
+    assignments_dept2 = [build_assignment(officer, unit1, jobs_dept2) for officer in officers_dept2]
+
     salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
@@ -242,7 +266,8 @@ def mockdata(session):
     faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
     session.commit()
-    session.add_all(assignments)
+    session.add_all(assignments_dept1)
+    session.add_all(assignments_dept2)
     session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
@@ -371,7 +396,7 @@ def mockdata(session):
 
     session.commit()
 
-    return assignments[0].star_no
+    return assignments_dept1[0].star_no
 
 
 @pytest.fixture
@@ -403,8 +428,8 @@ def csvfile(mockdata, tmp_path, request):
         'employment_date',
         'birth_year',
         'star_no',
-        'rank',
-        'unit',
+        'job_title',
+        'unit_id',
         'star_date',
         'resign_date',
         'salary',
@@ -428,7 +453,13 @@ def csvfile(mockdata, tmp_path, request):
             towrite = merge_dicts(vars(officer), {'department_id': 1})
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = merge_dicts(towrite, vars(assignment))
+                towrite = merge_dicts(towrite, {
+                    'star_no': assignment.star_no,
+                    'job_title': assignment.job.job_title if assignment.job else None,
+                    'unit_id': assignment.unit_id,
+                    'star_date': assignment.star_date,
+                    'resign_date': assignment.resign_date
+                })
             if len(list(officer.salaries)) > 0:
                 salary = officer.salaries[0]
                 towrite = merge_dicts(towrite, {

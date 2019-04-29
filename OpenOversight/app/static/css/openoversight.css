@@ -445,3 +445,56 @@ tr:hover .row-actions {
 .row-actions .delete a {
     color: #a00;
 }
+
+.sortable-fields fieldset > div {
+  margin-bottom: 2rem;
+}
+
+.sortable-fields fieldset .glyphicon {
+  font-size: 14px;
+  cursor: move;
+}
+
+.filter-sidebar label.form-check {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.filter-sidebar .form-group {
+    margin-bottom: 0;
+}
+
+.filter-sidebar .checkbox {
+    margin-top: 0;
+}
+
+.filter-sidebar .panel {
+    margin-bottom: 10px;
+}
+
+.filter-sidebar .panel-heading {
+    background-color: transparent;
+    border-bottom: none;
+    padding: 5px 0;
+    cursor: pointer;
+}
+
+.filter-sidebar .panel-body {
+    padding: 5px 0;
+}
+
+.filter-sidebar .panel-heading .accordion-toggle:after {
+    font-family: 'Glyphicons Halflings';
+    content: "\e252";
+    float: right;
+    font-size: 0.7em;
+    padding-top: 0.3em;
+}
+
+.filter-sidebar .panel-heading.collapsed .accordion-toggle:after {
+    content: "\e253";
+}
+
+.search-results .list-group-item {
+    border: 0;
+}

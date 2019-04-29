@@ -33,6 +33,28 @@ class Department(db.Model):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
 
+class Job(db.Model):
+    __tablename__ = 'jobs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
+    is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
+    order = db.Column(db.Integer, index=True, unique=False, nullable=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='jobs')
+
+    __table_args__ = (UniqueConstraint('job_title', 'department_id',
+                      name='unique_department_job_titles'),
+                      UniqueConstraint('order', 'department_id',
+                      name='unique_department_job_order'), )
+
+    def __repr__(self):
+        return '<Job ID {}: {}>'.format(self.id, self.job_title)
+
+    def __str__(self):
+        return self.job_title
+
+
 class Note(db.Model):
     __tablename__ = 'notes'
 
@@ -128,8 +150,10 @@ class Assignment(db.Model):
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     baseofficer = db.relationship('Officer')
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
-    rank = db.Column(db.String(120), index=True, unique=False)
-    unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
+    job = db.relationship('Job')
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
+    unit = db.relationship('Unit')
     star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
