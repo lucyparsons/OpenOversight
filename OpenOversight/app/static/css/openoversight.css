@@ -3,6 +3,8 @@ html {
   min-height: 100%;
 }
 body {
+  font-family: sans-serif, Georgia, "Times New Roman", Times, serif;
+  font-size: 16px;
   margin-bottom: 100px;
   padding-top: 65px;
   padding-bottom: 100px;
@@ -14,6 +16,11 @@ body {
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 100px;
+}
+
+.footer h5 {
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .social:hover {
@@ -85,9 +92,34 @@ body {
      border-color: black;
  }
 
+ .navbar {
+    border-bottom: none;
+ }
+
  .navbar .navbar-header img.navbar-logo {
      padding: 3px 0 7px;
  }
+
+ .navbar .navbar-brand {
+     padding-top: 12.5px;
+     padding-bottom: 12.5px;
+ }
+
+.navbar-default .navbar-nav > li > a {
+    margin: 12.5px 6px;
+    color: #333333;
+}
+
+@media (min-width: 768px) {
+  .navbar .navbar-nav > li > a {
+    padding: 8px 12px;
+  }
+}
+@media (max-width: 767px) {
+  .navbar .navbar-nav > li > a {
+    margin: 0;
+  }
+}
 
  .glyphicon {
      font-size: 30px;
@@ -177,7 +209,7 @@ a > .tutorial{
      /*TODO: get background image- using color as standin for now*/
      background-color: #d3d3d3;
      text-align: center;
-     padding: 30px 0 80px 0;
+     padding: 97.5px;
  }
 
 .hero-section.no-sub {
@@ -227,6 +259,18 @@ a > .tutorial{
 
  p {
      margin: 20px auto;
+ }
+
+ .lead {
+   margin-bottom: 22px;
+   font-size: 18px;
+   font-weight: 300;
+   line-height: 1.4;
+ }
+ @media (min-width: 768px) {
+   .lead {
+     font-size: 24px;
+   }
  }
 
  .lead.margin-less {
@@ -330,7 +374,7 @@ a > .tutorial{
 }
 
 .text-gray-lighter {
-    color: #D3D3D3;
+    color: #999999;
 }
 
 .bg-light-gray {
@@ -501,9 +545,9 @@ tr:hover .row-actions {
 }
 
 .search-results .list-group-item img {
-  height: 230px;
+    height: 230px;
 }
 
 .officer-photos .no-photos {
-  height: 325px;
+    height: 325px;
 }
