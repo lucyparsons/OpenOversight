@@ -22,6 +22,22 @@ $(document).ready(function() {
     $('ul.setup-panel li.active a').trigger('click');
 
     $('#activate-step-2').on('click', function(e) {
+        var dept_id = $('#dept').val();
+        // fetch ranks for dept_id and modify #rank <select>
+        var ranks_url = $(this).data('ranks-url');
+        var ranks = $.ajax({
+            url: ranks_url,
+            data: {department_id: dept_id}
+        }).done(function(ranks) {
+            $('input#rank').replaceWith('<select class="form-control" id="rank" name="rank">');
+            for (i = 0; i < ranks.length; i++) {
+                console.log(ranks[i]);
+                $('select#rank').append(
+                    $('<option></option>').attr("value", ranks[i][1]).text(ranks[i][1])
+                );
+            }
+        });
+
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
         $(this).remove();
@@ -42,7 +58,7 @@ $(document).ready(function() {
        $("#loader").show();
     });
 
-    // Show/hide ranks
+    // Show/hide rank shoulder patches
     $("#show_img").on("click", function(){
        $("#hidden_img").show();
        $("#show_img_div").hide();

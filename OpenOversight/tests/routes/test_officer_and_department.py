@@ -1,4 +1,5 @@
 # Routing and view tests
+import json
 import pytest
 import random
 from datetime import datetime
@@ -16,7 +17,7 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           LocationForm, LicensePlateForm,
                                           BrowseForm, SalaryForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary
+from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment, Salary, Job
 
 
 @pytest.mark.parametrize("route", [
@@ -99,8 +100,9 @@ def test_admin_can_add_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=3),
@@ -115,9 +117,9 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
     with current_app.test_request_context():
         login_ac(client)
 
-        form = AssignmentForm(star_no='S1234',
-                              rank='COMMANDER')
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='S1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=officer.id),
@@ -136,9 +138,9 @@ def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=officer.id),
@@ -155,26 +157,26 @@ def test_admin_can_edit_officer_badge_number(mockdata, client, session):
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=3).delete()
-
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=3),
             data=form.data,
             follow_redirects=True
         )
-        # print(rv.data.decode('utf-8'))
+
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>1234</td>' in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no='12345')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no='12345', job_title=job.id)
         officer = Officer.query.filter_by(id=3).one()
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
@@ -191,8 +193,8 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         star_no = '1234'
         new_star_no = '12345'
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        form = AssignmentForm(star_no=star_no,
-                              rank='COMMANDER')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no=star_no, job_title=job.id)
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
@@ -205,13 +207,13 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no=new_star_no, job_title=job.id)
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
@@ -228,8 +230,8 @@ def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client
         star_no = '1234'
         new_star_no = '12345'
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
-        form = AssignmentForm(star_no=star_no,
-                              rank='COMMANDER')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no=star_no, job_title=job.id)
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
@@ -239,14 +241,14 @@ def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client
             data=form.data,
             follow_redirects=True
         )
-        print(rv.data.decode('utf-8'))
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
         login_ac(client)
 
-        form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no=new_star_no, job_title=job.id)
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
@@ -472,13 +474,14 @@ def test_admin_can_add_new_officer(mockdata, client, session):
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
             LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesterson',
                               middle_initial='T',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -510,13 +513,14 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         middle_initial = 'R'
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -548,13 +552,14 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
         middle_initial = 'H'
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -580,13 +585,14 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
             LinkForm(url=link_url0, link_type='link').data,
             LinkForm(url=link_url0, link_type='video').data
         ]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='Testerinski',
                               middle_initial='T',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -675,7 +681,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990)
 
@@ -726,7 +732,7 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -759,7 +765,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no='T666',
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -859,7 +865,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -897,7 +903,7 @@ def test_officer_csv(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=90009,
-                              rank='PO',
+                              job_title='PO',
                               department=department.id,
                               birth_year=1910,
                               links=links)
@@ -920,7 +926,7 @@ def test_officer_csv(mockdata, client, session):
         assert len(csv) == 1
         assert form.first_name.data in csv[0]
         assert form.last_name.data in csv[0]
-        assert form.rank.data in csv[0]
+        assert form.job_title.data in csv[0]
 
 
 def test_incidents_csv(mockdata, client, session):
@@ -964,7 +970,6 @@ def test_incidents_csv(mockdata, client, session):
 
         # get the csv entry with matching report number
         csv = list(filter(lambda row: report_number in row, rv.data.decode('utf-8').split("\n")))
-        print(csv)
         assert len(csv) == 1
         assert form.description.data in csv[0]
 
@@ -1011,10 +1016,10 @@ def test_browse_filtering_filters_bad(client, mockdata, session):
                     assert not any(bad_substr in token for token in filter_list)
 
                     filter_list = rv.data.decode('utf-8').split("<dt>Rank</dt>")[1:]
-                    if rank == "COMMANDER":
-                        bad_substr = "<dd>PO</dd>"
+                    if rank == "Commander":
+                        bad_substr = "<dd>Police Officer</dd>"
                     else:
-                        bad_substr = "<dd>COMMANDER</dd>"
+                        bad_substr = "<dd>Commander</dd>"
                     assert not any(bad_substr in token for token in filter_list)
 
 
@@ -1028,13 +1033,16 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
             LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        job = Job.query.filter_by(department_id=officer.department_id).first()
+        job_title = job.job_title
         form = AddOfficerForm(first_name='A',
                               last_name='A',
                               middle_initial='A',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department_id,
                               birth_year=1990,
                               links=links)
@@ -1059,7 +1067,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         # Check that added officer appears when filtering for this race, gender, rank and age
         form = BrowseForm(race='WHITE',
                           gender='M',
-                          rank='COMMANDER',
+                          rank=job_title,
                           min_age=datetime.now().year - 1991,
                           max_age=datetime.now().year - 1989)
 
@@ -1074,11 +1082,11 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         filter_list = rv.data.decode('utf-8').split("<dt>Race</dt>")[1:]
         assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = rv.data.decode('utf-8').split("<dt>Rank</dt>")[1:]
-        assert any("<dd>COMMANDER</dd>" in token for token in filter_list)
+        filter_list = rv.data.decode('utf-8').split("<dt>Job Title</dt>")[1:]
+        assert any("<dd>{}</dd>".format(job_title) in token for token in filter_list)
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
-        assert any("<dd>M</dd>" in token for token in filter_list)
+        assert any("<dd>Male</dd>" in token for token in filter_list)
 
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):
@@ -1135,7 +1143,6 @@ def test_admin_can_add_salary(mockdata, client, session):
         )
 
         assert 'Added new salary' in rv.data.decode('utf-8')
-        print(rv.data.decode('utf-8'))
         assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
 
         officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
@@ -1219,7 +1226,6 @@ def test_admin_can_edit_salary(mockdata, client, session):
             follow_redirects=True
         )
 
-        print(rv.data.decode('utf-8'))
         assert 'Edited officer salary' in rv.data.decode('utf-8')
         assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
 
@@ -1309,3 +1315,30 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
 
         officer = Officer.query.filter_by(id=officer_id).one()
         assert float(officer.salaries[0].salary) == 123456.78
+
+
+def test_get_department_ranks_with_specific_department_id(mockdata, client, session):
+    with current_app.test_request_context():
+        department = Department.query.first()
+        rv = client.get(
+            url_for('main.get_dept_ranks', department_id=department.id),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        data = [x[1] for x in data]
+        assert 'Commander' in data
+
+        assert data.count('Commander') == 1
+
+
+def test_get_department_ranks_with_no_department(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.get_dept_ranks'),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        data = [x[1] for x in data]
+        assert 'Commander' in data
+
+        assert data.count('Commander') == 2  # Once for each test department

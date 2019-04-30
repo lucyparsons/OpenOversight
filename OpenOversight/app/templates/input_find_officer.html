@@ -57,7 +57,7 @@
                 {% endfor %}
 
                 <br>
-                <button id="activate-step-2" class="btn btn-primary btn-lg">Next Step</button>
+                <button id="activate-step-2" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" class="btn btn-primary btn-lg">Next Step</button>
             </div>
         </div>
     </div>
@@ -114,7 +114,7 @@
             <div class="col-md-12 well text-center">
                 <h2><small>Race</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.race(class="form-control") }}</h4>
+                  {{ form.race(class="form-control") }}
                 {% for error in form.race.errors %}
                     <p><span style="color: red;">[{{ error }}]</span></p>
                 {% endfor %}
@@ -122,7 +122,7 @@
 
                 <h2><small>Gender</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.gender(class="form-control") }}</h4>
+                {{ form.gender(class="form-control") }}
                 {% for error in form.gender.errors %}
                     <p><span style="color: red;">[{{ error }}]</span></p>
                 {% endfor %}
@@ -146,8 +146,4 @@
     </div>
   </form>
 </div>
-{% endblock %}
-
-{% block js_footer %}
-<script src="{{ url_for('static', filename='js/complaint.js') }}"></script>
 {% endblock %}
