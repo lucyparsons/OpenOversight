@@ -547,11 +547,11 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
         rv = client.get(
             url_for('main.incident_api', department_id=department.id))
 
-        # Requires that report numbers in test data not include other report numbers
+        # Tests that the correct report numbers are displayed in table format.  Tests for table format because testing for the raw report number can throw a false positive.
         for incident in department_incidents:
-            assert incident.report_number in rv.data.decode('utf-8')
+            assert '<td>{}</td>'.format(incident.report_number) in rv.data.decode('utf-8')
         for incident in non_department_incidents:
-            assert incident.report_number not in rv.data.decode('utf-8')
+            assert '<td>{}</td>'.format(incident.report_number) not in rv.data.decode('utf-8')
 
 
 def test_admins_can_see_who_created_incidents(mockdata, client, session):

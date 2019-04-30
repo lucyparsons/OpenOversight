@@ -2,11 +2,11 @@ from __future__ import division
 from contextlib import contextmanager
 import pytest
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from sqlalchemy.sql.expression import func
-from OpenOversight.app.models import Officer, Department, Incident
+from OpenOversight.app.models import Officer, Incident
 from OpenOversight.app.config import BaseConfig
 
 
@@ -133,34 +133,6 @@ def test_lastname_capitalization(mockdata, browser):
         rendered_field = browser.find_element_by_tag_name("h1").text
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output
-
-
-def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
-
-    dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label.isnot(None)).first()
-    dept_id = str(dept_with_uii.id)
-
-    dept_selector = Select(browser.find_element_by_id("dept"))
-    dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
-
-    page_text = browser.find_element_by_tag_name("body").text
-    assert "Do you know any part of the Officer's" in page_text
-
-
-def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
-
-    dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).one_or_none()
-    dept_id = str(dept_without_uii.id)
-
-    dept_selector = Select(browser.find_element_by_id("dept"))
-    dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
-
-    results = browser.find_elements_by_id("#uii-question")
-    assert len(results) is 0
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):

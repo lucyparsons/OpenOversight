@@ -37,13 +37,6 @@ class Department(db.Model):
     def __repr__(self):
         return '<Department ID {}: {}>'.format(self.id, self.name)
 
-    def toCustomDict(self):
-        return {'id': self.id,
-                'name': self.name,
-                'short_name': self.short_name,
-                'unique_internal_identifier_label': self.unique_internal_identifier_label
-                }
-
 
 class Job(db.Model):
     __tablename__ = 'jobs'

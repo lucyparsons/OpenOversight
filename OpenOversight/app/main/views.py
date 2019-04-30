@@ -22,7 +22,7 @@ from ..utils import (roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
                      set_dynamic_default, create_note, get_uploaded_cropped_image,
-                     create_description, filter_by_form, dept_choices)
+                     create_description, filter_by_form)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -61,8 +61,6 @@ def browse():
 def get_officer():
     jsloads = ['js/find_officer.js']
     form = FindOfficerForm()
-
-    depts_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
 
     if getattr(current_user, 'dept_pref_rel', None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
