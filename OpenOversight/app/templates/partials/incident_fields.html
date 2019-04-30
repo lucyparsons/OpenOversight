@@ -37,14 +37,16 @@
 		{% if not detail %}
 			<tr>
 				<td><strong>Description</strong></td>
-				<td class="incident-description" data-incident='{{incident.id | tojson}}'>
+				<td class="incident-description" id="incident-description_{{incident.id}}" data-incident='{{incident.id | tojson}}'>
 					{{ incident.description }}
 				</td>
 			</tr>
-			<tr id="description-overflow-row_{{ incident.id}}" >
+			<tr id="description-overflow-row_{{ incident.id }}" >
 				<td></td>
-				<td id="description-overflow-cell_{{ incident.id}}">
-					Click to read more
+				<td id="description-overflow-cell_{{ incident.id }}">
+					<button id="description-overflow-button_{{ incident.id }}">
+						Click to read more
+					</button>
 				</td>
 			</tr>
 		{% endif %}

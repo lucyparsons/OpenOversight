@@ -5,7 +5,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
-from OpenOversight.app.models import Officer, Department
+from sqlalchemy.sql.expression import func
+from OpenOversight.app.models import Officer, Department, Incident
 from OpenOversight.app.config import BaseConfig
 
 
@@ -160,3 +161,39 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
     results = browser.find_elements_by_id("#uii-question")
     assert len(results) is 0
+
+
+def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
+    incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
+    incident_id = str(incident_long_descrip.id)
+
+    result = browser.find_element_by_id("description-overflow-row_" + incident_id)
+    assert result.is_displayed()
+
+
+def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(mockdata, browser):
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
+    # Select incident for officer that has description under 300 chars
+    result = browser.find_element_by_id("description-overflow-row_1")
+    assert not result.is_displayed()
+
+
+def test_click_to_read_more_displays_full_description(mockdata, browser):
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
+    incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
+    orig_descrip = incident_long_descrip.description
+    incident_id = str(incident_long_descrip.id)
+
+    button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    button.click()
+
+    description_text = browser.find_element_by_id("incident-description_" + incident_id).text
+    assert len(description_text) == len(orig_descrip)
+    assert description_text == orig_descrip

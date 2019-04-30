@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    
-
     $(".incident-description").each(function () {
         let description = this;
         let incidentId = $( this ).data("incident");
@@ -15,6 +13,4 @@ $(document).ready(function() {
             })
         }
     })
-
-
 });
