@@ -37,7 +37,15 @@
 		{% if not detail %}
 			<tr>
 				<td><strong>Description</strong></td>
-				<td>{{ incident.description|truncate(300) }}</td>
+				<td class="incident-description" data-incident='{{incident.id | tojson}}'>
+					{{ incident.description }}
+				</td>
+			</tr>
+			<tr id="description-overflow-row_{{ incident.id}}" >
+				<td></td>
+				<td id="description-overflow-cell_{{ incident.id}}">
+					Click to read more
+				</td>
 			</tr>
 		{% endif %}
 		{% with address=incident.address %}
@@ -73,3 +81,9 @@
 		{% endif %}
 	</tbody>
 </table>
+
+{% block js_footer %}
+	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/incidentDescription.js') }}"></script>
+{% endblock %}

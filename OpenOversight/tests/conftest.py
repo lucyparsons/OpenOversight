@@ -352,6 +352,18 @@ def mockdata(session):
             creator_id=2,
             last_updated_id=1
         ),
+        models.Incident(
+            date=datetime(2019, 1, 15),
+            report_number='39',
+            description='A test description that has over 300 chars. The purpose is to see how to display a larger descrption.  Descriptions can get lengthy.  So lengthy.  It is a description with a lot to say.  Descriptions can get lengthy.  So lengthy.  It is a description with a lot to say.  Descriptions can get lengthy.  So lengthy.  It is a description with a lot to say.  Lengthy lengthy lengthy.',
+            department_id=2,
+            address=test_addresses[1],
+            license_plates=[test_license_plates[0]],
+            links=test_links,
+            officers=[all_officers[o] for o in range(1)],
+            creator_id=2,
+            last_updated_id=1
+        ),
     ]
     session.add_all(test_incidents)
     session.commit()
