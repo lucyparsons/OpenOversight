@@ -206,10 +206,21 @@ a > .tutorial{
  }
 
  .hero-section {
-     /*TODO: get background image- using color as standin for now*/
-     background-color: #d3d3d3;
+     position: relative;
      text-align: center;
      padding: 97.5px;
+ }
+
+ .hero-section::before {
+     background: url(/static/images/banner.jpg) center;
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     z-index: -1;
+     opacity: 0.3;
  }
 
 .hero-section.no-sub {
@@ -217,7 +228,7 @@ a > .tutorial{
 }
 
 .hero {
-    color:white;
+    color:#333333;
     font-size:40px;
     text-shadow: 1px 1px 1px #999;
 }
@@ -236,6 +247,7 @@ a > .tutorial{
     color: #333;
     font-size: 18px;
     font-family: Courier, sans-serif;
+    font-weight: bold;
 }
 
  .hr-banner {
