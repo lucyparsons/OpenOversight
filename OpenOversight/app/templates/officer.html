@@ -101,7 +101,7 @@
           {% for assignment in assignments|rejectattr('star_date','ne',None) %}
           <tr>
             <td>{{ assignment.job.job_title }}</td>
-            <td>{{ assignment.star_no }}</td>
+            <td>{{ assignment.star_no|default('', true) }}</td>
             <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
@@ -124,7 +124,7 @@
           {% for assignment in assignments|rejectattr('star_date','none')|sort(attribute='star_date',reverse=True) %}
           <tr>
             <td>{{ assignment.job.job_title }}</td>
-            <td>{{ assignment.star_no }}</td>
+            <td>{{ assignment.star_no|default('', true) }}</td>
             <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
