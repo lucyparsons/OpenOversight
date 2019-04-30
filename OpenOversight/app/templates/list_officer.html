@@ -132,7 +132,7 @@
     <ul class="list-group">
       {% for officer in officers.items %}
         {% if officer.face.first() is none %}
-            {% set officer_image = '/static/images/placeholder.png' %}
+            {% set officer_image = '/static/images/no_photos.svg' %}
           {% else %}
             {% set officer_image = officer.face.first().image.filepath %}
           {% endif %}
@@ -140,7 +140,7 @@
         <li class="list-group-item">
             <div class="row">
               <div class="col-md-6 col-xs-12">
-                <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+                <img src="{{ officer_image }}" class="img-responsive thumbnail{% if not officer.face.first() %} no-photos{% endif %}" alt="{% include 'partials/officer_name.html' %}">
               </div>
               <div class="col-md-6 col-xs-12">
                 <h2>

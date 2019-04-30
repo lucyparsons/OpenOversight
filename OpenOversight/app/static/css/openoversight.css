@@ -499,3 +499,11 @@ tr:hover .row-actions {
 .search-results .list-group-item {
     border: 0;
 }
+
+.search-results .list-group-item img {
+  height: 230px;
+}
+
+.officer-photos .no-photos {
+  height: 325px;
+}
