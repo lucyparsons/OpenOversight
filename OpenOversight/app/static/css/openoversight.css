@@ -212,7 +212,9 @@ a > .tutorial{
  }
 
  .hero-section::before {
-     background: url(/static/images/banner.jpg) center;
+     background-image: url(/static/images/banner.jpg);
+     background-position: center;
+     background-repeat: no-repeat;
      content: '';
      position: absolute;
      top: 0;
@@ -571,4 +573,55 @@ h1, h2, h3 {
 
 .department h2 {
     margin-bottom: 0;
+}
+
+/* Change navbar break point */
+@media (max-width: 991px) {
+    .navbar-header {
+        float: none;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-collapse {
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .navbar-collapse.collapse {
+        display: none!important;
+    }
+    .navbar-nav {
+        float: none!important;
+        margin: 7.5px -15px;
+    }
+    .navbar-nav>li {
+        float: none;
+    }
+    .navbar-nav>li>a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .navbar-text {
+        float: none;
+        margin: 15px 0;
+    }
+    /* since 3.1.0 */
+    .navbar-collapse.collapse.in {
+        display: block!important;
+    }
+    .collapsing {
+        overflow: hidden!important;
+    }
+}
+
+/* Match background image break point based on image dimensions */
+@media (max-width: 923px) {
+    .hero-section::before {
+        background-size: auto 100%;
+    }
+}
+@media (min-width: 924px) {
+    .hero-section::before {
+        background-size: 100% auto;
+    }
 }
