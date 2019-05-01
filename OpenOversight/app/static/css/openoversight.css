@@ -326,7 +326,8 @@ a > .tutorial{
     padding: 14px 28px;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover,
+.btn-secondary:focus {
     background: #333333;
     color: white;
 }
