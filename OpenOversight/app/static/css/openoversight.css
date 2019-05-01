@@ -93,7 +93,7 @@ body {
  }
 
  .navbar {
-    border-bottom: none;
+    border-color: #dddddd;
  }
 
  .navbar .navbar-header img.navbar-logo {
