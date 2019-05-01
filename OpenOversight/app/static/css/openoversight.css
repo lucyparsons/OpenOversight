@@ -567,3 +567,7 @@ tr:hover .row-actions {
 h1, h2, h3 {
     font-weight: bold;
 }
+
+.department h2 {
+    margin-bottom: 0;
+}
