@@ -5,8 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="A public, searchable database of Baltimore law enforcement officers">
+    <meta name="image" content="https://bpdwatch.com/static/images/og-image.jpg">
+    <meta name="author" content="Open Justice Baltimore">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/favicon-16x16.png') }}">
@@ -16,11 +17,23 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="msapplication-config" content="{{ url_for('static', filename='icons/browserconfig.xml') }}">
     <meta name="theme-color" content="#ffffff">
+    <!-- Schema.org for Google -->
+    <meta itemprop="name" content="BPD Watch">
+    <meta itemprop="description" content="A public, searchable database of Baltimore law enforcement officers">
+    <meta itemprop="image" content="https://bpdwatch.com/static/images/og-image.jpg">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="BPD Watch">
+    <meta name="twitter:description" content="A public, searchable database of Baltimore law enforcement officers">
+    <meta name="twitter:site" content="@openjusticebalt">
+    <meta name="twitter:image:src" content="https://bpdwatch.com/static/images/og-image.jpg">
+    <!-- Open Graph general (Facebook, Pinterest & Google+) -->
     <meta property="og:image:width" content="1635">
     <meta property="og:image:height" content="856">
     <meta property="og:description" content="A public, searchable database of Baltimore law enforcement officers">
     <meta property="og:title" content="BPD Watch">
     <meta property="og:url" content="https://bpdwatch.com">
+    <meta property="og:site_name" content="BPD Watch">
     <meta property="og:image" content="https://bpdwatch.com/static/images/og-image.jpg">
 
     <title>BPD Watch</title>
