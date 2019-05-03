@@ -47,7 +47,7 @@ $(document).ready(function() {
 
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
-        const depts_with_uii = $("#current-uii").data("departments");
+        const depts_with_uii = $('#current-uii').data('departments');
         let targetDept = depts_with_uii.find(function(element) {
             return element.id == $deptSelectionId
         });
@@ -59,6 +59,7 @@ $(document).ready(function() {
         }
         $(this).remove();
     })
+    
     $('#activate-step-3').on('click', function(e) {
         $('ul.setup-panel li:eq(2)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-3"]').trigger('click');

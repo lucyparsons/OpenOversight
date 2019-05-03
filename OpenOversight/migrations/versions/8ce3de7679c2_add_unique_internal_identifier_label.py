@@ -1,7 +1,7 @@
-"""empty message
+"""adds unique_internal_identifier_label to departments table
 
 Revision ID: 8ce3de7679c2
-Revises: 770ed51b4e16
+Revises: 3015d1dd9eb4
 Create Date: 2019-04-17 18:26:35.733783
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '8ce3de7679c2'
-down_revision = '770ed51b4e16'
+down_revision = '3015d1dd9eb4'
 branch_labels = None
 depends_on = None
 

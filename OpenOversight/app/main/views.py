@@ -77,9 +77,11 @@ def get_officer():
             min_age=form.data['min_age'],
             max_age=form.data['max_age'],
             name=form.data['name'],
-            badge=form.data['badge']),
+            badge=form.data['badge'],
+            unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
-    return render_template('input_find_officer.html', form=form, jsloads=jsloads, depts_dicts=depts_dict)
+    # import pdb; pdb.set_trace()
+    return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
 @main.route('/tagger_find', methods=['GET', 'POST'])
