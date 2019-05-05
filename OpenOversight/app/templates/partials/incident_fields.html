@@ -2,7 +2,11 @@
 	<tbody>
 		<tr>
 			<td><strong>Date</strong></td>
-			<td>{{ incident.date.strftime('%b %d, %Y %l:%M %p') }}</td>
+			<td>{{ incident.date.strftime('%b %d, %Y') }}</td>
+		</tr>
+		<tr>
+			<td><strong>Time</strong></td>
+			<td>{% if incident.time %}{{ incident.time.strftime('%l:%M %p') }}{% endif %}</td>
 		</tr>
 		{% if incident.report_number %}
 		<tr>

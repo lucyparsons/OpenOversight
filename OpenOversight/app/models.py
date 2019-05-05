@@ -355,7 +355,8 @@ class Incident(db.Model):
     __tablename__ = 'incidents'
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, unique=False, index=True)
+    date = db.Column(db.Date, unique=False, index=True)
+    time = db.Column(db.Time, unique=False, index=True)
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
