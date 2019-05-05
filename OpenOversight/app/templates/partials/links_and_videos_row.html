@@ -1,4 +1,5 @@
-{% if obj.links|length > 0 %}
+{% if obj.links|length > 0 or current_user.is_administrator
+	or (current_user.is_area_coordinator and current_user.ac_department_id == obj.department_id) %}
 <div class='row'>
 	<div class="col-sm-12 col-md-6">
 		<h3>Links</h3>

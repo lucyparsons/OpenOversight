@@ -15,6 +15,10 @@ from . import login_manager
 db = SQLAlchemy()
 
 
+officer_links = db.Table('officer_links',
+                         db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
+                         db.Column('link_id', db.Integer, db.ForeignKey('links.id'), primary_key=True))
+
 officer_incidents = db.Table('officer_incidents',
                              db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
                              db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True))
@@ -102,7 +106,12 @@ class Officer(db.Model):
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
     unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
-    links = db.relationship('Link', back_populates='officer')
+    # we don't expect to pull up officers via link often so we make it lazy.
+    links = db.relationship(
+        'Link',
+        secondary=officer_links,
+        lazy='subquery',
+        backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
     salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
@@ -336,8 +345,6 @@ class Link(db.Model):
     author = db.Column(db.String(255), nullable=True)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     creator = db.relationship('User', backref='links', lazy=True)
-    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'), nullable=True)
-    officer = db.relationship('Officer', back_populates='links')
 
     @validates('url')
     def validate_url(self, key, url):
