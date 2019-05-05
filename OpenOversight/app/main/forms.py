@@ -289,21 +289,6 @@ class DateFieldForm(Form):
     date_field = DateField('Date <span class="text-danger">*</span>', validators=[Required()])
     time_field = TimeField('Time', validators=[Optional()])
 
-    @property
-    def datetime(self):
-        if self.time_field.data:
-            return datetime.datetime.combine(self.date_field.data,
-                                             self.time_field.data)
-        else:  # Code these events at a precise time so we can find them later
-            coded_no_time = datetime.time(1, 2, 3, 45678)
-            return datetime.datetime.combine(self.date_field.data,
-                                             coded_no_time)
-
-    @datetime.setter
-    def datetime(self, value):
-        self.date_field.data = value.date()
-        self.time_field.data = value.time()
-
     def validate_time_field(self, field):
         if not type(field.data) == datetime.time:
             raise ValidationError('Not a valid time.')

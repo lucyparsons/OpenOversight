@@ -812,12 +812,13 @@ def download_incidents_csv(department_id):
     if not department or not records:
         abort(404)
     dept_name = records[0].department.name.replace(" ", "_")
-    first_row = "id,report_num,date,description,location,licences,links,officers\n"
+    first_row = "id,report_num,date,time,description,location,licences,links,officers\n"
 
-    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s\n" %
+    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
                    (str(record.id),
                     check_input(record.report_number),
                     check_input(record.date),
+                    check_input(record.time),
                     check_input(record.description),
                     check_input(record.address),
                     " ".join(map(lambda x: str(x), record.license_plates)),
@@ -967,7 +968,9 @@ class IncidentApi(ModelView):
         form.links.min_entries = no_links
         form.officers.min_entries = no_officers
         if not form.date_field.data and obj.date:
-            form.datetime = obj.date
+            form.date_field.data = obj.date
+        if not form.time_field.data and obj.time:
+            form.time_field.data = obj.time
         return form
 
     def populate_obj(self, form, obj):
@@ -975,7 +978,7 @@ class IncidentApi(ModelView):
         # use utils to add them to the current object
         address = form.data.pop('address')
         del form.address
-        if address['street_name']:
+        if address['city']:
             new_address, _ = get_or_create(db.session, Location, **address)
             obj.address = new_address
         else:
@@ -1005,7 +1008,11 @@ class IncidentApi(ModelView):
         if license_plates and license_plates[0]['number']:
             replace_list(license_plates, obj, 'license_plates', LicensePlate, db)
 
-        obj.date = form.datetime
+        obj.date = form.date_field.data
+        if form.time_field.raw_data and form.time_field.raw_data != ['']:
+            obj.time = form.time_field.data
+        else:
+            obj.time = None
         super(IncidentApi, self).populate_obj(form, obj)
 
 

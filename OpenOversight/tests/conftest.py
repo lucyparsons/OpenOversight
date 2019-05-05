@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from flask import current_app
 import pytest
 import random
@@ -86,7 +86,7 @@ def generate_officer():
         middle_initial=m_initial,
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=pick_department().id,
         unique_internal_identifier=pick_uid()
     )
@@ -343,7 +343,8 @@ def mockdata(session):
 
     test_incidents = [
         models.Incident(
-            date=datetime(2016, 3, 16),
+            date=datetime.date(2016, 3, 16),
+            time=datetime.time(4, 20),
             report_number='42',
             description='A thing happened',
             department_id=1,
@@ -355,7 +356,8 @@ def mockdata(session):
             last_updated_id=1
         ),
         models.Incident(
-            date=datetime(2017, 12, 11),
+            date=datetime.date(2017, 12, 11),
+            time=datetime.time(2, 40),
             report_number='38',
             description='A thing happened',
             department_id=2,
