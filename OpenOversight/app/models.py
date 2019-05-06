@@ -32,9 +32,17 @@ class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
+    unique_internal_identifier_label = db.Column(db.String(100), unique=False, nullable=True)
 
     def __repr__(self):
         return '<Department ID {}: {}>'.format(self.id, self.name)
+
+    def toCustomDict(self):
+        return {'id': self.id,
+                'name': self.name,
+                'short_name': self.short_name,
+                'unique_internal_identifier_label': self.unique_internal_identifier_label
+                }
 
 
 class Job(db.Model):
