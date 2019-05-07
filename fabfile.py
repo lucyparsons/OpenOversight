@@ -1,5 +1,5 @@
 from __future__ import with_statement
-from fabric.api import env, run, cd, get
+from fabric.api import env, run, cd, execute, get, lcd, local, put
 from fabric.contrib.console import confirm
 import datetime
 import os
@@ -15,17 +15,6 @@ env.use_ssh_config = False
 # fab will use the ssh keyfile referenced by the host alias, otherwise need to do what is
 # being done in dev to assign env a key_filename
 
-
-def development():
-    env.environment = 'dev'
-    env.hosts = '127.0.0.1'
-    env.port = 2222
-    env.user = 'vagrant'
-    env.host = 'openoversight-dev'
-    env.unprivileged_user = 'vagrant'
-    env.venv_dir = '/home/vagrant/oovirtenv'
-    env.code_dir = '/vagrant'
-    env.backup_dir = '/home/vagrant/openoversight_backup'
 
 
 def staging():
@@ -49,24 +38,30 @@ def production():
     env.backup_dir = '/home/nginx/openoversight_backup'
     env.s3bucket = 'openoversight-prod'
 
+env.roledefs = {
+    'staging': staging(),
+    'prod': 'openoversight.com',
+}
+
 
 def deploy():
-    with cd(env.code_dir):
-        run('su %s -c "git fetch && git status"' % env.unprivileged_user)
-        run('su %s -c "make cleanassets assets"' % env.unprivileged_user)
-        if confirm("Update to latest commit in this branch?", default=False):
-            run('su %s -c "git pull"' % env.unprivileged_user)
-            run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
-            run('sudo systemctl restart openoversight')
+    with lcd(os.path.dirname(os.path.realpath(__file__))):
+        with cd(env.code_dir):
+            run('su %s -c "git fetch && git status"' % env.unprivileged_user)
+            execute(buildassets)
+            if confirm("Update to latest commit in this branch?", default=False):
+                run('su %s -c "git pull"' % env.unprivileged_user)
+                run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
+                run('su %s -c "mkdir --parents %s/OpenOversight/app/static/dist"' % (env.unprivileged_user, env.code_dir))
+                put(local_path=os.path.join('OpenOversight', 'app', 'static', 'dist'),
+                    remote_path=os.path.join(env.code_dir, 'OpenOversight', 'app', 'static', 'dist')
+                    )
+                run('sudo systemctl restart openoversight')
 
 
 def migrate():
+    execute(deploy)
     with cd(env.code_dir):
-        run('su %s -c "git fetch && git status"' % env.unprivileged_user)
-        run('su %s -c "make cleanassets assets"' % env.unprivileged_user)
-        if confirm("Update to latest commit in this branch?", default=False):
-            run('su %s -c "git pull"' % env.unprivileged_user)
-            run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
         if confirm("Apply any outstanding database migrations?", default=False):
             run('su %s -c "cd OpenOversight; FLASK_APP=OpenOversight.app %s/bin/flask db upgrade"' % (env.unprivileged_user, env.venv_dir))
             run('sudo systemctl restart openoversight')
@@ -83,3 +78,9 @@ def backup():
         get(remote_path="backup.tar.gz",
             local_path="./backup/backup-%s-%s.tar.gz"
                        % (env.environment, backup_datetime))
+
+
+def buildassets():
+    with lcd(os.path.dirname(os.path.realpath(__file__))):
+        local('mkdir -p OpenOversight/app/static/dist ; chmod go+rw OpenOversight/app/static/dist')
+        local('make cleanassets assets')
