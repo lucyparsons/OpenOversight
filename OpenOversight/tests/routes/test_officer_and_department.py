@@ -2,6 +2,7 @@
 import json
 import pytest
 import random
+from datetime import datetime
 from io import BytesIO
 from mock import patch, MagicMock
 from flask import url_for, current_app
@@ -14,7 +15,9 @@ from .route_helpers import login_user, login_admin, login_ac, process_form_data
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
                                           EditOfficerForm, LinkForm,
-                                          EditDepartmentForm, SalaryForm)
+                                          EditDepartmentForm, SalaryForm, 
+                                          LocationForm, BrowseForm, LicensePlateForm,
+                                          IncidentForm)
 
 from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job
 

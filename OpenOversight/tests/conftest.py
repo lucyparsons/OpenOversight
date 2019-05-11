@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import current_app
+from io import BytesIO
 import pytest
 import random
 from selenium import webdriver
@@ -10,9 +11,11 @@ from faker import Faker
 import csv
 import uuid
 import sys
+import os
+from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
-from OpenOversight.app.utils import merge_dicts
+from OpenOversight.app.utils import merge_dicts, compute_hash
 from OpenOversight.app.models import db as _db
 
 factory = Faker()
@@ -184,6 +187,12 @@ def session(db, request):
     request.addfinalizer(teardown)
     return session
 
+@pytest.fixture
+def test_image_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/204Cat.png')
+    img_bytes = Pimage.open(local_path).tobytes()
+    return BytesIO(img_bytes)
 
 @pytest.fixture
 def mockdata(session):

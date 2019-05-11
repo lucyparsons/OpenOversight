@@ -18,8 +18,8 @@ from ..utils import (grab_officers,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list, create_note, 
-                     set_dynamic_default, compute_hash, upload_file, roster_lookup,
-                     create_description, filter_by_form, get_uploaded_image)
+                     set_dynamic_default, roster_lookup, create_description, filter_by_form, 
+                     crop_image)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -675,7 +675,7 @@ def label_data(department_id=None, image_id=None):
             upper = form.dataY.data
             right = left + form.dataWidth.data
             lower = upper + form.dataHeight.data
-            cropped_image = get_uploaded_image(image, crop_data=(left, upper, right, lower))
+            cropped_image = crop_image(image, crop_data=(left, upper, right, lower))
 
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,
@@ -860,7 +860,8 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    image = get_uploaded_image(image=file_to_upload, department_id=department_id)
+    img_BytesIO = BytesIO(Pimage.open(file_to_upload).tobytes())    
+    upload_image_to_s3_and_store_in_db(img_BytesIO, department_id) 
 
     if image:
         if officer_id:
