@@ -1,7 +1,7 @@
 """add uii string column to departments table
 
 Revision ID: bde5faf0270c
-Revises: 2a9064a2507c
+Revises: 8ce3de7679c2
 Create Date: 2019-03-28 14:04:58.696848
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'bde5faf0270c'
-down_revision = '2a9064a2507c'
+down_revision = '8ce3de7679c2'
 branch_labels = None
 depends_on = None
 
