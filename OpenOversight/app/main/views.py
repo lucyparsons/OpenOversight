@@ -5,6 +5,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import text
 import sys
 from traceback import format_exc
+from io import BytesIO
+from PIL import Image as Pimage
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -19,7 +21,7 @@ from ..utils import (grab_officers,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list, create_note, 
                      set_dynamic_default, roster_lookup, create_description, filter_by_form, 
-                     crop_image)
+                     crop_image, upload_image_to_s3_and_store_in_db)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -861,7 +863,7 @@ def upload(department_id, officer_id=None):
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
     img_BytesIO = BytesIO(Pimage.open(file_to_upload).tobytes())    
-    upload_image_to_s3_and_store_in_db(img_BytesIO, department_id) 
+    image = upload_image_to_s3_and_store_in_db(img_BytesIO, department_id) 
 
     if image:
         if officer_id:

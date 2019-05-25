@@ -1,5 +1,6 @@
 # Routing and view tests
 import json
+import os
 import pytest
 import random
 from datetime import datetime
@@ -10,6 +11,7 @@ from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
+from PIL import Image as Pimage
 
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
@@ -1103,7 +1105,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        data = dict(file=(BytesIO(b'my file contents'), "test_cop1.png"),)
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]
         officer_face_count = officer.face.count()
@@ -1120,17 +1122,25 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
             # check that Face was added to database
             assert officer.face.count() == officer_face_count + 1
 
-
+# NOTE: ask for pointers on how to make this test set-up more dry
 def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+
+        routes_test_dir = os.path.dirname(os.path.realpath(__file__))
+        image_path = os.path.join(routes_test_dir, '../images/204Cat.png')
+        img = Pimage.open(image_path)
+        byte_io = BytesIO()
+        img.save(byte_io, img.format)
+        byte_io.seek(0)
+        data = dict(file=(byte_io, '204Cat.png'),)
+        
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[3]
         officer_face_count = officer.face.count()
 
         mock = MagicMock(return_value=Image.query.first())
-        with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
             rv = client.post(
                 url_for('main.upload', department_id=department.id, officer_id=officer.id),
                 content_type='multipart/form-data',
@@ -1145,12 +1155,20 @@ def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session):
 def test_upload_photo_sends_500_on_s3_error(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+
+        routes_test_dir = os.path.dirname(os.path.realpath(__file__))
+        image_path = os.path.join(routes_test_dir, '../images/204Cat.png')
+        img = Pimage.open(image_path)
+        byte_io = BytesIO()
+        img.save(byte_io, img.format)
+        byte_io.seek(0)
+        data = dict(file=(byte_io, '204Cat.png'),)
+
         department = Department.query.filter_by(id=AC_DEPT).first()
         mock = MagicMock(return_value=None)
         officer = department.officers[0]
         officer_face_count = officer.face.count()
-        with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
             rv = client.post(
                 url_for('main.upload', department_id=department.id, officer_id=officer.id),
                 content_type='multipart/form-data',
@@ -1165,7 +1183,7 @@ def test_upload_photo_sends_500_on_s3_error(mockdata, client, session):
 def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        data = dict(file=(BytesIO(b'my file contents'), "test_cop1.png"),)
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[0]
         mock = MagicMock(return_value=False)
@@ -1182,7 +1200,7 @@ def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
 def test_user_cannot_upload_officer_photo(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+        data = dict(file=(BytesIO(b'my file contents'), "test_cop1.png"),)
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[0]
         rv = client.post(
@@ -1196,13 +1214,21 @@ def test_user_cannot_upload_officer_photo(mockdata, client, session):
 def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session):
         with current_app.test_request_context():
             login_ac(client)
-            data = dict(file=(BytesIO(b'my file contents'), "cop_pic.jpg"),)
+
+            routes_test_dir = os.path.dirname(os.path.realpath(__file__))
+            image_path = os.path.join(routes_test_dir, '../images/204Cat.png')
+            img = Pimage.open(image_path)
+            byte_io = BytesIO()
+            img.save(byte_io, img.format)
+            byte_io.seek(0)
+            data = dict(file=(byte_io, '204Cat.png'),)   
+
             department = Department.query.filter_by(id=AC_DEPT).first()
             officer = department.officers[4]
             officer_face_count = officer.face.count()
 
             mock = MagicMock(return_value=Image.query.first())
-            with patch('OpenOversight.app.main.views.get_uploaded_image', mock):
+            with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
                 rv = client.post(
                     url_for('main.upload', department_id=department.id, officer_id=officer.id),
                     content_type='multipart/form-data',

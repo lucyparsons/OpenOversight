@@ -188,11 +188,26 @@ def session(db, request):
     return session
 
 @pytest.fixture
-def test_image_BytesIO():
+def test_png_BytesIO():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     local_path = os.path.join(test_dir, 'images/204Cat.png')
-    img_bytes = Pimage.open(local_path).tobytes()
-    return BytesIO(img_bytes)
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+@pytest.fixture
+def test_jpg_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/200Cat.jpeg')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io    
 
 @pytest.fixture
 def mockdata(session):
