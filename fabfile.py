@@ -16,7 +16,6 @@ env.use_ssh_config = False
 # being done in dev to assign env a key_filename
 
 
-
 def staging():
     env.environment = 'staging'
     env.user = 'root'
@@ -37,6 +36,7 @@ def production():
     env.code_dir = '/home/nginx/oovirtenv/OpenOversight'
     env.backup_dir = '/home/nginx/openoversight_backup'
     env.s3bucket = 'openoversight-prod'
+
 
 env.roledefs = {
     'staging': staging(),
