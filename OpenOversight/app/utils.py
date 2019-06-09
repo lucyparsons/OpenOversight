@@ -1,11 +1,8 @@
-from future.moves.urllib.request import urlretrieve
 from future.utils import iteritems
 
-from builtins import bytes
-from io import open, BytesIO
+from io import BytesIO
 
 import boto3
-import re
 from botocore.exceptions import ClientError
 import botocore
 import datetime
@@ -13,9 +10,7 @@ import hashlib
 import os
 import random
 import sys
-import tempfile
 from traceback import format_exc
-from werkzeug import secure_filename
 
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
@@ -189,9 +184,10 @@ def edit_officer_profile(officer, form):
     db.session.commit()
     return officer
 
+
 def allowed_file(filename):
     return '.' in filename and \
-           ''.join(re.split(r'([.])', filename)[-2:]).lower() in current_app.config['ALLOWED_EXTENSIONS']
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 
 def get_random_image(image_query):
@@ -212,9 +208,6 @@ def serve_image(filepath):
 def compute_hash(data_to_hash):
     return hashlib.sha256(data_to_hash.getvalue()).hexdigest()
 
-# def upload_file_to_s3(safe_local_path, dest_filename):
-#     with open(safe_local_path, 'rb') as file_obj:
-#         return upload_obj_to_s3(file_obj, dest_filename)
 
 def upload_obj_to_s3(file_obj, dest_filename):
     s3_client = boto3.client('s3')
@@ -222,12 +215,14 @@ def upload_obj_to_s3(file_obj, dest_filename):
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
-    s3_content_type = "image/%s" % imghdr.what(None, h=file_obj.read())
+    file_ending = imghdr.what(None, h=file_obj.read())
+    file_obj.seek(0)
+    s3_content_type = "image/%s" % file_ending
     s3_path = '{}/{}'.format(s3_folder, s3_filename)
     s3_client.upload_fileobj(file_obj,
-                          current_app.config['S3_BUCKET_NAME'],
-                          s3_path,
-                          ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
+                             current_app.config['S3_BUCKET_NAME'],
+                             s3_path,
+                             ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
     config = s3_client._client_config
     config.signature_version = botocore.UNSIGNED
@@ -443,24 +438,31 @@ def create_description(self, form):
         date_created=datetime.datetime.now(),
         date_updated=datetime.datetime.now())
 
-def crop_image(image, crop_data, department_id):
-    img_bytes = image.read()
-    image_type = imghdr.what(file=image.filename, h=img_bytes)
 
+def crop_image(image, crop_data, department_id):
+    image.seek(0)
+    img_bytes = image.read()
+    image.seek(0)
+    image_type = imghdr.what(file=image, h=img_bytes)
+
+    image.seek(0)
     SIZE = 300, 300
     if crop_data:
-        cropped_image = Pimage.open(img_bytes).crop(crop_data)
+        smaller_image = Pimage.open(image).crop(crop_data)
     else:
-        cropped_image = Pimage.open(img_bytes).thumbnail(SIZE)
+        smaller_image = Pimage.open(image).copy()
+        smaller_image.thumbnail(SIZE)
+
     with BytesIO() as img_as_bytes:
-        cropped_image.save(img_as_bytes, format=image_type)
-        upload_image_to_s3_and_store_in_db(img_as_bytes.getvalue(), department_id)    
+        smaller_image.save(img_as_bytes, format=image_type)
+        return upload_image_to_s3_and_store_in_db(img_as_bytes, image_type, department_id)
+
 
 def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
-    hash_img = compute_hash(image_data)    
-    hash_found = Image.query.filter_by(hash_img=hash_img).first()
-    if hash_found:
-        return hash_found
+    hash_img = compute_hash(image_data)
+    existing_image = Image.query.filter_by(hash_img=hash_img).first()
+    if existing_image:
+        return existing_image
     date_taken = None
     if image_type in current_app.config['ALLOWED_EXTENSIONS']:
         image_data.seek(0)
@@ -473,10 +475,10 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
         new_filename = '{}.{}'.format(hash_img, image_type)
         url = upload_obj_to_s3(image_data, new_filename)
         new_image = Image(filepath=url, hash_img=hash_img,
-                            date_image_inserted=datetime.datetime.now(),
-                            department_id=department_id,
-                            date_image_taken=date_taken
-                            )
+                          date_image_inserted=datetime.datetime.now(),
+                          department_id=department_id,
+                          date_image_taken=date_taken
+                          )
         db.session.add(new_image)
         db.session.commit()
         return new_image
@@ -484,9 +486,10 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
-                    format_exc()])
+                      format_exc()])
         ))
         return None
+
 
 def find_date_taken(pimage):
     if pimage.filename.split('.')[-1] == 'png':

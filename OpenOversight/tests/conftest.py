@@ -15,7 +15,7 @@ import os
 from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
-from OpenOversight.app.utils import merge_dicts, compute_hash
+from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db
 
 factory = Faker()
@@ -187,6 +187,7 @@ def session(db, request):
     request.addfinalizer(teardown)
     return session
 
+
 @pytest.fixture
 def test_png_BytesIO():
     test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -198,6 +199,7 @@ def test_png_BytesIO():
     byte_io.seek(0)
     return byte_io
 
+
 @pytest.fixture
 def test_jpg_BytesIO():
     test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -207,7 +209,8 @@ def test_jpg_BytesIO():
     byte_io = BytesIO()
     img.save(byte_io, img.format)
     byte_io.seek(0)
-    return byte_io    
+    return byte_io
+
 
 @pytest.fixture
 def mockdata(session):

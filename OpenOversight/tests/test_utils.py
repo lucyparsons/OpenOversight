@@ -1,7 +1,5 @@
 from mock import patch, Mock, MagicMock
 from io import BytesIO
-import os
-from PIL import Image as Pimage
 import OpenOversight
 from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
@@ -115,6 +113,7 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
         returned_identifier = element.unique_internal_identifier
         assert returned_identifier == identifier
 
+
 def test_compute_hash_with_BytesIO(mockdata):
     hash_result = OpenOversight.app.utils.compute_hash(BytesIO(b'bacon'))
     expected_hash = '9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4'
@@ -127,7 +126,7 @@ def test_s3_upload_png(mockdata, test_png_BytesIO):
     with patch('boto3.client', Mock(return_value=mocked_connection)):
         with patch('boto3.resource', Mock(return_value=mocked_resource)):
                 OpenOversight.app.utils.upload_obj_to_s3(test_png_BytesIO, 'test_cop1.png')
-    
+
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/png'
 
 
@@ -165,34 +164,53 @@ def test_unit_choices(mockdata):
 def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(mockdata, test_png_BytesIO):
     original_image_count = Image.query.count()
 
-    upload_image_to_s3_and_store_in_db(test_png_BytesIO, '.png', 1)
+    upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
 
     assert Image.query.count() == original_image_count + 1
 
+
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(mockdata, test_png_BytesIO):
-    firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, '.png', 1)
-    secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, '.png', 1)
-        
-    assert type(secondUpload) == Image 
+    firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+    secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+
+    assert type(secondUpload) == Image
     assert firstUpload.id == secondUpload.id
+
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(mockdata, test_png_BytesIO):
-    upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, '.png', 1)
-        
-    assert upload.is_tagged == False
+    upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
 
-def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(mockdata):    
+    assert not upload.is_tagged
+
+
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(mockdata, test_png_BytesIO):
+    mocked_connection = Mock()
+    mocked_resource = Mock()
+
+    with patch('boto3.client', Mock(return_value=mocked_connection)):
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+
+            filename = upload.filepath.split('/')[-1]
+            filename_parts = filename.split('.')
+            assert len(filename_parts) == 2
+
+
+def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(mockdata):
     with pytest.raises(ValueError):
         upload_image_to_s3_and_store_in_db(BytesIO(b'invalid-image'), 'idk', 1)
+
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(mockdata, test_png_BytesIO):
         try:
-                upload_image_to_s3_and_store_in_db(test_png_BytesIO, '.png', 1)
+                upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
         except ValueError:
                 pytest.fail("Unexpected value error")
+
 
 def test_csv_import_new(csvfile):
     # Delete all current officers

@@ -14,14 +14,13 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (grab_officers,
-                     serve_image, compute_leaderboard_stats, get_random_image,
+from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
-                     create_incident, get_or_create, replace_list, create_note, 
-                     set_dynamic_default, roster_lookup, create_description, filter_by_form, 
-                     crop_image, upload_image_to_s3_and_store_in_db)
+                     replace_list, create_note, set_dynamic_default, roster_lookup,
+                     create_description, filter_by_form,
+                     crop_image, create_incident, get_or_create, dept_choices)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -79,7 +78,6 @@ def get_officer():
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
-    # import pdb; pdb.set_trace()
     return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
@@ -677,7 +675,7 @@ def label_data(department_id=None, image_id=None):
             upper = form.dataY.data
             right = left + form.dataWidth.data
             lower = upper + form.dataHeight.data
-            cropped_image = crop_image(image, crop_data=(left, upper, right, lower))
+            cropped_image = crop_image(image=image, crop_data=(left, upper, right, lower), department_id=department_id)
 
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,
@@ -862,8 +860,11 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    img_BytesIO = BytesIO(Pimage.open(file_to_upload).tobytes())    
-    image = upload_image_to_s3_and_store_in_db(img_BytesIO, department_id) 
+    byte_io = BytesIO()
+    img = Pimage.open(file_to_upload)
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    image = crop_image(image=byte_io, crop_data='', department_id=department_id)
 
     if image:
         if officer_id:
