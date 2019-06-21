@@ -262,15 +262,15 @@
         	<li class="list-group-item">
           	<h4>
               	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
-              	Incident {{ incident.report_number }}
-            	</a>
+              	  Incident {{ incident.report_number }}
+            	  </a>
             	{% if current_user.is_administrator
               	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
              	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
               	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
             	</a>
             	{% endif %}
-          	</h4>
+            </h4>
           	{% include 'partials/incident_fields.html' %}
         	</li>
       	{% endfor %}
