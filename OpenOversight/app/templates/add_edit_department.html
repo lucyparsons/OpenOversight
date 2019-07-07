@@ -16,6 +16,7 @@
 
         {{ wtf.form_field(form.name, autofocus="autofocus") }}
         {{ wtf.form_field(form.short_name) }}
+        {{ wtf.form_field(form.facial_recognition_allowed) }}
         <div class="sortable sortable-fields">
           <legend>{{ form.jobs.label }}</legend>
           <div>

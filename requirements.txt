@@ -9,8 +9,8 @@ Flask-Mail==0.9.1
 Flask-Migrate==2.1.1
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
-Pillow==5.1.0
-psycopg2>=2.6.2 --no-binary psycopg2
+Pillow==6.0.0  
+psycopg2>=2.6.2 --no-binary psycopg2  
 SQLAlchemy==1.1.15
 gunicorn==19.9
 Fabric==1.14.0

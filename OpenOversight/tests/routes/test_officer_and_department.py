@@ -281,6 +281,22 @@ def test_admin_can_add_police_department(mockdata, client, session):
             name='Test Police Department').one()
         assert department.short_name == 'TPD'
 
+def test_add_police_department_defaults_to_facial_recognition_not_allowed(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = DepartmentForm(name='Anytown Police Department',
+                                short_name='APD')
+        
+        rv = client.post(
+            url_for('main.add_department'),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        department = Department.query.filter_by(name='Anytown Police Department').one()
+        assert department.facial_recognition_allowed is False
+
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
@@ -1255,7 +1271,8 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
 
         assert 'Added new salary' in rv.data.decode('utf-8')
         assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
-
+        # TADA
+        # import pdb; pdb.set_trace()
         form = SalaryForm(salary=150000)
         officer = Officer.query.filter_by(id=officer_id).one()
 
@@ -1299,6 +1316,9 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
         assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
 
         login_ac(client)
+
+        # import pdb; pdb.set_trace()
+        # TADA
         form = SalaryForm(salary=150000)
         officer = Officer.query.filter_by(id=officer_id).one()
 

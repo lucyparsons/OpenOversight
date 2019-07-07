@@ -33,6 +33,7 @@ class Department(db.Model):
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
     unique_internal_identifier_label = db.Column(db.String(100), unique=False, nullable=True)
+    facial_recognition_allowed = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<Department ID {}: {}>'.format(self.id, self.name)
@@ -127,7 +128,7 @@ class Officer(db.Model):
             else:
                 return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
         if self.suffix:
-                return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
+            return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
     def race_label(self):

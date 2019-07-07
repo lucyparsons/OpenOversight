@@ -361,7 +361,8 @@ def add_department():
 
         if form.name.data not in departments:
             department = Department(name=form.name.data,
-                                    short_name=form.short_name.data)
+                                    short_name=form.short_name.data,
+                                    facial_recognition_allowed=form.facial_recognition_allowed.data)
             db.session.add(department)
             db.session.flush()
             db.session.add(Job(
@@ -538,7 +539,7 @@ def add_officer():
     set_dynamic_default(form.department, current_user.dept_pref_rel)
 
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
-            abort(403)
+        abort(403)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
         new_formdata = request.form.copy()
@@ -931,7 +932,7 @@ class IncidentApi(ModelView):
 
     def get(self, obj_id):
         if request.args.get('page'):
-                page = int(request.args.get('page'))
+            page = int(request.args.get('page'))
         else:
             page = 1
         if request.args.get('department_id'):

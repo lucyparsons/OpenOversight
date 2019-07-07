@@ -115,9 +115,6 @@ class SalaryForm(Form):
             return True
         return super(SalaryForm, form).validate()
 
-    # def process(self, *args, **kwargs):
-        # raise Exception(args[0])
-
 
 class DepartmentForm(Form):
     name = StringField(
@@ -128,6 +125,7 @@ class DepartmentForm(Form):
         'Shortened acronym for law enforcement agency, e.g. CPD',
         default='', validators=[Regexp('\w*'), Length(max=100), DataRequired()]
     )
+    facial_recognition_allowed = BooleanField('Is facial recognition allowed for this department?', default=False, false_values=(False, 'False', 'false', None, ''))
     jobs = FieldList(StringField('Job', default='', validators=[
         Regexp('\w*')]), label='Ranks')
     submit = SubmitField(label='Add')
