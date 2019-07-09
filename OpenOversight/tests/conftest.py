@@ -131,8 +131,10 @@ def build_salary(officer):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        return models.Face(officer_id=officer.id,
-                           img_id=random.choice(images).id)
+        for num in range(1, len(images)):
+            return models.Face(officer_id=officer.id,
+                               img_id=num,
+                               original_image_id=random.choice(images).id)
     else:
         return False
 

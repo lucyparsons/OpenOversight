@@ -1,4 +1,5 @@
 # Routing and view tests
+import os
 import pytest
 from mock import MagicMock, patch
 from flask import url_for, current_app
@@ -11,7 +12,9 @@ from .route_helpers import login_user, login_admin, login_ac
 from OpenOversight.app.main import views
 
 from OpenOversight.app.main.forms import FaceTag, FindOfficerIDForm
-from OpenOversight.app.models import Face, Image, Department
+from OpenOversight.app.models import Face, Image, Department, Officer
+
+PROJECT_ROOT = os.path.abspath(os.curdir)
 
 
 @pytest.mark.parametrize("route", [
@@ -158,20 +161,20 @@ def test_ac_cannot_delete_tag_in_their_dept(mockdata, client, session):
         assert deleted_tag is not None
 
 
-def test_user_can_add_tag(mockdata, client, session, monkeypatch):
+@patch('OpenOversight.app.utils.serve_image', MagicMock(return_value=PROJECT_ROOT + '/app/static/images/test_cop1.png'))
+def test_user_can_add_tag(mockdata, client, session):
     with current_app.test_request_context():
         mock = MagicMock(return_value=Image.query.first())
         with patch('OpenOversight.app.main.views.crop_image', mock):
-            login_user(client)
-            officer = Image.query.filter_by(department_id=1).first()
+            officer = Officer.query.filter_by(department_id=1).first()
             image = Image.query.filter_by(department_id=1).first()
+            login_user(client)
             form = FaceTag(officer_id=officer.id,
                            image_id=image.id,
                            dataX=34,
                            dataY=32,
                            dataWidth=3,
                            dataHeight=33)
-
             rv = client.post(
                 url_for('main.label_data', image_id=image.id),
                 data=form.data,
@@ -186,14 +189,14 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
         login_user(client)
         tag = Face.query.first()
         form = FaceTag(officer_id=tag.officer_id,
-                       image_id=tag.img_id,
+                       image_id=tag.original_image_id,
                        dataX=34,
                        dataY=32,
                        dataWidth=3,
                        dataHeight=33)
 
         rv = client.post(
-            url_for('main.label_data', image_id=tag.img_id),
+            url_for('main.label_data', image_id=tag.original_image_id),
             data=form.data,
             follow_redirects=True
         )

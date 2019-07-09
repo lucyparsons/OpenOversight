@@ -7,6 +7,7 @@ import sys
 from traceback import format_exc
 from io import BytesIO
 from PIL import Image as Pimage
+import urllib.request
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -21,6 +22,7 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      replace_list, create_note, set_dynamic_default, roster_lookup,
                      create_description, filter_by_form,
                      crop_image, create_incident, get_or_create, dept_choices)
+
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -667,7 +669,7 @@ def label_data(department_id=None, image_id=None):
         officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
         existing_tag = db.session.query(Face) \
                          .filter(Face.officer_id == form.officer_id.data) \
-                         .filter(Face.img_id == form.image_id.data).first()
+                         .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
         elif not existing_tag:
@@ -675,7 +677,16 @@ def label_data(department_id=None, image_id=None):
             upper = form.dataY.data
             right = left + form.dataWidth.data
             lower = upper + form.dataHeight.data
-            cropped_image = crop_image(image=image, crop_data=(left, upper, right, lower), department_id=department_id)
+            byte_io = BytesIO()
+
+            if 'http' or 'https' in proper_path:
+                img = Pimage.open(urllib.request.urlopen(proper_path))
+            else:
+                static_path = os.path.abspath(os.curdir) + '/app' + proper_path
+                img = Pimage.open(static_path)
+            img.save(byte_io, img.format)
+            byte_io.seek(0)
+            cropped_image = crop_image(image=byte_io, crop_data=(left, upper, right, lower), department_id=department_id)
 
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,

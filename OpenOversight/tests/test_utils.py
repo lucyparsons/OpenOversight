@@ -125,7 +125,7 @@ def test_s3_upload_png(mockdata, test_png_BytesIO):
     mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
         with patch('boto3.resource', Mock(return_value=mocked_resource)):
-                OpenOversight.app.utils.upload_obj_to_s3(test_png_BytesIO, 'test_cop1.png')
+            OpenOversight.app.utils.upload_obj_to_s3(test_png_BytesIO, 'test_cop1.png')
 
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/png'
 
@@ -206,10 +206,10 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(mockdata, test_png_BytesIO):
-        try:
-                upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
-        except ValueError:
-                pytest.fail("Unexpected value error")
+    try:
+        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+    except ValueError:
+        pytest.fail("Unexpected value error")
 
 
 def test_csv_import_new(csvfile):

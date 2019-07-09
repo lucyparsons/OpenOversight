@@ -207,4 +207,4 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     browser.find_element_by_id("activate-step-2").click()
 
     results = browser.find_elements_by_id("#uii-question")
-    assert len(results) is 0
+    assert len(results) == 0
