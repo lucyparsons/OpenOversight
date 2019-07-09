@@ -25,6 +25,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+ENV_DIR/
 build/
 develop-eggs/
 dist/
@@ -86,7 +87,10 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
-node_modules/
-OpenOverSight/app/static/dist/
 .vscode/
 .vscode/**
+
+node_modules/
+OpenOverSight/app/static/dist/
+
+

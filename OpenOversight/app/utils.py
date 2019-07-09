@@ -1,17 +1,15 @@
-from future.moves.urllib.request import urlretrieve
 from future.utils import iteritems
 
-from builtins import bytes
-from io import open
+from io import BytesIO
 
 import boto3
+from botocore.exceptions import ClientError
 import botocore
 import datetime
 import hashlib
 import os
 import random
 import sys
-import tempfile
 from traceback import format_exc
 
 from sqlalchemy import func
@@ -23,6 +21,9 @@ from PIL import Image as Pimage
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
 from .main.choices import RACE_CHOICES, GENDER_CHOICES
+
+# Ensure the file is read/write by the creator only
+SAVED_UMASK = os.umask(0o077)
 
 
 def set_dynamic_default(form_field, value):
@@ -205,21 +206,23 @@ def serve_image(filepath):
 
 
 def compute_hash(data_to_hash):
-    return hashlib.sha256(bytes(data_to_hash)).hexdigest()
+    return hashlib.sha256(data_to_hash.getvalue()).hexdigest()
 
 
-def upload_file(safe_local_path, src_filename, dest_filename):
+def upload_obj_to_s3(file_obj, dest_filename):
     s3_client = boto3.client('s3')
 
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
-    s3_content_type = "image/%s" % imghdr.what(safe_local_path)
+    file_ending = imghdr.what(None, h=file_obj.read())
+    file_obj.seek(0)
+    s3_content_type = "image/%s" % file_ending
     s3_path = '{}/{}'.format(s3_folder, s3_filename)
-    s3_client.upload_file(safe_local_path,
-                          current_app.config['S3_BUCKET_NAME'],
-                          s3_path,
-                          ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
+    s3_client.upload_fileobj(file_obj,
+                             current_app.config['S3_BUCKET_NAME'],
+                             s3_path,
+                             ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
 
     config = s3_client._client_config
     config.signature_version = botocore.UNSIGNED
@@ -436,64 +439,66 @@ def create_description(self, form):
         date_updated=datetime.datetime.now())
 
 
-def get_uploaded_cropped_image(original_image, crop_data):
-    """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
+def crop_image(image, crop_data, department_id):
+    image.seek(0)
+    img_bytes = image.read()
+    image.seek(0)
+    image_type = imghdr.what(file=image, h=img_bytes)
 
-    tmpdir = tempfile.mkdtemp()
-    original_filename = original_image.filepath.split('/')[-1]
-    safe_local_path0 = os.path.join(tmpdir, original_filename)
-    # get the original image and save it locally
-    urlretrieve(original_image.filepath, safe_local_path0)
-    pimage = Pimage.open(safe_local_path0)
+    image.seek(0)
     SIZE = 300, 300
-    cropped_image = pimage.crop(crop_data)
-    cropped_image.thumbnail(SIZE)
+    if crop_data:
+        smaller_image = Pimage.open(image).crop(crop_data)
+    else:
+        smaller_image = Pimage.open(image).copy()
+        smaller_image.thumbnail(SIZE)
 
-    tmp_filename = '{}{}'.format(datetime.datetime.now(), original_filename)
-    safe_local_path = os.path.join(tmpdir, tmp_filename)
+    with BytesIO() as img_as_bytes:
+        smaller_image.save(img_as_bytes, format=image_type)
+        return upload_image_to_s3_and_store_in_db(img_as_bytes, image_type, department_id)
 
-    def rm_dirs():
-        os.remove(safe_local_path0)
-        os.remove(safe_local_path)
-        os.rmdir(tmpdir)
 
-    # TODO: For faster implementation,
-    # avoid writing tempfile by passing a BytesIO object to cropped_image.save()
-    cropped_image.save(fp=safe_local_path)
-    file = open(safe_local_path, 'rb')
-
-    # See if there is a matching photo already in the db
-    hash_img = compute_hash(file.read())
-    hash_found = Image.query.filter_by(hash_img=hash_img).first()
-    if hash_found:
-        rm_dirs()
-        return hash_found
-
-    # Generate new filename
-    file_extension = original_filename.split('.')[-1]
-    new_filename = '{}.{}'.format(hash_img, file_extension)
-
-    # Upload file from local filesystem to S3 bucket and delete locally
+def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
+    hash_img = compute_hash(image_data)
+    existing_image = Image.query.filter_by(hash_img=hash_img).first()
+    if existing_image:
+        return existing_image
+    date_taken = None
+    if image_type in current_app.config['ALLOWED_EXTENSIONS']:
+        image_data.seek(0)
+        image = Pimage.open(image_data)
+        image_data.seek(0)
+        date_taken = find_date_taken(image)
+    else:
+        raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:
-        url = upload_file(safe_local_path, original_filename,
-                          new_filename)
-        rm_dirs()
-        # Update the database to add the image
-        new_image = Image(filepath=url, hash_img=hash_img, is_tagged=True,
+        new_filename = '{}.{}'.format(hash_img, image_type)
+        url = upload_obj_to_s3(image_data, new_filename)
+        new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
-                          department_id=original_image.department_id,
-                          # TODO: Get the following field from exif data
-                          date_image_taken=original_image.date_image_taken)
+                          department_id=department_id,
+                          date_image_taken=date_taken
+                          )
         db.session.add(new_image)
         db.session.commit()
         return new_image
-    except:  # noqa
+    except ClientError:
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error('Error uploading to S3: {}'.format(
             ' '.join([str(exception_type), str(value),
                       format_exc()])
         ))
-        rm_dirs()
+        return None
+
+
+def find_date_taken(pimage):
+    if pimage.filename.split('.')[-1] == 'png':
+        return None
+    if pimage._getexif():
+        # 36867 in the exif tags holds the date and the original image was taken https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
+        if 36867 in pimage._getexif():
+            return pimage._getexif()[36867]
+    else:
         return None
 
 

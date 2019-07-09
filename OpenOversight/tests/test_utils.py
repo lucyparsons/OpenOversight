@@ -1,9 +1,9 @@
 from mock import patch, Mock, MagicMock
-import os
+from io import BytesIO
 import OpenOversight
 from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer
+from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db
 import pytest
 import pandas as pd
 import uuid
@@ -114,38 +114,28 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
         assert returned_identifier == identifier
 
 
-def test_compute_hash(mockdata):
-    hash_result = OpenOversight.app.utils.compute_hash(b'bacon')
+def test_compute_hash_with_BytesIO(mockdata):
+    hash_result = OpenOversight.app.utils.compute_hash(BytesIO(b'bacon'))
     expected_hash = '9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4'
     assert hash_result == expected_hash
 
 
-def test_s3_upload_png(mockdata):
-    test_dir = os.path.dirname(os.path.realpath(__file__))
-    local_path = os.path.join(test_dir, '../app/static/images/test_cop1.png')
-
+def test_s3_upload_png(mockdata, test_png_BytesIO):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
         with patch('boto3.resource', Mock(return_value=mocked_resource)):
-            OpenOversight.app.utils.upload_file(local_path,
-                                                'doesntmatter.png',
-                                                'test_cop1.png')
+            OpenOversight.app.utils.upload_obj_to_s3(test_png_BytesIO, 'test_cop1.png')
 
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/png'
 
 
-def test_s3_upload_jpeg(mockdata):
-    test_dir = os.path.dirname(os.path.realpath(__file__))
-    local_path = os.path.join(test_dir, '../app/static/images/test_cop5.jpg')
-
+def test_s3_upload_jpeg(mockdata, test_jpg_BytesIO):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch('boto3.client', Mock(return_value=mocked_connection)):
         with patch('boto3.resource', Mock(return_value=mocked_resource)):
-            OpenOversight.app.utils.upload_file(local_path,
-                                                'doesntmatter.jpg',
-                                                'test_cop5.jpg')
+            OpenOversight.app.utils.upload_obj_to_s3(test_jpg_BytesIO, 'test_cop5.jpg')
 
     assert mocked_connection.method_calls[0][2]['ExtraArgs']['ContentType'] == 'image/jpeg'
 
@@ -170,40 +160,56 @@ def test_unit_choices(mockdata):
     assert 'Unit: Bureau of Organized Crime' in unit_choices
 
 
-# Mock calls to upload_file
-@patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_get_uploaded_cropped_image_new_tag(mockdata):
-    original_image = Image.query.first()
-
-    # gives the correct local path so that Pimage can open the image
-    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(mockdata, test_png_BytesIO):
     original_image_count = Image.query.count()
-    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
 
-    assert type(cropped_image) == Image
+    upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+
     assert Image.query.count() == original_image_count + 1
 
 
-@patch('OpenOversight.app.utils.upload_file', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_get_uploaded_cropped_image_existing_tag(mockdata):
-    original_image = Image.query.first()
-    # gives the correct local path so that Pimage can open the image
-    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(mockdata, test_png_BytesIO):
+    firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+    secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
 
-    first_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
-    second_crop = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
-
-    assert first_crop.id == second_crop.id
+    assert type(secondUpload) == Image
+    assert firstUpload.id == secondUpload.id
 
 
-@patch('OpenOversight.app.utils.upload_file', MagicMock(side_effect=ValueError('foo')))
-def test_get_uploaded_cropped_image_s3_error(mockdata):
-    original_image = Image.query.first()
-    original_image.filepath = 'file:///' + os.getcwd() + '/app/' + original_image.filepath
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(mockdata, test_png_BytesIO):
+    upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
 
-    cropped_image = OpenOversight.app.utils.get_uploaded_cropped_image(original_image, (20, 50, 200, 200))
+    assert not upload.is_tagged
 
-    assert cropped_image is None
+
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(mockdata, test_png_BytesIO):
+    mocked_connection = Mock()
+    mocked_resource = Mock()
+
+    with patch('boto3.client', Mock(return_value=mocked_connection)):
+        with patch('boto3.resource', Mock(return_value=mocked_resource)):
+            upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+
+            filename = upload.filepath.split('/')[-1]
+            filename_parts = filename.split('.')
+            assert len(filename_parts) == 2
+
+
+def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(mockdata):
+    with pytest.raises(ValueError):
+        upload_image_to_s3_and_store_in_db(BytesIO(b'invalid-image'), 'idk', 1)
+
+
+@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
+def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(mockdata, test_png_BytesIO):
+    try:
+        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
+    except ValueError:
+        pytest.fail("Unexpected value error")
 
 
 def test_csv_import_new(csvfile):

@@ -98,9 +98,8 @@ def test_officer_browse_pagination(mockdata, browser):
     assert expected in page_text
 
 
-def test_lastname_capitalization(mockdata, browser):
+def test_last_name_capitalization(mockdata, browser):
     browser.get("http://localhost:5000/auth/login")
-    wait_for_page_load(browser)
 
     # get past the login page
     elem = browser.find_element_by_id("email")
@@ -109,11 +108,11 @@ def test_lastname_capitalization(mockdata, browser):
     elem = browser.find_element_by_id("password")
     elem.clear()
     elem.send_keys("testtest")
-    browser.find_element_by_id("submit").click()
+    with wait_for_page_load(browser):
+        browser.find_element_by_id("submit").click()
     wait_for_element(browser, By.ID, "cpd")
 
-    test_pairs = [("mcDonald", "McDonald"), ("Mei-Ying", "Mei-Ying"),
-                  ("G", "G"), ("oh", "Oh")]
+    test_pairs = [("mcDonald", "McDonald"), ("Mei-Ying", "Mei-Ying")]
 
     for test_pair in test_pairs:
         test_input = test_pair[0]
@@ -125,10 +124,59 @@ def test_lastname_capitalization(mockdata, browser):
         elem = browser.find_element_by_id("last_name")
         elem.clear()
         elem.send_keys(test_input)
-        browser.find_element_by_id("submit").click()
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
+
+        # get past the "Submit images" page
+        wait_for_element(browser, By.ID, "submit-officer-images")
+        images_button = browser.find_element_by_css_selector("#submit-officer-images")
+        with wait_for_page_load(browser):
+            images_button.click()
 
         # check result
-        wait_for_element(browser, By.TAG_NAME, "tbody")
+        wait_for_element(browser, By.TAG_NAME, "h1")
+        rendered_field = browser.find_element_by_tag_name("h1").text
+        rendered_name = rendered_field.split(":")[1].strip()
+        assert rendered_name == test_output
+
+
+def test_last_name_capitalization_short_name(mockdata, browser):
+    browser.get("http://localhost:5000/auth/login")
+
+    # get past the login page
+    elem = browser.find_element_by_id("email")
+    elem.clear()
+    elem.send_keys("test@example.org")
+    elem = browser.find_element_by_id("password")
+    elem.clear()
+    elem.send_keys("testtest")
+    with wait_for_page_load(browser):
+        browser.find_element_by_id("submit").click()
+    wait_for_element(browser, By.ID, "cpd")
+
+    test_pairs = [("G", "G"), ("oh", "Oh")]
+
+    for test_pair in test_pairs:
+        test_input = test_pair[0]
+        test_output = test_pair[1]
+
+        # enter a last name to test
+        browser.get("http://localhost:5000/officer/new")
+        wait_for_element(browser, By.ID, "last_name")
+        elem = browser.find_element_by_id("last_name")
+        elem.clear()
+        elem.send_keys(test_input)
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
+
+        # get past the "Submit images" page
+        wait_for_element(browser, By.ID, "submit-officer-images")
+        images_button = browser.find_element_by_css_selector("#submit-officer-images")
+        with wait_for_page_load(browser):
+            images_button.click()
+
+        # check result
+        wait_for_element(browser, By.TAG_NAME, "h1")
         rendered_field = browser.find_element_by_tag_name("h1").text
         rendered_name = rendered_field.split(":")[1].strip()
         assert rendered_name == test_output
@@ -159,4 +207,4 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     browser.find_element_by_id("activate-step-2").click()
 
     results = browser.find_elements_by_id("#uii-question")
-    assert len(results) is 0
+    assert len(results) == 0

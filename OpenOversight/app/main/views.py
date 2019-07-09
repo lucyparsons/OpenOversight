@@ -1,13 +1,13 @@
-import datetime
 import os
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import text
 import sys
-import tempfile
 from traceback import format_exc
-from werkzeug import secure_filename
+from io import BytesIO
+from PIL import Image as Pimage
+import urllib.request
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -15,14 +15,14 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (roster_lookup, upload_file, compute_hash,
-                     serve_image, compute_leaderboard_stats, get_random_image,
+from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
-                     create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note, get_uploaded_cropped_image,
-                     create_description, filter_by_form, dept_choices)
+                     replace_list, create_note, set_dynamic_default, roster_lookup,
+                     create_description, filter_by_form,
+                     crop_image, create_incident, get_or_create, dept_choices)
+
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -80,7 +80,6 @@ def get_officer():
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
-    # import pdb; pdb.set_trace()
     return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
@@ -549,7 +548,7 @@ def add_officer():
         form = AddOfficerForm(new_formdata)
         officer = add_officer_profile(form, current_user)
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
-        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+        return redirect(url_for('main.submit_officer_images', officer_id=officer.id))
     else:
         return render_template('add_officer.html', form=form, jsloads=jsloads)
 
@@ -671,7 +670,7 @@ def label_data(department_id=None, image_id=None):
         officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
         existing_tag = db.session.query(Face) \
                          .filter(Face.officer_id == form.officer_id.data) \
-                         .filter(Face.img_id == form.image_id.data).first()
+                         .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
         elif not existing_tag:
@@ -679,7 +678,16 @@ def label_data(department_id=None, image_id=None):
             upper = form.dataY.data
             right = left + form.dataWidth.data
             lower = upper + form.dataHeight.data
-            cropped_image = get_uploaded_cropped_image(image, (left, upper, right, lower))
+            byte_io = BytesIO()
+
+            if 'http' or 'https' in proper_path:
+                img = Pimage.open(urllib.request.urlopen(proper_path))
+            else:
+                static_path = os.path.abspath(os.curdir) + '/app' + proper_path
+                img = Pimage.open(static_path)
+            img.save(byte_io, img.format)
+            byte_io.seek(0)
+            cropped_image = crop_image(image=byte_io, crop_data=(left, upper, right, lower), department_id=department_id)
 
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,
@@ -842,62 +850,45 @@ def all_data():
     return render_template('all_depts.html', departments=departments)
 
 
+@main.route('/submit_officer_images/officer/<int:officer_id>', methods=['GET', 'POST'])
+@login_required
+@ac_or_admin_required
+def submit_officer_images(officer_id):
+    officer = Officer.query.get_or_404(officer_id)
+    return render_template('submit_officer_image.html', officer=officer)
+
+
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
+@main.route('/upload/department/<int:department_id>/officer/<int:officer_id>', methods=['POST'])
 @limiter.limit('250/minute')
-def upload(department_id):
+def upload(department_id, officer_id=None):
+    if officer_id:
+        officer = Officer.query.filter_by(id=officer_id).first()
+        if not officer:
+            return jsonify(error='This officer does not exist.'), 404
+        if not (current_user.is_administrator or
+                (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+            return jsonify(error='You are not authorized to upload photos of this officer.'), 403
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    original_filename = secure_filename(file_to_upload.filename)
-    image_data = file_to_upload.read()
+    byte_io = BytesIO()
+    img = Pimage.open(file_to_upload)
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    image = crop_image(image=byte_io, crop_data='', department_id=department_id)
 
-    # See if there is a matching photo already in the db
-    hash_img = compute_hash(image_data)
-    hash_found = Image.query.filter_by(hash_img=hash_img).first()
-    if hash_found:
-        return jsonify(error="Image already uploaded to OpenOversight!"), 400
-
-    # Generate new filename
-    file_extension = original_filename.split('.')[-1]
-    new_filename = '{}.{}'.format(hash_img, file_extension)
-
-    # Save temporarily on local filesystem
-    tmpdir = tempfile.mkdtemp()
-    safe_local_path = os.path.join(tmpdir, new_filename)
-    with open(safe_local_path, 'wb') as tmp:
-        tmp.write(image_data)
-    os.umask(SAVED_UMASK)
-
-    # Upload file from local filesystem to S3 bucket and delete locally
-    try:
-        url = upload_file(safe_local_path, original_filename,
-                          new_filename)
-        # Update the database to add the image
-        try:
-            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                              date_image_inserted=datetime.datetime.now(),
-                              department_id=department_id,
-                              # TODO: Get the following field from exif data
-                              date_image_taken=datetime.datetime.now(),
-                              user_id=current_user.id)
-        except AttributeError:
-            new_image = Image(filepath=url, hash_img=hash_img, is_tagged=False,
-                              date_image_inserted=datetime.datetime.now(),
-                              department_id=department_id,
-                              # TODO: Get the following field from exif data
-                              date_image_taken=datetime.datetime.now())
-        db.session.add(new_image)
-        db.session.commit()
-        return jsonify(success="Success!"), 200
-    except:  # noqa
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error('Error uploading to S3: {}'.format(
-            ' '.join([str(exception_type), str(value),
-                      format_exc()])
-        ))
+    if image:
+        if officer_id:
+            new_tag = Face(officer_id=officer_id,
+                           img_id=image.id,
+                           original_image_id=image.id,
+                           user_id=current_user.id)
+            db.session.add(new_tag)
+            db.session.commit()
+        return jsonify(success='Success!'), 200
+    else:
         return jsonify(error="Server error encountered. Try again later."), 500
-    os.remove(safe_local_path)
-    os.rmdir(tmpdir)
 
 
 @main.route('/about')
