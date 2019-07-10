@@ -1,9 +1,9 @@
 from mock import patch, Mock, MagicMock
 from io import BytesIO
 import OpenOversight
-from OpenOversight.app.models import Image, Officer, Assignment, Salary
+from OpenOversight.app.models import Image, Officer, Assignment, Salary, Department
 from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, detect_officers
 import pytest
 import pandas as pd
 import uuid
@@ -210,6 +210,16 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
         upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', 1)
     except ValueError:
         pytest.fail("Unexpected value error")
+
+
+def test_upload_image_to_s3_and_store_in_db_calls_detect_officers_only_for_facial_recognition_allowed_departments(mockdata, test_png_BytesIO, test_jpg_BytesIO):
+    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
+    department_no_facial_recognition = Department.query.filter_by(facial_recognition_allowed=False).first()
+    with patch('OpenOversight.app.utils.detect_officers') as mock_detect_officers:
+        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', department_facial_recognition.id)
+        mock_detect_officers.assert_called_once()
+        upload_image_to_s3_and_store_in_db(test_jpg_BytesIO, 'jpg', department_no_facial_recognition.id)
+        mock_detect_officers.assert_called_once()
 
 
 def test_csv_import_new(csvfile):

@@ -24,7 +24,7 @@
    </div>
    <h3>Select the department that the police officer in your image belongs to:</h3>
    <div class="form-group">
-      <form class="form" name = "deptselect" id = "deptselect" method="post" role="form" label="deptselect">
+      <form class="form" name = "deptselect" id = "deptselect" method="post" role="form" label="deptselect" data-departments='{{ depts_dict | tojson }}' >
          {{ wtf.form_field(form.department) }}
       </form>
       <br> 
@@ -43,14 +43,31 @@
    // Select user's preferred department by default
    document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
    // Save the preferred department in dept_id
-   var dept_id = document.getElementById("department").selectedIndex + 1;
+   var dept_id = document.getElementById("department").selectedIndex + 1; 
 
    // Store changes in drop down list in dept_id variable
+   // Alert user when they select a department that uses facial recognition
+   const depts = $('#deptselect').data('departments');
    $(function() {
+        // Check if the user's preferred department uses facial recognition
+    
+        let targetDept = depts.find(function(element) {
+            return element.id == dept_id
+        });
+        if (targetDept.facial_recognition_allowed) {
+            window.alert('Your preferred department is one where facial recognition is used on the submitted images.  Please ensure that you are submitting images for the correct department, as facial recognition is not permitted in all jurisdictions.');
+        }
+
       select_dept = $('#deptselect');
       select_dept.on('change', function() {
          // fires when department selection changes
          dept_id = document.getElementById("department").value;
+         let targetDept = depts.find(function(element) {
+            return element.id == dept_id
+         });
+         if (targetDept.facial_recognition_allowed) {
+            window.alert('You selected a department where facial recognition is used on the submitted images.  Please ensure that you are submitting images for the correct department, as facial recognition is not permitted in all jurisdictions.');
+         }
       });
    }); 
 

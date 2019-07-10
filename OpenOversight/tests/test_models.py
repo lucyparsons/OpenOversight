@@ -311,6 +311,7 @@ def test_images_added_with_user_id(mockdata):
     saved = Image.query.filter_by(user_id=user_id).first()
     assert saved is not None
 
+
 def test_departments_default_to_facial_recognition_not_allowed(mockdata):
     default_department = Department(name="Anytown Police Department", short_name="APD")
     db.session.add(default_department)

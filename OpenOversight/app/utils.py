@@ -474,8 +474,12 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
         url = upload_obj_to_s3(image_data, new_filename)
+        department = Department.query.get(department_id)
+        if department.facial_recognition_allowed:
+            officers_present = detect_officers(image_data, new_filename)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
+                          #   contains_cops = officers_present,
                           department_id=department_id,
                           date_image_taken=date_taken
                           )
@@ -489,6 +493,11 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
                       format_exc()])
         ))
         return None
+
+
+def detect_officers(s3_path, image):
+    # below is a placeholders for the implementation
+    return False
 
 
 def find_date_taken(pimage):

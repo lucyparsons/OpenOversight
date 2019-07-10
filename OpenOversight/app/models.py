@@ -42,7 +42,8 @@ class Department(db.Model):
         return {'id': self.id,
                 'name': self.name,
                 'short_name': self.short_name,
-                'unique_internal_identifier_label': self.unique_internal_identifier_label
+                'unique_internal_identifier_label': self.unique_internal_identifier_label,
+                'facial_recognition_allowed': self.facial_recognition_allowed
                 }
 
 

@@ -283,14 +283,15 @@ def test_admin_can_add_police_department(mockdata, client, session):
             name='Test Police Department').one()
         assert department.short_name == 'TPD'
 
+
 def test_add_police_department_defaults_to_facial_recognition_not_allowed(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
         form = DepartmentForm(name='Anytown Police Department',
-                                short_name='APD')
-        
-        rv = client.post(
+                              short_name='APD')
+
+        client.post(
             url_for('main.add_department'),
             data=form.data,
             follow_redirects=True

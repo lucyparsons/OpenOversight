@@ -757,7 +757,9 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
-    preferred_dept_id = Department.query.first().id
+    depts_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+    preferred_dept_id = Department.query.filter_by(facial_recognition_allowed=False).first().id
+
     # try to use preferred department if available
     try:
         if User.query.filter_by(id=current_user.id).one().dept_pref:
@@ -765,12 +767,12 @@ def submit_data():
             form = AddImageForm()
         else:
             form = AddImageForm()
-        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id, depts_dict=depts_dict)
     # that is, an anonymous user has no id attribute
     except AttributeError:
         preferred_dept_id = Department.query.first().id
         form = AddImageForm()
-        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
+        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id, depts_dict=depts_dict)
 
 
 def check_input(str_input):
