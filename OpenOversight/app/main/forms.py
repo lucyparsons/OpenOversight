@@ -5,7 +5,7 @@ from wtforms import (StringField, DecimalField, TextAreaField,
                      HiddenField, FormField, FieldList, BooleanField)
 from wtforms.fields.html5 import DateField
 
-from wtforms.validators import (DataRequired, AnyOf, NumberRange, Regexp,
+from wtforms.validators import (DataRequired, InputRequired, AnyOf, NumberRange, Regexp,
                                 Length, Optional, Required, URL, ValidationError)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
@@ -81,10 +81,10 @@ class FindOfficerIDForm(Form):
 class FaceTag(Form):
     officer_id = IntegerField('officer_id', validators=[DataRequired()])
     image_id = IntegerField('image_id', validators=[DataRequired()])
-    dataX = IntegerField('dataX', validators=[DataRequired()])
-    dataY = IntegerField('dataY', validators=[DataRequired()])
-    dataWidth = IntegerField('dataWidth', validators=[DataRequired()])
-    dataHeight = IntegerField('dataHeight', validators=[DataRequired()])
+    dataX = IntegerField('dataX', validators=[InputRequired()])
+    dataY = IntegerField('dataY', validators=[InputRequired()])
+    dataWidth = IntegerField('dataWidth', validators=[InputRequired()])
+    dataHeight = IntegerField('dataHeight', validators=[InputRequired()])
 
 
 class AssignmentForm(Form):
