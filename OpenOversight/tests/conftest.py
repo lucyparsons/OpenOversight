@@ -215,6 +215,30 @@ def test_jpg_BytesIO():
 
 
 @pytest.fixture
+def cartoon_cop_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/test_cop1.png')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
+def one_cop_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/Officer_Natalie_Corona_swearing-in.jpg')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
 def mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',

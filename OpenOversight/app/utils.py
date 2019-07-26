@@ -20,7 +20,7 @@ from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
-from .main.choices import RACE_CHOICES, GENDER_CHOICES
+from .main.choices import RACE_CHOICES, GENDER_CHOICES, REKOGNITION_POLICE_MATCHES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -475,11 +475,10 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
         new_filename = '{}.{}'.format(hash_img, image_type)
         url = upload_obj_to_s3(image_data, new_filename)
         department = Department.query.get(department_id)
-        if department.facial_recognition_allowed:
-            officers_present = detect_officers(image_data, new_filename)
+        officers_present = detect_officers(department, image_data)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
-                          #   contains_cops = officers_present,
+                          contains_cops=officers_present,
                           department_id=department_id,
                           date_image_taken=date_taken
                           )
@@ -495,9 +494,28 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
         return None
 
 
-def detect_officers(s3_path, image):
-    # below is a placeholders for the implementation
-    return False
+def detect_officers(department, image_data):
+    officers_present = None
+    if department.facial_recognition_allowed is False:
+        return officers_present
+
+    rekog_client = boto3.client('rekognition')
+
+    image_data.seek(0)
+    image_as_bytes = image_data.read()
+
+    response = rekog_client.detect_labels(
+        Image={
+            'Bytes': image_as_bytes
+        },
+        MinConfidence=90
+    )
+
+    for label in response['Labels']:
+        if label['Name'] in REKOGNITION_POLICE_MATCHES:
+            officers_present = True
+
+    return officers_present
 
 
 def find_date_taken(pimage):

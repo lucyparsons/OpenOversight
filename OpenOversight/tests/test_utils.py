@@ -212,14 +212,26 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
         pytest.fail("Unexpected value error")
 
 
-def test_upload_image_to_s3_and_store_in_db_calls_detect_officers_only_for_facial_recognition_allowed_departments(mockdata, test_png_BytesIO, test_jpg_BytesIO):
+def test_detect_officers_calls_Rekognition_only_for_facial_recognition_allowed_departments(mockdata, test_png_BytesIO, test_jpg_BytesIO):
     department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
     department_no_facial_recognition = Department.query.filter_by(facial_recognition_allowed=False).first()
-    with patch('OpenOversight.app.utils.detect_officers') as mock_detect_officers:
-        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 'png', department_facial_recognition.id)
-        mock_detect_officers.assert_called_once()
-        upload_image_to_s3_and_store_in_db(test_jpg_BytesIO, 'jpg', department_no_facial_recognition.id)
-        mock_detect_officers.assert_called_once()
+    with patch('boto3.client') as mock_client:
+        detect_officers(department_facial_recognition, test_jpg_BytesIO)
+        mock_client.assert_called_once()
+        detect_officers(department_no_facial_recognition, test_jpg_BytesIO)
+        mock_client.assert_called_once()
+
+
+def test_detect_officers_returns_None_when_no_officers_present(mockdata, cartoon_cop_BytesIO):
+    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
+    result = detect_officers(department_facial_recognition, cartoon_cop_BytesIO)
+    assert result is None
+
+
+def test_detect_officers_returns_true_when_officers_present(mockdata, one_cop_BytesIO):
+    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
+    result = detect_officers(department_facial_recognition, one_cop_BytesIO)
+    assert result is True
 
 
 def test_csv_import_new(csvfile):

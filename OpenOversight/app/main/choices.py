@@ -15,3 +15,4 @@ GENDER_CHOICES = [('M', 'Male'), ('F', 'Female'), ('Other', 'Other'),
 STATE_CHOICES = [('', '')] + [(state.abbr, state.name) for state in states.STATES]
 LINK_CHOICES = [('', ''), ('link', 'Link'), ('video', 'YouTube Video'), ('other_video', 'Other Video')]
 AGE_CHOICES = [(str(age), str(age)) for age in range(16, 101)]
+REKOGNITION_POLICE_MATCHES = ['Police', 'Military', 'Military Uniform', 'Army', 'Soldier', 'Officer']
