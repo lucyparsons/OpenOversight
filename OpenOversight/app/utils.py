@@ -17,7 +17,6 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
-from flask_login import current_user
 from PIL import Image as Pimage
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
@@ -467,7 +466,7 @@ def crop_image(image, crop_data=None, department_id=None):
     return upload_image_to_s3_and_store_in_db(cropped_image_buf, department_id)
 
 
-def upload_image_to_s3_and_store_in_db(image_buf, department_id=None):
+def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
     image_data = image_buf.read()
@@ -490,7 +489,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, department_id=None):
                           date_image_inserted=datetime.datetime.now(),
                           department_id=department_id,
                           date_image_taken=date_taken,
-                          user_id=current_user.id
+                          user_id=user_id
                           )
         db.session.add(new_image)
         db.session.commit()
