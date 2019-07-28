@@ -863,10 +863,10 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    image = upload_image_to_s3_and_store_in_db(file_to_upload, department_id=department_id)
-    db.session.add(image)
+    image = upload_image_to_s3_and_store_in_db(file_to_upload, current_user and current_user.id, department_id=department_id)
 
     if image:
+        db.session.add(image)
         if officer_id:
             image.is_tagged = True
             image.contains_cops = True
