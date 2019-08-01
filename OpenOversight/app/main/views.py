@@ -453,6 +453,7 @@ def upload(department_id):
         return jsonify(error="File type not allowed!"), 415
     if requires_conversion(file_to_upload.filename):
         convert_image()
+        return file_to_upload.new_filename
     original_filename = secure_filename(file_to_upload.filename)
     image_data = file_to_upload.read()
 
