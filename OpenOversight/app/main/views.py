@@ -5,9 +5,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import text
 import sys
 from traceback import format_exc
-from io import BytesIO
-from PIL import Image as Pimage
-import urllib.request
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -21,7 +18,8 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      replace_list, create_note, set_dynamic_default, roster_lookup,
                      create_description, filter_by_form,
-                     crop_image, create_incident, get_or_create, dept_choices)
+                     crop_image, create_incident, get_or_create, dept_choices,
+                     upload_image_to_s3_and_store_in_db)
 
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
@@ -678,16 +676,10 @@ def label_data(department_id=None, image_id=None):
             upper = form.dataY.data
             right = left + form.dataWidth.data
             lower = upper + form.dataHeight.data
-            byte_io = BytesIO()
 
-            if 'http' or 'https' in proper_path:
-                img = Pimage.open(urllib.request.urlopen(proper_path))
-            else:
-                static_path = os.path.abspath(os.curdir) + '/app' + proper_path
-                img = Pimage.open(static_path)
-            img.save(byte_io, img.format)
-            byte_io.seek(0)
-            cropped_image = crop_image(image=byte_io, crop_data=(left, upper, right, lower), department_id=department_id)
+            cropped_image = crop_image(image, crop_data=(left, upper, right, lower), department_id=department_id)
+            cropped_image.contains_cops = True
+            cropped_image.is_tagged = True
 
             if cropped_image:
                 new_tag = Face(officer_id=form.officer_id.data,
@@ -874,19 +866,21 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    byte_io = BytesIO()
-    img = Pimage.open(file_to_upload)
-    img.save(byte_io, img.format)
-    byte_io.seek(0)
-    image = crop_image(image=byte_io, crop_data='', department_id=department_id)
+    image = upload_image_to_s3_and_store_in_db(file_to_upload, current_user.get_id(), department_id=department_id)
 
     if image:
+        db.session.add(image)
         if officer_id:
-            new_tag = Face(officer_id=officer_id,
-                           img_id=image.id,
-                           original_image_id=image.id,
-                           user_id=current_user.id)
-            db.session.add(new_tag)
+            image.is_tagged = True
+            image.contains_cops = True
+            cropped_image = crop_image(image, department_id=department_id)
+            cropped_image.contains_cops = True
+            cropped_image.is_tagged = True
+            face = Face(officer_id=officer_id,
+                        img_id=cropped_image.id,
+                        original_image_id=image.id,
+                        user_id=current_user.id)
+            db.session.add(face)
             db.session.commit()
         return jsonify(success='Success!'), 200
     else:

@@ -1127,17 +1127,19 @@ def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, tes
         officer = department.officers[3]
         officer_face_count = officer.face.count()
 
-        mock = MagicMock(return_value=Image.query.first())
-        with patch('OpenOversight.app.main.views.crop_image', mock):
-            rv = client.post(
-                url_for('main.upload', department_id=department.id, officer_id=officer.id),
-                content_type='multipart/form-data',
-                data=data
-            )
-            assert rv.status_code == 200
-            assert b'Success' in rv.data
-            # check that Face was added to database
-            assert officer.face.count() == officer_face_count + 1
+        crop_mock = MagicMock(return_value=Image.query.first())
+        upload_mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
+            with patch('OpenOversight.app.main.views.crop_image', crop_mock):
+                rv = client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert rv.status_code == 200
+                assert b'Success' in rv.data
+                # check that Face was added to database
+                assert officer.face.count() == officer_face_count + 1
 
 
 def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_BytesIO):
@@ -1150,7 +1152,7 @@ def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_
         mock = MagicMock(return_value=None)
         officer = department.officers[0]
         officer_face_count = officer.face.count()
-        with patch('OpenOversight.app.main.views.crop_image', mock):
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
             rv = client.post(
                 url_for('main.upload', department_id=department.id, officer_id=officer.id),
                 content_type='multipart/form-data',
@@ -1201,17 +1203,20 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_p
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]
         officer_face_count = officer.face.count()
-        mock = MagicMock(return_value=Image.query.first())
-        with patch('OpenOversight.app.main.views.crop_image', mock):
-            rv = client.post(
-                url_for('main.upload', department_id=department.id, officer_id=officer.id),
-                content_type='multipart/form-data',
-                data=data
-            )
-            assert rv.status_code == 200
-            assert b'Success' in rv.data
-            # check that Face was added to database
-            assert officer.face.count() == officer_face_count + 1
+
+        crop_mock = MagicMock(return_value=Image.query.first())
+        upload_mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
+            with patch('OpenOversight.app.main.views.crop_image', crop_mock):
+                rv = client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert rv.status_code == 200
+                assert b'Success' in rv.data
+                # check that Face was added to database
+                assert officer.face.count() == officer_face_count + 1
 
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):

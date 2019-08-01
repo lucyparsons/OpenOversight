@@ -1,4 +1,5 @@
 from future.utils import iteritems
+from urllib.request import urlopen
 
 from io import BytesIO
 
@@ -206,7 +207,7 @@ def serve_image(filepath):
 
 
 def compute_hash(data_to_hash):
-    return hashlib.sha256(data_to_hash.getvalue()).hexdigest()
+    return hashlib.sha256(data_to_hash).hexdigest()
 
 
 def upload_obj_to_s3(file_obj, dest_filename):
@@ -439,48 +440,59 @@ def create_description(self, form):
         date_updated=datetime.datetime.now())
 
 
-def crop_image(image, crop_data, department_id):
-    image.seek(0)
-    img_bytes = image.read()
-    image.seek(0)
-    image_type = imghdr.what(file=image, h=img_bytes)
-
-    image.seek(0)
-    SIZE = 300, 300
-    if crop_data:
-        smaller_image = Pimage.open(image).crop(crop_data)
+def crop_image(image, crop_data=None, department_id=None):
+    if 'http' in image.filepath:
+        with urlopen(image.filepath) as response:
+            image_buf = BytesIO(response.read())
     else:
-        smaller_image = Pimage.open(image).copy()
-        smaller_image.thumbnail(SIZE)
+        image_buf = open(os.path.abspath(current_app.root_path) + image.filepath, 'rb')
 
-    with BytesIO() as img_as_bytes:
-        smaller_image.save(img_as_bytes, format=image_type)
-        return upload_image_to_s3_and_store_in_db(img_as_bytes, image_type, department_id)
+    image_buf.seek(0)
+    image_type = imghdr.what(image_buf)
+    pimage = Pimage.open(image_buf)
+
+    SIZE = 300, 300
+    if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
+        return image
+
+    if crop_data:
+        pimage = pimage.crop(crop_data)
+    if pimage.size[0] > SIZE[0] or pimage.size[1] > SIZE[1]:
+        pimage = pimage.copy()
+        pimage.thumbnail(SIZE)
+
+    cropped_image_buf = BytesIO()
+    pimage.save(cropped_image_buf, image_type)
+    return upload_image_to_s3_and_store_in_db(cropped_image_buf, department_id)
 
 
-def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
+def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
+    image_buf.seek(0)
+    image_type = imghdr.what(image_buf)
+    image_data = image_buf.read()
+    image_buf.seek(0)
     hash_img = compute_hash(image_data)
     existing_image = Image.query.filter_by(hash_img=hash_img).first()
     if existing_image:
         return existing_image
     date_taken = None
     if image_type in current_app.config['ALLOWED_EXTENSIONS']:
-        image_data.seek(0)
-        image = Pimage.open(image_data)
-        image_data.seek(0)
-        date_taken = find_date_taken(image)
+        image_buf.seek(0)
+        pimage = Pimage.open(image_buf)
+        date_taken = find_date_taken(pimage)
     else:
         raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
-        url = upload_obj_to_s3(image_data, new_filename)
+        url = upload_obj_to_s3(image_buf, new_filename)
         department = Department.query.get(department_id)
-        officers_present = detect_officers(department, image_data)
+        officers_present = detect_officers(department, image_buf)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
                           contains_cops=officers_present,
                           department_id=department_id,
-                          date_image_taken=date_taken
+                          date_image_taken=date_taken,
+                          user_id=user_id
                           )
         db.session.add(new_image)
         db.session.commit()
@@ -494,15 +506,15 @@ def upload_image_to_s3_and_store_in_db(image_data, image_type, department_id):
         return None
 
 
-def detect_officers(department, image_data):
+def detect_officers(department, image_buf):
     officers_present = None
     if department.facial_recognition_allowed is False:
         return officers_present
 
     rekog_client = boto3.client('rekognition')
 
-    image_data.seek(0)
-    image_as_bytes = image_data.read()
+    image_buf.seek(0)
+    image_as_bytes = image_buf.read()
 
     response = rekog_client.detect_labels(
         Image={
