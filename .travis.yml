@@ -17,10 +17,9 @@ before_install:
 install:
   - true
 before_script:
-  - pip install coveralls flake8==3.5.0
+  - pip install coveralls
   - sudo service postgresql stop
 script:
   - sudo make test
-  - flake8 --ignore=E501,E722
 after_success:
   - coveralls

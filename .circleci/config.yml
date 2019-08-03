@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  lint:
+    docker:
+      - image: circleci/python
+    steps:
+      - checkout
+      - run:
+          name: Install lint dependencies and run linting
+          command: |
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install flake8==3.5.0
+            flake8 --ignore=E501,E722 --exclude=.venv/
+workflows:
+  version: 2
+  per_pr:
+    jobs:
+      - lint
