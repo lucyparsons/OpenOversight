@@ -26,7 +26,12 @@ steps:
         gpg --import OPENOVERSIGHT_GPG_PUB_KEY.asc
         gpg --output backup.tar.gz.gpg --encrypt --trust-model always --batch --no-tty --recipient 0x3C4C259402A0E3B2 $BACKUP_FILENAME
 
-        # S3 upload TK
+        # Upload this encrypted backup to S3
+        source .venv/bin/activate
+        pip3 install awscli
+        export TIMESTAMP=$(date +%s)
+        cp backup.tar.gz.gpg backup-$TIMESTAMP.tar.gz.gpg
+        aws s3 cp backup-$TIMESTAMP.tar.gz.gpg s3://openoversight-backups/
 
   - &backup_production
     run:
