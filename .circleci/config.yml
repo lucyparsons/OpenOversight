@@ -10,6 +10,11 @@ steps:
         pip3 install -r requirements.txt
         pip3 install -r dev-requirements.txt
 
+  - &add_ssh_keys
+    add_ssh_keys:
+      fingerprints:
+        - "44:81:8d:36:86:55:fa:82:eb:97:65:f4:d7:9a:0b:fa"
+
 jobs:
   lint:
       docker:
@@ -30,8 +35,7 @@ jobs:
     steps:
       - checkout
       - *setup_dependencies
-
-      # TODO: Add SSH key for CI user (need to create on server, add to Circle config)
+      - *add_ssh_keys
 
       - run:
           name: Backup staging server
@@ -53,8 +57,7 @@ jobs:
     steps:
       - checkout
       - *setup_dependencies
-
-      # TODO: Add SSH key for CI user (need to create on server, add to Circle config)
+      - *add_ssh_keys
 
       - run:
           name: Backup staging server
