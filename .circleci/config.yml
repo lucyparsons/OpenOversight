@@ -28,6 +28,13 @@ steps:
 
         # S3 upload TK
 
+  - &backup_production
+    run:
+      name: Backup production server
+      command: |
+        source .venv/bin/activate
+        fab production backup
+
 jobs:
   lint:
       docker:
@@ -42,7 +49,7 @@ jobs:
               pip install flake8==3.5.0
               flake8 --ignore=E501,E722 --exclude=.venv/
 
-  staging:
+  staging_backup_and_deploy:
     docker:
       - image: circleci/python:3.6
     steps:
@@ -64,20 +71,14 @@ jobs:
             source .venv/bin/activate
             fab staging migrate
 
-  production:
+  production_backup_and_deploy:
     docker:
       - image: circleci/python:3.6
     steps:
       - checkout
       - *setup_dependencies
       - *add_ssh_keys
-
-      - run:
-          name: Backup staging server
-          command: |
-            source .venv/bin/activate
-            fab production backup
-
+      - *backup_production
       - *encrypt_and_save_backup
 
       - run:
@@ -86,19 +87,40 @@ jobs:
             source .venv/bin/activate
             fab production migrate
 
+  production_backup_only:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - *setup_dependencies
+      - *add_ssh_keys
+      - *backup_production
+      - *encrypt_and_save_backup
+
 workflows:
   per_pr:
     jobs:
       - lint
+      - staging_backup_and_deploy
   staging_cd:
     jobs:
-      - staging:
+      - staging_backup_and_deploy:
           filters:
             branches:
               only: develop
   production_cd:
     jobs:
-      - production:
+      - production_backup_and_deploy:
           filters:
             branches:
               only: master
+  weekly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * 0"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - production_backup_only
