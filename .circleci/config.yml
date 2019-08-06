@@ -43,19 +43,6 @@ steps:
         fab production backup
 
 jobs:
-  lint:
-    docker:
-      - image: circleci/python
-    steps:
-      - checkout
-      - run:
-          name: Install lint dependencies and run linting
-          command: |
-            virtualenv .venv
-            source .venv/bin/activate
-            pip install flake8==3.5.0
-            flake8 --ignore=E501,E722 --exclude=.venv/
-
   staging_backup_and_deploy:
     machine:
       enabled: true
@@ -105,9 +92,6 @@ jobs:
       - *encrypt_and_save_backup
 
 workflows:
-  per_pr:
-    jobs:
-      - lint
   staging_cd:
     jobs:
       - staging_backup_and_deploy:
