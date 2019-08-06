@@ -64,13 +64,13 @@ jobs:
       - *setup_dependencies
       - *add_ssh_keys
 
-      #- run:
-      #    name: Backup staging server
-      #    command: |
-      #      source .venv/bin/activate
-      #      fab staging backup
+      - run:
+          name: Backup staging server
+          command: |
+            source .venv/bin/activate
+            fab staging backup
 
-      #- *encrypt_and_save_backup
+      - *encrypt_and_save_backup
 
       - run:
           name: Run migrations and deploy
