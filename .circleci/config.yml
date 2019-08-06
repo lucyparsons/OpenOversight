@@ -108,7 +108,6 @@ workflows:
   per_pr:
     jobs:
       - lint
-      - staging_backup_and_deploy
   staging_cd:
     jobs:
       - staging_backup_and_deploy:
