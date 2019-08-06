@@ -5,7 +5,9 @@ steps:
     run:
       name: Install dependencies (required for fabric)
       command: |
-        virtualenv .venv
+        pyenv global 3.5.2
+        sudo apt-get install libpq-dev
+        virtualenv --python=python3 .venv
         source .venv/bin/activate
         pip3 install -r requirements.txt
         pip3 install -r dev-requirements.txt
@@ -55,8 +57,8 @@ jobs:
             flake8 --ignore=E501,E722 --exclude=.venv/
 
   staging_backup_and_deploy:
-    docker:
-      - image: circleci/python:3.6
+    machine:
+      enabled: true
     steps:
       - checkout
       - *setup_dependencies
@@ -70,7 +72,6 @@ jobs:
 
       #- *encrypt_and_save_backup
 
-      - setup_remote_docker
       - run:
           name: Run migrations and deploy
           command: |
@@ -78,8 +79,8 @@ jobs:
             fab staging migrate
 
   production_backup_and_deploy:
-    docker:
-      - image: circleci/python:3.6
+    machine:
+      enabled: true
     steps:
       - checkout
       - *setup_dependencies
@@ -87,7 +88,6 @@ jobs:
       - *backup_production
       - *encrypt_and_save_backup
 
-      - setup_remote_docker
       - run:
           name: Run migrations and deploy
           command: |
