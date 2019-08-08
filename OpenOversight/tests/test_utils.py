@@ -181,7 +181,6 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(mockdata, test_p
     upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert not upload.is_tagged
 
-
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(mockdata, test_png_BytesIO, client):
     mocked_connection = MagicMock()
@@ -220,13 +219,13 @@ def test_detect_officers_calls_Rekognition_only_for_facial_recognition_allowed_d
 
 def test_detect_officers_returns_None_when_no_officers_present(mockdata, cartoon_cop_BytesIO):
     department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
-    result = detect_officers(department_facial_recognition, cartoon_cop_BytesIO)
+    result = detect_officers(department_facial_recognition, cartoon_cop_BytesIO.read())
     assert result is None
 
 
 def test_detect_officers_returns_true_when_officers_present(mockdata, one_cop_BytesIO):
     department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
-    result = detect_officers(department_facial_recognition, one_cop_BytesIO)
+    result = detect_officers(department_facial_recognition, one_cop_BytesIO.read())
     assert result is True
 
 
