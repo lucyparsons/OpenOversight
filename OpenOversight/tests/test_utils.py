@@ -207,14 +207,14 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
             pytest.fail("Unexpected value error")
 
 
-def test_detect_officers_calls_Rekognition_only_for_facial_recognition_allowed_departments(mockdata, test_png_BytesIO, test_jpg_BytesIO):
+def test_detect_officers_calls_Rekognition_regardless_of_department_facial_recognition_allowed(mockdata, test_png_BytesIO, test_jpg_BytesIO):
     department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
     department_no_facial_recognition = Department.query.filter_by(facial_recognition_allowed=False).first()
     with patch('boto3.client') as mock_client:
         detect_officers(department_facial_recognition, test_jpg_BytesIO)
         mock_client.assert_called_once()
         detect_officers(department_no_facial_recognition, test_jpg_BytesIO)
-        mock_client.assert_called_once()
+        assert mock_client.call_count == 2
 
 
 def test_detect_officers_returns_None_when_no_officers_present(mockdata, cartoon_cop_BytesIO):

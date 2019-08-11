@@ -508,8 +508,6 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
 
 def detect_officers(department, image_data):
     officers_present = None
-    if department.facial_recognition_allowed is False:
-        return officers_present
 
     rekog_client = boto3.client('rekognition')
 
