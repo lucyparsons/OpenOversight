@@ -261,6 +261,8 @@ class Image(db.Model):
 
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='raw_images')
+    
+    sorted_by_rekognition = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<Image ID {}: {}>'.format(self.id, self.filepath)
