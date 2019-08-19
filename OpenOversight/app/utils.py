@@ -137,7 +137,7 @@ def add_officer_profile(form, current_user):
             if note['text_contents']:
                 new_note = Note(
                     note=note['text_contents'],
-                    user_id=current_user.id,
+                    user_id=current_user.get_id(),
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
@@ -148,7 +148,7 @@ def add_officer_profile(form, current_user):
             if description['text_contents']:
                 new_description = Description(
                     description=description['text_contents'],
-                    user_id=current_user.id,
+                    user_id=current_user.get_id(),
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
@@ -480,6 +480,8 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         image_buf.seek(0)
         pimage = Pimage.open(image_buf)
         date_taken = find_date_taken(pimage)
+        if date_taken:
+            date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
     else:
         raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:

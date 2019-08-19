@@ -130,7 +130,7 @@ def profile(username):
     else:
         abort(404)
     try:
-        pref = User.query.filter_by(id=current_user.id).one().dept_pref
+        pref = User.query.filter_by(id=current_user.get_id()).one().dept_pref
         department = Department.query.filter_by(id=pref).one().name
     except NoResultFound:
         department = None
@@ -329,7 +329,7 @@ def display_tag(tag_id):
 def classify_submission(image_id, contains_cops):
     try:
         image = Image.query.filter_by(id=image_id).one()
-        image.user_id = current_user.id
+        image.user_id = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
         elif contains_cops == 0:
@@ -529,7 +529,7 @@ def add_officer():
     jsloads = ['js/dynamic_lists.js', 'js/add_officer.js']
     form = AddOfficerForm()
     for link in form.links:
-        link.user_id.data = current_user.id
+        link.user_id.data = current_user.get_id()
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -559,7 +559,7 @@ def edit_officer(officer_id):
     form = EditOfficerForm(obj=officer)
     for link in form.links:
         if not link.user_id.data:
-            link.user_id.data = current_user.id
+            link.user_id.data = current_user.get_id()
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -688,7 +688,7 @@ def label_data(department_id=None, image_id=None):
                                face_position_y=upper,
                                face_width=form.dataWidth.data,
                                face_height=form.dataHeight.data,
-                               user_id=current_user.id)
+                               user_id=current_user.get_id())
                 db.session.add(new_tag)
                 db.session.commit()
                 flash('Tag added to database')
@@ -751,14 +751,14 @@ def submit_data():
     preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
-        if User.query.filter_by(id=current_user.id).one().dept_pref:
-            preferred_dept_id = User.query.filter_by(id=current_user.id).one().dept_pref
+        if User.query.filter_by(id=current_user.get_id()).one().dept_pref:
+            preferred_dept_id = User.query.filter_by(id=current_user.get_id()).one().dept_pref
             form = AddImageForm()
         else:
             form = AddImageForm()
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
     # that is, an anonymous user has no id attribute
-    except AttributeError:
+    except (AttributeError, NoResultFound):
         preferred_dept_id = Department.query.first().id
         form = AddImageForm()
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
@@ -876,7 +876,7 @@ def upload(department_id, officer_id=None):
             face = Face(officer_id=officer_id,
                         img_id=cropped_image.id,
                         original_image_id=image.id,
-                        user_id=current_user.id)
+                        user_id=current_user.get_id())
             db.session.add(face)
             db.session.commit()
         return jsonify(success='Success!'), 200
@@ -933,7 +933,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
-            link.user_id.data = current_user.id
+            link.user_id.data = current_user.get_id()
         return form
 
     def get_edit_form(self, obj):
@@ -946,7 +946,7 @@ class IncidentApi(ModelView):
             if link.user_id.data:
                 continue
             else:
-                link.user_id.data = current_user.id
+                link.user_id.data = current_user.get_id()
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id

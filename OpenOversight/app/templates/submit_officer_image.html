@@ -29,8 +29,8 @@
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
   <script>
-  $(document).ready(function(){
-    Dropzone.options.myCopDropzone = {
+    Dropzone.autoDiscover = false;
+    let myDropzone = new Dropzone("#my-cop-dropzone", {
       url: "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
       method: "POST",
       uploadMultiple: false,
@@ -42,8 +42,6 @@
           file.previewTemplate.appendChild(document.createTextNode(responseText));
         });
       }
-    }
-
-  });
+    });
   </script>
 {% endblock %}
