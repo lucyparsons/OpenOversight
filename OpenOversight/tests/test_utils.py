@@ -1,9 +1,12 @@
 from mock import patch, Mock, MagicMock
+from flask import current_app
+from flask_login import current_user
 from io import BytesIO
 import OpenOversight
 from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, crop_image
+from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
 import pandas as pd
 import uuid
@@ -206,6 +209,18 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
             upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
         except ValueError:
             pytest.fail("Unexpected value error")
+
+
+def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(mockdata, client):
+    with current_app.test_request_context():
+        login_user(client)
+        department = OpenOversight.app.models.Department.query.first()
+        image = OpenOversight.app.models.Image.query.first()
+
+        with patch('OpenOversight.app.utils.upload_image_to_s3_and_store_in_db') as upload_image_to_s3_and_store_in_db:
+            crop_image(image, None, department.id)
+
+            assert current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
 
 
 def test_csv_import_new(csvfile):
