@@ -16,7 +16,7 @@
    <div class="header">
       <h3>What happens when I submit a photograph?</h3>
       <p class="small">The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
-      {% if not current_user.id %}
+      {% if not current_user.get_id() %}
         <p class="small">Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.</p>
       {% else %}
         <p class="small">Your user ID will be attached to all photo submissions while you are signed in.</p>

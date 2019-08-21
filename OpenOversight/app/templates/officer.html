@@ -300,7 +300,7 @@
                 <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br/>
                 {{ description.text_contents }} <br/>
                 <em>{{ description.creator.username }} </em>
-             {% if description.creator_id == current_user.id or current_user.is_administrator %}
+             {% if description.creator_id == current_user.get_id() or current_user.is_administrator %}
                 <a href="{{ url_for('main.description_api', officer_id=officer.id,
                          obj_id=description.id) + '/edit' }}">
                 <span class='sr-only'>Edit</span>
@@ -332,7 +332,7 @@
               <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
               {{ note.text_contents }} <br/>
               <em>{{ note.creator.username }} </em>
-            {% if note.creator_id == current_user.id or current_user.is_administrator %}
+            {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
               <a href="{{ url_for('main.note_api', officer_id=officer.id,
                         obj_id=note.id) + '/edit' }}">
                 <span class='sr-only'>Edit</span>

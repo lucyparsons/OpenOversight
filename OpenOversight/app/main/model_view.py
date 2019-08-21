@@ -46,9 +46,9 @@ class ModelView(MethodView):
                 if getattr(current_user, 'dept_pref_rel', None):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, 'creator_id') and not form.creator_id.data:
-                form.creator_id.data = current_user.id
+                form.creator_id.data = current_user.get_id()
             if hasattr(form, 'last_updated_id'):
-                form.last_updated_id.data = current_user.id
+                form.last_updated_id.data = current_user.get_id()
 
         if form.validate_on_submit():
             new_obj = self.create_function(form)
@@ -73,11 +73,11 @@ class ModelView(MethodView):
             if hasattr(obj, 'creator_id') and hasattr(form, 'creator_id') and getattr(obj, 'creator_id'):
                 form.creator_id.data = obj.creator_id
             elif hasattr(form, 'creator_id'):
-                form.creator_id.data = current_user.id
+                form.creator_id.data = current_user.get_id()
 
             # if the object keeps track of who updated it last, set to current user
             if hasattr(form, 'last_updated_id'):
-                form.last_updated_id.data = current_user.id
+                form.last_updated_id.data = current_user.get_id()
 
         if hasattr(form, 'department'):
             add_department_query(form, current_user)

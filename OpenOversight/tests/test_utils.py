@@ -1,9 +1,12 @@
 from mock import patch, Mock, MagicMock
+from flask import current_app
+from flask_login import current_user
 from io import BytesIO
 import OpenOversight
 from OpenOversight.app.models import Image, Officer, Assignment, Salary, Department
 from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, detect_officers
+from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, detect_officers, crop_image
+from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
 import pandas as pd
 import uuid
@@ -181,6 +184,7 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(mockdata, test_p
     upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert not upload.is_tagged
 
+
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(mockdata, test_png_BytesIO, client):
     mocked_connection = MagicMock()
@@ -227,6 +231,18 @@ def test_detect_officers_returns_true_when_officers_present(mockdata, one_cop_By
     department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
     result = detect_officers(department_facial_recognition, one_cop_BytesIO.read())
     assert result is True
+
+
+def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(mockdata, client):
+    with current_app.test_request_context():
+        login_user(client)
+        department = OpenOversight.app.models.Department.query.first()
+        image = OpenOversight.app.models.Image.query.first()
+
+        with patch('OpenOversight.app.utils.upload_image_to_s3_and_store_in_db') as upload_image_to_s3_and_store_in_db:
+            crop_image(image, None, department.id)
+
+            assert current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
 
 
 def test_csv_import_new(csvfile):
