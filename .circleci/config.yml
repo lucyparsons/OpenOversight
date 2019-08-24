@@ -6,6 +6,8 @@ steps:
       name: Install dependencies (required for fabric)
       command: |
         pyenv global 3.5.2
+        sudo apt-get update
+        sudo apt-get upgrade
         sudo apt-get install libpq-dev
         virtualenv --python=python3 .venv
         source .venv/bin/activate
@@ -46,6 +48,7 @@ jobs:
   staging_backup_and_deploy:
     machine:
       enabled: true
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - *setup_dependencies
@@ -68,6 +71,7 @@ jobs:
   production_backup_and_deploy:
     machine:
       enabled: true
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - *setup_dependencies
@@ -92,6 +96,9 @@ jobs:
       - *encrypt_and_save_backup
 
 workflows:
+  per_pr_test:
+    jobs:
+      - staging_backup_and_deploy
   staging_cd:
     jobs:
       - staging_backup_and_deploy:
