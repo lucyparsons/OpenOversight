@@ -96,9 +96,6 @@ jobs:
       - *encrypt_and_save_backup
 
 workflows:
-  per_pr_test:
-    jobs:
-      - staging_backup_and_deploy
   staging_cd:
     jobs:
       - staging_backup_and_deploy:
