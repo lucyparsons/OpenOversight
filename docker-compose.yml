@@ -13,6 +13,14 @@ services:
    ports:
      - "5432:5432"
 
+ redis:
+  restart: always
+  image: redis:5.0.5
+  command: ["redis-server", "--appendonly", "yes"]
+  hostname: redis
+  ports:
+    - "6379:6379"
+
  web:
    restart: always
    build:
@@ -32,8 +40,10 @@ services:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    links:
      - postgres:postgres
+     - redis:redis
    expose:
      - "3000"
    command: scripts/entrypoint.sh
    ports:
      - "3000:3000"
+     

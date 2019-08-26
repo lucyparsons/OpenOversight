@@ -4,7 +4,7 @@ import pytest
 import random
 from datetime import datetime
 from io import BytesIO
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
 from OpenOversight.app.utils import dept_choices
@@ -20,6 +20,10 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           IncidentForm)
 
 from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job
+
+
+# TODO: write a test that detect_cops is only called on image upload when it's the general upload.
+# ensure detect_cops is not called when an image is being uploaded to a specific cop's profile
 
 
 @pytest.mark.parametrize("route", [
@@ -1142,6 +1146,28 @@ def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, tes
                 assert officer.face.count() == officer_face_count + 1
 
 
+def test_detect_officers_not_called_for_upload_to_officer_profile(mockdata, client, session, test_jpg_BytesIO):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        data = dict(file=(test_jpg_BytesIO, '204Cat.png'),)
+
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[3]
+
+        crop_mock = MagicMock(return_value=Image.query.first())
+        upload_mock = MagicMock(return_value=Image.query.first())
+        detect_mock = Mock()
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
+            with patch('OpenOversight.app.main.views.crop_image', crop_mock):
+                client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert not detect_mock.called
+
+
 def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_BytesIO):
     with current_app.test_request_context():
         login_admin(client)
@@ -1386,8 +1412,6 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
 
         assert 'Added new salary' in rv.data.decode('utf-8')
         assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
-        # TADA
-        # import pdb; pdb.set_trace()
         form = SalaryForm(salary=150000)
         officer = Officer.query.filter_by(id=officer_id).one()
 
@@ -1432,8 +1456,6 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
 
         login_ac(client)
 
-        # import pdb; pdb.set_trace()
-        # TADA
         form = SalaryForm(salary=150000)
         officer = Officer.query.filter_by(id=officer_id).one()
 

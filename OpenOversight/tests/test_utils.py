@@ -3,7 +3,7 @@ from flask import current_app
 from flask_login import current_user
 from io import BytesIO
 import OpenOversight
-from OpenOversight.app.models import Image, Officer, Assignment, Salary, Department
+from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
 from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, detect_officers, crop_image
 from OpenOversight.tests.routes.route_helpers import login_user
@@ -211,25 +211,13 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
             pytest.fail("Unexpected value error")
 
 
-def test_detect_officers_calls_Rekognition_regardless_of_department_facial_recognition_allowed(mockdata, test_png_BytesIO, test_jpg_BytesIO):
-    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
-    department_no_facial_recognition = Department.query.filter_by(facial_recognition_allowed=False).first()
-    with patch('boto3.client') as mock_client:
-        detect_officers(department_facial_recognition, test_jpg_BytesIO)
-        mock_client.assert_called_once()
-        detect_officers(department_no_facial_recognition, test_jpg_BytesIO)
-        assert mock_client.call_count == 2
-
-
 def test_detect_officers_returns_None_when_no_officers_present(mockdata, cartoon_cop_BytesIO):
-    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
-    result = detect_officers(department_facial_recognition, cartoon_cop_BytesIO.read())
+    result = detect_officers(cartoon_cop_BytesIO)
     assert result is None
 
 
 def test_detect_officers_returns_true_when_officers_present(mockdata, one_cop_BytesIO):
-    department_facial_recognition = Department.query.filter_by(facial_recognition_allowed=True).first()
-    result = detect_officers(department_facial_recognition, one_cop_BytesIO.read())
+    result = detect_officers(one_cop_BytesIO)
     assert result is True
 
 

@@ -13,6 +13,8 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_
 RUN mkdir geckodriver
 RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
+RUN apt-get update && apt-get install -y redis-server
+
 RUN apt-get update && apt-get install -y curl
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs

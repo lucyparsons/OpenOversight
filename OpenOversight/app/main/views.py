@@ -5,6 +5,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import text
 import sys
 from traceback import format_exc
+from rq import Queue
+from redis import Redis
+from io import BytesIO
+
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -19,7 +23,7 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      replace_list, create_note, set_dynamic_default, roster_lookup,
                      create_description, filter_by_form,
                      crop_image, create_incident, get_or_create, dept_choices,
-                     upload_image_to_s3_and_store_in_db)
+                     upload_image_to_s3_and_store_in_db, detect_officers)
 
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
@@ -37,6 +41,8 @@ from ..auth.utils import admin_required, ac_or_admin_required
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+queue = Queue(connection=Redis(host='redis'))
 
 
 def redirect_url(default='index'):
@@ -866,10 +872,12 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    image = upload_image_to_s3_and_store_in_db(file_to_upload, current_user.get_id(), department_id=department_id)
+
+    image_buf = BytesIO()
+    file_to_upload.save(image_buf)
+    image = upload_image_to_s3_and_store_in_db(image_buf, current_user.get_id(), department_id=department_id)
 
     if image:
-        db.session.add(image)
         if officer_id:
             image.is_tagged = True
             image.contains_cops = True
@@ -881,6 +889,10 @@ def upload(department_id, officer_id=None):
                         original_image_id=image.id,
                         user_id=current_user.get_id())
             db.session.add(face)
+            db.session.commit()
+        else:
+            image.contains_cops = detect_officers(image_buf)
+            db.session.add(image)
             db.session.commit()
         return jsonify(success='Success!'), 200
     else:

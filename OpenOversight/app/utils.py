@@ -489,11 +489,8 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
         url = upload_obj_to_s3(image_buf, new_filename)
-        department = Department.query.get(department_id)
-        officers_present = detect_officers(department, image_data)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
-                          contains_cops=officers_present,
                           department_id=department_id,
                           date_image_taken=date_taken,
                           user_id=user_id
@@ -510,14 +507,16 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         return None
 
 
-def detect_officers(department, image_data):
+def detect_officers(image_buf):
     officers_present = None
+    image_buf.seek(0)
+
 
     rekog_client = boto3.client('rekognition')
 
     response = rekog_client.detect_labels(
         Image={
-            'Bytes': image_data
+            'Bytes': image_buf.read()
         },
         MinConfidence=90
     )
