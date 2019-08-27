@@ -211,16 +211,6 @@ def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recogni
             pytest.fail("Unexpected value error")
 
 
-def test_detect_officers_returns_None_when_no_officers_present(mockdata, cartoon_cop_BytesIO):
-    result = detect_officers(cartoon_cop_BytesIO)
-    assert result is None
-
-
-def test_detect_officers_returns_true_when_officers_present(mockdata, one_cop_BytesIO):
-    result = detect_officers(one_cop_BytesIO)
-    assert result is True
-
-
 def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(mockdata, client):
     with current_app.test_request_context():
         login_user(client)

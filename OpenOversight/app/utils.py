@@ -507,16 +507,19 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         return None
 
 
-def detect_officers(image_buf):
+def detect_officers(image):
     officers_present = None
-    image_buf.seek(0)
-
+    s3_folder_and_name = image.filepath.split('/')[-2:]
+    s3_path = '/'.join(s3_folder_and_name)
 
     rekog_client = boto3.client('rekognition')
 
     response = rekog_client.detect_labels(
         Image={
-            'Bytes': image_buf.read()
+            'S3Object': {
+                'Bucket': current_app.config['S3_BUCKET_NAME'],
+                'Name': s3_path
+            }
         },
         MinConfidence=90
     )

@@ -891,7 +891,8 @@ def upload(department_id, officer_id=None):
             db.session.add(face)
             db.session.commit()
         else:
-            image.contains_cops = detect_officers(image_buf)
+            image.contains_cops = detect_officers(image)
+            image.sorted_by_rekognition = True
             db.session.add(image)
             db.session.commit()
         return jsonify(success='Success!'), 200
