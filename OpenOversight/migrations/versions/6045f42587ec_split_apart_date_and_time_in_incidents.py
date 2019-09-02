@@ -1,7 +1,7 @@
 """Split apart date and time in incidents
 
 Revision ID: 6045f42587ec
-Revises: 3015d1dd9eb4
+Revises: 8ce3de7679c2
 Create Date: 2019-05-04 05:28:06.869101
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '6045f42587ec'
-down_revision = '3015d1dd9eb4'
+down_revision = '8ce3de7679c2'
 branch_labels = None
 depends_on = None
 
