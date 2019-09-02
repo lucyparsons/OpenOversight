@@ -355,7 +355,7 @@ def mockdata(session):
             last_updated_id=1
         ),
         models.Incident(
-            date=datetime(2019, 1, 15),
+            date=datetime.datetime(2019, 1, 15),
             report_number='39',
             description='A test description that has over 300 chars. The purpose is to see how to display a larger descrption. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Lengthy lengthy lengthy.',
             department_id=2,
