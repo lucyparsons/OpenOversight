@@ -644,7 +644,7 @@ def leaderboard():
 @main.route('/cop_face/', methods=['GET', 'POST'])
 @login_required
 def label_data(department_id=None, image_id=None):
-    jsloads = ['js/cropper.js', 'js/tagger.js']
+    jsloads = ['js/cropper.js', 'js/tagger.js', 'js/autodetect_faces.js', 'js/face-api.js', 'face_api_js_models']
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:

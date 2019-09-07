@@ -20,7 +20,7 @@
 
       <div class="row">
           <div class="subtle-pad">
-            <img class="center-block img-responsive" id="image" src="{{ path }}" alt="Picture">
+            <img class="center-block img-responsive" id="image" src="{{ path }}" alt="Picture" crossorigin="anonymous"/>
           </div>
       </div>
 
@@ -31,7 +31,8 @@
           </div>
         </div>
         <div class="col-sm-3 text-center">
-        <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
+            <button id="autodetector" class="btn btn-sm">Autodetect faces!</button>
+            <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
           <button type="button" class="btn btn-sm">Launch roster search form</button></a></p>
         </div>
         <div class="col-sm-3 text-center">
