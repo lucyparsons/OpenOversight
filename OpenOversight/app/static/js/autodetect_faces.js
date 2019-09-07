@@ -16,9 +16,16 @@ $(document).ready(function() {;
     image = document.getElementById('image')
     $('#autodetector').click(function(e) {
         e.preventDefault();
+        const canvas = faceapi.createCanvasFromMedia(image)
+        document.body.append(canvas)
+        const displaySize = { width: image.width, height: image.height }
+        console.log('displaySize', displaySize)
         get_faces(image)
-            .then((faces) => {
-                faces.forEach(face => console.log(face))
+            .then((face_detections) => {
+                face_detections.forEach(face_detection => console.log(face_detection))
+                console.log('face_detections', face_detections)
+                const resizedDetections = faceapi.resizeResults(face_detections, displaySize)
+                faceapi.draw.drawDetections(canvas, resizedDetections)
             })
             .catch(error => console.log(error))
         });
