@@ -3,6 +3,7 @@
 {% block head %}
 <link href="{{ url_for('static', filename='css/cropper.css') }}" rel="stylesheet">
 <link href="{{ url_for('static', filename='css/tagger.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/cop_face.css') }}" rel="stylesheet">
 {% endblock head %}
 
 
@@ -19,7 +20,11 @@
       </div>
 
       <div class="row">
-          <div class="subtle-pad">
+          <div id="autodetection-display">
+              <div id="autodetection" class="hidden">
+              </div>
+          </div>
+          <div id="image-with-cropper" class="subtle-pad">
             <img class="center-block img-responsive" id="image" src="{{ path }}" alt="Picture" crossorigin="anonymous"/>
           </div>
       </div>
@@ -31,7 +36,7 @@
           </div>
         </div>
         <div class="col-sm-3 text-center">
-            <button id="autodetector" class="btn btn-sm">Autodetect faces!</button>
+            <button id="autodetector" class="btn btn-sm">Autodetect a face!</button>
             <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
           <button type="button" class="btn btn-sm">Launch roster search form</button></a></p>
         </div>

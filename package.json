@@ -14,6 +14,7 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^1.2.8",
     "canvas": "^2.6.0",
+    "cropperjs": "^1.5.5",
     "face-api.js": "^0.20.1",
     "rollup": "^1.20.3"
   }
