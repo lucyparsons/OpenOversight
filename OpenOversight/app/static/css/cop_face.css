@@ -1,3 +1,7 @@
 #autodetection-display {
     text-align: center
 }
+
+#facial-recog-trigger {
+    display: none
+}

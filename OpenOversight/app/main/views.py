@@ -909,6 +909,11 @@ def about_oo():
 def privacy_oo():
     return render_template('privacy.html')
 
+@main.route('/Burlington/<officer_name>/<int:photo_num>')
+def burlington_photo(officer_name, photo_num):
+    path = serve_image(f'/static/images/{officer_name}{photo_num}.jpg')
+
+    return render_template('burlington_photo.html', path=path)
 
 @main.route('/shutdown')    # pragma: no cover
 def server_shutdown():      # pragma: no cover

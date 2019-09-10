@@ -10,7 +10,7 @@ $(document).ready(function() {;
     loadModels().then(result => result)
 
     async function getMostConfidentFace(image){
-        return await faceapi.detectSingleFace(image)
+        return await faceapi.detectSingleFace(image).withFaceLandmarks().withFaceDescriptor()
     }
 
     function setCropBoundaries(boxCoordinates) {
@@ -22,6 +22,29 @@ $(document).ready(function() {;
         dataY.value = Math.ceil(boxCoordinates.y)
         dataWidth.value = Math.ceil(boxCoordinates.width)
         dataHeight.value = Math.ceil(boxCoordinates.height)
+    }
+
+    function loadFaceRegistry() {
+        labels = ['JasonBellavance', 'BrianDiFranco', 'MichaelHemond']
+        return Promise.all(
+            labels.map(async label => {
+                const descriptions = []
+                for (let i = 1; i <= 2; i++) {
+                    const img = await faceapi.fetchImage(`/static/images/${label}${i}.jpg`)
+                    const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+                    descriptions.push(detections.descriptor)
+                }
+                return new faceapi.LabeledFaceDescriptors(label, descriptions)
+            })
+        )
+    }
+
+    async function identifyFace(detection) {
+        const labeledFaceDescriptors = await loadFaceRegistry()
+
+        const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
+        const result = faceMatcher.findBestMatch(detection.descriptor)
+        console.log('here is result', result)
     }
 
     image = document.getElementById('image')
@@ -36,8 +59,13 @@ $(document).ready(function() {;
                 const autoDetection = document.getElementById('autodetection')
                 cropperSpace.style.display = "none" 
                 autoDetection.replaceWith(canvas)
-                faceapi.draw.drawDetections(canvas, resizedDetection)
-                setCropBoundaries(resizedDetection.box)
+                faceapi.draw.drawDetections(canvas, resizedDetection.detection)
+                setCropBoundaries(resizedDetection.detection.box)
+                document.getElementById('facial-recog-trigger').style.display = "inline-block"
+                $('#facial-recog-trigger').click(function(e) {
+                    e.preventDefault();
+                    identifyFace(resizedDetection)
+                })
             })
             .catch(error => console.log(error))
         });
