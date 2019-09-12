@@ -1,6 +1,5 @@
 from __future__ import with_statement
 from fabric.api import env, run, cd, execute, get, lcd, local, put
-from fabric.contrib.console import confirm
 import datetime
 import os
 # from dotenv import load_dotenv, find_dotenv
@@ -49,22 +48,20 @@ def deploy():
         with cd(env.code_dir):
             run('su %s -c "git fetch && git status"' % env.unprivileged_user)
             execute(buildassets)
-            if confirm("Update to latest commit in this branch?", default=False):
-                run('su %s -c "git pull"' % env.unprivileged_user)
-                run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
-                run('su %s -c "mkdir --parents %s/OpenOversight/app/static/dist"' % (env.unprivileged_user, env.code_dir))
-                put(local_path=os.path.join('OpenOversight', 'app', 'static', 'dist'),
-                    remote_path=os.path.join(env.code_dir, 'OpenOversight', 'app', 'static')
-                    )
-                run('sudo systemctl restart openoversight')
+            run('su %s -c "git pull"' % env.unprivileged_user)
+            run('su %s -c "PATH=%s/bin:$PATH pip install -r requirements.txt"' % (env.unprivileged_user, env.venv_dir))
+            run('su %s -c "mkdir --parents %s/OpenOversight/app/static/dist"' % (env.unprivileged_user, env.code_dir))
+            put(local_path=os.path.join('OpenOversight', 'app', 'static', 'dist'),
+                remote_path=os.path.join(env.code_dir, 'OpenOversight', 'app', 'static')
+                )
+            run('sudo systemctl restart openoversight')
 
 
 def migrate():
     execute(deploy)
     with cd(env.code_dir):
-        if confirm("Apply any outstanding database migrations?", default=False):
-            run('su %s -c "cd OpenOversight; FLASK_APP=OpenOversight.app %s/bin/flask db upgrade"' % (env.unprivileged_user, env.venv_dir))
-            run('sudo systemctl restart openoversight')
+        run('su %s -c "cd OpenOversight; FLASK_APP=OpenOversight.app %s/bin/flask db upgrade"' % (env.unprivileged_user, env.venv_dir))
+        run('sudo systemctl restart openoversight')
 
 
 def backup():

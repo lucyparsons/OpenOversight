@@ -379,11 +379,14 @@ def replace_list(items, obj, attr, model, db):
 
 def create_incident(self, form):
     fields = {
-        'date': form.datetime,
+        'date': form.date_field.data,
+        'time': form.time_field.data,
         'officers': [],
         'license_plates': [],
         'links': [],
-        'address': ''
+        'address': '',
+        'creator_id': form.creator_id.data,
+        'last_updated_id': form.last_updated_id.data
     }
 
     if 'address' in form.data:
@@ -414,13 +417,16 @@ def create_incident(self, form):
 
     return Incident(
         date=fields['date'],
+        time=fields['time'],
         description=form.data['description'],
         department=form.data['department'],
         address=fields['address'],
         officers=fields['officers'],
         report_number=form.data['report_number'],
         license_plates=fields['license_plates'],
-        links=fields['links'])
+        links=fields['links'],
+        creator_id=fields['creator_id'],
+        last_updated_id=fields['last_updated_id'])
 
 
 def create_note(self, form):
