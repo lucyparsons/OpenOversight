@@ -151,7 +151,7 @@ def test_s3_upload_jpeg(mockdata):
 
 
 def test_user_can_submit_allowed_file(mockdata):
-    for file_to_submit in ['valid_photo.png', 'valid_photo.jpg', 'valid.photo.jpg', 'valid_photo.PNG', 'valid_photo.JPG']:
+    for file_to_submit in ['valid_photo.png', 'valid_photo.jpg', 'valid.photo.jpg', 'valid_photo.PNG', 'valid_photo.JPG', 'valid_photo.TIFF', 'valid_photo.tiff', 'valid_photo.psd', 'valid_photo.PSD']:
         assert OpenOversight.app.utils.allowed_file(file_to_submit) is True
 
 

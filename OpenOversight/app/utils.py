@@ -189,6 +189,21 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 
+def requires_conversion(filename):
+    return '.' in filename and \
+        filename.split('.', 1)[1].lower() in current_app.config['PHOTO_REQUIRES_CONV']
+
+
+def convert_image(filename):
+    try:
+        img_to_change = Pimage.open(filename)
+    except Pimage.DecompressionBombWarning:
+        return None
+    basename = os.path.splitext(filename)[0].split('.')
+    fixed_img = img_to_change.save(basename + 'jpeg')
+    return fixed_img
+
+
 def get_random_image(image_query):
     if image_query.count() > 0:
         rand = random.randrange(0, image_query.count())
