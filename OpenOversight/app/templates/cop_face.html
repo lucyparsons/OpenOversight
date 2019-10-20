@@ -38,10 +38,15 @@
         <div class="col-sm-3 text-center">
             <p class="subtle-pad">
                 <button id="autodetector" class="btn btn-sm">Autodetect a face!</button>
-            </p>
+            </p> 
             {% if department.facial_recognition_allowed %}
                 <p class="subtle-pad">
                     <button id="facial-recog-trigger" class="btn btn-sm">Run facial recognition on face</button>
+                </p>
+                <p id="facial-recog-display">
+                    This face has been detected to be 
+                        <span id="facial-recog-result"></span>
+                      Confirm this result with a roster search before submitting it.
                 </p>
             {% endif %}
             <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>

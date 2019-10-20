@@ -44,7 +44,16 @@ $(document).ready(function() {;
 
         const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
         const result = faceMatcher.findBestMatch(detection.descriptor)
-        console.log('here is result', result)
+        const facialRecogDisplay = document.getElementById('facial-recog-display')
+        if (result.label != "unknown") {
+            facialRecogDisplay.style.display = "inline-block"
+            const officerName = document.getElementById('facial-recog-result')
+            officerName.innerText = result.label
+        } 
+        if (result.label == "unknown") {
+            facialRecogDisplay.style.display = "inline-block"
+            facialRecogDisplay.innerText = "Facial recognition did not find a match for this officer.  Please search through the roster for a match."
+        }
     }
 
     image = document.getElementById('image')
