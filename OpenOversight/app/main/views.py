@@ -22,7 +22,8 @@ from ..utils import (roster_lookup, upload_file, compute_hash,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      create_incident, get_or_create, replace_list,
                      set_dynamic_default, create_note, get_uploaded_cropped_image,
-                     create_description, filter_by_form, dept_choices)
+                     create_description, filter_by_form, dept_choices,
+                     requires_conversion, convert_image)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -848,6 +849,8 @@ def upload(department_id):
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
+    if requires_conversion(file_to_upload.filename):
+        convert_image(file_to_upload.filename)
     original_filename = secure_filename(file_to_upload.filename)
     image_data = file_to_upload.read()
 
