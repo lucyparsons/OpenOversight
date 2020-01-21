@@ -1,12 +1,15 @@
-from mock import patch, Mock, MagicMock
 from flask import current_app
 from flask_login import current_user
 from io import BytesIO
-import OpenOversight
-from OpenOversight.app.models import Image
-from OpenOversight.app.utils import upload_image_to_s3_and_store_in_db, crop_image
 from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
+
+from mock import MagicMock, Mock, patch
+
+import OpenOversight
+from OpenOversight.app.models import (Department, Image)
+from OpenOversight.app.utils import (active_dept_choices, all_dept_choices,
+                                     upload_image_to_s3_and_store_in_db, crop_image)
 
 
 # Utils tests
@@ -20,6 +23,16 @@ def test_department_filter(mockdata):
     )
     for element in results.all():
         assert element.department == department
+
+
+def test_active_dept_choices_only_returns_active_departments(mockdata):
+    for dept in active_dept_choices():
+        assert dept.is_active
+
+
+def test_all_dept_choices_returns_all_departments_in_database(mockdata):
+    depts_in_db = Department.query.all()
+    assert len(all_dept_choices()) == len(depts_in_db)
 
 
 def test_race_filter_select_all_black_officers(mockdata):

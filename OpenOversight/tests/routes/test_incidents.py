@@ -3,8 +3,8 @@ import pytest
 from datetime import datetime, date, time
 from flask import url_for, current_app
 from sqlalchemy.orm import joinedload
-from OpenOversight.tests.conftest import AC_DEPT
-from .route_helpers import login_user, login_admin, login_ac, process_form_data
+from OpenOversight.tests.conftest import AC_DEPT, INACTIVE_DEPT, INACTIVE_DEPT_NAME
+from .route_helpers import login_user, login_admin, login_ac, login_inactive_ac, process_form_data
 
 
 from OpenOversight.app.main.forms import IncidentForm, LocationForm, LinkForm, LicensePlateForm, OOIdForm
@@ -601,3 +601,98 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
         officer_id = '1234'
         rv = client.get(url_for('main.incident_api') + 'new?officer_id={}'.format(officer_id))
         assert officer_id in rv.data.decode('utf-8')
+
+
+def test_admin_can_see_incidents_index_for_inactive_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        route = '/incidents/?department_id={}'.format(INACTIVE_DEPT)
+        rv = client.get(route)
+        assert rv.status_code == 200
+
+
+def test_admin_can_see_incident_in_inactive_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        inactive_dept_incident = Incident.query.filter_by(department_id=INACTIVE_DEPT).one()
+        route = '/incidents/{}'.format(inactive_dept_incident.id)
+        rv = client.get(route)
+        assert rv.status_code == 200
+
+
+def test_ac_can_see_incidents_index_in_their_inactive_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_inactive_ac(client)
+        route = '/incidents/?department_id={}'.format(INACTIVE_DEPT)
+        rv = client.get(route)
+        assert rv.status_code == 200
+
+
+def test_ac_cannot_see_incidents_index_in_other_inactive_depts(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        route = '/incidents/?department_id={}'.format(INACTIVE_DEPT)
+        rv = client.get(route)
+        assert rv.status_code == 403
+
+
+def test_ac_can_see_incident_in_their_inactive_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_inactive_ac(client)
+        incident = Incident.query.filter_by(department_id=INACTIVE_DEPT).first()
+        route = '/incidents/{}'.format(incident.id)
+        rv = client.get(route)
+        assert rv.status_code == 200
+
+
+def test_ac_cannot_see_incident_from_other_inactive_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        incident = Incident.query.filter_by(department_id=INACTIVE_DEPT).first()
+        route = '/incidents/{}'.format(incident.id)
+        rv = client.get(route)
+        assert rv.status_code == 403
+
+
+def test_logged_out_user_cannot_see_incident_in_inactive_dept(mockdata, client, session):
+    incident = Incident.query.filter_by(department_id=INACTIVE_DEPT).first()
+    route = '/incidents/{}'.format(incident.id)
+    rv = client.get(route)
+    assert rv.status_code == 403
+
+
+def test_logged_out_user_cannot_see_incidents_index_for_inactive_dept(mockdata, client, session):
+    route = '/incidents/?department_id={}'.format(INACTIVE_DEPT)
+    rv = client.get(route)
+    assert rv.status_code == 403
+
+
+def test_incidents_index_does_not_show_logged_out_user_inactive_department_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get('/incidents', follow_redirects=True)
+        result = rv.data.decode('utf-8')
+        assert INACTIVE_DEPT_NAME not in result
+
+
+def test_incidents_index_shows_admins_inactive_department_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get('/incidents', follow_redirects=True)
+        result = rv.data.decode('utf-8')
+        assert INACTIVE_DEPT_NAME in result
+
+
+def test_incidents_index_shows_acs_their_own_inactive_department_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_inactive_ac(client)
+        rv = client.get('/incidents', follow_redirects=True)
+        result = rv.data.decode('utf-8')
+        assert INACTIVE_DEPT_NAME in result
+
+
+def test_incidents_index_does_not_shows_acs_other_inactive_department_incidents(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        rv = client.get('/incidents', follow_redirects=True)
+        result = rv.data.decode('utf-8')
+        assert INACTIVE_DEPT_NAME not in result

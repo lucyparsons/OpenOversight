@@ -6,7 +6,7 @@ from flask import render_template, redirect, request, url_for, flash, abort, cur
 from flask.views import MethodView
 from flask_login import login_required, current_user
 from ..auth.utils import ac_or_admin_required
-from ..models import db
+from ..models import db, Department
 from ..utils import add_department_query, set_dynamic_default
 
 
@@ -37,6 +37,12 @@ class ModelView(MethodView):
             return render_template('{}_list.html'.format(self.model_name), objects=objects, url='main.{}_api'.format(self.model_name))
         else:
             obj = self.model.query.get_or_404(obj_id)
+            dept = Department.query.filter_by(id=obj.department_id).one()
+            if not dept.is_active and self.department_check:
+                if current_user.is_anonymous:
+                    abort(403)
+                if not current_user.is_administrator and current_user.ac_department_id != self.get_department_id(obj):
+                    abort(403)
             return render_template('{}_detail.html'.format(self.model_name), obj=obj, current_user=current_user)
 
     @login_required

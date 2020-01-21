@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 from flask import url_for, current_app
-from OpenOversight.tests.conftest import AC_DEPT
-from .route_helpers import login_user, login_admin, login_ac
+from OpenOversight.tests.conftest import AC_DEPT, ACTIVE_NON_AC_DEPT
+from .route_helpers import login_user, login_admin, login_ac, login_inactive_ac
 
 
 from OpenOversight.app.main.forms import TextForm, EditTextForm
@@ -60,7 +60,7 @@ def test_admins_can_create_notes(mockdata, client, session):
 def test_acs_can_create_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        officer = Officer.query.first()
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         note = 'I can haz notez'
         ac = User.query.filter_by(email='raq929@example.org').first()
         form = TextForm(
@@ -343,7 +343,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
 
 def test_users_cannot_see_notes(mockdata, client, session):
     with current_app.test_request_context():
-        officer = Officer.query.first()
+        officer = Officer.query.filter_by(department_id=ACTIVE_NON_AC_DEPT).first()
         text_contents = 'U can\'t see meeee'
         note = Note(
             text_contents=text_contents,
@@ -413,7 +413,8 @@ def test_acs_can_see_notes_in_their_department(mockdata, client, session):
 
 def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
-        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        login_inactive_ac(client)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         text_contents = 'Hello it me'
         note = Note(
             text_contents=text_contents,

@@ -4,23 +4,32 @@ import io
 import os
 import re
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, joinedload, contains_eager
 import sys
 from traceback import format_exc
 
-from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Response, Markup)
+from flask import (Response, abort, current_app, flash, jsonify, redirect,
+                   render_template, request, url_for, Markup)
+from flask.views import MethodView
 from flask_login import current_user, login_required, login_user
+from future.utils import iteritems
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import true
 
-from . import main
-from .. import limiter, sitemap
-from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
-                     allowed_file, add_new_assignment, edit_existing_assignment,
-                     add_officer_profile, edit_officer_profile,
-                     ac_can_edit_officer, add_department_query, add_unit_query,
-                     replace_list, create_note, set_dynamic_default, roster_lookup,
-                     create_description, filter_by_form,
-                     crop_image, create_incident, get_or_create, dept_choices,
+from .. import limiter
+from ..auth.forms import LoginForm
+from ..auth.utils import ac_or_admin_required, admin_required
+from ..models import (Assignment, Department, Description, Face, Image,
+                      Incident, Job, LicensePlate, Link, Location, Note,
+                      Officer, Salary, Unit, User, db)
+from ..utils import (ac_can_edit_officer, add_department_query,
+                     add_new_assignment, add_officer_profile, add_unit_query,
+                     allowed_file, compute_leaderboard_stats,
+                     create_description, create_incident, create_note, crop_image,
+                     active_dept_choices, all_dept_choices, edit_existing_assignment,
+                     edit_officer_profile, filter_by_form, get_or_create,
+                     get_random_image, replace_list, roster_lookup, serve_image,
+                     set_dynamic_default, get_random_image_from_active_department,
                      upload_image_to_s3_and_store_in_db)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
@@ -28,14 +37,6 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
 from .model_view import ModelView
-from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
-from ..models import (db, Image, User, Face, Officer, Assignment, Department,
-                      Unit, Incident, Location, LicensePlate, Link, Note,
-                      Description, Salary, Job)
-
-from ..auth.forms import LoginForm
-from ..auth.utils import admin_required, ac_or_admin_required
-from sqlalchemy.orm import contains_eager, joinedload
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -68,8 +69,18 @@ def index():
 @sitemap_include
 @main.route('/browse', methods=['GET'])
 def browse():
-    departments = Department.query.filter(Department.officers.any())
-    return render_template('browse.html', departments=departments)
+    active_departments = active_dept_choices()
+    all_departments = all_dept_choices()
+    if current_user.is_anonymous or not (current_user.is_administrator or current_user.is_area_coordinator):
+        return render_template('browse.html', departments=active_departments)
+    if current_user.is_administrator:
+        return render_template('browse.html', departments=all_departments)
+    if current_user.is_area_coordinator:
+        ac_dept = Department.query.filter_by(id=current_user.ac_department_id).one()
+        if ac_dept not in active_departments:
+            active_departments.append(ac_dept)
+            return render_template('browse.html', departments=active_departments)
+        return render_template('browse.html', departments=active_departments)
 
 
 @sitemap_include
@@ -77,8 +88,10 @@ def browse():
 def get_officer():
     jsloads = ['js/find_officer.js']
     form = FindOfficerForm()
-
-    depts_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+    depts_dict = [dept_choice.toCustomDict() for dept_choice in active_dept_choices()]
+    if not current_user.is_anonymous and current_user.is_administrator:
+        form = FindOfficerFormAdmin()
+        depts_dict = [dept_choice.toCustomDict() for dept_choice in all_dept_choices()]
 
     if getattr(current_user, 'dept_pref_rel', None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
@@ -104,7 +117,10 @@ def get_officer():
 
 @main.route('/tagger_find', methods=['GET', 'POST'])
 def get_ooid():
-    form = FindOfficerIDForm()
+    if not current_user.is_anonymous and current_user.is_administrator:
+        form = FindOfficerIDFormAdmin()
+    else:
+        form = FindOfficerIDForm()
     if form.validate_on_submit():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     else:
@@ -122,16 +138,25 @@ def get_started_labeling():
             login_user(user, form.remember_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password.')
-    else:
-        current_app.logger.info(form.errors)
-    departments = Department.query.all()
-    return render_template('label_data.html', departments=departments, form=form)
+    depts = active_dept_choices()
+    if not current_user.is_anonymous and current_user.is_administrator:
+        depts = all_dept_choices()
+    if not current_user.is_anonymous and current_user.is_area_coordinator:
+        ac_dept = current_user.ac_department
+        if ac_dept not in depts:
+            depts.append(ac_dept)
+    return render_template('label_data.html', departments=depts, form=form)
 
 
 @main.route('/sort/department/<int:department_id>', methods=['GET', 'POST'])
 @login_required
 def sort_images(department_id):
-    # Select a random unsorted image from the database
+    dept_ids = [dept.id for dept in all_dept_choices()]
+    if department_id not in dept_ids:
+        abort(404)
+    department = Department.query.filter_by(id=department_id).one_or_none()
+    if not department.is_active and not(current_user.is_administrator or current_user.ac_department_id == department_id):
+        abort(404)
     image_query = Image.query.filter_by(contains_cops=None) \
                              .filter_by(department_id=department_id)
     image = get_random_image(image_query)
@@ -161,12 +186,29 @@ def profile(username):
         department = Department.query.filter_by(id=pref).one().name
     except NoResultFound:
         department = None
-    return render_template('profile.html', user=user, department=department)
+    if not current_user.is_area_coordinator and not current_user.is_administrator:
+        classifications = [classification for classification in user.classifications if classification.department.is_active]
+        tags = [tag for tag in user.tags if tag.image.department.is_active]
+    if current_user.is_administrator:
+        classifications = user.classifications
+        tags = user.tags
+    if current_user.is_area_cAddUnitFormoordinator:
+        active_classifications = [classification for classification in user.classifications if classification.department.is_active]
+        inactive_classifications = [classification for classification in user.classifications if not classification.department.is_active and classification.department_id == current_user.ac_department_id]
+        classifications = active_classifications + inactive_classifications
+        active_tags = [tag for tag in user.tags if tag.image.department.is_active]
+        inactive_tags = [tag for tag in user.tags if not tag.image.department.is_active and tag.image.department.id == current_user.ac_department_id]
+        tags = active_tags + inactive_tags
+    return render_template('profile.html', user=user, department=department, classifications=classifications, tags=tags)
 
 
 @main.route('/officer/<int:officer_id>', methods=['GET', 'POST'])
 def officer_profile(officer_id):
     form = AssignmentForm()
+    department_id = Officer.query.filter_by(id=officer_id).one().department_id
+    department = Department.query.filter_by(id=department_id).one()
+    if not department.is_active and (current_user.is_anonymous or not (current_user.is_administrator or (current_user.is_area_coordinator and current_user.ac_department_id == department_id))):
+        abort(403)
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
@@ -518,6 +560,8 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     department = Department.query.filter_by(id=department_id).first()
     if not department:
         abort(404)
+    if not department.is_active and (current_user.is_anonymous or not (current_user.is_administrator or (current_user.is_area_coordinator and current_user.ac_department_id == department_id))):
+        abort(403)
 
     # Set form data based on URL
     if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
@@ -586,6 +630,9 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         is_sworn_officer = request.args.get('is_sworn_officer')
 
     if department_id:
+        department = Department.query.filter_by(id=department_id).one()
+        if not department.is_active and (current_user.is_anonymous or not (current_user.is_administrator or current_user.ac_department_id == department_id)):
+            abort(403)
         ranks = Job.query.filter_by(department_id=department_id)
         if is_sworn_officer:
             ranks = ranks.filter_by(is_sworn_officer=True)
@@ -754,7 +801,11 @@ def leaderboard():
 def label_data(department_id=None, image_id=None):
     jsloads = ['js/cropper.js', 'js/tagger.js']
     if department_id:
-        department = Department.query.filter_by(id=department_id).one()
+        department = Department.query.filter_by(id=department_id).one_or_none()
+        if not department:
+            abort(404)
+        if not department.is_active and not (current_user.is_administrator or (current_user.is_area_coordinator and current_user.ac_department_id == department_id)):
+            abort(403)
         if image_id:
             image = Image.query.filter_by(id=image_id) \
                                .filter_by(department_id=department_id).first()
@@ -767,10 +818,8 @@ def label_data(department_id=None, image_id=None):
         department = None
         if image_id:
             image = Image.query.filter_by(id=image_id).one()
-        else:  # Select a random untagged image from the entire database
-            image_query = Image.query.filter_by(contains_cops=True) \
-                               .filter_by(is_tagged=False)
-            image = get_random_image(image_query)
+        else:  # Select a random untagged image from an active department
+            image = get_random_image_from_active_department()
 
     if image:
         proper_path = serve_image(image.filepath)
@@ -841,7 +890,10 @@ def complete_tagging(image_id):
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
 @main.route('/tagger_gallery', methods=['GET', 'POST'])
 def get_tagger_gallery(page=1):
-    form = FindOfficerIDForm()
+    if not current_user.is_anonymous and current_user.is_administrator:
+        form = FindOfficerIDFormAdmin()
+    else:
+        form = FindOfficerForm()
     if form.validate_on_submit():
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_data = form.data
@@ -869,20 +921,16 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
-    preferred_dept_id = Department.query.first().id
-    # try to use preferred department if available
-    try:
-        if User.query.filter_by(id=current_user.get_id()).one().dept_pref:
-            preferred_dept_id = User.query.filter_by(id=current_user.get_id()).one().dept_pref
-            form = AddImageForm()
-        else:
-            form = AddImageForm()
-        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
-    # that is, an anonymous user has no id attribute
-    except (AttributeError, NoResultFound):
+    if current_user.is_anonymous:
         preferred_dept_id = Department.query.first().id
         form = AddImageForm()
-        return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
+    else:
+        preferred_dept_id = Department.query.first().id if not current_user.dept_pref else current_user.dept_pref
+        if current_user.is_administrator:
+            form = AddImageFormAdmin()
+        else:
+            form = AddImageForm()
+    return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
 def check_input(str_input):
@@ -1135,6 +1183,141 @@ def server_shutdown():      # pragma: no cover
     return 'Shutting down...'
 
 
+@main.route('/departments/ac_department', methods=['GET', 'POST'])
+@login_required
+@ac_or_admin_required
+def view_ac_dept():
+    dept_id = current_user.ac_department_id
+    dept = Department.query.filter_by(id=dept_id).first()
+    form = ChangeDepartmentStatusForm(is_active=dept.is_active)
+    if form.validate_on_submit():
+        dept.is_active = form.data['is_active']
+        db.session.add(dept)
+        db.session.commit()
+        flash("Updated!")
+        return redirect(url_for('main.view_ac_dept'))
+
+    return render_template('department.html', department=dept, form=form)
+
+
+class DepartmentAPI(MethodView):
+    decorators = [admin_required]
+
+    def get(self, department_id):
+        # isolate the last part of the url
+        end_of_url = request.url.split('/')[-1].split('?')[0]
+
+        def find_area_coords(department_id):
+            area_coords = db.session.query(Department, User).filter(department_id == User.ac_department_id).all()
+            for ac in area_coords:
+                return {"id": ac[1].id, "username": ac[1].username}
+
+        def display_dept_status(department):
+            if department.is_active:
+                return "Active"
+            else:
+                return "Inactive"
+
+        if department_id is None:
+            departments = Department.query.order_by(Department.name).all()
+            return render_template('departments.html', departments=departments, find_area_coords=find_area_coords, display_dept_status=display_dept_status)
+        else:
+            dept = Department.query.get(department_id)
+            if not dept:
+                return render_template('403.html'), 403
+            actions = ['delete', 'enable', 'disable']
+            if end_of_url in actions:
+                action = getattr(self, end_of_url, None)
+                return action(dept)
+            else:
+                form = EditDepartmentForm(name=dept.name, short_name=dept.short_name, is_active=dept.is_active)
+                return render_template('department.html', department=dept, form=form)
+
+    def post(self, department_id):
+        end_of_url = request.url.split('/')[-1].split('?')[0]
+
+        department = Department.query.get(department_id)
+        form = EditDepartmentForm()
+
+        if department and end_of_url and end_of_url == 'delete':
+            return self.delete(department)
+        elif department and form.validate_on_submit():
+            new_name = form.name.data
+            if new_name != department.name:
+                if Department.query.filter_by(name=new_name).count() > 0:
+                    flash('{} already exists'.format(new_name))
+                    return render_template('department.html', department=department, form=form)
+            for field, data in iteritems(form.data):
+                setattr(department, field, data)
+            db.session.add(department)
+            db.session.commit()
+            flash('{} has been updated!'.format(department.name))
+            return redirect(url_for('main.department_api'))
+        elif not form.validate_on_submit():
+            flash('Invalid entry')
+            return render_template('department.html', department=department, form=form)
+        else:
+            return render_template('403.html'), 403
+
+    def enable(self, department):
+        if department.is_active:
+            flash('{} is already enabled.'.format(department.name))
+        else:
+            department.is_active = True
+            db.session.add(department)
+            db.session.commit()
+            flash('{} has been enabled!'.format(department.name))
+        return redirect(url_for('main.department_api'))
+
+    def disable(self, department):
+        if not department.is_active:
+            flash('{} is already disabled.'.format(department.name))
+        else:
+            department.is_active = False
+            db.session.add(department)
+            db.session.commit()
+            flash('{} has been disabled!'.format(department.name))
+        return redirect(url_for('main.department_api'))
+
+    def delete(self, department):
+        if request.method == 'POST':
+            dept_name = department.name
+            db.session.delete(department)
+            db.session.commit()
+            flash('{} has been deleted!'.format(dept_name))
+            return redirect(url_for('main.department_api'))
+
+        return render_template('department_delete.html', department=department)
+
+
+department_view = DepartmentAPI.as_view('department_api')
+main.add_url_rule(
+    '/departments/',
+    defaults={'department_id': None},
+    view_func=department_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/departments/<int:department_id>',
+    view_func=department_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/departments/<int:department_id>/edit',
+    view_func=department_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/departments/<int:department_id>/delete',
+    view_func=department_view,
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/departments/<int:department_id>/enable',
+    view_func=department_view,
+    methods=['GET'])
+main.add_url_rule(
+    '/departments/<int:department_id>/disable',
+    view_func=department_view,
+    methods=['GET'])
+
+
 class IncidentApi(ModelView):
     model = Incident
     model_name = 'incident'
@@ -1150,12 +1333,52 @@ class IncidentApi(ModelView):
         else:
             page = 1
         if request.args.get('department_id'):
-            department_id = request.args.get('department_id')
+            department_id = int(request.args.get('department_id'))
             dept = Department.query.get_or_404(department_id)
-            obj = self.model.query.filter_by(department_id=department_id).order_by(getattr(self.model, self.order_by).desc()).paginate(page, self.per_page, False)
-            return render_template('{}_list.html'.format(self.model_name), objects=obj, url='main.{}_api'.format(self.model_name), department=dept)
+            incidents = Incident.query\
+                .filter_by(department_id=department_id)\
+                .order_by(getattr(self.model, self.order_by).desc())\
+                .paginate(page, self.per_page, False)
+            if not dept.is_active and current_user.is_anonymous:
+                abort(403)
+            if not dept.is_active and not (current_user.is_administrator or current_user.ac_department_id == department_id):
+                abort(403)
+            return render_template('incident_list.html', objects=incidents, url='main.incident_api', department=dept)
         else:
-            return super(IncidentApi, self).get(obj_id)
+            if obj_id is None:
+                if current_user.is_anonymous:
+                    incidents = Incident.query\
+                                        .join(Incident.department)\
+                                        .filter(Department.is_active == true())\
+                                        .order_by(getattr(self.model, self.order_by).desc())\
+                                        .paginate(page, self.per_page, False)
+                else:
+                    if current_user.is_administrator:
+                        incidents = Incident.query\
+                                            .order_by(getattr(self.model, self.order_by).desc())\
+                                            .paginate(page, self.per_page, False)
+                    if current_user.is_area_coordinator:
+                        incidents = Incident.query\
+                                            .join(Incident.department)\
+                                            .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                                            .order_by(getattr(self.model, self.order_by).desc())\
+                                            .paginate(page, self.per_page, False)
+                    if not (current_user.is_administrator or current_user.is_area_coordinator):
+                        incidents = Incident.query\
+                                            .join(Incident.department)\
+                                            .filter(Department.is_active == true())\
+                                            .order_by(getattr(self.model, self.order_by).desc())\
+                                            .paginate(page, self.per_page, False)
+                return render_template('incident_list.html', objects=incidents, url='main.incident_api')
+            else:
+                incident = Incident.query.get_or_404(obj_id)
+                dept = Department.query.filter_by(id=incident.department_id).one()
+                if not dept.is_active:
+                    if current_user.is_anonymous:
+                        abort(403)
+                    if not current_user.is_administrator and current_user.ac_department_id != self.get_department_id(incident):
+                        abort(403)
+                return render_template('incident_detail.html', obj=incident, current_user=current_user)
 
     def get_new_form(self):
         form = self.form()

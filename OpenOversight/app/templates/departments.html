@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}OpenOversight Admin - Departments{% endblock %}
+
+{% block content %}
+<div class="text-center">
+	<h1 class="page-header">Departments</h1>
+</div>
+
+<div class="container" role="main">
+	<div class="horizontal-padding">
+		<div class="table-responsive">
+			<table class="table table-hover">
+				<tr>
+					<th>Department</th>
+					<th>Status</th>
+					<th>Area Coordinators?</th>
+				</tr>
+				{% for department in departments %}
+				<tr id="department-{{department.id}}">
+					<td>
+						<a href="{{department.id}}"><strong>{{ department.name }}</strong></a>
+						<br />
+						<div class="row-actions">
+							<span class="edit"><a href="{{department.id}}/edit">Edit</a> | </span>
+							<span class="delete"><a href="{{department.id}}/delete">Delete</a> | </span>
+							{% if department.is_active %}
+							<span class="enable"><a href="{{department.id}}/disable">Disable</a></span>
+							{% else %}
+							<span class="disable"><a href="{{department.id}}/enable">Enable</a></span>
+							{% endif %}
+						</div>
+					</td>
+					<td>
+						{{ display_dept_status(department) }}
+					</td>
+					<td><a href="/auth/users/{{find_area_coords(department.id)['id']}}">{{ find_area_coords(department.id)['username']}}</a></td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock content %}

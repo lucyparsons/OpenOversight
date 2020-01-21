@@ -8,8 +8,9 @@ from . import auth
 from .. import sitemap
 from ..models import User, db
 from ..email import send_email
+from ..auth.forms import ChangeDefaultDepartmentForm, ChangeDefaultDepartmentFormAdmin
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
-    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, ChangeDefaultDepartmentForm, \
+    PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, \
     EditUserForm
 from .utils import admin_required
 from ..utils import set_dynamic_default
@@ -220,7 +221,10 @@ def change_email(token):
 @auth.route('/change-dept/', methods=['GET', 'POST'])
 @login_required
 def change_dept():
-    form = ChangeDefaultDepartmentForm()
+    if current_user.is_administrator:
+        form = ChangeDefaultDepartmentFormAdmin()
+    else:
+        form = ChangeDefaultDepartmentForm()
     set_dynamic_default(form.dept_pref, current_user.dept_pref_rel)
 
     if form.validate_on_submit():

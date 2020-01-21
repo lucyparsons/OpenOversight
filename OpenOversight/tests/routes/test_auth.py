@@ -5,12 +5,15 @@ try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-from .route_helpers import login_user
+from .route_helpers import login_user, login_admin
+from ..conftest import ACTIVE_NON_AC_DEPT, INACTIVE_DEPT_NAME
 
 from OpenOversight.app.auth.forms import (LoginForm, RegistrationForm,
                                           ChangePasswordForm, PasswordResetForm,
                                           PasswordResetRequestForm,
                                           ChangeEmailForm, ChangeDefaultDepartmentForm)
+
+from OpenOversight.app.utils import (all_dept_choices)
 from OpenOversight.app.models import User
 
 
@@ -340,9 +343,7 @@ def test_user_can_change_dept_pref(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
 
-        test_department_id = 1
-
-        form = ChangeDefaultDepartmentForm(dept_pref=test_department_id)
+        form = ChangeDefaultDepartmentForm(dept_pref=ACTIVE_NON_AC_DEPT)
 
         rv = client.post(
             url_for('auth.change_dept'),
@@ -353,4 +354,27 @@ def test_user_can_change_dept_pref(mockdata, client, session):
         assert b'Updated!' in rv.data
 
         user = User.query.filter_by(email='jen@example.org').one()
-        assert user.dept_pref == test_department_id
+        assert user.dept_pref == ACTIVE_NON_AC_DEPT
+
+
+def test_user_cannot_change_dept_pref_to_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(
+            url_for('auth.change_dept'),
+            follow_redirects=True
+        )
+        assert INACTIVE_DEPT_NAME not in rv.data.decode('utf-8')
+
+
+def test_admin_can_change_dept_pref_to_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for('auth.change_dept'),
+            follow_redirects=True
+        )
+        for dept in all_dept_choices():
+            assert dept.name in rv.data.decode('utf-8')

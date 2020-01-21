@@ -17,11 +17,11 @@
             <tbody>
               <tr>
                 <td><b>Number of images classified</b></td>
-                <td>{{ user.classifications|length }}</td>
+                <td>{{ classifications|length }}</td>
               </tr>
               <tr>
                 <td><b>Number of officers identified</b></td>
-                <td>{{ user.tags|length }}</td>
+                <td>{{ tags|length }}</td>
               </tr>
             </tbody>
           </table>
@@ -72,14 +72,16 @@
         <thead>
           <tr>
             <td><b>Image ID</b></td>
+            <td><b>Department</b></td>
             <td><b>Did the user find officers in the image?</b></td>
           </tr>
         </thead>
         <tbody>
-          {% for classification in user.classifications %}
+          {% for classification in classifications %}
           <tr>
             <td><a href="{{ url_for( 'main.display_submission', image_id=classification.id ) }}">
                 Image {{ classification.id }}</a></td>
+            <td>{{ classification.department.name }}</td>
             <td>{{ classification.contains_cops }}</td>
           </tr>
           {% endfor %}
@@ -97,16 +99,20 @@
         <thead>
           <tr>
             <td><b>Tag ID</b></td>
+            <td><b>Department name</b></td>
             <td><b>Officer ID</b></td>
           </tr>
         </thead>
         <tbody>
-          {% for tag in user.tags %}
+          {% for tag in tags %}
           <tr>
             <td><a href="{{ url_for( 'main.display_tag', tag_id=tag.id ) }}">
-                Tag {{ tag.id }}</a></td>
+                Tag {{ tag.id }}</a>
+            </td>
+            <td>{{ tag.image.department.name }}</td>
             <td><a href="{{ url_for('main.officer_profile', officer_id=tag.officer_id) }}">
-                {{ tag.officer_id }}</a></td>
+                {{ tag.officer_id }}</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
