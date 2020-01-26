@@ -1,5 +1,6 @@
 import datetime
 from flask import current_app
+from io import BytesIO
 import pytest
 import random
 from selenium import webdriver
@@ -10,6 +11,8 @@ from faker import Faker
 import csv
 import uuid
 import sys
+import os
+from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -128,8 +131,10 @@ def build_salary(officer):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        return models.Face(officer_id=officer.id,
-                           img_id=random.choice(images).id)
+        for num in range(1, len(images)):
+            return models.Face(officer_id=officer.id,
+                               img_id=num,
+                               original_image_id=random.choice(images).id)
     else:
         return False
 
@@ -183,6 +188,30 @@ def session(db, request):
 
     request.addfinalizer(teardown)
     return session
+
+
+@pytest.fixture
+def test_png_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/204Cat.png')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
+def test_jpg_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/200Cat.jpeg')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
 
 
 @pytest.fixture
