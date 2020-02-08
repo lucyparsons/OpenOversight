@@ -77,6 +77,10 @@ def dept_choices():
     return db.session.query(Department).all()
 
 
+def year_choices():
+    return [str(date_object[0].year) for date_object in db.session.query(Officer.employment_date).filter(Officer.employment_date.isnot(None)).order_by(Officer.employment_date).distinct()]
+
+
 def add_new_assignment(officer_id, form):
     # Resign date should be null
     if form.unit.data:
@@ -125,6 +129,8 @@ def add_officer_profile(form, current_user):
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
+                      last_employment_date=form.last_employment_date.data,
+                      last_employment_details=form.last_employment_details.data,
                       department_id=form.department.data.id)
     db.session.add(officer)
     db.session.commit()
@@ -300,6 +306,12 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
+    if form.get('year'):
+        year = int(form.get('year'))
+        min_employment_date = datetime.date(year, 1, 1)
+        if form.get('year') in year_choices():
+            officer_query = officer_query.filter(db.or_(Officer.last_employment_date >= min_employment_date,
+                                                        Officer.last_employment_date.is_(None)))
 
     officer_query = officer_query.outerjoin(Job, Assignment.job)
     rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]

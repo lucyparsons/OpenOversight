@@ -19,10 +19,9 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
                      replace_list, create_note, set_dynamic_default, roster_lookup,
-                     create_description, filter_by_form,
-                     crop_image, create_incident, get_or_create, dept_choices,
-                     upload_image_to_s3_and_store_in_db)
-
+                     create_description, filter_by_form, crop_image,
+                     create_incident, get_or_create, dept_choices,
+                     upload_image_to_s3_and_store_in_db, year_choices)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -188,9 +187,7 @@ def add_assignment(officer_id):
         flash('Officer not found')
         abort(404)
 
-    if form.validate_on_submit() and (current_user.is_administrator or
-                                      (current_user.is_area_coordinator and
-                                       officer.department_id == current_user.ac_department_id)):
+    if form.validate_on_submit() and (current_user.is_administrator or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
         try:
             add_new_assignment(officer_id, form)
             flash('Added new assignment!')
@@ -241,9 +238,7 @@ def add_salary(officer_id):
         flash('Officer not found')
         abort(404)
 
-    if form.validate_on_submit() and (current_user.is_administrator or
-                                      (current_user.is_area_coordinator and
-                                       officer.department_id == current_user.ac_department_id)):
+    if form.validate_on_submit() and (current_user.is_administrator or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
         try:
             new_salary = Salary(
                 officer_id=officer_id,
@@ -454,9 +449,10 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
+def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None, year=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
+    form.year.query = Officer.query.order_by(Officer.employment_date).distinct()
     form_data = form.data
     form_data['race'] = race
     form_data['gender'] = gender
@@ -494,12 +490,15 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
+    if request.args.get('year') and request.args.get('year') in year_choices():
+        form_data['year'] = request.args.get('year')
     officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
 
     choices = {
         'race': RACE_CHOICES,
         'gender': GENDER_CHOICES,
-        'rank': [(rc, rc) for rc in rank_choices]
+        'rank': [(rc, rc) for rc in rank_choices],
+        'year': [(year, year) for year in year_choices()]
     }
 
     return render_template(
@@ -974,8 +973,7 @@ def upload(department_id, officer_id=None):
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
             return jsonify(error='This officer does not exist.'), 404
-        if not (current_user.is_administrator or
-                (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+        if not (current_user.is_administrator or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
             return jsonify(error='You are not authorized to upload photos of this officer.'), 403
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):

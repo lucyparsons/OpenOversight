@@ -319,9 +319,7 @@ def process_salary(row, officer, compare=False):
                 if Decimal('%.2f' % salary.salary) == Decimal('%.2f' % float(row['salary'])) and \
                         salary.year == int(row['salary_year']) and \
                         salary.is_fiscal_year == is_fiscal_year and \
-                        ((salary.overtime_pay and 'overtime_pay' in row and
-                            Decimal('%.2f' % salary.overtime_pay) == Decimal('%.2f' % float(row['overtime_pay']))) or
-                            (not salary.overtime_pay and ('overtime_pay' not in row or not row['overtime_pay']))):
+                        ((salary.overtime_pay and 'overtime_pay' in row and Decimal('%.2f' % salary.overtime_pay) == Decimal('%.2f' % float(row['overtime_pay']))) or (not salary.overtime_pay and ('overtime_pay' not in row or not row['overtime_pay']))):
                     # Found match, so don't add new salary
                     add_salary = False
 

@@ -7,6 +7,8 @@ from OpenOversight.app.models import Image
 from OpenOversight.app.utils import upload_image_to_s3_and_store_in_db, crop_image
 from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
+import uuid
+import datetime
 
 
 # Utils tests
@@ -16,7 +18,7 @@ def test_department_filter(mockdata):
     results = OpenOversight.app.utils.grab_officers(
         {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
-         'dept': department, 'unique_internal_identifier': ''}
+         'dept': department, 'unique_internal_identifier': '', 'year': None}
     )
     for element in results.all():
         assert element.department == department
@@ -113,6 +115,39 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
     for element in results:
         returned_identifier = element.unique_internal_identifier
         assert returned_identifier == identifier
+
+
+def test_year_filter_selects_officer_who_quit_that_year(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer_quit = OpenOversight.app.models.Officer(first_name='Bob', last_name='Smith', department=department, last_employment_date=datetime.date(2018, 4, 15))
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'year': '2018'}
+    )
+    assert officer_quit in results
+
+
+def test_year_filter_does_not_exclude_officer_without_last_employment_date(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer = OpenOversight.app.models.Officer(first_name='Bob', last_name='Smith', department=department)
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'year': '2018'}
+    )
+    assert officer in results
+
+
+def test_year_filter_does_not_make_errors_across_decades(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    officer_quit = OpenOversight.app.models.Officer(first_name='Bob', last_name='Smith', department=department, last_employment_date=datetime.date(2018, 4, 15))
+    results = OpenOversight.app.utils.grab_officers(
+        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'dept': department, 'year': '2020'}
+    )
+    assert officer_quit not in results
 
 
 def test_compute_hash(mockdata):

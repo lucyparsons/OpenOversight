@@ -111,6 +111,22 @@
             </div>
           </div>
         </div>
+        <div class="panel">
+            <div class="panel-heading" data-toggle="collapse" data-target="#filter-year">
+              <h3 class="panel-title accordion-toggle">Year</h3>
+            </div>
+            <div class="collapse in" id="filter-year">
+                <div class="panel-body">
+                    <div class="form-group select">
+                        <select class="form-control" name="year">
+                            {% for year in choices['year'] %}
+                                <option id="year-{{ year[0] }}" value="{{ year[0] }}" {% if year[0]|string() == form_data['year'] %}selected="selected" {% endif %}>{{ year[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>   
+                </div>               
+            </div>
+        </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
       </form>
     </div>
@@ -120,12 +136,14 @@
           page=officers.next_num, race=form_data['race'],
           gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
           max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
-          unique_internal_identifier=form_data['unique_internal_identifier']),
+          unique_internal_identifier=form_data['unique_internal_identifier'],
+          year=form_data['year']),
         prev_url=url_for('main.list_officer', department_id=department.id,
           page=officers.prev_num, race=form_data['race'],
           gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
           max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
-          unique_internal_identifier=form_data['unique_internal_identifier']),
+          unique_internal_identifier=form_data['unique_internal_identifier'],
+          year=form_data['year']),
         location='top' %}
       {% include "partials/paginate_nav.html" %}
     {% endwith %}
@@ -179,12 +197,14 @@
           page=officers.next_num, race=form_data['race'],
           gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
           max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
-          unique_internal_identifier=form_data['unique_internal_identifier']),
+          unique_internal_identifier=form_data['unique_internal_identifier'],
+          year=form_data['year']),
         prev_url=url_for('main.list_officer', department_id=department.id,
           page=officers.prev_num, race=form_data['race'],
           gender=form_data['gender'], rank=form_data['rank'], min_age=form_data['min_age'],
           max_age=form_data['max_age'], name=form_data['name'], badge=form_data['badge'],
-          unique_internal_identifier=form_data['unique_internal_identifier']),
+          unique_internal_identifier=form_data['unique_internal_identifier'],
+          year=form_data['year']),
         location='bottom' %}
       {% include "partials/paginate_nav.html" %}
     {% endwith %}

@@ -17,8 +17,7 @@ def ac_or_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.is_anonymous or \
-           not (current_user.is_administrator or
-                current_user.is_area_coordinator):
+           not (current_user.is_administrator or current_user.is_area_coordinator):
             abort(403)
         return f(*args, **kwargs)
 

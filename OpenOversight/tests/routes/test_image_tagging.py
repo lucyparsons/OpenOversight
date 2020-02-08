@@ -142,7 +142,7 @@ def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
         assert deleted_tag is None
 
 
-def test_ac_cannot_delete_tag_in_their_dept(mockdata, client, session):
+def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -166,8 +166,8 @@ def test_user_can_add_tag(mockdata, client, session):
     with current_app.test_request_context():
         mock = MagicMock(return_value=Image.query.first())
         with patch('OpenOversight.app.main.views.crop_image', mock):
-            officer = Officer.query.filter_by(department_id=1).first()
-            image = Image.query.filter_by(department_id=1).first()
+            officer = Officer.query.filter_by(department_id=1).all()[-1]
+            image = Image.query.filter_by(department_id=1, is_tagged=False).first()
             login_user(client)
             form = FaceTag(officer_id=officer.id,
                            image_id=image.id,

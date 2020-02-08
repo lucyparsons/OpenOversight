@@ -19,6 +19,9 @@
         {{ wtf.form_field(form.race) }}
         {{ wtf.form_field(form.gender) }}
         {{ wtf.form_field(form.employment_date) }}
+        <h4><small>If the officer no longer works for the department, please fill out the below fields</small></h4>
+        {{ wtf.form_field(form.last_employment_date) }}
+        {{ wtf.form_field(form.last_employment_details) }}
         {{ wtf.form_field(form.birth_year) }}
         {{ wtf.form_field(form.unique_internal_identifier) }}
         {{ wtf.form_field(form.department) }}

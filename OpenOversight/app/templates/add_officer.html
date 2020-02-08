@@ -25,6 +25,9 @@
         {{ wtf.form_field(form.unit) }}
         <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>
         {{ wtf.form_field(form.employment_date) }}
+        <h4><small>If the officer no longer works for the department, please fill out the below fields</small></h4>
+        {{ wtf.form_field(form.last_employment_date) }}
+        {{ wtf.form_field(form.last_employment_details) }}
         {{ wtf.form_field(form.birth_year) }}
         <div>
             <legend>{{ form.salaries.label }}</legend>

@@ -2,7 +2,6 @@ import datetime
 from flask import current_app
 from io import BytesIO
 import pytest
-import random
 from selenium import webdriver
 import time
 import threading
@@ -13,6 +12,8 @@ import uuid
 import sys
 import os
 from PIL import Image as Pimage
+import calendar
+import random
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -81,9 +82,19 @@ def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
+def generate_random_date(year, month):
+    dates = calendar.Calendar().itermonthdates(year, month)
+    random.choice([date for date in dates])
+
+
+def pick_last_employment_details():
+    random.choice(['', 'quit, no other info available', 'released by department', 'unknown'])
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
+    last_employment_options = [generate_random_date(2018, 1), None]
     return models.Officer(
         last_name=l_name, first_name=f_name,
         middle_initial=m_initial,
@@ -91,7 +102,9 @@ def generate_officer():
         birth_year=year_born,
         employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=pick_department().id,
-        unique_internal_identifier=pick_uid()
+        unique_internal_identifier=pick_uid(),
+        last_employment_date=random.choice(last_employment_options),
+        last_employment_details=pick_last_employment_details(),
     )
 
 

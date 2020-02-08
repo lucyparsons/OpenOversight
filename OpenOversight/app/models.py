@@ -115,6 +115,8 @@ class Officer(db.Model):
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
     salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
+    last_employment_date = db.Column(db.Date(), unique=False, nullable=True)
+    last_employment_details = db.Column(db.String(120), unique=False, nullable=True)
 
     def full_name(self):
         if self.middle_initial:
@@ -150,7 +152,10 @@ class Officer(db.Model):
                                                      self.first_name,
                                                      self.middle_initial,
                                                      self.last_name,
-                                                     self.suffix)
+                                                     self.suffix,
+                                                     self.last_employment_date,
+                                                     self.last_employment_details
+                                                     )
 
 
 class Salary(db.Model):
