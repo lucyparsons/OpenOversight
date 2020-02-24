@@ -444,7 +444,6 @@ def add_mockdata(session):
 def mockdata(session):
     return add_mockdata(session)
 
-
 @pytest.fixture
 def department(session):
     department = models.Department(name='Springfield Police Department',
