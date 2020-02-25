@@ -10,7 +10,7 @@ from flask.cli import with_appcontext
 from flask import current_app
 
 from .models import db, Assignment, Department, Officer, User, Salary, Job
-from .utils import get_officer
+from .utils import get_officer, str_is_true
 
 
 @click.command()
@@ -297,10 +297,7 @@ def process_salary(row, officer, compare=False):
 
     # See if the row has salary data
     if row_has_data(row, salary_fields['required'], salary_fields['optional']):
-        is_fiscal_year = False
-        if row['salary_is_fiscal_year'] == 'y' or row['salary_is_fiscal_year'] == 'Y' \
-                or row['salary_is_fiscal_year'] == 'True' or row['salary_is_fiscal_year'] == 'true':
-            is_fiscal_year = True
+        is_fiscal_year = str_is_true(row['salary_is_fiscal_year'])
 
         add_salary = True
         if compare:
@@ -391,3 +388,43 @@ def bulk_add_officers(filename):
         ImportLog.print_logs()
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
+
+
+@click.command()
+@click.argument('name')
+@click.argument('short_name')
+@click.argument('unique_internal_identifier', required=False)
+@with_appcontext
+def add_department(name, short_name, unique_internal_identifier):
+    """Add a new department to OpenOversight."""
+    dept = Department(
+        name=name,
+        short_name=short_name,
+        unique_internal_identifier_label=unique_internal_identifier)
+    db.session.add(dept)
+    db.session.commit()
+    print("Department added with id {}".format(dept.id))
+
+
+@click.command()
+@click.argument('filename')
+@with_appcontext
+def add_job_titles(filename):
+    """Add ranks from a CSV file."""
+    with open(filename, 'r') as f:
+        csvfile = csv.DictReader(f)
+        for row in csvfile:
+            job_title = row['job_title']
+            is_sworn_officer = str_is_true(row['is_sworn_officer'])
+            order = int(row['order'])
+            department_id = row['department_id']
+            department = \
+                Department.query.filter_by(id=department_id).one_or_none()
+            job = Job(
+                job_title=job_title,
+                is_sworn_officer=is_sworn_officer,
+                order=order,
+                department=department)
+            db.session.add(job)
+            print('Added {} to {}'.format(job.job_title, department.name))
+        db.session.commit()

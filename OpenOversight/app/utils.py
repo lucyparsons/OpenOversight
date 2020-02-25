@@ -562,3 +562,7 @@ def merge_dicts(*dict_args):
     for dictionary in dict_args:
         result.update(dictionary)
     return result
+
+
+def str_is_true(str_):
+    return str_.lower() in ['true', 't', 'yes', 'y']
