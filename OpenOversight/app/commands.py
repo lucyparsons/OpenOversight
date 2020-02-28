@@ -397,34 +397,22 @@ def bulk_add_officers(filename):
 @with_appcontext
 def add_department(name, short_name, unique_internal_identifier):
     """Add a new department to OpenOversight."""
-    dept = Department(
-        name=name,
-        short_name=short_name,
-        unique_internal_identifier_label=unique_internal_identifier)
+    dept = Department(name=name, short_name=short_name, unique_internal_identifier_label=unique_internal_identifier)
     db.session.add(dept)
     db.session.commit()
     print("Department added with id {}".format(dept.id))
 
 
 @click.command()
-@click.argument('filename')
+@click.argument('department_id')
+@click.argument('job_title')
+@click.argument('is_sworn_officer')
+@click.argument('order')
 @with_appcontext
-def add_job_titles(filename):
+def add_job_title(department_id, job_title, is_sworn_officer, order):
     """Add ranks from a CSV file."""
-    with open(filename, 'r') as f:
-        csvfile = csv.DictReader(f)
-        for row in csvfile:
-            job_title = row['job_title']
-            is_sworn_officer = str_is_true(row['is_sworn_officer'])
-            order = int(row['order'])
-            department_id = row['department_id']
-            department = \
-                Department.query.filter_by(id=department_id).one_or_none()
-            job = Job(
-                job_title=job_title,
-                is_sworn_officer=is_sworn_officer,
-                order=order,
-                department=department)
-            db.session.add(job)
-            print('Added {} to {}'.format(job.job_title, department.name))
-        db.session.commit()
+    department = Department.query.filter_by(id=department_id).one_or_none()
+    job = Job(job_title=job_title, is_sworn_officer=is_sworn_officer, order=order, department=department)
+    db.session.add(job)
+    print('Added {} to {}'.format(job.job_title, department.name))
+    db.session.commit()
