@@ -13,7 +13,7 @@ import random
 import sys
 from traceback import format_exc
 
-from sqlalchemy import func
+from sqlalchemy import func, Integer
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
@@ -78,7 +78,11 @@ def dept_choices():
 
 
 def year_choices():
-    return [str(date_object[0].year) for date_object in db.session.query(Officer.employment_date).filter(Officer.employment_date.isnot(None)).order_by(Officer.employment_date).distinct()]
+    years = [year[0] for year in db.session.query(cast(func.extract('year', Officer.employment_date), Integer)).filter(Officer.employment_date.isnot(None)).order_by(func.extract('year', Officer.employment_date))]
+    years_deduped = list(set(years))
+    years_deduped.sort()
+    years_str = [str(year) for year in years_deduped]
+    return years_str
 
 
 def add_new_assignment(officer_id, form):
@@ -306,12 +310,15 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
-    if form.get('year'):
-        year = int(form.get('year'))
-        min_employment_date = datetime.date(year, 1, 1)
-        if form.get('year') in year_choices():
-            officer_query = officer_query.filter(db.or_(Officer.last_employment_date >= min_employment_date,
-                                                        Officer.last_employment_date.is_(None)))
+    if form.get('year') and form.get('year') in year_choices():
+            year = int(form.get('year'))
+            last_employment_date_comparator = datetime.date(year, 1, 1)
+            employment_date_comparator = datetime.date(year + 1, 1, 1)
+            last_employment_date_query = db.or_(Officer.last_employment_date >= last_employment_date_comparator,
+                                                Officer.last_employment_date.is_(None))
+            employment_date_query = db.or_(Officer.employment_date < employment_date_comparator,
+                                           Officer.employment_date.is_(None))
+            officer_query = officer_query.filter(db.and_(last_employment_date_query, employment_date_query))
 
     officer_query = officer_query.outerjoin(Job, Assignment.job)
     rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]

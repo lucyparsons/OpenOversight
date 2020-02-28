@@ -452,7 +452,6 @@ def edit_department(department_id):
 def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None, year=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
-    form.year.query = Officer.query.order_by(Officer.employment_date).distinct()
     form_data = form.data
     form_data['race'] = race
     form_data['gender'] = gender

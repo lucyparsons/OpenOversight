@@ -19,11 +19,6 @@ def test_officer_repr(mockdata):
         assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
 
 
-def test_officer_last_employment_date_default(mockdata):
-    officer = Officer.query.first()
-    assert officer.last_employment_date is None
-
-
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
     assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.officer.id, assignment.star_no)

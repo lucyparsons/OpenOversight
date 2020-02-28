@@ -397,5 +397,5 @@ class BrowseForm(Form):
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
     max_age = SelectField('maximum age', default=100, choices=AGE_CHOICES,
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
-    year = QuerySelectField('year', default='', validators=[Optional()], get_pk=lambda x: x.id)  # query set in view function
+    year = QuerySelectField('year', default='', validators=[Optional()], allow_blank=True, get_pk=lambda x: x.id)
     submit = SubmitField(label='Submit')

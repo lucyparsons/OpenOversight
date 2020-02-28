@@ -84,7 +84,7 @@ def pick_salary():
 
 def generate_random_date(year, month):
     dates = calendar.Calendar().itermonthdates(year, month)
-    random.choice([date for date in dates])
+    return random.choice([date for date in dates])
 
 
 def pick_last_employment_details():
@@ -94,13 +94,13 @@ def pick_last_employment_details():
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
-    last_employment_options = [generate_random_date(2018, 1), None]
+    last_employment_options = [generate_random_date(2018, 1), generate_random_date(2019, 3), None]
     return models.Officer(
         last_name=l_name, first_name=f_name,
         middle_initial=m_initial,
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=generate_random_date(year_born + 20, 2),
         department_id=pick_department().id,
         unique_internal_identifier=pick_uid(),
         last_employment_date=random.choice(last_employment_options),
@@ -443,6 +443,7 @@ def add_mockdata(session):
 @pytest.fixture
 def mockdata(session):
     return add_mockdata(session)
+
 
 @pytest.fixture
 def department(session):
