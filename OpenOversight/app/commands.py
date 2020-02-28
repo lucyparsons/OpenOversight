@@ -155,7 +155,7 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
         setattr(obj, attribute, val)
 
 
-def update_officer_from_row(row, officer):
+def update_officer_from_row(row, officer, update_static_fields=False):
     def update_officer_field(fieldname, allow_blank=True):
         if fieldname in row and (row[fieldname] or allow_blank) and \
                 getattr(officer, fieldname) != row[fieldname]:
@@ -183,14 +183,22 @@ def update_officer_from_row(row, officer):
         if fieldname in row:
             if row[fieldname] == '':
                 row[fieldname] = None
-            if str(getattr(officer, fieldname)) != str(row[fieldname]):
-                raise Exception('Officer {} {} has differing {} field. Old: {}, new: {}'.format(
+            old_value = getattr(officer, fieldname)
+            new_value = row[fieldname]
+            if old_value is None:
+                update_officer_field(fieldname, new_value)
+            elif str(old_value) != str(new_value):
+                msg = 'Officer {} {} has differing {} field. Old: {}, new: {}'.format(
                     officer.first_name,
                     officer.last_name,
                     fieldname,
-                    getattr(officer, fieldname),
-                    row[fieldname]
-                ))
+                    old_value,
+                    new_value
+                )
+                if update_static_fields:
+                    print(msg)
+                else:
+                    raise Exception(msg)
 
     process_assignment(row, officer, compare=True)
     process_salary(row, officer, compare=True)
@@ -334,8 +342,11 @@ def process_salary(row, officer, compare=False):
 
 @click.command()
 @click.argument('filename')
+@click.option('--no-create', is_flag=True)
+@click.option('--update-by-name', is_flag=True)
+@click.option('--update-static-fields', is_flag=True)
 @with_appcontext
-def bulk_add_officers(filename):
+def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
     """Bulk adds officers."""
     with open(filename, 'r') as f:
         ImportLog.clear_logs()
@@ -352,7 +363,9 @@ def bulk_add_officers(filename):
         for field in required_fields:
             if field not in csvfile.fieldnames:
                 raise Exception('Missing required field {}'.format(field))
-        if 'star_no' not in csvfile.fieldnames and 'unique_internal_identifier' not in csvfile.fieldnames:
+        if (not update_by_name
+            and 'star_no' not in csvfile.fieldnames
+            and 'unique_internal_identifier' not in csvfile.fieldnames):
             raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
 
         for row in csvfile:
@@ -365,22 +378,29 @@ def bulk_add_officers(filename):
                 else:
                     raise Exception('Department ID {} not found'.format(department_id))
 
-            # check for existing officer based on unique ID or name/badge
-            if 'unique_internal_identifier' in csvfile.fieldnames and row['unique_internal_identifier']:
+            if not update_by_name:
+                # check for existing officer based on unique ID or name/badge
+                if 'unique_internal_identifier' in csvfile.fieldnames and row['unique_internal_identifier']:
+                    officer = Officer.query.filter_by(
+                        department_id=department_id,
+                        unique_internal_identifier=row['unique_internal_identifier']
+                    ).one_or_none()
+                elif 'star_no' in csvfile.fieldnames and row['star_no']:
+                    officer = get_officer(department_id, row['star_no'],
+                                          row['first_name'], row['last_name'])
+                else:
+                    raise Exception('Officer {} {} missing badge number and unique identifier'.format(row['first_name'],
+                                                                                                      row['last_name']))
+            else:
                 officer = Officer.query.filter_by(
                     department_id=department_id,
-                    unique_internal_identifier=row['unique_internal_identifier']
+                    last_name=row['last_name'],
+                    first_name=row['first_name']
                 ).one_or_none()
-            elif 'star_no' in csvfile.fieldnames and row['star_no']:
-                officer = get_officer(department_id, row['star_no'],
-                                      row['first_name'], row['last_name'])
-            else:
-                raise Exception('Officer {} {} missing badge number and unique identifier'.format(row['first_name'],
-                                                                                                  row['last_name']))
 
             if officer:
-                update_officer_from_row(row, officer)
-            else:
+                update_officer_from_row(row, officer, update_static_fields)
+            elif not no_create:
                 create_officer_from_row(row, department_id)
 
         db.session.commit()

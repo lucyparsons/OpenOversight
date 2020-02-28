@@ -541,11 +541,18 @@ def find_date_taken(pimage):
 
 
 def get_officer(department_id, star_no, first_name, last_name):
-    """Returns first officer with the given name and badge combo in the department, if they exist"""
+    """
+    Returns first officer with the given name and badge combo in the department, if they exist
+
+    If star_no is None, just return the first officer with the given first and last name.
+    """
     officers = Officer.query.filter_by(department_id=department_id,
                                        first_name=first_name,
                                        last_name=last_name).all()
-    if officers:
+
+    if star_no is None:
+        return officers[0]
+    else:
         star_no = str(star_no)
         for assignment in Assignment.query.filter_by(star_no=star_no).all():
             if assignment.baseofficer in officers:
