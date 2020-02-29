@@ -342,12 +342,12 @@ def process_salary(row, officer, compare=False):
 
 @click.command()
 @click.argument('filename')
-@click.option('--no-create', is_flag=True)
-@click.option('--update-by-name', is_flag=True)
-@click.option('--update-static-fields', is_flag=True)
+@click.option('--no-create', is_flag=True, help='only update officers; do not create new ones')
+@click.option('--update-by-name', is_flag=True, help='update officers by first and last name (useful when star_no or unique_internal_identifier are not available)')
+@click.option('--update-static-fields', is_flag=True, help='allow updating normally-static fields like race, birth year, etc.')
 @with_appcontext
 def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
-    """Bulk adds officers."""
+    """Add or update officers from a CSV file."""
     with open(filename, 'r') as f:
         ImportLog.clear_logs()
         csvfile = csv.DictReader(f)
