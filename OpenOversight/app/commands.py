@@ -364,8 +364,8 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
             if field not in csvfile.fieldnames:
                 raise Exception('Missing required field {}'.format(field))
         if (not update_by_name
-            and 'star_no' not in csvfile.fieldnames
-            and 'unique_internal_identifier' not in csvfile.fieldnames):
+                and 'star_no' not in csvfile.fieldnames
+                and 'unique_internal_identifier' not in csvfile.fieldnames):
             raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
 
         for row in csvfile:
