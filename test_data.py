@@ -4,7 +4,7 @@ import argparse
 
 from OpenOversight.app import create_app
 from OpenOversight.app.models import db
-from OpenOversight.tests.conftest import mockdata
+from OpenOversight.tests.conftest import add_mockdata
 
 app = create_app('development')
 ctx = app.app_context()
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     if args.populate:
         print("[*] Populating database with test data...")
-        mockdata(db.session)
+        add_mockdata(db.session)
         print("[*] Completed successfully!")
 
     if args.cleanup:

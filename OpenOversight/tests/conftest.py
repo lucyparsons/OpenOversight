@@ -214,8 +214,7 @@ def test_jpg_BytesIO():
     return byte_io
 
 
-@pytest.fixture
-def mockdata(session):
+def add_mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
                                    short_name='SPD', unique_internal_identifier_label='homer_number')
@@ -426,6 +425,11 @@ def mockdata(session):
     session.commit()
 
     return assignments_dept1[0].star_no
+
+
+@pytest.fixture
+def mockdata(session):
+    return add_mockdata(session)
 
 
 @pytest.fixture
