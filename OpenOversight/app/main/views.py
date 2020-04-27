@@ -406,19 +406,12 @@ def edit_department(department_id):
         department.short_name = form.short_name.data
         db.session.flush()
         if form.jobs.data:
-            current_ranks = Job.query.filter_by(
-                department_id=department_id,
-                is_sworn_officer=True
-            ).filter(Job.job_title != 'Not Sure').all()
             new_ranks = []
             order = 1
             for rank in form.data['jobs']:
                 if rank:
                     new_ranks.append((rank, order))
                     order += 1
-            for rank in current_ranks:
-                rank.order = None
-                rank.is_sworn_officer = False
             for (new_rank, order) in new_ranks:
                 existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
                 if existing_rank:
@@ -535,7 +528,7 @@ def add_officer():
     set_dynamic_default(form.department, current_user.dept_pref_rel)
 
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
-            abort(403)
+        abort(403)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
         new_formdata = request.form.copy()
@@ -917,7 +910,7 @@ class IncidentApi(ModelView):
 
     def get(self, obj_id):
         if request.args.get('page'):
-                page = int(request.args.get('page'))
+            page = int(request.args.get('page'))
         else:
             page = 1
         if request.args.get('department_id'):

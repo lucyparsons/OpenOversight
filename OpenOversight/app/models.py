@@ -48,14 +48,12 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
     is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
-    order = db.Column(db.Integer, index=True, unique=False, nullable=True)
+    order = db.Column(db.Integer, index=True, unique=False, nullable=False)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='jobs')
 
     __table_args__ = (UniqueConstraint('job_title', 'department_id',
-                      name='unique_department_job_titles'),
-                      UniqueConstraint('order', 'department_id',
-                      name='unique_department_job_order'), )
+                      name='unique_department_job_titles'), )
 
     def __repr__(self):
         return '<Job ID {}: {}>'.format(self.id, self.job_title)
@@ -124,7 +122,7 @@ class Officer(db.Model):
             else:
                 return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
         if self.suffix:
-                return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
+            return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
     def race_label(self):

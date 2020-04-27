@@ -205,10 +205,10 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(mockdata, test_png_BytesIO, client):
-        try:
-            upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
-        except ValueError:
-            pytest.fail("Unexpected value error")
+    try:
+        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    except ValueError:
+        pytest.fail("Unexpected value error")
 
 
 def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(mockdata, client):
