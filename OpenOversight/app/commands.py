@@ -266,7 +266,7 @@ def process_assignment(row, officer, compare=False):
                 # create new job
                 job = Job(
                     is_sworn_officer=False,
-                    department_id=officer.id,
+                    department_id=officer.department_id,
                     order=auto_order
                 )
                 set_field_from_row(row, job, 'job_title', allow_blank=False)

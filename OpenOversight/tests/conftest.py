@@ -238,7 +238,6 @@ def add_mockdata(session):
     for rank in RANK_CHOICES_2:
         session.add(models.Job(
             job_title=rank,
-            order=i,
             is_sworn_officer=True,
             department_id=2
         ))

@@ -22,7 +22,7 @@ def upgrade():
 
     for department in Department.query.all():
         job_order = 0
-        for job in Job.query.filter_by(department_id=department.id):
+        for job in Job.query.filter(sa.and_(Job.department_id == department.id, Job.order.is_(None))).all():
             job.order = job_order
             job_order += 1
     db.session.commit()
