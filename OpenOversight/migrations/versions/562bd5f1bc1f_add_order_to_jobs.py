@@ -7,8 +7,7 @@ Create Date: 2020-04-24 01:58:05.146902
 """
 from alembic import op
 import sqlalchemy as sa
-from app.models import Department, Job, db
-
+from sqlalchemy.sql import table, column
 
 # revision identifiers, used by Alembic.
 revision = '562bd5f1bc1f'
@@ -18,14 +17,25 @@ depends_on = None
 
 
 def upgrade():
+    connection = op.get_bind()
+    job = table('jobs', 
+        column('department_id', sa.Integer),
+        column('order', sa.Integer)
+        )
+    
+    department = table('departments',
+        column('id', sa.Integer),
+        column('name', sa.String)
+    )
+
     op.drop_constraint('unique_department_job_order', 'jobs', type_='unique')
 
-    for department in Department.query.all():
+    all_depts = connection.execute(department.select()).fetchall()
+    for dept in all_depts:
         job_order = 0
-        for job in Job.query.filter(sa.and_(Job.department_id == department.id, Job.order.is_(None))).all():
-            job.order = job_order
-            job_order += 1
-    db.session.commit()
+        connection.execute(
+            job.update().values({"order" : job_order}).where(sa.and_(job.c.department_id == dept.id, job.c.order.is_(None)))
+        )
 
     op.alter_column('jobs', 'order',
                     existing_type=sa.INTEGER(),
