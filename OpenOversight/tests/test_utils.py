@@ -15,10 +15,6 @@ import uuid
 
 # Utils tests
 
-def test_find_jobs_without_order(mockdata):
-    jobs = find_jobs_without_order(2)
-    assert len(jobs) == len(RANK_CHOICES_2)
-
 def test_department_filter(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(

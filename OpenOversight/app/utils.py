@@ -13,7 +13,6 @@ import random
 import sys
 from traceback import format_exc
 
-import sqlalchemy as sa
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
@@ -62,8 +61,6 @@ def unit_choices():
 def dept_choices():
     return db.session.query(Department).all()
 
-def find_jobs_without_order(department_id):
-    return Job.query.filter(sa.and_(Job.department_id == department_id, Job.order.is_(None))).all()
 
 def add_new_assignment(officer_id, form):
     # Resign date should be null
