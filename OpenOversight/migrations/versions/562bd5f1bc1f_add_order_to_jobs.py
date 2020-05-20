@@ -29,13 +29,17 @@ def upgrade():
     )
 
     op.drop_constraint('unique_department_job_order', 'jobs', type_='unique')
+    op.drop_index(op.f('ix_jobs_order'), table_name='jobs')
 
     all_depts = connection.execute(department.select()).fetchall()
     for dept in all_depts:
-        job_order = 0
-        connection.execute(
-            job.update().values({"order" : job_order}).where(sa.and_(job.c.department_id == dept.id, job.c.order.is_(None)))
-        )
+        dept_jobs = connection.execute(department.select().where(job.c.department_id == dept.id)).fetchall()
+        for dept_job in dept_jobs:
+            job_order = 0
+            connection.execute(
+                job.update().values({"order" : job_order}).where(sa.and_(dept_job.c.department_id == dept.id, dept_job.c.order.is_(None)))
+            )
+            job_order += 1
 
     op.alter_column('jobs', 'order',
                     existing_type=sa.INTEGER(),
@@ -43,7 +47,7 @@ def upgrade():
 
 
 def downgrade():
-    op.create_unique_constraint('unique_department_job_order', 'jobs', ['order', 'department_id'])
+    # op.create_unique_constraint('unique_department_job_order', 'jobs', ['order', 'department_id'])
 
     op.alter_column('jobs', 'order',
                     existing_type=sa.INTEGER(),
