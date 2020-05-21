@@ -5,9 +5,8 @@ from io import BytesIO
 import OpenOversight
 from OpenOversight.app.models import Image, Officer, Assignment, Salary
 from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, crop_image, find_jobs_without_order
+from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, crop_image
 from OpenOversight.tests.routes.route_helpers import login_user
-from OpenOversight.tests.conftest import RANK_CHOICES_2
 import pytest
 import pandas as pd
 import uuid
