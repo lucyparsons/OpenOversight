@@ -17,3 +17,4 @@ Fabric3==1.14.post1
 itsdangerous==0.24
 us>=1.0
 future
+email-validator==1.0.5
