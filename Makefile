@@ -6,7 +6,7 @@ build:  ## Build containers
 
 .PHONY: start
 start: build  ## Run containers
-	docker-compose up -d
+	DC_UID=`id -u` docker-compose up -d
 
 .PHONY: create_db
 create_db: start
@@ -56,7 +56,7 @@ clean: cleanassets stop  ## Remove containers
 
 .PHONY: clean_all
 clean_all: clean stop ## Wipe database
-	rm -rf container_data
+	docker-compose down -v
 
 .PHONY: docs
 docs: ## Build project documentation in live reload for editing

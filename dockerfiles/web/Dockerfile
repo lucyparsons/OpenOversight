@@ -22,11 +22,11 @@ RUN pip3 install --no-cache-dir virtualenv
 RUN virtualenv /ve
 ENV PATH=/ve/bin:$PATH
 
-RUN mkdir /var/www ./node_modules; chown -R www-data /var/www /ve ./node_modules
+RUN mkdir /var/www ./node_modules /.cache /.yarn; chown -R www-data /var/www /ve ./node_modules /.cache /.yarn
 RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
 RUN chown www-data yarn.lock yarn-error.log
-RUN chmod -R 777 /usr/src/app/
+RUN chmod -R 777 /usr/src/app/ /.cache /.yarn
 
 USER www-data
 
