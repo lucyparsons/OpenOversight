@@ -1,6 +1,7 @@
-default: build start create_db populate test stop clean
+export DC_UID=$(shell id -u)
+export FLASK_ENV=testing
 
-export DC_UID := $(shell id -u)
+default: build start create_db populate test stop clean
 
 .PHONY: build
 build:  ## Build containers
@@ -40,13 +41,13 @@ populate: create_db  ## Build and run containers
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
-	    else FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    then docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
+	    else docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
 .PHONY: cleanassets
 cleanassets:
-	rm -rf ./OpenOversight/app/static/dist/*
+	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
 stop:  ## Stop containers
