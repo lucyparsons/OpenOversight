@@ -1,3 +1,6 @@
+export DC_UID=$(shell id -u)
+export FLASK_ENV=testing
+
 default: build start create_db populate test stop clean
 
 .PHONY: build
@@ -6,7 +9,7 @@ build:  ## Build containers
 
 .PHONY: start
 start: build  ## Run containers
-	DC_UID=`id -u` docker-compose up -d
+	docker-compose up -d
 
 .PHONY: create_db
 create_db: start
@@ -16,11 +19,11 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	DC_UID=`id -u` docker-compose run --rm web python ../create_db.py
+	docker-compose run --rm web python ../create_db.py
 
 .PHONY: assets
 assets:
-	DC_UID=`id -u` docker-compose run --rm web yarn build
+	docker-compose run --rm web yarn build
 
 .PHONY: dev
 dev: build start create_db populate
@@ -33,18 +36,18 @@ populate: create_db  ## Build and run containers
 	done
 	@echo "Postgres is up"
 	## Populate database with test data
-	DC_UID=`id -u` docker-compose run --rm web python ../test_data.py -p
+	docker-compose run --rm web python ../test_data.py -p
 
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then FLASK_ENV=testing DC_UID=`id -u` docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
-	    else FLASK_ENV=testing DC_UID=`id -u` docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    then docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
+	    else docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
 .PHONY: cleanassets
 cleanassets:
-	rm -rf ./OpenOversight/app/static/dist/*
+	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
 stop:  ## Stop containers
