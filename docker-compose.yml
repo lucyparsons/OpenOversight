@@ -1,5 +1,9 @@
 version: "3"
 
+volumes:
+  postgres:
+    driver: local
+
 services:
  postgres:
    restart: always
@@ -9,7 +13,7 @@ services:
      POSTGRES_PASSWORD: terriblepassword
      POSTGRES_DB: openoversight-dev
    volumes:
-     - ./container_data/postgres:/var/lib/postgresql/data
+     - postgres:/var/lib/postgresql/data
    ports:
      - "5432:5432"
 
@@ -30,6 +34,7 @@ services:
      FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+   user: "${DC_UID}"
    links:
      - postgres:postgres
    expose:
