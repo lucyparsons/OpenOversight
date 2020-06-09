@@ -16,6 +16,10 @@
           <span aria-hidden="true">&rarr;</span>
         </a>
       </li>
+      {% elif paginate.total == 0 %}
+          {% if location == 'top' %}
+          Showing 0 of 0
+          {% endif %}
       {% else %}
       Showing {{(paginate.page-1)*paginate.per_page + 1 }}-{{paginate.total}} of {{paginate.total}}
       {% endif %}
