@@ -494,3 +494,32 @@ tr:hover .row-actions {
 .search-results .list-group-item {
     border: 0;
 }
+
+
+.console .button-explanation {
+    height:35px;
+    font-size:16px;
+    position:relative;
+    width: 91.66667%;
+    float:left;
+}
+
+.console .button-explanation .text {
+    display:none;
+}
+
+.console .done-button:hover ~ .button-explanation .done-button-explanation{
+    display:block;
+}
+
+.console .skip-button:hover ~ .button-explanation .skip-button-explanation{
+    display:block;
+}
+
+.console .addface-button:hover ~ .button-explanation .addface-button-explanation{
+    display:block;
+}
+
+.console .launchroster-button:hover ~ .button-explanation .launchroster-button-explanation{
+    display:block;
+}

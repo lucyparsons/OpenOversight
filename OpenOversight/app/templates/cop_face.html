@@ -24,13 +24,13 @@
           </div>
       </div>
 
-      <div class="row">
+      <div class="row console">
         <div class="col-sm-1 text-center">
           <div class="preview docs-preview clearfix">
             <div class="img-preview preview-lg"></div>
           </div>
         </div>
-        <div class="col-sm-3 text-center">
+        <div class="col-sm-3 text-center launchroster-button">
         <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
           <button type="button" class="btn btn-sm">Launch roster search form</button></a></p>
         </div>
@@ -94,7 +94,7 @@
           </div>
 
         </div>
-        <div class="col-sm-2 text-center">
+        <div class="col-sm-2 text-center skip-button">
           {% if department %}
           <a href="{{ url_for('main.label_data', department_id=department.id)}}" class="btn btn-lg btn-primary" role="button">
           {% else %}
@@ -102,15 +102,24 @@
           {% endif %}
             <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a>
         </div>
-        <div class="col-sm-2 text-center">
+        <div class="col-sm-2 text-center done-button">
           <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-            Done with this image!
+            Done with this image! 
           </a>
         </div>
-      </div>
-      <hr>
+	<hr>
 
+	<div class="text-center button-explanation">
+	  <div class="text done-button-explanation"><b>Explanation</b>: click this if you are done identifying officers in this image OR if you cannot identify any officers.</div>
+	  <div class="text skip-button-explanation"><b>Explanation</b>: click this if you would like to move on to the next image, without saving any more info about this image.</div>
+	  <div class="text addface-button-explanation"><b>Explanation</b>: click this to add association between entered OpenOversight ID and selected image of officer to the databasee.</div>
+	  <div class="text launchroster-button-explanation"><b>Explanation</b>: click this to open the police roster search in a new window.  Use this to find the correct OpenOversight ID.</div>
+	</div>
+
+      </div>
+ 
+      
       {% elif current_user.is_disabled == True %}
       <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
       <p><a href="mailto:info@lucyparsonslabs.com" class="btn btn-lg btn-primary" role="button">Mail us to get it enabled again</a></p>
