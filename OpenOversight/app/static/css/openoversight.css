@@ -504,7 +504,21 @@ tr:hover .row-actions {
     float:left;
 }
 
+.docs-data .input-explanation {
+    height:35px;
+    font-size:16px;
+    position:absolute;
+    width: 300%;
+    float:left;
+    left:-300px;
+    display:none
+}
+
 .console .button-explanation .text {
+    display:none;
+}
+
+.docs-data .input-explanation .text {
     display:none;
 }
 
@@ -516,10 +530,24 @@ tr:hover .row-actions {
     display:block;
 }
 
-.console .addface-button:hover ~ .button-explanation .addface-button-explanation{
-    display:block;
-}
 
 .console .launchroster-button:hover ~ .button-explanation .launchroster-button-explanation{
     display:block;
 }
+
+.docs-data .addface-button:hover ~ .input-explanation {
+    display:block;
+}
+
+.docs-data .addface-button:hover ~ .input-explanation .addface-button-explanation{
+    display:block;
+}
+
+.docs-data .id-input:hover ~ .input-explanation {
+    display:block;
+}
+
+.docs-data .id-input:hover ~ .input-explanation .id-explanation{
+    display:block;
+}
+

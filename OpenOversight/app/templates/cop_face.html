@@ -73,7 +73,7 @@
                 <p><span style="color: red;">[{{ error }}]</span></p>
               {% endfor %}
 
-              <div class="input-group input-group-sm">
+              <div class="input-group input-group-sm id-input">
                 <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
                 <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="officer ID">
               </div>
@@ -87,10 +87,19 @@
               {% endfor %}
 
               <p>
-                <div class="input-group">
+                <div class="input-group addface-button">
                   <input type="submit" class="btn btn-sm btn-primary form-control" value="Add identified face"/>
                 </div>
               </p>
+
+	      
+	      <div class="text-center input-explanation">
+		<div class="text addface-button-explanation"><b>Explanation</b>: click this to add the identified face to the database, and associate with entered Officer ID.</div>
+		<div class="text id-explanation"><b>Explanation</b>: after matching the officer's name or badge number to the database, enter the OpenOversight ID here.</div>
+	      </div>
+
+
+	      
           </div>
 
         </div>
@@ -105,7 +114,7 @@
         <div class="col-sm-2 text-center done-button">
           <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-            Done with this image! 
+            Done with this image!
           </a>
         </div>
 	<hr>
