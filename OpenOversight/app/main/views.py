@@ -399,6 +399,7 @@ def edit_department(department_id):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
+    original_ranks = department.jobs
     if form.validate_on_submit():
         new_name = form.name.data
         if new_name != previous_name:
@@ -430,6 +431,12 @@ def edit_department(department_id):
                     ))
             db.session.commit()
 
+            updated_ranks = form.jobs.data
+            if len(updated_ranks) < len(original_ranks):
+                deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
+                for rank in deleted_ranks:
+                    db.session.delete(rank)
+                db.session.commit()
             # Prune any jobs from department that aren't referenced by any current officers
             query = text("DELETE FROM jobs WHERE department_id = :department_id AND is_sworn_officer = False AND NOT EXISTS (SELECT 1 FROM assignments WHERE assignments.job_id = jobs.id)")
             query = query.bindparams(department_id=department_id)
