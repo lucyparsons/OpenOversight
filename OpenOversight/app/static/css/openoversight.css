@@ -500,20 +500,37 @@ tr:hover .row-actions {
     height:35px;
     font-size:16px;
     position:relative;
-    width: 91.66667%;
+    width: 90%;
     float:left;
 }
 
 .docs-data .input-explanation {
     height:35px;
     font-size:16px;
-    position:absolute;
-    width: 300%;
+    position:relative;
+    width: 350%;
     float:left;
-    left:-300px;
-    display:none
+    left:-280px;
+    bottom:-35px;
 }
 
+@media (max-width: 760px) {
+    .docs-data .input-explanation {
+    height:10px;
+    position:relative;
+    width: 90%;
+    float:left;
+    left:0px;
+    bottom:-190px;
+    }
+
+    .console .button-explanation {
+    height:70px;
+    }
+    
+}
+
+    
 .console .button-explanation .text {
     display:none;
 }
@@ -535,15 +552,7 @@ tr:hover .row-actions {
     display:block;
 }
 
-.docs-data .addface-button:hover ~ .input-explanation {
-    display:block;
-}
-
 .docs-data .addface-button:hover ~ .input-explanation .addface-button-explanation{
-    display:block;
-}
-
-.docs-data .id-input:hover ~ .input-explanation {
     display:block;
 }
 
