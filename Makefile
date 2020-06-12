@@ -1,5 +1,4 @@
 export DC_UID=$(shell id -u)
-export FLASK_ENV=testing
 
 default: build start create_db populate test stop clean
 
@@ -41,8 +40,8 @@ populate: create_db  ## Build and run containers
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
-	    else docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    then FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
+	    else FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
 .PHONY: cleanassets
