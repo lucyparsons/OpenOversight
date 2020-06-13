@@ -107,7 +107,7 @@ workflows:
       - production_backup_and_deploy:
           filters:
             branches:
-              only: master
+              only: main
   weekly:
     triggers:
       - schedule:
@@ -115,6 +115,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - production_backup_only
