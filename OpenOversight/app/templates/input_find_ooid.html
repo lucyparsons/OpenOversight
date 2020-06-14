@@ -32,6 +32,14 @@
           <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
         </p>
       </form>
+
+      <div class="page-header">
+        <h2>See only a face?</h2>
+      </div>
+
+      <p>
+        <a href="{{ url_for('main.get_officer') }}" class="btn btn-lg">Launch Find an Officer to generate a face gallery</a>
+      </p>
     {% else %}
       <p>Please register or sign up to view this form:</p>
 

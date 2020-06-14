@@ -1,10 +1,10 @@
-FROM python:3-stretch
+FROM python:3-buster
 
 WORKDIR /usr/src/app
 
 ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
-ENV GECKODRIVER_VERSION="v0.23.0"
+ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
 RUN apt-get update && apt-get install -y xvfb firefox-esr
 RUN apt-get install -y -t stretch-backports libsqlite3-0
@@ -13,22 +13,14 @@ RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_
 RUN mkdir geckodriver
 RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
-RUN apt-get update && apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN apt-get install -y nodejs
+RUN wget -O - https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get update && apt-get install -y nodejs npm
 RUN npm install -g yarn
 
-RUN pip3 install --no-cache-dir virtualenv
-RUN virtualenv /ve
-ENV PATH=/ve/bin:$PATH
-
-RUN mkdir /var/www ./node_modules; chown -R www-data /var/www /ve ./node_modules
+RUN mkdir /var/www ./node_modules /.cache /.yarn /.mozilla
 RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
-RUN chown www-data yarn.lock yarn-error.log
-RUN chmod -R 777 /usr/src/app/
-
-USER www-data
+RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
@@ -36,7 +28,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 ARG DOCKER_BUILD_ENV
 RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r dev-requirements.txt
 
-CMD ["/bin/bash"]
 COPY package.json /usr/src/app/
 RUN yarn
 

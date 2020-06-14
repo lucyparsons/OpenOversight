@@ -1,13 +1,10 @@
-import datetime
 import os
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql import text
 import sys
-import tempfile
 from traceback import format_exc
-from werkzeug import secure_filename
 
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response)
@@ -15,14 +12,15 @@ from flask_login import current_user, login_required, login_user
 
 from . import main
 from .. import limiter
-from ..utils import (roster_lookup, upload_file, compute_hash,
-                     serve_image, compute_leaderboard_stats, get_random_image,
+from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
                      ac_can_edit_officer, add_department_query, add_unit_query,
-                     create_incident, get_or_create, replace_list,
-                     set_dynamic_default, create_note, get_uploaded_cropped_image,
-                     create_description, filter_by_form, create_link)
+                     replace_list, create_note, set_dynamic_default, roster_lookup,
+                     create_description, filter_by_form,
+                     crop_image, create_incident, get_or_create, dept_choices,
+                     upload_image_to_s3_and_store_in_db)
+
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -61,6 +59,9 @@ def browse():
 def get_officer():
     jsloads = ['js/find_officer.js']
     form = FindOfficerForm()
+
+    depts_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+
     if getattr(current_user, 'dept_pref_rel', None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
 
@@ -77,7 +78,7 @@ def get_officer():
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
-    return render_template('input_find_officer.html', form=form, jsloads=jsloads)
+    return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
 @main.route('/tagger_find', methods=['GET', 'POST'])
@@ -129,7 +130,7 @@ def profile(username):
     else:
         abort(404)
     try:
-        pref = User.query.filter_by(id=current_user.id).one().dept_pref
+        pref = User.query.filter_by(id=current_user.get_id()).one().dept_pref
         department = Department.query.filter_by(id=pref).one().name
     except NoResultFound:
         department = None
@@ -328,7 +329,7 @@ def display_tag(tag_id):
 def classify_submission(image_id, contains_cops):
     try:
         image = Image.query.filter_by(id=image_id).one()
-        image.user_id = current_user.id
+        image.user_id = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
         elif contains_cops == 0:
@@ -405,19 +406,12 @@ def edit_department(department_id):
         department.short_name = form.short_name.data
         db.session.flush()
         if form.jobs.data:
-            current_ranks = Job.query.filter_by(
-                department_id=department_id,
-                is_sworn_officer=True
-            ).filter(Job.job_title != 'Not Sure').all()
             new_ranks = []
             order = 1
             for rank in form.data['jobs']:
                 if rank:
                     new_ranks.append((rank, order))
                     order += 1
-            for rank in current_ranks:
-                rank.order = None
-                rank.is_sworn_officer = False
             for (new_rank, order) in new_ranks:
                 existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
                 if existing_rank:
@@ -528,13 +522,13 @@ def add_officer():
     jsloads = ['js/dynamic_lists.js', 'js/add_officer.js']
     form = AddOfficerForm()
     for link in form.links:
-        link.creator_id.data = current_user.id
+        link.user_id.data = current_user.get_id()
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
 
     if form.validate_on_submit() and not current_user.is_administrator and form.department.data.id != current_user.ac_department_id:
-            abort(403)
+        abort(403)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
         new_formdata = request.form.copy()
@@ -543,8 +537,8 @@ def add_officer():
                 new_formdata[key] = 'y'
         form = AddOfficerForm(new_formdata)
         officer = add_officer_profile(form, current_user)
-        flash('New Officer {} added to BPD Watch'.format(officer.last_name))
-        return redirect(url_for('main.officer_profile', officer_id=officer.id))
+        flash('New Officer {} added to OpenOversight'.format(officer.last_name))
+        return redirect(url_for('main.submit_officer_images', officer_id=officer.id))
     else:
         return render_template('add_officer.html', form=form, jsloads=jsloads)
 
@@ -556,6 +550,9 @@ def edit_officer(officer_id):
     jsloads = ['js/dynamic_lists.js']
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
+    for link in form.links:
+        if not link.user_id.data:
+            link.user_id.data = current_user.get_id()
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -660,9 +657,36 @@ def label_data(department_id=None, image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
-        officer_exists = Officer.query.filter_by(unique_internal_identifier=form.officer_id.data).first()
+        officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
+        existing_tag = db.session.query(Face) \
+                         .filter(Face.officer_id == form.officer_id.data) \
+                         .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid BPD Watch ID!')
+        elif not existing_tag:
+            left = form.dataX.data
+            upper = form.dataY.data
+            right = left + form.dataWidth.data
+            lower = upper + form.dataHeight.data
+
+            cropped_image = crop_image(image, crop_data=(left, upper, right, lower), department_id=department_id)
+            cropped_image.contains_cops = True
+            cropped_image.is_tagged = True
+
+            if cropped_image:
+                new_tag = Face(officer_id=form.officer_id.data,
+                               img_id=cropped_image.id,
+                               original_image_id=image.id,
+                               face_position_x=left,
+                               face_position_y=upper,
+                               face_width=form.dataWidth.data,
+                               face_height=form.dataHeight.data,
+                               user_id=current_user.get_id())
+                db.session.add(new_tag)
+                db.session.commit()
+                flash('Tag added to database')
+            else:
+                flash('There was a problem saving this tag. Please try again later.')
         else:
             officer_id = officer_exists.id
             existing_tag = db.session.query(Face) \
@@ -747,14 +771,14 @@ def submit_data():
     preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
-        if User.query.filter_by(id=current_user.id).one().dept_pref:
-            preferred_dept_id = User.query.filter_by(id=current_user.id).one().dept_pref
+        if User.query.filter_by(id=current_user.get_id()).one().dept_pref:
+            preferred_dept_id = User.query.filter_by(id=current_user.get_id()).one().dept_pref
             form = AddImageForm()
         else:
             form = AddImageForm()
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
     # that is, an anonymous user has no id attribute
-    except AttributeError:
+    except (AttributeError, NoResultFound):
         preferred_dept_id = Department.query.first().id
         form = AddImageForm()
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
@@ -838,9 +862,25 @@ def all_data():
     return render_template('all_depts.html', departments=departments)
 
 
+@main.route('/submit_officer_images/officer/<int:officer_id>', methods=['GET', 'POST'])
+@login_required
+@ac_or_admin_required
+def submit_officer_images(officer_id):
+    officer = Officer.query.get_or_404(officer_id)
+    return render_template('submit_officer_image.html', officer=officer)
+
+
 @main.route('/upload/department/<int:department_id>', methods=['POST'])
+@main.route('/upload/department/<int:department_id>/officer/<int:officer_id>', methods=['POST'])
 @limiter.limit('250/minute')
-def upload(department_id):
+def upload(department_id, officer_id=None):
+    if officer_id:
+        officer = Officer.query.filter_by(id=officer_id).first()
+        if not officer:
+            return jsonify(error='This officer does not exist.'), 404
+        if not (current_user.is_administrator or
+                (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+            return jsonify(error='You are not authorized to upload photos of this officer.'), 403
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
@@ -892,8 +932,6 @@ def upload(department_id):
                       format_exc()])
         ))
         return jsonify(error="Server error encountered. Try again later."), 500
-    os.remove(safe_local_path)
-    os.rmdir(tmpdir)
 
 
 @main.route('/about')
@@ -928,7 +966,7 @@ class IncidentApi(ModelView):
 
     def get(self, obj_id):
         if request.args.get('page'):
-                page = int(request.args.get('page'))
+            page = int(request.args.get('page'))
         else:
             page = 1
         if request.args.get('department_id'):
@@ -945,7 +983,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
-            link.creator_id.data = current_user.id
+            link.user_id.data = current_user.get_id()
         return form
 
     def get_edit_form(self, obj):
@@ -958,7 +996,7 @@ class IncidentApi(ModelView):
             if link.creator_id.data:
                 continue
             else:
-                link.creator_id.data = current_user.id
+                link.user_id.data = current_user.get_id()
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id

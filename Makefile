@@ -1,3 +1,5 @@
+export DC_UID=$(shell id -u)
+
 default: build start create_db populate test stop clean
 
 .PHONY: build
@@ -44,7 +46,7 @@ test: start  ## Run tests
 
 .PHONY: cleanassets
 cleanassets:
-	rm -rf ./OpenOversight/app/static/dist/*
+	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
 stop:  ## Stop containers
@@ -56,7 +58,7 @@ clean: cleanassets stop  ## Remove containers
 
 .PHONY: clean_all
 clean_all: clean stop ## Wipe database
-	rm -rf container_data
+	docker-compose down -v
 
 .PHONY: docs
 docs: ## Build project documentation in live reload for editing

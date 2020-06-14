@@ -258,10 +258,16 @@ def process_assignment(row, officer, compare=False):
                                 department_id=officer.department_id)\
                      .one_or_none()
             if not job:
+                num_existing_ranks = len(Job.query.filter_by(department_id=officer.department_id).all())
+                if num_existing_ranks > 0:
+                    auto_order = num_existing_ranks + 1
+                else:
+                    auto_order = 0
                 # create new job
                 job = Job(
                     is_sworn_officer=False,
-                    department_id=officer.id
+                    department_id=officer.department_id,
+                    order=auto_order
                 )
                 set_field_from_row(row, job, 'job_title', allow_blank=False)
                 db.session.add(job)

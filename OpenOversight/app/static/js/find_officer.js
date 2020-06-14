@@ -18,8 +18,15 @@ $(document).ready(function() {
             $target.show();
         }
     });
+    
+    let $deptSelectionId = $('#dept').val()
 
     $('ul.setup-panel li.active a').trigger('click');
+
+    $('#dept').on('click', function(e) {
+        e.preventDefault();
+        $deptSelectionId = $('#dept').val();
+    })
 
     $('#activate-step-2').on('click', function(e) {
         var dept_id = $('#dept').val();
@@ -40,8 +47,19 @@ $(document).ready(function() {
 
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');
+        const depts_with_uii = $('#current-uii').data('departments');
+        let targetDept = depts_with_uii.find(function(element) {
+            return element.id == $deptSelectionId
+        });
+        let targetDeptUii = targetDept.unique_internal_identifier_label
+        if (targetDeptUii) {
+            $('#current-uii').text(targetDeptUii);
+        } else {
+            $('#uii-question').hide();    
+        }
         $(this).remove();
     })
+    
     $('#activate-step-3').on('click', function(e) {
         $('ul.setup-panel li:eq(2)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-3"]').trigger('click');

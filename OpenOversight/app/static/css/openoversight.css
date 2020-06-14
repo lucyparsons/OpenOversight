@@ -625,3 +625,68 @@ h1, h2, h3 {
         background-size: 100% auto;
     }
 }
+
+.console .button-explanation {
+    height:35px;
+    font-size:16px;
+    position:relative;
+    width: 90%;
+    float:left;
+}
+
+.docs-data .input-explanation {
+    height:35px;
+    font-size:16px;
+    position:relative;
+    width: 350%;
+    float:left;
+    left:-280px;
+    bottom:-35px;
+}
+
+@media (max-width: 760px) {
+    .docs-data .input-explanation {
+    height:10px;
+    position:relative;
+    width: 90%;
+    float:left;
+    left:0px;
+    bottom:-190px;
+    }
+
+    .console .button-explanation {
+    height:70px;
+    }
+    
+}
+
+    
+.console .button-explanation .text {
+    display:none;
+}
+
+.docs-data .input-explanation .text {
+    display:none;
+}
+
+.console .done-button:hover ~ .button-explanation .done-button-explanation{
+    display:block;
+}
+
+.console .skip-button:hover ~ .button-explanation .skip-button-explanation{
+    display:block;
+}
+
+
+.console .launchroster-button:hover ~ .button-explanation .launchroster-button-explanation{
+    display:block;
+}
+
+.docs-data .addface-button:hover ~ .input-explanation .addface-button-explanation{
+    display:block;
+}
+
+.docs-data .id-input:hover ~ .input-explanation .id-explanation{
+    display:block;
+}
+

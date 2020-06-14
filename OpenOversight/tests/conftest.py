@@ -1,5 +1,6 @@
 import datetime
 from flask import current_app
+from io import BytesIO
 import pytest
 import random
 from selenium import webdriver
@@ -10,6 +11,8 @@ from faker import Faker
 import csv
 import uuid
 import sys
+import os
+from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -128,8 +131,10 @@ def build_salary(officer):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        return models.Face(officer_id=officer.id,
-                           img_id=random.choice(images).id)
+        for num in range(1, len(images)):
+            return models.Face(officer_id=officer.id,
+                               img_id=num,
+                               original_image_id=random.choice(images).id)
     else:
         return False
 
@@ -186,10 +191,33 @@ def session(db, request):
 
 
 @pytest.fixture
-def mockdata(session):
+def test_png_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/204Cat.png')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
+def test_jpg_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/200Cat.jpeg')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+def add_mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD')
+                                   short_name='SPD', unique_internal_identifier_label='homer_number')
     session.add(department)
     department2 = models.Department(name='Chicago Police Department',
                                     short_name='CPD')
@@ -368,6 +396,18 @@ def mockdata(session):
             creator_id=2,
             last_updated_id=1
         ),
+        models.Incident(
+            date=datetime.datetime(2019, 1, 15),
+            report_number='39',
+            description='A test description that has over 300 chars. The purpose is to see how to display a larger descrption. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Lengthy lengthy lengthy.',
+            department_id=2,
+            address=test_addresses[1],
+            license_plates=[test_license_plates[0]],
+            links=test_links,
+            officers=[all_officers[o] for o in range(1)],
+            creator_id=2,
+            last_updated_id=1
+        ),
     ]
     session.add_all(test_incidents)
     session.commit()
@@ -399,6 +439,11 @@ def mockdata(session):
     session.commit()
 
     return assignments_dept1[0].star_no
+
+
+@pytest.fixture
+def mockdata(session):
+    return add_mockdata(session)
 
 
 @pytest.fixture

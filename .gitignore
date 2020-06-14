@@ -25,6 +25,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+ENV_DIR/
 build/
 develop-eggs/
 dist/
@@ -91,6 +92,10 @@ fabfile.py
 
 # Docker container volumes
 container_data
+.vscode/
+.vscode/**
 
 node_modules/
 OpenOverSight/app/static/dist/
+
+
