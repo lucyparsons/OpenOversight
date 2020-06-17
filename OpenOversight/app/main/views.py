@@ -1,3 +1,5 @@
+import csv
+import io
 import os
 import re
 from sqlalchemy.exc import IntegrityError
@@ -34,6 +36,7 @@ from ..models import (db, Image, User, Face, Officer, Assignment, Department,
 
 from ..auth.forms import LoginForm
 from ..auth.utils import admin_required, ac_or_admin_required
+from sqlalchemy.orm import contains_eager, joinedload
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -766,7 +769,7 @@ def check_input(str_input):
 
 @main.route('/download/department/<int:department_id>', methods=['GET'])
 @limiter.limit('5/minute')
-def download_dept_csv(department_id):
+def deprecated_download_dept_csv(department_id):
     department = Department.query.filter_by(id=department_id).first()
     records = Officer.query.filter_by(department_id=department_id).all()
     if not department or not records:
@@ -799,6 +802,110 @@ def download_dept_csv(department_id):
     csv = first_row + "".join(record_list)
     csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
     return Response(csv, mimetype="text/csv", headers=csv_headers)
+
+
+def check_output(output_str):
+    if output_str == "Not Sure":
+        return ""
+    return output_str
+
+
+@main.route('/download/department/<int:department_id>/officers', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_officers_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    officers = (db.session.query(Officer)
+                .options(joinedload(Officer.assignments_lazy)
+                         .joinedload(Assignment.job)
+                         )
+                .options(joinedload(Officer.salaries))
+                .filter_by(department_id=department_id)
+                )
+
+    if not officers:
+        abort(404)
+    csv_output = io.StringIO()
+    csv_fieldnames = ["id", "unique identifier", "last name", "first name", "middle initial", "suffix", "gender",
+                      "race", "birth year", "employment date", "badge number", "job title", "most recent salary"]
+    csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
+    csv_writer.writeheader()
+
+    for officer in officers:
+        if officer.assignments_lazy:
+            most_recent_assignment = max(officer.assignments_lazy, key=lambda a: a.star_date)
+            most_recent_title = most_recent_assignment.job and check_output(most_recent_assignment.job.job_title)
+        else:
+            most_recent_assignment = None
+            most_recent_title = None
+        if officer.salaries:
+            most_recent_salery = max(officer.salaries, key=lambda s: s.year)
+        else:
+            most_recent_salery = None
+        record = {
+            "id": officer.id,
+            "unique identifier": officer.unique_internal_identifier,
+            "last name": officer.last_name,
+            "first name": officer.first_name,
+            "middle initial": officer.middle_initial,
+            "suffix": officer.suffix,
+            "gender": check_output(officer.gender),
+            "race": check_output(officer.race),
+            "birth year": officer.birth_year,
+            "employment date": officer.employment_date,
+            "badge number": most_recent_assignment and most_recent_assignment.star_no,
+            "job title": most_recent_title,
+            "most recent salary": most_recent_salery and most_recent_salery.salary,
+        }
+        csv_writer.writerow(record)
+
+    dept_name = department.name.replace(" ", "_")
+    csv_name = dept_name + "_Officers.csv"
+
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv_output.getvalue(), mimetype="text/csv", headers=csv_headers)
+
+
+@main.route('/download/department/<int:department_id>/assignments', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_assignments_csv(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    assignments = (db.session.query(Assignment)
+                   .join(Assignment.job)
+                   .options(joinedload(Assignment.baseofficer))
+                   .options(joinedload(Assignment.unit))
+                   .options(contains_eager(Assignment.job))
+                   .filter_by(department_id=Job.department_id)
+                   )
+
+    csv_output = io.StringIO()
+    csv_fieldnames = ["officer id", "officer unique identifier", "badge number", "job title", "start date", "end date", "unit"]
+    csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
+    csv_writer.writeheader()
+
+    for assignment in assignments:
+        officer = assignment.baseofficer
+        record = {
+            "officer id": assignment.officer_id,
+            "officer unique identifier": officer and officer.unique_internal_identifier,
+            "badge number": assignment.star_no,
+            "job title": check_output(assignment.job.job_title),
+            "start date": assignment.star_date,
+            "end date": assignment.resign_date,
+            "unit": assignment.unit and assignment.unit.descrip,
+        }
+        csv_writer.writerow(record)
+
+    dept_name = department.name.replace(" ", "_")
+    csv_name = dept_name + "_Assignments.csv"
+
+    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
+    return Response(csv_output.getvalue(), mimetype="text/csv", headers=csv_headers)
 
 
 @main.route('/download/department/<int:department_id>/incidents', methods=['GET'])

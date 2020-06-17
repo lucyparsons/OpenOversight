@@ -1,13 +1,14 @@
 # Routing and view tests
+import csv
 import json
 import pytest
 import random
-from datetime import datetime
+from datetime import datetime, date
 from io import BytesIO
 from mock import patch, MagicMock
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
-from OpenOversight.app.utils import dept_choices
+from OpenOversight.app.utils import add_new_assignment, dept_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
@@ -914,8 +915,8 @@ def test_officer_csv(mockdata, client, session):
                               suffix='Jr',
                               race='WHITE',
                               gender='M',
-                              star_no=90009,
-                              job_title='PO',
+                              star_no='90009',
+                              job_title='2',
                               department=department.id,
                               birth_year=1910,
                               links=links)
@@ -925,20 +926,49 @@ def test_officer_csv(mockdata, client, session):
             data=process_form_data(form.data),
             follow_redirects=True
         )
-
         assert 'New Officer FVkcjigWUeUyA added' in rv.data.decode('utf-8')
 
         # dump officer csv
         rv = client.get(
-            url_for('main.download_dept_csv', department_id=department.id),
+            url_for('main.download_dept_officers_csv', department_id=department.id),
             follow_redirects=True
         )
-        # get csv entry matching officer last n"createdame
-        csv = list(filter(lambda row: form.last_name.data in row, rv.data.decode('utf-8').split("\n")))
-        assert len(csv) == 1
-        assert form.first_name.data in csv[0]
-        assert form.last_name.data in csv[0]
-        assert form.job_title.data in csv[0]
+
+        csv_data = rv.data.decode('utf-8')
+        csv_reader = csv.DictReader(csv_data.split("\n"))
+        added_lines = [row for row in csv_reader if row["last name"] == form.last_name.data]
+        assert len(added_lines) == 1
+        assert form.first_name.data == added_lines[0]["first name"]
+        assert Job.query.get(form.job_title.data).job_title == added_lines[0]["job title"]
+        assert form.star_no.data == added_lines[0]["badge number"]
+
+
+def test_assignments_csv(mockdata, client, session):
+    with current_app.test_request_context():
+        department = random.choice(dept_choices())
+        officer = Officer.query.filter_by(department_id=department.id).first()
+        job = (
+            Job
+            .query
+            .filter_by(department_id=department.id)
+            .filter(Job.job_title != "Not Sure")
+            .first())
+        form = AssignmentForm(star_no='9181', job_title=job, star_date=date(2020, 6, 16))
+        add_new_assignment(officer.id, form)
+        rv = client.get(
+            url_for('main.download_dept_assignments_csv', department_id=department.id),
+            follow_redirects=True
+        )
+        csv_data = rv.data.decode('utf-8')
+        csv_reader = csv.DictReader(csv_data.split("\n"))
+        lines = [row for row in csv_reader if int(row["officer id"]) == officer.id]
+        assert len(lines) == 2
+        assert lines[0]["officer unique identifier"] == officer.unique_internal_identifier
+        assert lines[1]["officer unique identifier"] == officer.unique_internal_identifier
+        new_assignment = [row for row in lines if row["badge number"] == form.star_no.data]
+        assert len(new_assignment) == 1
+        assert new_assignment[0]["start date"] == str(form.star_date.data)
+        assert new_assignment[0]["job title"] == job.job_title
 
 
 def test_incidents_csv(mockdata, client, session):

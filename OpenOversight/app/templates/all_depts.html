@@ -8,8 +8,8 @@
   {% for dept in departments %}
     <p>
        {{ dept.name }}
-       <a href={{ url_for('main.download_dept_csv',department_id=dept.id) }}>officers.csv</a> 
-
+       <a href={{ url_for('main.download_dept_officers_csv',department_id=dept.id) }}>officers.csv</a> 
+       <a href={{ url_for('main.download_dept_assignments_csv',department_id=dept.id) }}>assignments.csv</a> 
        {% if dept.incidents %}
            <a href={{ url_for('main.download_incidents_csv',department_id=dept.id) }}>incidents.csv</a>
        {% endif %}
