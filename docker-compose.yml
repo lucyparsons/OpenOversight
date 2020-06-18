@@ -34,7 +34,7 @@ services:
      FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
-   user: "${DC_UID}"
+   user: "${DC_UID:?Docker-compose needs DC_UID set to the current user id number. Try 'export DC_UID=$(id -u)' and run docker-compose again}"
    links:
      - postgres:postgres
    expose:
