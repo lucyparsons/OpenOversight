@@ -6,7 +6,7 @@ ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
-RUN apt-get update && apt-get install -y xvfb firefox-esr
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev
 RUN apt-get install -y -t stretch-backports libsqlite3-0
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
