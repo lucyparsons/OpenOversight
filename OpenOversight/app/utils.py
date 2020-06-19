@@ -19,6 +19,7 @@ import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
 from PIL import Image as Pimage
+from PIL.PngImagePlugin import PngImageFile
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
@@ -247,7 +248,7 @@ def filter_by_form(form, officer_query, department_id=None):
         Assignment.job_id,
         Assignment.star_date,
         Assignment.star_no
-    ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
+    ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
     officer_query = officer_query.outerjoin(subq)
 
     if form.get('name'):
@@ -514,8 +515,9 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
 
 
 def find_date_taken(pimage):
-    if pimage.filename.split('.')[-1] == 'png':
+    if isinstance(pimage, PngImageFile):
         return None
+
     if pimage._getexif():
         # 36867 in the exif tags holds the date and the original image was taken https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
         if 36867 in pimage._getexif():

@@ -6,7 +6,7 @@ from wtforms import (StringField, DecimalField, TextAreaField,
 from wtforms.fields.html5 import DateField
 
 from wtforms.validators import (DataRequired, InputRequired, AnyOf, NumberRange, Regexp,
-                                Length, Optional, Required, URL, ValidationError)
+                                Length, Optional, URL, ValidationError)
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 from ..utils import unit_choices, dept_choices
@@ -90,7 +90,7 @@ class FaceTag(Form):
 class AssignmentForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp('\\w*'), Length(max=50)])
-    job_title = QuerySelectField('job_title', validators=[Required()],
+    job_title = QuerySelectField('job_title', validators=[DataRequired()],
                                  get_label='job_title', get_pk=lambda x: x.id)  # query set in view function
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',
@@ -153,7 +153,7 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default='',
         validators=[AnyOf(allowed_values(LINK_CHOICES))])
-    user_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+    user_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
 
     def validate(self):
         success = super(LinkForm, self).validate()
@@ -175,8 +175,8 @@ class EditTextForm(BaseTextForm):
 
 
 class TextForm(EditTextForm):
-    officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
-    creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+    officer_id = HiddenField(validators=[DataRequired(message='Not a valid officer ID')])
+    creator_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
 
 
 class AddOfficerForm(Form):
@@ -272,7 +272,7 @@ class AddUnitForm(Form):
         Regexp('\\w*'), Length(max=120), DataRequired()])
     department = QuerySelectField(
         'Department',
-        validators=[Required()],
+        validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')
     submit = SubmitField(label='Add')
@@ -281,13 +281,13 @@ class AddUnitForm(Form):
 class AddImageForm(Form):
     department = QuerySelectField(
         'Department',
-        validators=[Required()],
+        validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')
 
 
 class DateFieldForm(Form):
-    date_field = DateField('Date <span class="text-danger">*</span>', validators=[Required()])
+    date_field = DateField('Date <span class="text-danger">*</span>', validators=[DataRequired()])
     time_field = TimeField('Time', validators=[Optional()])
 
     def validate_time_field(self, field):
@@ -303,7 +303,7 @@ class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
     cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
-    city = StringField('City <span class="text-danger">*</span>', validators=[Required()])
+    city = StringField('City <span class="text-danger">*</span>', validators=[DataRequired()])
     state = SelectField('State <span class="text-danger">*</span>', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
@@ -355,7 +355,7 @@ class IncidentForm(DateFieldForm):
     description = TextAreaField(validators=[Optional()])
     department = QuerySelectField(
         'Department <span class="text-danger">*</span>',
-        validators=[Required()],
+        validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')
     address = FormField(LocationForm)
@@ -375,8 +375,8 @@ class IncidentForm(DateFieldForm):
         description='Links to articles about or videos of the incident.',
         min_entries=1,
         widget=BootstrapListWidget())
-    creator_id = HiddenField(validators=[Required(message='Incidents must have a creator id.')])
-    last_updated_id = HiddenField(validators=[Required(message='Incidents must have a user id for editing.')])
+    creator_id = HiddenField(validators=[DataRequired(message='Incidents must have a creator id.')])
+    last_updated_id = HiddenField(validators=[DataRequired(message='Incidents must have a user id for editing.')])
 
     submit = SubmitField(label='Submit')
 
