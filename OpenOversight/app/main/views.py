@@ -636,10 +636,10 @@ def leaderboard():
 def label_data(department_id=None, image_id=None):
     jsloads = ['js/cropper.js', 'js/tagger.js']
     if department_id:
-        department = Department.query.filter_by(id=department_id).one()
+        department = Department.query.filter_by(id=department_id).first()
         if image_id:
             image = Image.query.filter_by(id=image_id) \
-                               .filter_by(department_id=department_id).one()
+                               .filter_by(department_id=department_id).first()
         else:  # Get a random image from that department
             image_query = Image.query.filter_by(contains_cops=True) \
                                .filter_by(department_id=department_id) \
@@ -667,6 +667,8 @@ def label_data(department_id=None, image_id=None):
                          .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+        elif department and officer_exists.department_id != department_id:
+            flash(f"The officer is not in {department.name}. Are you sure that is the correct OpenOversight ID?")
         elif not existing_tag:
             left = form.dataX.data
             upper = form.dataY.data
