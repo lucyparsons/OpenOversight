@@ -842,9 +842,9 @@ def download_dept_officers_csv(department_id):
             most_recent_assignment = None
             most_recent_title = None
         if officer.salaries:
-            most_recent_salery = max(officer.salaries, key=lambda s: s.year)
+            most_recent_salary = max(officer.salaries, key=lambda s: s.year)
         else:
-            most_recent_salery = None
+            most_recent_salary = None
         record = {
             "id": officer.id,
             "unique identifier": officer.unique_internal_identifier,
@@ -858,7 +858,7 @@ def download_dept_officers_csv(department_id):
             "employment date": officer.employment_date,
             "badge number": most_recent_assignment and most_recent_assignment.star_no,
             "job title": most_recent_title,
-            "most recent salary": most_recent_salery and most_recent_salery.salary,
+            "most recent salary": most_recent_salary and most_recent_salary.salary,
         }
         csv_writer.writerow(record)
 
