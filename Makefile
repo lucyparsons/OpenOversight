@@ -1,4 +1,4 @@
-export DC_UID=$(shell id -u)
+export UID=$(shell id -u)
 
 default: build start create_db populate test stop clean
 
