@@ -128,6 +128,7 @@ class ModelView(MethodView):
         if hasattr(obj, 'date_updated'):
             obj.date_updated = datetime.datetime.now()
         db.session.add(obj)
+        db.session.commit()
 
     def create_obj(self, form):
         self.model(**form.data)

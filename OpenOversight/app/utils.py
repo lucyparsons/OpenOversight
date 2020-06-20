@@ -41,14 +41,28 @@ def set_dynamic_default(form_field, value):
 def get_or_create(session, model, defaults=None, **kwargs):
     if 'csrf_token' in kwargs:
         kwargs.pop('csrf_token')
+
     # Because id is a keyword in Python, officers member is called oo_id
     if 'oo_id' in kwargs:
         kwargs = {'id': kwargs['oo_id']}
-    instance = model.query.filter_by(**kwargs).first()
+
+    # We need to convert empty strings to None for filter_by
+    # as '' != None in the database and
+    # such that we don't create fields with empty strings instead
+    # of null.
+    filter_params = {}
+    for key, value in kwargs.items():
+        if value != '':
+            filter_params.update({key: value})
+        else:
+            filter_params.update({key: None})
+
+    instance = model.query.filter_by(**filter_params).first()
+
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in iteritems(kwargs))
+        params = dict((k, v) for k, v in iteritems(filter_params))
         params.update(defaults or {})
         instance = model(**params)
         session.add(instance)
