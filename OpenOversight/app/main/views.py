@@ -1,4 +1,5 @@
 import csv
+from datetime import date
 import io
 import os
 import re
@@ -835,7 +836,7 @@ def download_dept_officers_csv(department_id):
 
     for officer in officers:
         if officer.assignments_lazy:
-            most_recent_assignment = max(officer.assignments_lazy, key=lambda a: a.star_date)
+            most_recent_assignment = max(officer.assignments_lazy, key=lambda a: a.star_date or date.min)
             most_recent_title = most_recent_assignment.job and check_output(most_recent_assignment.job.job_title)
         else:
             most_recent_assignment = None
