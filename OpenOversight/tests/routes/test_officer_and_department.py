@@ -1,5 +1,6 @@
 # Routing and view tests
 import csv
+import copy
 import json
 import pytest
 import random
@@ -7,11 +8,11 @@ from datetime import datetime, date
 from io import BytesIO
 from mock import patch, MagicMock
 from flask import url_for, current_app
-from ..conftest import AC_DEPT
+from ..conftest import AC_DEPT, RANK_CHOICES_1
 from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
-
+from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
@@ -402,6 +403,94 @@ def test_ac_cannot_edit_police_department(mockdata, client, session):
         )
 
         assert rv.status_code == 403
+
+
+def test_admin_can_edit_rank_order(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        ranks_update = ranks.copy()
+        original_first_rank = copy.deepcopy(ranks_update[0])
+        ranks_update[0], ranks_update[1] = ranks_update[1], ranks_update[0]
+        ranks_stringified = [rank.job_title for rank in ranks_update]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_stringified)
+        processed_data = process_form_data(rank_change_form.data)
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        assert 'Department Springfield Police Department edited' in rv.data.decode('utf-8')
+        assert updated_ranks[0].job_title == original_first_rank.job_title and updated_ranks[0].order != original_first_rank.order
+
+
+def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        original_ranks = ranks.copy()
+        ranks_update = RANK_CHOICES_1.copy()[:-1]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        with pytest.raises(IntegrityError):
+            rv = client.post(
+                url_for('main.edit_department', department_id=1),
+                data=processed_data,
+                follow_redirects=True
+            )
+
+        updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        assert 'You attempted to delete a rank, Not Sure, that is in use' in rv.data.decode('utf-8')
+        assert len(updated_ranks) == len(original_ranks)
+
+
+def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append(Job(job_title='Temporary Rank',
+                                order=original_ranks_length,
+                                is_sworn_officer=True,
+                                department_id=1))
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-1]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # delete the rank that was added
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length
 
 
 def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client,

@@ -425,11 +425,15 @@ def edit_department(department_id):
                     db.session.commit()
                 except IntegrityError as e:
                     db.session.rollback()
-                    rank = Job.query.filter_by(id=e.params['id']).one()
-                    home_route = url_for('main.index')
-                    print(home_route)
-                    link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, rank)
-                    flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                    if len(e.params) > 1:
+                        for param in e.params:
+                            rank = Job.query.filter_by(id=param['id']).one()
+                            link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, rank)
+                            flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                    else:
+                        rank = Job.query.filter_by(id=e.params['id']).one()
+                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, rank)
+                        flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
                     return redirect(url_for('main.edit_department', department_id=department_id))
             
             for (new_rank, order) in new_ranks:
