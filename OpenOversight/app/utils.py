@@ -19,6 +19,7 @@ import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
 from PIL import Image as Pimage
+from PIL.PngImagePlugin import PngImageFile
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
@@ -40,14 +41,28 @@ def set_dynamic_default(form_field, value):
 def get_or_create(session, model, defaults=None, **kwargs):
     if 'csrf_token' in kwargs:
         kwargs.pop('csrf_token')
+
     # Because id is a keyword in Python, officers member is called oo_id
     if 'oo_id' in kwargs:
         kwargs = {'id': kwargs['oo_id']}
-    instance = model.query.filter_by(**kwargs).first()
+
+    # We need to convert empty strings to None for filter_by
+    # as '' != None in the database and
+    # such that we don't create fields with empty strings instead
+    # of null.
+    filter_params = {}
+    for key, value in kwargs.items():
+        if value != '':
+            filter_params.update({key: value})
+        else:
+            filter_params.update({key: None})
+
+    instance = model.query.filter_by(**filter_params).first()
+
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in iteritems(kwargs))
+        params = dict((k, v) for k, v in iteritems(filter_params))
         params.update(defaults or {})
         instance = model(**params)
         session.add(instance)
@@ -247,7 +262,7 @@ def filter_by_form(form, officer_query, department_id=None):
         Assignment.job_id,
         Assignment.star_date,
         Assignment.star_no
-    ).add_column(row_num_col).from_self().filter(row_num_col == 1).subquery()
+    ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
     officer_query = officer_query.outerjoin(subq)
 
     if form.get('name'):
@@ -514,8 +529,9 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
 
 
 def find_date_taken(pimage):
-    if pimage.filename.split('.')[-1] == 'png':
+    if isinstance(pimage, PngImageFile):
         return None
+
     if pimage._getexif():
         # 36867 in the exif tags holds the date and the original image was taken https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
         if 36867 in pimage._getexif():

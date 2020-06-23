@@ -348,8 +348,8 @@ def add_mockdata(session):
     session.commit()
 
     test_links = [
-        models.Link(url='https://stackoverflow.com/', link_type='link'),
-        models.Link(url='http://www.youtube.com/?v=help', link_type='video')
+        models.Link(url='https://stackoverflow.com/', link_type='link', user=test_admin, user_id=test_admin.id),
+        models.Link(url='http://www.youtube.com/?v=help', link_type='video', user=test_admin, user_id=test_admin.id)
     ]
 
     session.add_all(test_links)

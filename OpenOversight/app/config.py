@@ -9,7 +9,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     # pagination
     OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)

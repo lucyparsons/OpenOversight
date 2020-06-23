@@ -6,7 +6,7 @@ When this application is deployed you will need to do some setup. These instruct
 
 We distribute a `requirements.txt` file listing the things the application depends upon. `pip install -r requirements.txt` will install prerequisites.
 
-You may also need the `libpq-dev` package if psycopg2 fails to install.
+You will also need the `libpq-dev` and `python3-dev` packages (required to build `psycopg2`).
 
 # S3 Image Hosting
 
@@ -82,7 +82,7 @@ server {
                 proxy_pass http://127.0.0.1:4000;
                 proxy_redirect     off;
                 proxy_set_header Host $host;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_connect_timeout 300s;
                 proxy_read_timeout 300s;
                 client_max_body_size 20M;
