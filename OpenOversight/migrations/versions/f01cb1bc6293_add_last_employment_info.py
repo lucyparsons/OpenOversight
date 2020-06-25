@@ -1,7 +1,7 @@
 """adds last_employment_date and last_employment_details to officers table
 
 Revision ID: f01cb1bc6293
-Revises: 6045f42587ec
+Revises: 562bd5f1bc1f
 Create Date: 2019-02-19 15:41:49.010897
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'f01cb1bc6293'
-down_revision = '6045f42587ec'
+down_revision = '562bd5f1bc1f'
 branch_labels = None
 depends_on = None
 

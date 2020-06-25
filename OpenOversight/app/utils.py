@@ -311,14 +311,14 @@ def filter_by_form(form, officer_query, department_id=None):
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
     if form.get('year') and form.get('year') in year_choices():
-            year = int(form.get('year'))
-            last_employment_date_comparator = datetime.date(year, 1, 1)
-            employment_date_comparator = datetime.date(year + 1, 1, 1)
-            last_employment_date_query = db.or_(Officer.last_employment_date >= last_employment_date_comparator,
-                                                Officer.last_employment_date.is_(None))
-            employment_date_query = db.or_(Officer.employment_date < employment_date_comparator,
-                                           Officer.employment_date.is_(None))
-            officer_query = officer_query.filter(db.and_(last_employment_date_query, employment_date_query))
+        year = int(form.get('year'))
+        last_employment_date_comparator = datetime.date(year, 1, 1)
+        employment_date_comparator = datetime.date(year + 1, 1, 1)
+        last_employment_date_query = db.or_(Officer.last_employment_date >= last_employment_date_comparator,
+                                            Officer.last_employment_date.is_(None))
+        employment_date_query = db.or_(Officer.employment_date < employment_date_comparator,
+                                       Officer.employment_date.is_(None))
+        officer_query = officer_query.filter(db.and_(last_employment_date_query, employment_date_query))
 
     officer_query = officer_query.outerjoin(Job, Assignment.job)
     rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]
