@@ -130,7 +130,7 @@ def add_officer_profile(form, current_user):
     db.session.commit()
 
     if form.unit.data:
-        officer_unit = form.unit.data.id
+        officer_unit = form.unit.data
     else:
         officer_unit = None
 
