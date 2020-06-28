@@ -197,6 +197,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                 )
                 if update_static_fields:
                     print(msg)
+                    update_officer_field(fieldname, new_value)
                 else:
                     raise Exception(msg)
 
