@@ -427,13 +427,14 @@ def add_department(name, short_name, unique_internal_identifier):
 @click.command()
 @click.argument('department_id')
 @click.argument('job_title')
-@click.argument('is_sworn_officer')
-@click.argument('order')
+@click.argument('is_sworn_officer', type=click.Choice(["true", "false"], case_sensitive=False))
+@click.argument('order', type=int)
 @with_appcontext
 def add_job_title(department_id, job_title, is_sworn_officer, order):
     """Add ranks from a CSV file."""
     department = Department.query.filter_by(id=department_id).one_or_none()
-    job = Job(job_title=job_title, is_sworn_officer=is_sworn_officer, order=order, department=department)
+    is_sworn = (is_sworn_officer == "true")
+    job = Job(job_title=job_title, is_sworn_officer=is_sworn, order=order, department=department)
     db.session.add(job)
     print('Added {} to {}'.format(job.job_title, department.name))
     db.session.commit()
