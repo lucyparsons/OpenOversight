@@ -153,7 +153,7 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default='',
         validators=[AnyOf(allowed_values(LINK_CHOICES))])
-    creator_id = HiddenField(validators=[Required(message='Not a valid user ID')])
+    creator_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
 
     def validate(self):
         success = super(LinkForm, self).validate()
@@ -166,7 +166,7 @@ class LinkForm(Form):
 
 
 class OfficerLinkForm(LinkForm):
-    officer_id = HiddenField(validators=[Required(message='Not a valid officer ID')])
+    officer_id = HiddenField(validators=[DataRequired(message='Not a valid officer ID')])
     submit = SubmitField(label='Submit')
 
 

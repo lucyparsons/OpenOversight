@@ -464,21 +464,6 @@ def crop_image(image, crop_data=None, department_id=None):
     image_type = imghdr.what(image_buf)
     pimage = Pimage.open(image_buf)
 
-def create_link(self, form):
-    link = Link(
-        title=form.title.data,
-        url=form.url.data,
-        link_type=form.link_type.data,
-        description=form.description.data,
-        author=form.author.data,
-        creator_id=form.creator_id.data)
-    if hasattr(form, 'officer_id'):
-        link.officer_id = form.officer_id.data
-    return link
-
-def get_uploaded_cropped_image(original_image, crop_data):
-    """ Takes an Image object and a cropping tuple (left, upper, right, lower), and returns a new Image object"""
-
     SIZE = 300, 300
     if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
         return image
@@ -494,6 +479,17 @@ def get_uploaded_cropped_image(original_image, crop_data):
 
     return upload_image_to_s3_and_store_in_db(cropped_image_buf, current_user.get_id(), department_id)
 
+def create_link(self, form):
+    link = Link(
+        title=form.title.data,
+        url=form.url.data,
+        link_type=form.link_type.data,
+        description=form.description.data,
+        author=form.author.data,
+        creator_id=form.creator_id.data)
+    if hasattr(form, 'officer_id'):
+        link.officer_id = form.officer_id.data
+    return link
 
 def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     image_buf.seek(0)

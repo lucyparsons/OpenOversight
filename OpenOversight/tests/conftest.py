@@ -362,8 +362,8 @@ def add_mockdata(session):
     session.commit()
 
     test_incident_links = [
-        models.Link(url='https://stackoverflow.com/', link_type='link', user=test_admin, user_id=test_admin.id),
-        models.Link(url='http://www.youtube.com/?v=help', link_type='video', user=test_admin, user_id=test_admin.id)
+        models.Link(url='https://stackoverflow.com/', link_type='link', creator=test_admin, creator_id=test_admin.id),
+        models.Link(url='http://www.youtube.com/?v=help', link_type='video', creator=test_admin, creator_id=test_admin.id)
     ]
 
     session.add_all(test_incident_links)
@@ -403,7 +403,7 @@ def add_mockdata(session):
             department_id=2,
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],
-            links=test_links,
+            links=test_incident_links,
             officers=[all_officers[o] for o in range(1)],
             creator_id=2,
             last_updated_id=1

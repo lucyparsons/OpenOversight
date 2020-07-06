@@ -1,7 +1,7 @@
 """Refactor links
 
 Revision ID: 86eb228e4bc0
-Revises: 3015d1dd9eb4
+Revises: 562bd5f1bc1f
 Create Date: 2019-03-15 22:40:10.473917
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '86eb228e4bc0'
-down_revision = '3015d1dd9eb4'
+down_revision = '562bd5f1bc1f'
 branch_labels = None
 depends_on = None
 
