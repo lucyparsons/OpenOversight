@@ -1777,4 +1777,3 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(mockdata, 
         )
 
         assert rv.status_code == 403
-        
