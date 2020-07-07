@@ -41,8 +41,8 @@ class BaseConfig(object):
     # User registration settings
     DISABLE_REGISTRATION = os.environ.get('DISABLE_REGISTRATION', False)
     APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
-    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
-    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_V2_SITE_KEY')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_V2_SECRET_KEY')
 
     SEED = 666
 
