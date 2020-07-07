@@ -39,6 +39,7 @@ class BaseConfig(object):
     ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif'])
 
     # User settings
+    DISABLE_REGISTRATION = os.environ.get('DISABLE_REGISTRATION', False)
     APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
 
     SEED = 666

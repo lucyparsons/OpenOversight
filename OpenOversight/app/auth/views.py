@@ -55,6 +55,8 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_app.config['DISABLE_REGISTRATION']:
+        return render_template('auth/register.html', registration_enabled=False)
     jsloads = ['js/zxcvbn.js', 'js/password.js']
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -77,7 +79,7 @@ def register():
                        'auth/email/confirm', user=user, token=token)
             flash('A confirmation email has been sent to you.')
         return redirect(url_for('auth.login'))
-    return render_template('auth/register.html', form=form, jsloads=jsloads)
+    return render_template('auth/register.html', form=form, jsloads=jsloads, registration_enabled=True)
 
 
 @auth.route('/confirm/<token>')

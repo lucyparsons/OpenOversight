@@ -8,6 +8,7 @@
 <div class="page-header">
     <h1>Register as an OpenOversight Volunteer</h1>
 </div>
+{% if registration_enabled %}
 <div class="col-md-4">
     <form class="form form-horizontal" method="post" role="form">
         {{ form.hidden_tag() }}
@@ -21,7 +22,7 @@
             <meter class="meter" max="5" id="password-strength-meter"></meter>
             <p id="password-strength-text"></p>
             {% if form.password.errors %}
-                <p class="help-block">{% for error in form.password.errors %}{{ error }} {% endfor %}</p>
+            <p class="help-block">{% for error in form.password.errors %}{{ error }} {% endfor %}</p>
             {% endif %}
         </div>
         <div class="form-group  required">
@@ -29,11 +30,16 @@
             <input class="form-control" id="password2" name="password2" required="" type="password" value="">
             <meter class="binmeter" max="5" id="password-confirmation-meter"></meter>
             {% if form.password2.errors %}
-                <p class="help-block">{% for error in form.password2.errors %}{{ error }} {% endfor %}</p>
+            <p class="help-block">{% for error in form.password2.errors %}{{ error }} {% endfor %}</p>
             {% endif %}
         </div>
         {{ wtf.form_field(form.submit, id="password-button", button_map={'submit':'primary'}, disabled=True) }}
     </form>
 </div>
+{% else %}
+<div class="row"></div>
+    <h3>Volunteer registration is currently disabled.</h3>
+</div>
+{% endif %}
 </div>
 {% endblock %}
