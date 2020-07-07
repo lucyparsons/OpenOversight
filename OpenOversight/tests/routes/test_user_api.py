@@ -270,3 +270,11 @@ def test_admin_can_approve_user(mockdata, client, session):
 
         user = User.query.get(user_id)
         assert user.approved
+
+
+def test_registration_disabled(mockdata, client, session):
+    current_app.config['DISABLE_REGISTRATION'] = True
+    with current_app.test_request_context():
+        rv = client.get(url_for('auth.register'))
+        assert rv.status_code == 200
+        assert 'Volunteer registration is currently disabled' in rv.data.decode('utf-8')
