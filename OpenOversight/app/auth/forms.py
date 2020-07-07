@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm as Form
+from flask_wtf import FlaskForm as Form, RecaptchaField
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, Optional
@@ -28,6 +28,7 @@ class RegistrationForm(Form):
         EqualTo('password2', message='Passwords must match.')])
     password2 = PasswordField('Confirm password', validators=[DataRequired()])
     submit = SubmitField('Register')
+    recaptcha = RecaptchaField()
 
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():

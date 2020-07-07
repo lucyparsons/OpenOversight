@@ -38,9 +38,11 @@ class BaseConfig(object):
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif'])
 
-    # User settings
+    # User registration settings
     DISABLE_REGISTRATION = os.environ.get('DISABLE_REGISTRATION', False)
     APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
 
     SEED = 666
 

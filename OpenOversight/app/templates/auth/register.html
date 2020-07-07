@@ -34,6 +34,7 @@
             {% endif %}
         </div>
         {{ wtf.form_field(form.submit, id="password-button", button_map={'submit':'primary'}, disabled=True) }}
+        {{ wtf.form_field(form.recaptcha) }}
     </form>
 </div>
 {% else %}
