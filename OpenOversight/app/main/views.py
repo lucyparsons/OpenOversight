@@ -420,22 +420,15 @@ def edit_department(department_id):
             if len(updated_ranks) < len(original_ranks):
                 deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
                 for rank in deleted_ranks:
-                    db.session.delete(rank)
-                try:
-                    db.session.commit()
-                except IntegrityError as e:
-                    db.session.rollback()
-                    if len(e.params) > 1:
-                        for param in e.params:
-                            rank = Job.query.filter_by(id=param['id']).one()
-                            link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, rank)
-                            flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                    if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
+                        db.session.delete(rank)
+                        db.session.commit()
                     else:
-                        rank = Job.query.filter_by(id=e.params['id']).one()
-                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, rank)
+                        formatted_rank = rank.job_title.replace(" ", "+")
+                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
                         flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
                     return redirect(url_for('main.edit_department', department_id=department_id))
-            
+
             for (new_rank, order) in new_ranks:
                 existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
                 if existing_rank:

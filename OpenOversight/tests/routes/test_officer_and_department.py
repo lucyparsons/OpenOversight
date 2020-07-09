@@ -440,15 +440,15 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
         processed_data = process_form_data(rank_change_form.data)
 
-        with pytest.raises(IntegrityError):
-            rv = client.post(
-                url_for('main.edit_department', department_id=1),
-                data=processed_data,
-                follow_redirects=True
-            )
+        
+        result = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
 
         updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
-        assert 'You attempted to delete a rank, Not Sure, that is in use' in rv.data.decode('utf-8')
+        assert 'You attempted to delete a rank, Commander, that is in use' in result.data.decode('utf-8')
         assert len(updated_ranks) == len(original_ranks)
 
 
