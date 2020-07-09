@@ -8,7 +8,7 @@ from io import BytesIO
 from mock import patch, MagicMock
 from flask import url_for, current_app
 from ..conftest import AC_DEPT
-from OpenOversight.app.utils import add_new_assignment, dept_choices
+from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
@@ -507,6 +507,47 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.gender == 'M'
 
 
+def test_admin_can_add_new_officer_with_unit(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        unit = random.choice(unit_choices())
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
+        ]
+        job = Job.query.filter_by(department_id=department.id).first()
+        form = AddOfficerForm(first_name='Test',
+                              last_name='McTesterson',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              job_title=job.id,
+                              unit=unit.id,
+                              department=department.id,
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'New Officer McTesterson added' in rv.data.decode('utf-8')
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesterson').one()
+        assert officer.first_name == 'Test'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+
+
 def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -546,6 +587,48 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         assert officer.gender == gender
 
 
+def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        unit = random.choice(unit_choices())
+        first_name = 'Testy'
+        last_name = 'OTester'
+        middle_initial = 'R'
+        race = random.choice(RACE_CHOICES)[0]
+        gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
+        form = AddOfficerForm(first_name=first_name,
+                              last_name=last_name,
+                              middle_initial=middle_initial,
+                              race=race,
+                              gender=gender,
+                              star_no=666,
+                              job_title=job.id,
+                              department=department.id,
+                              unit=unit.id,
+                              birth_year=1990)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert 'New Officer {} added'.format(last_name) in rv.data.decode('utf-8')
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name=last_name).one()
+        assert officer.first_name == first_name
+        assert officer.race == race
+        assert officer.gender == gender
+        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+
+
 def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -582,6 +665,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+        unit = random.choice(unit_choices())
         link_url0 = 'http://pleasework.com'
         link_url1 = 'http://avideo/?v=2345jk'
         links = [
@@ -597,6 +681,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
                               star_no=666,
                               job_title=job.id,
                               department=department.id,
+                              unit=unit.id,
                               birth_year=1990,
                               links=links)
         data = process_form_data(form.data)
@@ -671,6 +756,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
+        unit = random.choice(unit_choices())
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
@@ -686,6 +772,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               job_title='COMMANDER',
                               department=department.id,
+                              unit=unit.id,
                               birth_year=1990)
 
         data = process_form_data(form.data)
