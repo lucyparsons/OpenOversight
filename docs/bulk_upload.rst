@@ -95,6 +95,13 @@ Required fields
    in ``yyyy-mm-dd`` or ``mm/dd/yyyy`` format - if the column is present
    the field cannot be left blank
 
+Command-line options
+--------------------
+
+- ``--no-create`` - For each line in the CSV, update an existing officer if one exists, but do not create any new officers. If an officer in the CSV is not already in OpenOversight, the line will be ignored.
+- ``--update-by-name`` - Update officers by ``first_name`` and ``last_name``. Useful when ``unique_internal_identifier`` and ``star_no`` are not available.
+-  ``--update-static-fields`` - Allow modifications to normally-static fields like ``race``, ``birth_year``, etc, which OpenOversight normally prevents from being modified. Values in the database will be overwritten with values in the CSV.
+
 The command to run on the server
 --------------------------------
 
