@@ -431,7 +431,7 @@ def add_department(name, short_name, unique_internal_identifier):
 @click.argument('order', type=int)
 @with_appcontext
 def add_job_title(department_id, job_title, is_sworn_officer, order):
-    """Add ranks from a CSV file."""
+    """Add a rank to a department."""
     department = Department.query.filter_by(id=department_id).one_or_none()
     is_sworn = (is_sworn_officer == "true")
     job = Job(job_title=job_title, is_sworn_officer=is_sworn, order=order, department=department)
