@@ -402,12 +402,6 @@ def test_csv_new_salary(csvfile):
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
-# NEW TESTS
-# --update_by_name && two with same name
-# --update_by_name && success
-# update null static field with and without --update-static-fields
-
-
 def test_bulk_add_officers__success(session, department_with_ranks, csv_path):
     # generate two officers with different names
     first_officer = generate_officer()
