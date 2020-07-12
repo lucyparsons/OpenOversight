@@ -294,9 +294,8 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
     gender_values = [x for x, _ in GENDER_CHOICES]
     if form.get('gender') and all(gender in gender_values for gender in form['gender']):
-        if 'Not Sure' in form['gender']:
-            form['gender'].append(None)
-        officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
+        if 'Not Sure' not in form['gender']:
+            officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
 
     if form.get('min_age') and form.get('max_age'):
         current_year = datetime.datetime.now().year
