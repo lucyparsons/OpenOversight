@@ -36,9 +36,24 @@ def test_gender_filter_select_all_male_officers(mockdata):
     results = OpenOversight.app.utils.grab_officers(
         {'gender': ['M'], 'dept': department}
     )
+    # TODO: this is currently only returning 'M' officers. We want to return 'M' officers along with 
+    # officers whose gender is 'Not Sure'(eventually None)
+
     for element in results.all():
         assert element.gender in ('M', 'Not Sure')
 
+def test_gender_filter_include_all_genders_if_not_sure(mockdata):
+    department = OpenOversight.app.models.Department.query.first()
+    results = OpenOversight.app.utils.grab_officers(
+        {'gender': ['Not Sure'], 'dept': department}
+    )
+   
+    result_genders = [officer.gender for officer in results.all()]
+    for gender in  ('M', 'F', 'Not Sure'):
+        assert gender in result_genders
+    for officer in results.all():
+        assert officer.department == department
+    assert results.count() == len(department.officers)
 
 def test_rank_filter_select_all_commanders(mockdata):
     department = OpenOversight.app.models.Department.query.first()
