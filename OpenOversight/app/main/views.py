@@ -419,11 +419,15 @@ def edit_department(department_id):
             updated_ranks = form.jobs.data
             if len(updated_ranks) < len(original_ranks):
                 deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
-                for rank in deleted_ranks:
-                    if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
+                if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
+                    for rank in deleted_ranks:
                         db.session.delete(rank)
-                        db.session.commit()
-                    else:
+                else:
+                    failed_deletions = []
+                    for rank in deleted_ranks:
+                        if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
+                            failed_deletions.append(rank)
+                    for rank in failed_deletions:
                         formatted_rank = rank.job_title.replace(" ", "+")
                         link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
                         flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
