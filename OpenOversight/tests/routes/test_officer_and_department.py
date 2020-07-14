@@ -12,7 +12,6 @@ from ..conftest import AC_DEPT, RANK_CHOICES_1
 from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
-from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
@@ -440,7 +439,6 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
         processed_data = process_form_data(rank_change_form.data)
 
-        
         result = client.post(
             url_for('main.edit_department', department_id=1),
             data=processed_data,
@@ -493,8 +491,87 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
         assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length
 
 
-def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client,
-                                                              session):
+def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append('Temporary Rank 1')
+        ranks_update.append('Temporary Rank 2')
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 2
+
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-2]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # delete the rank that was added
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length
+
+
+def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_use_rank(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append(Job(job_title='Temporary Rank',
+                                order=original_ranks_length,
+                                is_sworn_officer=True,
+                                department_id=1))
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+        # attempt to delete multiple ranks
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-2]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # attempt to delete one rank in use and one rank not in use
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+
+def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
