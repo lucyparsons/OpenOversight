@@ -71,3 +71,6 @@ help: ## Print this message and exit
 	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%s\033[0m : %s\n", $$1, $$2}' $(MAKEFILE_LIST) \
 		| sort \
 		| column -s ':' -t
+
+attach:
+	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
