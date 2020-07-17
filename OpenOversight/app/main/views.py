@@ -599,9 +599,91 @@ def add_unit():
         db.session.add(unit)
         db.session.commit()
         flash('New unit {} added to OpenOversight'.format(unit.descrip))
-        return redirect(url_for('main.get_started_labeling'))
+        return redirect(url_for('main.view_unit.{}'.format(unit.id)))
     else:
         return render_template('add_unit.html', form=form)
+
+
+def get_form_and_choices(department_id, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
+    form = BrowseForm()
+    form.rank.query = Job.query\
+        .filter_by(department_id=department_id, is_sworn_officer=True)\
+        .order_by(Job.order.asc())\
+        .all()
+    form_data = form.data
+    form_data['race'] = race
+    form_data['gender'] = gender
+    form_data['rank'] = rank
+    form_data['min_age'] = min_age
+    form_data['max_age'] = max_age
+    form_data['name'] = name
+    form_data['badge'] = badge
+    form_data['unique_internal_identifier'] = unique_internal_identifier
+
+    # Set form data based on URL
+    if request.args.get('min_age') and request.args.get('min_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['min_age'] = request.args.get('min_age')
+    if request.args.get('max_age') and request.args.get('max_age') in [ac[0] for ac in AGE_CHOICES]:
+        form_data['max_age'] = request.args.get('max_age')
+    if request.args.get('name'):
+        form_data['name'] = request.args.get('name')
+    if request.args.get('badge'):
+        form_data['badge'] = request.args.get('badge')
+    if request.args.get('unique_internal_identifier'):
+        form_data['unique_internal_identifier'] = request.args.get('unique_internal_identifier')
+    if request.args.get('race') and all(race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist('race')):
+        form_data['race'] = request.args.getlist('race')
+    if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
+        form_data['gender'] = request.args.getlist('gender')
+
+    rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id).order_by(Job.order).all()]
+    if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
+        form_data['rank'] = request.args.getlist('rank')
+
+    choices = {
+        'race': RACE_CHOICES,
+        'gender': GENDER_CHOICES,
+        'rank': [(rc, rc) for rc in rank_choices]
+    }
+    return form, form_data, choices
+
+
+def get_officers_by_unit_id(unit_id, form_data, department_id, page=1):
+    officers_per_page = int(current_app.config['OFFICERS_PER_PAGE'])
+    officers = filter_by_form(form_data, Officer.query, department_id)\
+        .filter(Officer.id.in_(
+            db.session.query(Assignment.officer_id).filter(Assignment.unit_id == unit_id)
+        )) \
+        .order_by(Officer.last_name)\
+        .paginate(page, officers_per_page, False)
+    return officers
+
+
+@main.route('/unit/<int:unit_id>', methods=['GET'])
+def list_unit(unit_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
+
+    unit: Unit = Unit.query.filter_by(id=unit_id).options(joinedload(Unit.department)).first()
+    if not unit:
+        abort(404)
+
+    department: Department = unit.department if unit else None
+    department_id = unit.department_id
+
+    form, form_data, choices = get_form_and_choices(department_id, race, gender, rank, min_age, max_age, name, badge, unique_internal_identifier)
+
+    officers = get_officers_by_unit_id(unit_id, form_data, department_id, page)
+
+    return render_template(
+        'list_unit.html',
+        unit=unit,
+        officers=officers,
+        form=form,
+        department=department,
+        form_data=form_data,
+        choices=choices
+    )
 
 
 @main.route('/tag/delete/<int:tag_id>', methods=['POST'])
