@@ -103,7 +103,7 @@
           <tr>
             <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
-            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
+            <td>{% if assignment.unit_id %}<a href="{{ url_for('main.list_unit', unit_id=assignment.unit_id) }}">{{ assignment.unit.descrip }}</a>{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
                 {% else %}
@@ -126,7 +126,7 @@
           <tr>
             <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
-            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
+            <td>{% if assignment.unit_id %}<a href="{{ url_for('main.list_unit', unit_id=assignment.unit_id) }}">{{ assignment.unit.descrip }}</a>{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
                 {% else %}
