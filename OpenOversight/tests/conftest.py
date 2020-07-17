@@ -16,7 +16,7 @@ from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
-from OpenOversight.app.models import db as _db
+from OpenOversight.app.models import db as _db, Unit, Job, Officer
 
 factory = Faker()
 
@@ -37,6 +37,11 @@ AC_DEPT = 1
 
 def pick_birth_date():
     return random.randint(1950, 2000)
+
+
+def pick_date(start_year=2000, end_year=2020):
+    return datetime.datetime(start_year, 1, 1, 00, 00, 00) \
+           + datetime.timedelta(days=365 * (end_year - start_year) * random.random())
 
 
 def pick_race():
@@ -95,9 +100,9 @@ def generate_officer():
     )
 
 
-def build_assignment(officer, unit, jobs):
+def build_assignment(officer: Officer, unit: Unit, jobs: Job):
     return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
-                             officer=officer)
+                             officer=officer, unit_id=unit.id, star_date=pick_date(), resign_date=pick_date())
 
 
 def build_note(officer, user):
@@ -249,7 +254,8 @@ def add_mockdata(session):
     SEED = current_app.config['SEED']
     random.seed(SEED)
 
-    unit1 = models.Unit(descrip="test")
+    unit1 = models.Unit(descrip="test", department_id=1)
+    session.add(unit1)
 
     test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
         [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
@@ -278,7 +284,6 @@ def add_mockdata(session):
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
-    session.add(unit1)
     session.commit()
     session.add_all(assignments_dept1)
     session.add_all(assignments_dept2)
