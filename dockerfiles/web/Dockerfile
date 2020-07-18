@@ -1,4 +1,5 @@
-FROM python:3-buster
+ARG TRAVIS_PYTHON_VERSION
+FROM python:${TRAVIS_PYTHON_VERSION:-3.5}-buster
 
 WORKDIR /usr/src/app
 
@@ -6,15 +7,13 @@ ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev
-RUN apt-get install -y -t stretch-backports libsqlite3-0
+RUN wget -O - https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs npm && apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
 RUN mkdir geckodriver
 RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
-RUN wget -O - https://deb.nodesource.com/setup_8.x | bash -
-RUN apt-get update && apt-get install -y nodejs npm
 RUN npm install -g yarn
 
 RUN mkdir /var/www ./node_modules /.cache /.yarn /.mozilla
