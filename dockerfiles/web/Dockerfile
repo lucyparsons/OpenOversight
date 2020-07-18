@@ -8,7 +8,7 @@ ENV DISPLAY=:1
 ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
 RUN wget -O - https://deb.nodesource.com/setup_8.x | bash -
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && apt-get install -t stretch-backports libsqlite3-0 && apt-get clean
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs npm && apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
 RUN mkdir geckodriver
