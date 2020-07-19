@@ -18,7 +18,7 @@ before_install:
 install:
   - true
 before_script:
-  - pip install coveralls flake8==3.5.0
+  - pip install coveralls flake8==3.8.3
   - sudo service postgresql stop
 script:
   - sudo make test
