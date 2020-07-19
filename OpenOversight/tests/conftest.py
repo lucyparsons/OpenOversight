@@ -1,5 +1,6 @@
-from datetime import datetime
+import datetime
 from flask import current_app
+from io import BytesIO
 import pytest
 import random
 from selenium import webdriver
@@ -10,6 +11,8 @@ from faker import Faker
 import csv
 import uuid
 import sys
+import os
+from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -24,6 +27,10 @@ OFFICERS = [('IVANA', '', 'TINKLE'),
             ('BEA', '', 'O\'PROBLEM'),
             ('URA', '', 'SNOTBALL'),
             ('HUGH', '', 'JASS')]
+
+RANK_CHOICES_1 = ['Not Sure', 'Police Officer', 'Captain', 'Commander']
+RANK_CHOICES_2 = ['Not Sure', 'Police Officer', 'Lieutenant', 'Sergeant', 'Commander', 'Chief']
+
 
 AC_DEPT = 1
 
@@ -57,10 +64,6 @@ def pick_name():
     return (pick_first(), pick_middle(), pick_last())
 
 
-def pick_rank():
-    return random.choice(['COMMANDER', 'CAPTAIN', 'PO', 'Not Sure'])
-
-
 def pick_star():
     return random.randint(1, 9999)
 
@@ -74,6 +77,10 @@ def pick_uid():
     return str(uuid.uuid4())
 
 
+def pick_salary():
+    return random.randint(100, 100000000) / 100
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
@@ -82,31 +89,52 @@ def generate_officer():
         middle_initial=m_initial,
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=pick_department().id,
         unique_internal_identifier=pick_uid()
     )
 
 
-def build_assignment(officer, unit):
-    return models.Assignment(star_no=pick_star(), rank=pick_rank(),
+def build_assignment(officer, unit, jobs):
+    return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
                              officer=officer)
 
 
 def build_note(officer, user):
     date = factory.date_time_this_year()
-    return models.Note(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Note(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
 
 
 def build_description(officer, user):
     date = factory.date_time_this_year()
-    return models.Description(text_contents=factory.text(), officer_id=officer.id, creator_id=user.id, date_created=date, date_updated=date)
+    return models.Description(
+        text_contents=factory.text(),
+        officer_id=officer.id,
+        creator_id=user.id,
+        date_created=date,
+        date_updated=date)
+
+
+def build_salary(officer):
+    return models.Salary(
+        officer_id=officer.id,
+        salary=pick_salary(),
+        overtime_pay=pick_salary(),
+        year=random.randint(2000, 2019),
+        is_fiscal_year=True if random.randint(0, 1) else False)
 
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        return models.Face(officer_id=officer.id,
-                           img_id=random.choice(images).id)
+        for num in range(1, len(images)):
+            return models.Face(officer_id=officer.id,
+                               img_id=num,
+                               original_image_id=random.choice(images).id)
     else:
         return False
 
@@ -163,14 +191,58 @@ def session(db, request):
 
 
 @pytest.fixture
-def mockdata(session):
+def test_png_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/204Cat.png')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
+def test_jpg_BytesIO():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, 'images/200Cat.jpeg')
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+def add_mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD')
+                                   short_name='SPD', unique_internal_identifier_label='homer_number')
     session.add(department)
     department2 = models.Department(name='Chicago Police Department',
                                     short_name='CPD')
     session.add(department2)
+    session.commit()
+
+    i = 0
+    for rank in RANK_CHOICES_1:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=1
+        ))
+        i += 1
+
+    i = 0
+    for rank in RANK_CHOICES_2:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=2
+        ))
+        i += 1
     session.commit()
 
     # Ensure test data is deterministic
@@ -194,17 +266,23 @@ def mockdata(session):
 
     # assures that there are some assigned and unassigned images in each department
     assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
-
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
 
-    assignments = [build_assignment(officer, unit1) for officer in all_officers]
+    jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
+    jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+    assignments_dept1 = [build_assignment(officer, unit1, jobs_dept1) for officer in officers_dept1]
+    assignments_dept2 = [build_assignment(officer, unit1, jobs_dept2) for officer in officers_dept2]
+
+    salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
     session.add(unit1)
     session.commit()
-    session.add_all(assignments)
+    session.add_all(assignments_dept1)
+    session.add_all(assignments_dept2)
+    session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
 
@@ -214,9 +292,9 @@ def mockdata(session):
                             confirmed=True)
     session.add(test_user)
 
-    test_admin = models.User(email='redshiftzero@example.org',
+    test_admin = models.User(email='test@example.org',
                              username='test_admin',
-                             password='cat',
+                             password='testtest',
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)
@@ -270,8 +348,8 @@ def mockdata(session):
     session.commit()
 
     test_links = [
-        models.Link(url='https://stackoverflow.com/', link_type='link'),
-        models.Link(url='http://www.youtube.com/?v=help', link_type='video')
+        models.Link(url='https://stackoverflow.com/', link_type='link', user=test_admin, user_id=test_admin.id),
+        models.Link(url='http://www.youtube.com/?v=help', link_type='video', user=test_admin, user_id=test_admin.id)
     ]
 
     session.add_all(test_links)
@@ -279,7 +357,8 @@ def mockdata(session):
 
     test_incidents = [
         models.Incident(
-            date=datetime(2016, 3, 16),
+            date=datetime.date(2016, 3, 16),
+            time=datetime.time(4, 20),
             report_number='42',
             description='A thing happened',
             department_id=1,
@@ -291,7 +370,8 @@ def mockdata(session):
             last_updated_id=1
         ),
         models.Incident(
-            date=datetime(2017, 12, 11),
+            date=datetime.date(2017, 12, 11),
+            time=datetime.time(2, 40),
             report_number='38',
             description='A thing happened',
             department_id=2,
@@ -299,6 +379,18 @@ def mockdata(session):
             license_plates=[test_license_plates[0]],
             links=test_links,
             officers=[all_officers[o] for o in range(3)],
+            creator_id=2,
+            last_updated_id=1
+        ),
+        models.Incident(
+            date=datetime.datetime(2019, 1, 15),
+            report_number='39',
+            description='A test description that has over 300 chars. The purpose is to see how to display a larger descrption. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Lengthy lengthy lengthy.',
+            department_id=2,
+            address=test_addresses[1],
+            license_plates=[test_license_plates[0]],
+            links=test_links,
+            officers=[all_officers[o] for o in range(1)],
             creator_id=2,
             last_updated_id=1
         ),
@@ -332,7 +424,12 @@ def mockdata(session):
 
     session.commit()
 
-    return assignments[0].star_no
+    return assignments_dept1[0].star_no
+
+
+@pytest.fixture
+def mockdata(session):
+    return add_mockdata(session)
 
 
 @pytest.fixture
@@ -364,10 +461,14 @@ def csvfile(mockdata, tmp_path, request):
         'employment_date',
         'birth_year',
         'star_no',
-        'rank',
-        'unit',
+        'job_title',
+        'unit_id',
         'star_date',
-        'resign_date'
+        'resign_date',
+        'salary',
+        'salary_year',
+        'salary_is_fiscal_year',
+        'overtime_pay'
     ]
 
     officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
@@ -382,11 +483,24 @@ def csvfile(mockdata, tmp_path, request):
         for officer in officers_dept1:
             if not officer.unique_internal_identifier:
                 officer.unique_internal_identifier = str(uuid.uuid4())
+            towrite = merge_dicts(vars(officer), {'department_id': 1})
             if len(list(officer.assignments)) > 0:
                 assignment = officer.assignments[0]
-                towrite = merge_dicts(vars(officer), vars(assignment), {'department_id': 1})
-            else:
-                towrite = merge_dicts(vars(officer), {'department_id': 1})
+                towrite = merge_dicts(towrite, {
+                    'star_no': assignment.star_no,
+                    'job_title': assignment.job.job_title if assignment.job else None,
+                    'unit_id': assignment.unit_id,
+                    'star_date': assignment.star_date,
+                    'resign_date': assignment.resign_date
+                })
+            if len(list(officer.salaries)) > 0:
+                salary = officer.salaries[0]
+                towrite = merge_dicts(towrite, {
+                    'salary': salary.salary,
+                    'salary_year': salary.year,
+                    'salary_is_fiscal_year': salary.is_fiscal_year,
+                    'overtime_pay': salary.overtime_pay
+                })
             writer.writerow(towrite)
     except:  # noqa E722
         raise

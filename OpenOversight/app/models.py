@@ -1,8 +1,5 @@
 import re
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
@@ -32,9 +29,37 @@ class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
+    unique_internal_identifier_label = db.Column(db.String(100), unique=False, nullable=True)
 
     def __repr__(self):
         return '<Department ID {}: {}>'.format(self.id, self.name)
+
+    def toCustomDict(self):
+        return {'id': self.id,
+                'name': self.name,
+                'short_name': self.short_name,
+                'unique_internal_identifier_label': self.unique_internal_identifier_label
+                }
+
+
+class Job(db.Model):
+    __tablename__ = 'jobs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
+    is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
+    order = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    department = db.relationship('Department', backref='jobs')
+
+    __table_args__ = (UniqueConstraint('job_title', 'department_id',
+                      name='unique_department_job_titles'), )
+
+    def __repr__(self):
+        return '<Job ID {}: {}>'.format(self.id, self.job_title)
+
+    def __str__(self):
+        return self.job_title
 
 
 class Note(db.Model):
@@ -76,6 +101,7 @@ class Officer(db.Model):
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
+    assignments_lazy = db.relationship('Assignment')
     face = db.relationship('Face', backref='officer', lazy='dynamic')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
@@ -88,6 +114,7 @@ class Officer(db.Model):
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
+    salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
 
     def full_name(self):
         if self.middle_initial:
@@ -96,15 +123,49 @@ class Officer(db.Model):
             else:
                 return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
         if self.suffix:
-                return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
+            return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
 
+    def race_label(self):
+        from .main.choices import RACE_CHOICES
+        for race, label in RACE_CHOICES:
+            if self.race == race:
+                return label
+
+    def gender_label(self):
+        from .main.choices import GENDER_CHOICES
+        for gender, label in GENDER_CHOICES:
+            if self.gender == gender:
+                return label
+
     def __repr__(self):
+        if self.unique_internal_identifier:
+            return '<Officer ID {}: {} {} {} {} ({})>'.format(self.id,
+                                                              self.first_name,
+                                                              self.middle_initial,
+                                                              self.last_name,
+                                                              self.suffix,
+                                                              self.unique_internal_identifier)
         return '<Officer ID {}: {} {} {} {}>'.format(self.id,
                                                      self.first_name,
                                                      self.middle_initial,
                                                      self.last_name,
                                                      self.suffix)
+
+
+class Salary(db.Model):
+    __tablename__ = 'salaries'
+
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
+    officer = db.relationship('Officer', back_populates='salaries')
+    salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    year = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+
+    def __repr__(self):
+        return '<Salary: ID {} : {}'.format(self.officer_id, self.salary)
 
 
 class Assignment(db.Model):
@@ -114,8 +175,10 @@ class Assignment(db.Model):
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     baseofficer = db.relationship('Officer')
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
-    rank = db.Column(db.String(120), index=True, unique=False)
-    unit = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
+    job = db.relationship('Job')
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit_types.id'), nullable=True)
+    unit = db.relationship('Unit')
     star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
@@ -296,7 +359,8 @@ class Incident(db.Model):
     __tablename__ = 'incidents'
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, unique=False, index=True)
+    date = db.Column(db.Date, unique=False, index=True)
+    time = db.Column(db.Time, unique=False, index=True)
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey('locations.id'))
@@ -348,7 +412,7 @@ class User(UserMixin, db.Model):
 
     def generate_confirmation_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id})
+        return s.dumps({'confirm': self.id}).decode('utf-8')
 
     def confirm(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -364,7 +428,7 @@ class User(UserMixin, db.Model):
 
     def generate_reset_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id})
+        return s.dumps({'reset': self.id}).decode('utf-8')
 
     def reset_password(self, token, new_password):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -380,7 +444,7 @@ class User(UserMixin, db.Model):
 
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'change_email': self.id, 'new_email': new_email})
+        return s.dumps({'change_email': self.id, 'new_email': new_email}).decode('utf-8')
 
     def change_email(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])

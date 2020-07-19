@@ -3,7 +3,7 @@ import time
 import datetime
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User, db, Department, Location, Link,
-                                      LicensePlate, Incident)
+                                      LicensePlate, Incident, Salary)
 
 
 def test_department_repr(mockdata):
@@ -13,12 +13,15 @@ def test_department_repr(mockdata):
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
-    assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
+    if officer.unique_internal_identifier:
+        assert officer.__repr__() == '<Officer ID {}: {} {} {} {} ({})>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix, officer.unique_internal_identifier)
+    else:
+        assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
 
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.id, assignment.star_no)
+    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.officer.id, assignment.star_no)
 
 
 def test_image_repr(mockdata):
@@ -39,6 +42,11 @@ def test_unit_repr(mockdata):
 def test_user_repr(mockdata):
     user = User(username='bacon')
     assert user.__repr__() == "<User '{}'>".format(user.username)
+
+
+def test_salary_repr(mockdata):
+    salary = Salary.query.first()
+    assert salary.__repr__() == '<Salary: ID {} : {}'.format(salary.officer_id, salary.salary)
 
 
 def test_password_not_printed(mockdata):

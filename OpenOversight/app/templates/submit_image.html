@@ -10,16 +10,16 @@
 <div class="container theme-showcase" role="main">
 
    <div class="page-header">
-      <h1>Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. <small></h1>
+      <h1>Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. </small></h1>
    </div>
 
    <div class="header">
       <h3>What happens when I submit a photograph?</h3>
-      <p class="small">The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
-      {% if not current_user.id %}
-        <p class="small">Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.</p>
+      <p>The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
+      {% if not current_user.get_id() %}
+        <p>Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.</p>
       {% else %}
-        <p class="small">Your user ID will be attached to all photo submissions while you are signed in.</p>
+        <p>Your user ID will be attached to all photo submissions while you are signed in.</p>
       {% endif %}
    </div>
    <h3>Select the department that the police officer in your image belongs to:</h3>
@@ -34,7 +34,7 @@
 
    <form id="my-cop-dropzone" action="/upload/department/1" class='dropzone'>
    </form>
-   <p class="small">Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
+   <p>Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
 
    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
@@ -77,7 +77,7 @@
 
 <div class="container">
    <h3>High Security Submissions</h3>
-   <p class="small">We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a> For high security submissions of photos or videos, you can use an anonymous dropbox called SecureDrop (launch instructions below). All files that we receive through SecureDrop are <a href="https://mat.boum.org/">scrubbed of metadata.</a></p>
+   <p>We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a> For high security submissions of photos or videos, you can use an anonymous dropbox called SecureDrop (launch instructions below). All files that we receive through SecureDrop are <a href="https://mat.boum.org/">scrubbed of metadata.</a></p>
    <a href="https://lucyparsonslabs.com/securedrop"><img src="{{url_for('static', filename='images/securedrop.png')}}"/> Launch SecureDrop Instructions</a>
 </div>
 

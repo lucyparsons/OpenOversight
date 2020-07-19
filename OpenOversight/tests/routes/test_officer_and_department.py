@@ -1,22 +1,26 @@
 # Routing and view tests
+import csv
+import copy
+import json
 import pytest
 import random
-from datetime import datetime
+from datetime import datetime, date
+from io import BytesIO
+from mock import patch, MagicMock
 from flask import url_for, current_app
-from ..conftest import AC_DEPT
-from OpenOversight.app.utils import dept_choices
+from ..conftest import AC_DEPT, RANK_CHOICES_1
+from OpenOversight.app.utils import add_new_assignment, dept_choices, unit_choices
 from OpenOversight.app.main.choices import RACE_CHOICES, GENDER_CHOICES
-from .route_helpers import login_admin, login_ac, process_form_data
-
+from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
 from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           AddOfficerForm, AddUnitForm,
                                           EditOfficerForm, LinkForm,
-                                          EditDepartmentForm, IncidentForm,
-                                          LocationForm, LicensePlateForm,
-                                          BrowseForm)
+                                          EditDepartmentForm, SalaryForm,
+                                          LocationForm, BrowseForm, LicensePlateForm,
+                                          IncidentForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Incident, Assignment
+from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job
 
 
 @pytest.mark.parametrize("route", [
@@ -99,8 +103,9 @@ def test_admin_can_add_officer_badge_number(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=3),
@@ -115,9 +120,9 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
     with current_app.test_request_context():
         login_ac(client)
 
-        form = AssignmentForm(star_no='S1234',
-                              rank='COMMANDER')
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='S1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=officer.id),
@@ -128,17 +133,17 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
         assert 'Added new assignment' in rv.data.decode('utf-8')
 
         # test that assignment exists in database
-        assignment = Officer.query.filter(Officer.assignments.any(star_no='S1234'))
-        assert assignment is not None
+        officer = Officer.query.filter(Officer.assignments.any(star_no='S1234')).first()
+        assert officer is not None
 
 
 def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=officer.id),
@@ -155,26 +160,26 @@ def test_admin_can_edit_officer_badge_number(mockdata, client, session):
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=3).delete()
-
-        form = AssignmentForm(star_no='1234',
-                              rank='COMMANDER')
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no='1234', job_title=job.id)
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=3),
             data=form.data,
             follow_redirects=True
         )
-        # print(rv.data.decode('utf-8'))
+
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>1234</td>' in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no='12345')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no='12345', job_title=job.id)
         officer = Officer.query.filter_by(id=3).one()
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
@@ -191,8 +196,8 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         star_no = '1234'
         new_star_no = '12345'
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        form = AssignmentForm(star_no=star_no,
-                              rank='COMMANDER')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no=star_no, job_title=job.id)
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
@@ -205,13 +210,13 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
-        form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no=new_star_no, job_title=job.id)
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id,
-                    form=form),
+                    assignment_id=officer.assignments[0].id),
             data=form.data,
             follow_redirects=True
         )
@@ -228,8 +233,8 @@ def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client
         star_no = '1234'
         new_star_no = '12345'
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
-        form = AssignmentForm(star_no=star_no,
-                              rank='COMMANDER')
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(star_no=star_no, job_title=job.id)
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
@@ -239,14 +244,14 @@ def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client
             data=form.data,
             follow_redirects=True
         )
-        print(rv.data.decode('utf-8'))
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
 
         login_ac(client)
 
-        form = AssignmentForm(star_no=new_star_no)
         officer = Officer.query.filter_by(id=officer.id).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
+        form = AssignmentForm(star_no=new_star_no, job_title=job.id)
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
@@ -399,8 +404,174 @@ def test_ac_cannot_edit_police_department(mockdata, client, session):
         assert rv.status_code == 403
 
 
-def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client,
-                                                              session):
+def test_admin_can_edit_rank_order(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        ranks_update = ranks.copy()
+        original_first_rank = copy.deepcopy(ranks_update[0])
+        ranks_update[0], ranks_update[1] = ranks_update[1], ranks_update[0]
+        ranks_stringified = [rank.job_title for rank in ranks_update]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_stringified)
+        processed_data = process_form_data(rank_change_form.data)
+
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        assert 'Department Springfield Police Department edited' in rv.data.decode('utf-8')
+        assert updated_ranks[0].job_title == original_first_rank.job_title and updated_ranks[0].order != original_first_rank.order
+
+
+def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        original_ranks = ranks.copy()
+        ranks_update = RANK_CHOICES_1.copy()[:-1]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        result = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
+        assert 'You attempted to delete a rank, Commander, that is in use' in result.data.decode('utf-8')
+        assert len(updated_ranks) == len(original_ranks)
+
+
+def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append(Job(job_title='Temporary Rank',
+                                order=original_ranks_length,
+                                is_sworn_officer=True,
+                                department_id=1))
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-1]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # delete the rank that was added
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length
+
+
+def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append('Temporary Rank 1')
+        ranks_update.append('Temporary Rank 2')
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 2
+
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-2]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # delete the rank that was added
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length
+
+
+def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_use_rank(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        ranks_update = RANK_CHOICES_1.copy()
+        original_ranks_length = len(ranks_update)
+        ranks_update.append(Job(job_title='Temporary Rank',
+                                order=original_ranks_length,
+                                is_sworn_officer=True,
+                                department_id=1))
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # add a new rank
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+        # attempt to delete multiple ranks
+        ranks_update = [job.job_title for job in Department.query.filter_by(name='Springfield Police Department').one().jobs]
+        ranks_update = ranks_update[:-2]
+
+        rank_change_form = EditDepartmentForm(name='Springfield Police Department', short_name='SPD', jobs=ranks_update)
+        processed_data = process_form_data(rank_change_form.data)
+
+        # attempt to delete one rank in use and one rank not in use
+        rv = client.post(
+            url_for('main.edit_department', department_id=1),
+            data=processed_data,
+            follow_redirects=True
+        )
+
+        assert len(Department.query.filter_by(name='Springfield Police Department').one().jobs) == original_ranks_length + 1
+
+
+def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -472,13 +643,14 @@ def test_admin_can_add_new_officer(mockdata, client, session):
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
             LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesterson',
                               middle_initial='T',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -501,6 +673,47 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.gender == 'M'
 
 
+def test_admin_can_add_new_officer_with_unit(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        department = random.choice(dept_choices())
+        unit = random.choice(unit_choices())
+        links = [
+            LinkForm(url='http://www.pleasework.com', link_type='link').data,
+            LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
+        ]
+        job = Job.query.filter_by(department_id=department.id).first()
+        form = AddOfficerForm(first_name='Test',
+                              last_name='McTesterson',
+                              middle_initial='T',
+                              race='WHITE',
+                              gender='M',
+                              star_no=666,
+                              job_title=job.id,
+                              unit=unit.id,
+                              department=department.id,
+                              birth_year=1990,
+                              links=links)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert 'New Officer McTesterson added' in rv.data.decode('utf-8')
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name='McTesterson').one()
+        assert officer.first_name == 'Test'
+        assert officer.race == 'WHITE'
+        assert officer.gender == 'M'
+        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+
+
 def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -510,13 +723,14 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         middle_initial = 'R'
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -539,6 +753,48 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         assert officer.gender == gender
 
 
+def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        unit = random.choice(unit_choices())
+        first_name = 'Testy'
+        last_name = 'OTester'
+        middle_initial = 'R'
+        race = random.choice(RACE_CHOICES)[0]
+        gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
+        form = AddOfficerForm(first_name=first_name,
+                              last_name=last_name,
+                              middle_initial=middle_initial,
+                              race=race,
+                              gender=gender,
+                              star_no=666,
+                              job_title=job.id,
+                              department=department.id,
+                              unit=unit.id,
+                              birth_year=1990)
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert 'New Officer {} added'.format(last_name) in rv.data.decode('utf-8')
+
+        # Check the officer was added to the database
+        officer = Officer.query.filter_by(
+            last_name=last_name).one()
+        assert officer.first_name == first_name
+        assert officer.race == race
+        assert officer.gender == gender
+        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+
+
 def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -548,13 +804,14 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
         middle_initial = 'H'
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -574,20 +831,23 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         department = random.choice(dept_choices())
+        unit = random.choice(unit_choices())
         link_url0 = 'http://pleasework.com'
         link_url1 = 'http://avideo/?v=2345jk'
         links = [
             LinkForm(url=link_url0, link_type='link').data,
             LinkForm(url=link_url0, link_type='video').data
         ]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='Testerinski',
                               middle_initial='T',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department.id,
+                              unit=unit.id,
                               birth_year=1990,
                               links=links)
         data = process_form_data(form.data)
@@ -662,6 +922,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
+        unit = random.choice(unit_choices())
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
@@ -675,8 +936,9 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               race=race,
                               gender=gender,
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
+                              unit=unit.id,
                               birth_year=1990)
 
         data = process_form_data(form.data)
@@ -726,7 +988,7 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -759,7 +1021,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no='T666',
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -859,7 +1121,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title='COMMANDER',
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -883,6 +1145,16 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
         assert officer.suffix == 'Jr'
 
 
+def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        department = Department.query.except_(Department.query.filter_by(id=AC_DEPT)).first()
+        rv = client.post(
+            url_for('main.upload', department_id=department.id, officer_id=department.officers[0].id)
+        )
+        assert rv.status_code == 403
+
+
 def test_officer_csv(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -896,8 +1168,8 @@ def test_officer_csv(mockdata, client, session):
                               suffix='Jr',
                               race='WHITE',
                               gender='M',
-                              star_no=90009,
-                              rank='PO',
+                              star_no='90009',
+                              job_title='2',
                               department=department.id,
                               birth_year=1910,
                               links=links)
@@ -907,20 +1179,49 @@ def test_officer_csv(mockdata, client, session):
             data=process_form_data(form.data),
             follow_redirects=True
         )
-
         assert 'New Officer FVkcjigWUeUyA added' in rv.data.decode('utf-8')
 
         # dump officer csv
         rv = client.get(
-            url_for('main.download_dept_csv', department_id=department.id),
+            url_for('main.download_dept_officers_csv', department_id=department.id),
             follow_redirects=True
         )
-        # get csv entry matching officer last n"createdame
-        csv = list(filter(lambda row: form.last_name.data in row, rv.data.decode('utf-8').split("\n")))
-        assert len(csv) == 1
-        assert form.first_name.data in csv[0]
-        assert form.last_name.data in csv[0]
-        assert form.rank.data in csv[0]
+
+        csv_data = rv.data.decode('utf-8')
+        csv_reader = csv.DictReader(csv_data.split("\n"))
+        added_lines = [row for row in csv_reader if row["last name"] == form.last_name.data]
+        assert len(added_lines) == 1
+        assert form.first_name.data == added_lines[0]["first name"]
+        assert Job.query.get(form.job_title.data).job_title == added_lines[0]["job title"]
+        assert form.star_no.data == added_lines[0]["badge number"]
+
+
+def test_assignments_csv(mockdata, client, session):
+    with current_app.test_request_context():
+        department = random.choice(dept_choices())
+        officer = Officer.query.filter_by(department_id=department.id).first()
+        job = (
+            Job
+            .query
+            .filter_by(department_id=department.id)
+            .filter(Job.job_title != "Not Sure")
+            .first())
+        form = AssignmentForm(star_no='9181', job_title=job, star_date=date(2020, 6, 16))
+        add_new_assignment(officer.id, form)
+        rv = client.get(
+            url_for('main.download_dept_assignments_csv', department_id=department.id),
+            follow_redirects=True
+        )
+        csv_data = rv.data.decode('utf-8')
+        csv_reader = csv.DictReader(csv_data.split("\n"))
+        lines = [row for row in csv_reader if int(row["officer id"]) == officer.id]
+        assert len(lines) == 2
+        assert lines[0]["officer unique identifier"] == officer.unique_internal_identifier
+        assert lines[1]["officer unique identifier"] == officer.unique_internal_identifier
+        new_assignment = [row for row in lines if row["badge number"] == form.star_no.data]
+        assert len(new_assignment) == 1
+        assert new_assignment[0]["start date"] == str(form.star_date.data)
+        assert new_assignment[0]["job title"] == job.job_title
 
 
 def test_incidents_csv(mockdata, client, session):
@@ -964,7 +1265,6 @@ def test_incidents_csv(mockdata, client, session):
 
         # get the csv entry with matching report number
         csv = list(filter(lambda row: report_number in row, rv.data.decode('utf-8').split("\n")))
-        print(csv)
         assert len(csv) == 1
         assert form.description.data in csv[0]
 
@@ -1011,10 +1311,10 @@ def test_browse_filtering_filters_bad(client, mockdata, session):
                     assert not any(bad_substr in token for token in filter_list)
 
                     filter_list = rv.data.decode('utf-8').split("<dt>Rank</dt>")[1:]
-                    if rank == "COMMANDER":
-                        bad_substr = "<dd>PO</dd>"
+                    if rank == "Commander":
+                        bad_substr = "<dd>Police Officer</dd>"
                     else:
-                        bad_substr = "<dd>COMMANDER</dd>"
+                        bad_substr = "<dd>Commander</dd>"
                     assert not any(bad_substr in token for token in filter_list)
 
 
@@ -1028,13 +1328,16 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
             LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        job = Job.query.filter_by(department_id=officer.department_id).first()
+        job_title = job.job_title
         form = AddOfficerForm(first_name='A',
                               last_name='A',
                               middle_initial='A',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              rank='COMMANDER',
+                              job_title=job.id,
                               department=department_id,
                               birth_year=1990,
                               links=links)
@@ -1059,7 +1362,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         # Check that added officer appears when filtering for this race, gender, rank and age
         form = BrowseForm(race='WHITE',
                           gender='M',
-                          rank='COMMANDER',
+                          rank=job_title,
                           min_age=datetime.now().year - 1991,
                           max_age=datetime.now().year - 1989)
 
@@ -1070,15 +1373,116 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             data=data,
             follow_redirects=True
         )
-
         filter_list = rv.data.decode('utf-8').split("<dt>Race</dt>")[1:]
         assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = rv.data.decode('utf-8').split("<dt>Rank</dt>")[1:]
-        assert any("<dd>COMMANDER</dd>" in token for token in filter_list)
+        filter_list = rv.data.decode('utf-8').split("<dt>Job Title</dt>")[1:]
+        assert any("<dd>{}</dd>".format(job_title) in token for token in filter_list)
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
-        assert any("<dd>M</dd>" in token for token in filter_list)
+        assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
+def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, test_jpg_BytesIO):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        data = dict(file=(test_jpg_BytesIO, '204Cat.png'),)
+
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[3]
+        officer_face_count = officer.face.count()
+
+        crop_mock = MagicMock(return_value=Image.query.first())
+        upload_mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
+            with patch('OpenOversight.app.main.views.crop_image', crop_mock):
+                rv = client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert rv.status_code == 200
+                assert b'Success' in rv.data
+                # check that Face was added to database
+                assert officer.face.count() == officer_face_count + 1
+
+
+def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_BytesIO):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        data = dict(file=(test_png_BytesIO, '204Cat.png'),)
+
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        mock = MagicMock(return_value=None)
+        officer = department.officers[0]
+        officer_face_count = officer.face.count()
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+            assert rv.status_code == 500
+            assert b'error' in rv.data
+            # check that Face was not added to database
+            assert officer.face.count() == officer_face_count
+
+
+def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        data = dict(file=(BytesIO(b'my file contents'), "test_cop1.png"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[0]
+        mock = MagicMock(return_value=False)
+        with patch('OpenOversight.app.main.views.allowed_file', mock):
+            rv = client.post(
+                url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                content_type='multipart/form-data',
+                data=data
+            )
+        assert rv.status_code == 415
+        assert b'not allowed' in rv.data
+
+
+def test_user_cannot_upload_officer_photo(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        data = dict(file=(BytesIO(b'my file contents'), "test_cop1.png"),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[0]
+        rv = client.post(
+            url_for('main.upload', department_id=department.id, officer_id=officer.id),
+            content_type='multipart/form-data',
+            data=data
+        )
+        assert rv.status_code == 403
+        assert b'not authorized' in rv.data
+
+
+def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_png_BytesIO):
+    with current_app.test_request_context():
+        login_ac(client)
+        data = dict(file=(test_png_BytesIO, '204Cat.png'),)
+        department = Department.query.filter_by(id=AC_DEPT).first()
+        officer = department.officers[4]
+        officer_face_count = officer.face.count()
+
+        crop_mock = MagicMock(return_value=Image.query.first())
+        upload_mock = MagicMock(return_value=Image.query.first())
+        with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', upload_mock):
+            with patch('OpenOversight.app.main.views.crop_image', crop_mock):
+                rv = client.post(
+                    url_for('main.upload', department_id=department.id, officer_id=officer.id),
+                    content_type='multipart/form-data',
+                    data=data
+                )
+                assert rv.status_code == 200
+                assert b'Success' in rv.data
+                # check that Face was added to database
+                assert officer.face.count() == officer_face_count + 1
 
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):
@@ -1116,3 +1520,221 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
         assert 'Officer Changed edited' in rv.data.decode('utf-8')
         assert officer2.last_name == 'Changed'
         assert officer2.unique_internal_identifier is None
+
+
+def test_admin_can_add_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        assert officer is not None
+
+
+def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_edit_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=1).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=1),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=1).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=1,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=1).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        officer_id = officer.id
+
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Edited officer salary' in rv.data.decode('utf-8')
+        assert '<td>$150,000.00</td>' in rv.data.decode('utf-8')
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert officer.salaries[0].salary == 150000
+
+
+def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
+    with current_app.test_request_context():
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        officer_id = officer.id
+
+        # Remove existing salaries
+        Salary.query.filter_by(officer_id=officer_id).delete()
+
+        form = SalaryForm(
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False)
+
+        login_admin(client)
+        rv = client.post(
+            url_for('main.add_salary', officer_id=officer_id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'Added new salary' in rv.data.decode('utf-8')
+        assert '<td>$123,456.78</td>' in rv.data.decode('utf-8')
+
+        login_ac(client)
+        form = SalaryForm(salary=150000)
+        officer = Officer.query.filter_by(id=officer_id).one()
+
+        rv = client.post(
+            url_for('main.edit_salary', officer_id=officer_id,
+                    salary_id=officer.salaries[0].id,
+                    form=form),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+        officer = Officer.query.filter_by(id=officer_id).one()
+        assert float(officer.salaries[0].salary) == 123456.78
+
+
+def test_get_department_ranks_with_specific_department_id(mockdata, client, session):
+    with current_app.test_request_context():
+        department = Department.query.first()
+        rv = client.get(
+            url_for('main.get_dept_ranks', department_id=department.id),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        data = [x[1] for x in data]
+        assert 'Commander' in data
+
+        assert data.count('Commander') == 1
+
+
+def test_get_department_ranks_with_no_department(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(
+            url_for('main.get_dept_ranks'),
+            follow_redirects=True
+        )
+        data = json.loads(rv.data.decode('utf-8'))
+        data = [x[1] for x in data]
+        assert 'Commander' in data
+
+        assert data.count('Commander') == 2  # Once for each test department

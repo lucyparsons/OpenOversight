@@ -1,5 +1,9 @@
 version: "3"
 
+volumes:
+  postgres:
+    driver: local
+
 services:
  postgres:
    restart: always
@@ -9,7 +13,7 @@ services:
      POSTGRES_PASSWORD: terriblepassword
      POSTGRES_DB: openoversight-dev
    volumes:
-     - ./container_data/postgres:/var/lib/postgresql/data
+     - postgres:/var/lib/postgresql/data
    ports:
      - "5432:5432"
 
@@ -17,6 +21,9 @@ services:
    restart: always
    build:
       context: .
+      args:
+      - DOCKER_BUILD_ENV
+      - TRAVIS_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
@@ -28,10 +35,11 @@ services:
      FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+   user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
    links:
      - postgres:postgres
    expose:
      - "3000"
-   command: flask run --host=0.0.0.0 --port=3000
+   command: scripts/entrypoint.sh
    ports:
      - "3000:3000"

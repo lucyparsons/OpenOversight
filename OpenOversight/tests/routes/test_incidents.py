@@ -1,7 +1,8 @@
 # Routing and view tests
 import pytest
-from datetime import datetime, date
+from datetime import datetime, date, time
 from flask import url_for, current_app
+from sqlalchemy.orm import joinedload
 from OpenOversight.tests.conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac, process_form_data
 
@@ -80,16 +81,20 @@ def test_admins_can_create_basic_incidents(mockdata, client, session):
         assert rv.status_code == 200
         assert 'created' in rv.data.decode('utf-8')
 
-        inc = Incident.query.filter_by(date=date).first()
+        inc = Incident.query.filter_by(date=date.date()).first()
         assert inc is not None
 
 
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        inc = Incident.query.first()
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
         inc_id = inc.id
-        new_date = datetime(2017, 6, 25, 1, 45)
+        new_date = date(2017, 6, 25)
+        new_time = time(1, 45)
         street_name = 'Newest St'
         address_form = LocationForm(
             street_name=street_name,
@@ -103,8 +108,8 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(new_date.date()),
-            time_field=str(new_date.time()),
+            date_field=str(new_date),
+            time_field=str(new_time),
             report_number=inc.report_number,
             description=inc.description,
             department='1',
@@ -124,13 +129,17 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         assert 'successfully updated' in rv.data.decode('utf-8')
         updated = Incident.query.get(inc_id)
         assert updated.date == new_date
+        assert updated.time == new_time
         assert updated.address.street_name == street_name
 
 
 def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        inc = Incident.query.first()
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
 
         address_form = LocationForm(
             street_name=inc.address.street_name,
@@ -150,8 +159,8 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(inc.date.date()),
-            time_field=str(inc.date.time()),
+            date_field=str(inc.date),
+            time_field=str(inc.time),
             report_number=inc.report_number,
             description=inc.description,
             department='1',
@@ -182,7 +191,10 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
 def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        inc = Incident.query.first()
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
 
         address_form = LocationForm(
             street_name=inc.address.street_name,
@@ -196,7 +208,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
 
         form = IncidentForm(
             date_field=date(1899, 12, 5),
-            time_field=str(inc.date.time()),
+            time_field=str(inc.time),
             report_number=inc.report_number,
             description=inc.description,
             department='1',
@@ -303,7 +315,10 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(mockdata, 
 def test_admins_can_edit_incident_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        inc = Incident.query.first()
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
 
         address_form = LocationForm(
             street_name=inc.address.street_name,
@@ -324,8 +339,8 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         new_ooid_form = OOIdForm(oo_id=new_officer.id)
 
         form = IncidentForm(
-            date_field=str(inc.date.date()),
-            time_field=str(inc.date.time()),
+            date_field=str(inc.date),
+            time_field=str(inc.time),
             report_number=inc.report_number,
             description=inc.description,
             department='1',
@@ -351,7 +366,10 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
 def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        inc = Incident.query.first()
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
 
         address_form = LocationForm(
             street_name=inc.address.street_name,
@@ -371,8 +389,8 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
         new_ooid_form = OOIdForm(oo_id="99999999999999999")
 
         form = IncidentForm(
-            date_field=str(inc.date.date()),
-            time_field=str(inc.date.time()),
+            date_field=str(inc.date),
+            time_field=str(inc.time),
             report_number=inc.report_number,
             description=inc.description,
             department='1',
@@ -431,7 +449,8 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         )
         assert rv.status_code == 200
         assert 'successfully updated' in rv.data.decode('utf-8')
-        assert inc.date == new_date
+        assert inc.date == new_date.date()
+        assert inc.time == new_date.time()
         assert inc.address.street_name == street_name
 
 
@@ -548,10 +567,11 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
             url_for('main.incident_api', department_id=department.id))
 
         # Requires that report numbers in test data not include other report numbers
+        # Tests for report numbers in table formatting, because testing for the raw report number can get false positives due to html encoding
         for incident in department_incidents:
-            assert incident.report_number in rv.data.decode('utf-8')
+            assert '<td>{}</td>'.format(incident.report_number) in rv.data.decode('utf-8')
         for incident in non_department_incidents:
-            assert incident.report_number not in rv.data.decode('utf-8')
+            assert '<td>{}</td>'.format(incident.report_number) not in rv.data.decode('utf-8')
 
 
 def test_admins_can_see_who_created_incidents(mockdata, client, session):

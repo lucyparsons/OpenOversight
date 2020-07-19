@@ -56,11 +56,11 @@
               </tr>
               <tr>
                 <td><b>Race</b></td>
-                <td>{{ officer.race }}</td>
+                <td>{{ officer.race_label() }}</td>
               </tr>
               <tr>
                 <td><b>Gender</b></td>
-                <td>{{ officer.gender }}</td>
+                <td>{{ officer.gender_label() }}</td>
               </tr>
               <tr>
                 <td><b>Birth Year (Age)</b></td>
@@ -76,13 +76,20 @@
       </div>
     </div> {# end col #}
   </div> {# end row #}
-
+  <div class="row">
+    <div class="col-sm-6">
+      {% if current_user.is_administrator
+                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a class="btn btn-primary" href={{ url_for('main.submit_officer_images', officer_id=officer.id) }}>Add photos of this officer</a>
+      {% endif %}
+    </div> {# end col #}
+  </div> {# end row #}
   <div class="row">
     <div class="col-sm-12 col-md-6">
       <h3>Assignment History</h3>
       <table class="table table-hover">
           <tr>
-            <th><b>Rank</b></th>
+            <th><b>Job Title</b></th>
             <th><b>Badge No.</b></th>
             <th><b>Unit</b></th>
             <th><b>Assignment Date</b></th>
@@ -92,16 +99,34 @@
             {% endif %}
           </tr>
         <tbody>
-          {% for assignment in assignments %}
+          {% for assignment in assignments|rejectattr('star_date','ne',None) %}
           <tr>
-            <td>{{ assignment.rank }}</td>
+            <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
-            <td>{% if assignment.unit: %}
-                {{ assignment.unit }}
+            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
+            <td>{% if assignment.star_date: %}
+                {{ assignment.star_date }}
                 {% else %}
                 Unknown
                 {% endif %}
             </td>
+            <td>
+              {% if current_user.is_administrator
+                  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+              <a href="{{ url_for('main.edit_assignment', officer_id=officer.id,
+                          assignment_id=assignment.id) }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% for assignment in assignments|rejectattr('star_date','none')|sort(attribute='star_date',reverse=True) %}
+          <tr>
+            <td>{{ assignment.job.job_title }}</td>
+            <td>{{ assignment.star_no }}</td>
+            <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
                 {% else %}
@@ -141,9 +166,9 @@
           </tr>
 
           <tr>
-            <td><b>New rank:</b></td>
-            <td>{{ form.rank }}
-                  {% for error in form.rank.errors %}
+            <td><b>New job title:</b></td>
+            <td>{{ form.job_title }}
+                  {% for error in form.job_title.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
             </td>
@@ -178,6 +203,62 @@
       </table>
       {% endif %}
     </div> {# end col #}
+
+    {% if officer.salaries or current_user.is_administrator or
+	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+  	<div class='col-sm-12 col-md-6'>
+    	<h3>Salary</h3>
+      {% if officer.salaries %}
+      <table class="table table-hover">
+          <tr>
+            <th><b>Annual Salary</b></th>
+            <th><b>Overtime</b></th>
+            <th><b>Total Pay</b></th>
+            <th><b>Year</b></th>
+            {% if current_user.is_administrator
+              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <th><b>Edit</b></th>
+            {% endif %}
+          </tr>
+        <tbody>
+          {% for salary in officer.salaries %}
+          <tr>
+            <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+            {% if salary.overtime_pay %}
+              {% if salary.overtime_pay > 0 %}
+              <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+              {% else %}
+              <td></td>
+              {% endif %}
+            <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
+            {% else %}
+            <td></td>
+            <td></td>
+            {% endif %}
+            <td>{% if salary.is_fiscal_year: %}FY {% endif %}{{ salary.year }}</td>
+
+            {% if current_user.is_administrator
+                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+            <td>
+              <a href="{{ url_for('main.edit_salary', officer_id=officer.id,
+                          salary_id=salary.id) }}">
+                <span class='sr-only'>Edit</span>
+                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    	{% if current_user.is_administrator
+        	or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
+      <a href="{{ url_for('main.add_salary', officer_id=officer.id) }}" class='btn btn-primary'>New Salary</a>
+    	{% endif %}
+  	</div>{# end col #}
+    {% endif %}
+
     {% if officer.incidents or current_user.is_administrator or
 	  (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
   	<div class='col-sm-12 col-md-6'>
@@ -188,15 +269,15 @@
         	<li class="list-group-item">
           	<h4>
               	<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
-              	Incident {{ incident.report_number }}
-            	</a>
+              	  Incident {{ incident.report_number }}
+            	  </a>
             	{% if current_user.is_administrator
               	or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
              	<a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
               	<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
             	</a>
             	{% endif %}
-          	</h4>
+            </h4>
           	{% include 'partials/incident_fields.html' %}
         	</li>
       	{% endfor %}
@@ -219,7 +300,7 @@
                 <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br/>
                 {{ description.text_contents }} <br/>
                 <em>{{ description.creator.username }} </em>
-             {% if description.creator_id == current_user.id or current_user.is_administrator %}
+             {% if description.creator_id == current_user.get_id() or current_user.is_administrator %}
                 <a href="{{ url_for('main.description_api', officer_id=officer.id,
                          obj_id=description.id) + '/edit' }}">
                 <span class='sr-only'>Edit</span>
@@ -251,7 +332,7 @@
               <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
               {{ note.text_contents }} <br/>
               <em>{{ note.creator.username }} </em>
-            {% if note.creator_id == current_user.id or current_user.is_administrator %}
+            {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
               <a href="{{ url_for('main.note_api', officer_id=officer.id,
                         obj_id=note.id) + '/edit' }}">
                 <span class='sr-only'>Edit</span>
