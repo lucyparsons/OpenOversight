@@ -456,7 +456,7 @@ def department_with_ranks(department, session):
 
 @pytest.fixture
 def csv_path(tmp_path):
-    return os.path.join(tmp_path, "file.csv")
+    return os.path.join(str(tmp_path), "file.csv")
 
 
 @pytest.fixture
