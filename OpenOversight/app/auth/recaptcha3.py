@@ -119,7 +119,7 @@ class Recaptcha3Widget(HiddenInput):
         try:
             public_key = current_app.config[public_key_name]
         except KeyError:
-            raise RuntimeError(f"{public_key_name} is not set in app config.")
+            raise RuntimeError("{} is not set in app config.".format(public_key_name))
 
         return Markup(
             (RECAPTCHA_TEMPLATE if field.execute_on_load else RECAPTCHA_TEMPLATE_MANUAL).format(
