@@ -22,6 +22,6 @@ before_script:
   - sudo service postgresql stop
 script:
   - sudo make test
-  - flake8 --ignore=E501,E722,W504
+  - flake8 --ignore=E501,E722,W504,W503
 after_success:
   - coveralls
