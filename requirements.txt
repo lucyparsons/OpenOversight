@@ -7,7 +7,7 @@ Flask-Limiter==1.0.1
 Flask-Login==0.4.1
 Flask-Mail==0.9.1
 Flask-Migrate==2.1.1
-Flask-SQLAlchemy==2.4.3
+Flask-SQLAlchemy==2.4.4
 Flask-WTF==0.14.3
 Pillow==5.2.0
 psycopg2==2.8.5 --no-binary psycopg2
