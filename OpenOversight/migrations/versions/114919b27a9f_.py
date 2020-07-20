@@ -37,9 +37,9 @@ def downgrade():
     op.create_index('ix_officers_pd_id', 'officers', ['pd_id'], unique=False)
     op.drop_column('officers', 'department_id')
     op.create_table('migrate_version',
-    sa.Column('repository_id', sa.VARCHAR(length=250), autoincrement=False, nullable=False),
-    sa.Column('repository_path', sa.TEXT(), autoincrement=False, nullable=True),
-    sa.Column('version', sa.INTEGER(), autoincrement=False, nullable=True),
-    sa.PrimaryKeyConstraint('repository_id', name=u'migrate_version_pkey')
+                    sa.Column('repository_id', sa.VARCHAR(length=250), autoincrement=False, nullable=False),
+                    sa.Column('repository_path', sa.TEXT(), autoincrement=False, nullable=True),
+                    sa.Column('version', sa.INTEGER(), autoincrement=False, nullable=True),
+                    sa.PrimaryKeyConstraint('repository_id', name=u'migrate_version_pkey')
     )  # noqa
     # ### end Alembic commands ###
