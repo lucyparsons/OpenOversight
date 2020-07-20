@@ -19,6 +19,7 @@ from .recaptcha3 import is_recaptcha_enabled
 def before_request():
     if current_user.is_authenticated \
             and not current_user.confirmed \
+            and request.endpoint \
             and request.endpoint[:5] != 'auth.' \
             and request.endpoint != 'static':
         return redirect(url_for('auth.unconfirmed'))
