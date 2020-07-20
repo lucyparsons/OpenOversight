@@ -12,6 +12,7 @@ from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     EditUserForm
 from .utils import admin_required
 from ..utils import set_dynamic_default
+from .recaptcha3 import is_recaptcha_enabled
 
 
 @auth.before_app_request
@@ -55,11 +56,12 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    recaptcha = current_app.config['RECAPTCHA_PUBLIC_KEY'] and current_app.config['RECAPTCHA_PRIVATE_KEY']
     if current_app.config['DISABLE_REGISTRATION']:
         return render_template('auth/register.html', registration_enabled=False)
     jsloads = ['js/zxcvbn.js', 'js/password.js']
     form = RegistrationForm()
+    if is_recaptcha_enabled():
+        form.recaptcha.score_threshold = current_app.config['RECAPTCHA3_THRESHOLD']
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
@@ -80,7 +82,7 @@ def register():
                        'auth/email/confirm', user=user, token=token)
             flash('A confirmation email has been sent to you.')
         return redirect(url_for('auth.login'))
-    return render_template('auth/register.html', form=form, jsloads=jsloads, registration_enabled=True, recaptcha=recaptcha)
+    return render_template('auth/register.html', form=form, jsloads=jsloads, registration_enabled=True)
 
 
 @auth.route('/confirm/<token>')
