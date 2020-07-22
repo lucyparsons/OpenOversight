@@ -52,7 +52,7 @@ def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
         seed = str(uuid.uuid4()).encode('utf-8')
 
     return datetime.datetime(start_year, 1, 1, 00, 00, 00) \
-           + datetime.timedelta(days=365 * (end_year - start_year) * bytes_to_float(seed))
+        + datetime.timedelta(days=365 * (end_year - start_year) * bytes_to_float(seed))
 
 
 def pick_race():

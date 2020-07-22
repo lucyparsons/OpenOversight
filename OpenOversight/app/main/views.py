@@ -664,11 +664,11 @@ def list_unit(unit_id, page=1, race=[], gender=[], rank=[], min_age='16', max_ag
     if request.args.get('page'):
         page = int(request.args.get('page'))
 
-    unit: Unit = Unit.query.filter_by(id=unit_id).options(joinedload(Unit.department)).first()
+    unit = Unit.query.filter_by(id=unit_id).options(joinedload(Unit.department)).first()
     if not unit:
         abort(404)
 
-    department: Department = unit.department if unit else None
+    department = unit.department if unit else None
     department_id = unit.department_id
 
     form, form_data, choices = get_form_and_choices(department_id, race, gender, rank, min_age, max_age, name, badge, unique_internal_identifier)

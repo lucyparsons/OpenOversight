@@ -252,9 +252,12 @@ def process_assignment(row, officer, compare=False):
                 for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
-                    if (current and fieldname in row and row[fieldname] == current) or \
-                            (not current and (fieldname not in row or not row[fieldname])):
-                        i += 1
+                    try:
+                        if (current and fieldname in row and str(row[fieldname]) == str(current)) or \
+                                (not current and (fieldname not in row or not row[fieldname])):
+                            i += 1
+                    except ValueError as e:
+                        print('Problem comparing key via string casting: {} \n {}'.format(fieldname, e))
                 if i == len(assignment_fieldnames):
                     job_title = job.job_title
                     if (job_title and 'job_title' in row and row['job_title'] == job_title) or \
