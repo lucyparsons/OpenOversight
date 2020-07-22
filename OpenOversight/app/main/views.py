@@ -599,7 +599,7 @@ def add_unit():
         db.session.add(unit)
         db.session.commit()
         flash('New unit {} added to OpenOversight'.format(unit.descrip))
-        return redirect(url_for('main.view_unit.{}'.format(unit.id)))
+        return redirect(url_for('main.list_unit', unit_id=unit.id))
     else:
         return render_template('add_unit.html', form=form)
 

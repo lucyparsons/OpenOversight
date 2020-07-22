@@ -39,9 +39,20 @@ def pick_birth_date():
     return random.randint(1950, 2000)
 
 
-def pick_date(start_year=2000, end_year=2020):
+def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
+    # source: https://stackoverflow.com/questions/40351791/how-to-hash-strings-into-a-float-in-01
+    # Wanted to deterministically create a date from a seed string (e.g. the hash or uuid on an officer object)
+    from struct import unpack
+    from hashlib import sha256
+
+    def bytes_to_float(b):
+        return float(unpack('L', sha256(b).digest()[:8])[0]) / 2 ** 64
+
+    if seed is None:
+        seed = str(uuid.uuid4()).encode('utf-8')
+
     return datetime.datetime(start_year, 1, 1, 00, 00, 00) \
-           + datetime.timedelta(days=365 * (end_year - start_year) * random.random())
+           + datetime.timedelta(days=365 * (end_year - start_year) * bytes_to_float(seed))
 
 
 def pick_race():
@@ -102,7 +113,9 @@ def generate_officer():
 
 def build_assignment(officer: Officer, unit: Unit, jobs: Job):
     return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
-                             officer=officer, unit_id=unit.id, star_date=pick_date(), resign_date=pick_date())
+                             officer=officer, unit_id=unit.id,
+                             star_date=pick_date(officer.full_name().encode('utf-8')),
+                             resign_date=pick_date(officer.full_name().encode('utf-8')))
 
 
 def build_note(officer, user):
