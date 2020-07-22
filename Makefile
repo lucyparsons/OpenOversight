@@ -44,6 +44,10 @@ test: start  ## Run tests
 	    else FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
 	fi
 
+.PHONY: lint
+lint: start
+	docker-compose run --rm web flake8
+
 .PHONY: cleanassets
 cleanassets:
 	rm -rf ./OpenOversight/app/static/dist/

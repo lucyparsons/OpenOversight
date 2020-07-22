@@ -12,6 +12,8 @@ Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the descript
 
  `flake8` is a tool for automated linting and style checks. Be sure to run `flake8` and fix any errors before submitting a PR.
 
+ You can run it with `make lint` to execute flake8 from the docker containers.
+
 ## Development Environment
 
 You can use our Docker-compose environment to stand up a development OpenOversight.
@@ -28,6 +30,8 @@ To hop into the postgres container, you can do the following:
 $ docker exec -it openoversight_postgres_1 /bin/bash
 # psql -d openoversight-dev -U openoversight
 ```
+
+or run `make attach`.
 
 Similarly to hop into the web container:
 
