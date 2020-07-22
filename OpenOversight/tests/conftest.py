@@ -451,6 +451,33 @@ def mockdata(session):
 
 
 @pytest.fixture
+def department(session):
+    department = models.Department(name='Springfield Police Department',
+                                   short_name='SPD', unique_internal_identifier_label='homer_number')
+    session.add(department)
+    session.commit()
+    return department
+
+
+@pytest.fixture
+def department_with_ranks(department, session):
+    for order, rank in enumerate(RANK_CHOICES_1):
+        session.add(models.Job(
+            job_title=rank,
+            order=order,
+            is_sworn_officer=True,
+            department=department
+        ))
+    session.commit()
+    return department
+
+
+@pytest.fixture
+def csv_path(tmp_path):
+    return os.path.join(str(tmp_path), "file.csv")
+
+
+@pytest.fixture
 def csvfile(mockdata, tmp_path, request):
     csv_path = tmp_path / "dept1.csv"
 

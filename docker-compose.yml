@@ -23,6 +23,7 @@ services:
       context: .
       args:
       - DOCKER_BUILD_ENV
+      - TRAVIS_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
