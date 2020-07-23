@@ -253,6 +253,9 @@ def process_assignment(row, officer, compare=False):
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
                     try:
+                        if 'unit_id' == fieldname and type(row.get(fieldname)) == str:
+                            row[fieldname] = float(row[fieldname])
+                            current = float(current)
                         if (current and fieldname in row and str(row[fieldname]) == str(current)) or \
                                 (not current and (fieldname not in row or not row[fieldname])):
                             i += 1
