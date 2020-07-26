@@ -1,0 +1,4 @@
+id,department id,date,time,report number,description,street,cross street1,cross street2,city,state,zip code,license plates,officer_ids,creator id,last updated id
+,1,2020-07-20,06:30,CR1234,Something happened,,East Ave,Main St,Chicago,IL,60603,ABC123_NY|98UMC_IL,#1|49483,,
+#I1,1,,,,Something happened,Fake Street,,,Chicago,IL,60603,,#1,,
+123456,1,,,New_Report_Number,description,,,,,,,,#1,,

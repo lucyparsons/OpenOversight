@@ -1,0 +1,5 @@
+id,department id,first name,last name,middle initial,suffix,race,gender,employment date,birth year,unique_internal_identifier
+#1,1,Mark,Smith,O,,White,M,07-12-2019,1984,UID-1
+#2,1,Claire,Fuller,,III,White,F,02-29-2020,1980,UID-2
+,1,Robert,Brown,J,,Black,M,01-01-2018,1982,UID-3
+49483,1,Already,InDatabase,,,Hispanic,Other,,1952,UID-4

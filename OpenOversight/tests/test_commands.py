@@ -1,14 +1,20 @@
 import csv
+import datetime
+import operator
+import os
 import traceback
 import uuid
 
+from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 import pandas as pd
 import pytest
-from click.testing import CliRunner
-from OpenOversight.app.commands import add_department, add_job_title, bulk_add_officers
-from OpenOversight.app.models import Assignment, Department, Job, Officer, Salary
+from OpenOversight.app.commands import (add_department, add_job_title,
+                                        bulk_add_officers,
+                                        load_csv_into_database)
+from OpenOversight.app.models import (Assignment, Department, Incident, Job,
+                                      Link, Officer, Salary)
 from OpenOversight.app.utils import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
@@ -736,3 +742,122 @@ def test_bulk_add_officers__no_create_flag(session, department, csv_path):
     officer = Officer.query.filter_by(department_id=department_id).one()
     assert officer.unique_internal_identifier == officer_uuid
     assert officer.gender == officer_gender_updated
+
+
+def test_load_csv_into_database(session, department_with_ranks, test_csv_dir):
+    assert department_with_ranks.id == 1
+    officer = Officer(
+        id=49483,
+        department_id=1,
+        first_name="Already",
+        last_name="InDatabase",
+        birth_year=1951,
+    )
+    session.add(officer)
+
+    incident = Incident(
+        id=123456,
+        report_number="Old_Report_Number",
+        department_id=1,
+        description="description",
+    )
+    incident.officers = [officer]
+    session.add(incident)
+
+    link = Link(title="Existing Link", url="https://www.example.org")
+    session.add(link)
+    officer.links.append(link)
+
+    run_command_print_output(
+        load_csv_into_database,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            os.path.join(test_csv_dir, "officers.csv"),
+            "--assignments-csv",
+            os.path.join(test_csv_dir, "assignments.csv"),
+            "--salaries-csv",
+            os.path.join(test_csv_dir, "salaries.csv"),
+            "--links-csv",
+            os.path.join(test_csv_dir, "links.csv"),
+            "--incidents-csv",
+            os.path.join(test_csv_dir, "incidents.csv"),
+        ],
+    )
+
+    print(list(Officer.query.all()))
+    all_officers = {
+        officer.unique_internal_identifier: officer
+        for officer in Officer.query.filter_by(department_id=1).all()
+    }
+    cop1 = all_officers["UID-1"]
+    assert cop1.first_name == "Mark"
+    assert cop1.last_name == "Smith"
+    assert cop1.gender == "M"
+    assert cop1.race == "WHITE"
+    assert cop1.employment_date == datetime.date(2019, 7, 12)
+    assert cop1.birth_year == 1984
+    assert cop1.middle_initial == "O"
+    assert cop1.suffix is None
+
+    salary_2018, salary_2019 = sorted(cop1.salaries, key=operator.attrgetter("year"))
+    assert salary_2018.year == 2018
+    assert salary_2018.salary == 10000
+    assert salary_2018.is_fiscal_year is True
+    assert salary_2018.overtime_pay is None
+    assert salary_2019.salary == 10001
+
+    assignment_po, assignment_cap = sorted(
+        cop1.assignments, key=operator.attrgetter("star_date")
+    )
+    assert assignment_po.star_no == "1234"
+    assert assignment_po.star_date == datetime.date(2019, 7, 12)
+    assert assignment_po.resign_date == datetime.date(2020, 1, 1)
+    assert assignment_po.job.job_title == "Police Officer"
+    assert assignment_po.unit_id is None
+
+    assert assignment_cap.star_no == "2345"
+    assert assignment_cap.job.job_title == "Captain"
+
+    cop2 = all_officers["UID-2"]
+    assert cop2.first_name == "Claire"
+    assert cop2.last_name == "Fuller"
+    assert cop2.suffix == "III"
+
+    assert len(cop2.salaries) == 1
+    assert cop2.salaries[0].salary == 20000
+
+    assert len(cop2.assignments.all()) == 1
+    assert cop2.assignments[0].job.job_title == "Commander"
+
+    cop3 = all_officers["UID-3"]
+    assert cop3.first_name == "Robert"
+    assert cop3.last_name == "Brown"
+
+    assert len(cop3.assignments.all()) == 0
+    assert len(cop3.salaries) == 0
+
+    cop4 = all_officers["UID-4"]
+    assert cop4.first_name == "Already"
+    assert cop4.birth_year == 1952
+    assert cop4.gender == "Other"
+
+    assert len(cop4.assignments.all()) == 1
+    assert cop4.assignments[0].job.job_title == "Police Officer"
+    incident = cop4.incidents[0]
+    assert incident.report_number == "CR1234"
+    license_plates = {plate.state: plate.number for plate in incident.license_plates}
+    assert license_plates["NY"] == "ABC123"
+    assert license_plates["IL"] == "98UMC"
+
+    incident3 = Incident.query.filter_by(id=123456).one()
+    assert incident3.report_number == "New_Report_Number"
+    assert incident3.description == "description"
+    assert incident3.officers == [cop1]
+
+    link_existing, link_new = sorted(cop4.links, key=operator.attrgetter("id"))
+    assert link_existing.title == "Existing Link"
+    assert [link_new] == list(cop1.links)
+    assert link_new.title == "A Link"
+    assert link_new.url == "https://www.example.com"
+    assert {officer.id for officer in link_new.officers} == {cop1.id, cop4.id}

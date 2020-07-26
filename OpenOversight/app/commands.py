@@ -9,8 +9,17 @@ import click
 from flask.cli import with_appcontext
 from flask import current_app
 
-from .models import db, Assignment, Department, Officer, User, Salary, Job
+from .models import db, Assignment, Department, Officer, User, Salary, Job, Link, Incident
 from .utils import get_officer, str_is_true
+
+from OpenOversight.app.model_imports import (
+    create_officer_from_dict, update_officer_from_dict,
+    create_assignment_from_dict, update_assignment_from_dict,
+    create_salary_from_dict, update_salary_from_dict,
+    create_link_from_dict, update_link_from_dict,
+    create_incident_from_dict, update_incident_from_dict,
+    get_or_create_license_plate_from_dict, get_or_create_location_from_dict
+)
 
 
 @click.command()
@@ -409,6 +418,275 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
         ImportLog.print_logs()
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
+
+
+def _create_or_update_model(
+    row, existing_model_lookup, create_method, update_method, force_create
+):
+    if not row["id"]:
+        return create_method(row)
+    else:
+        if not force_create:
+            return update_method(row, existing_model_lookup[int(row["id"])])
+        else:
+            model = existing_model_lookup.get(int(row["id"]))
+            if model:
+                db.session.delete(model)
+                db.session.flush()
+            return create_method(row, force_id=True)
+
+
+def _check_required_fields(dict_reader, required_fields, csv_name):
+    for field in required_fields:
+        if field not in dict_reader.fieldnames:
+            raise Exception(
+                "'{}' is a mandatory field in {} csv.".format(field, csv_name)
+            )
+
+
+def _objects_from_split_field(field, model_lookup):
+    if field:
+        return [model_lookup[object_id] for object_id in field.split("|")]
+    return []
+
+
+@click.command()
+@click.argument("department-name")
+@click.option("--officers-csv")
+@click.option("--assignments-csv")
+@click.option("--salaries-csv")
+@click.option("--links-csv")
+@click.option("--incidents-csv")
+@click.option("--force-create", is_flag=True, help="Only for development/testing!")
+@with_appcontext
+def load_csv_into_database(
+    department_name,
+    officers_csv,
+    assignments_csv,
+    salaries_csv,
+    links_csv,
+    incidents_csv,
+    force_create,
+):
+    """Add or update officers from a CSV file.
+    The CSV file is treated as the sole source of truth!!"""
+    if force_create and current_app.config["ENV"] == "production":
+        raise Exception("--force-create cannot be used in production!")
+    department_id = Department.query.filter_by(name=department_name).one().id
+
+    new_officers = {}
+    existing_officers = Officer.query.filter_by(department_id=department_id).all()
+    id_to_officer = {officer.id: officer for officer in existing_officers}
+
+    counter = 0
+    if officers_csv is not None:
+        with open(officers_csv) as f:
+            csv_reader = csv.DictReader(f)
+            field_names = [
+                field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
+            ]
+            csv_reader.fieldnames = field_names
+            _check_required_fields(csv_reader, ["id", "department_id"], "officers")
+
+            for row in csv_reader:
+                assert department_id == int(
+                    row["department_id"]
+                )  # can only update department with given name
+                connection_id = None
+                if row["id"].startswith("#"):
+                    connection_id = row["id"]
+                    row["id"] = ""
+                officer = _create_or_update_model(
+                    row=row,
+                    existing_model_lookup=id_to_officer,
+                    create_method=create_officer_from_dict,
+                    update_method=update_officer_from_dict,
+                    force_create=force_create,
+                )
+                if connection_id is not None:
+                    new_officers[connection_id] = officer
+                counter += 1
+                if counter % 100 == 0:
+                    print("Processed {} officers.".format(counter))
+        print("Done with officers. Processed {} rows.".format(counter))
+
+    all_officers = {str(k): v for k, v in id_to_officer.items()}
+    all_officers.update(new_officers)
+
+    counter = 0
+    if assignments_csv is not None:
+        with open(assignments_csv) as f:
+            csv_reader = csv.DictReader(f)
+            field_names = [
+                field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
+            ]
+            if "start_date" in field_names:
+                field_names[field_names.index("start_date")] = "star_date"
+            csv_reader.fieldnames = field_names
+            _check_required_fields(
+                csv_reader, ["id", "officer_id", "job_title"], "assignments"
+            )
+            jobs_for_department = list(
+                Job.query.filter_by(department_id=department_id).all()
+            )
+            job_title_to_id = {job.job_title: job.id for job in jobs_for_department}
+            existing_assignments = (
+                Assignment.query.join(Assignment.baseofficer)
+                .filter(Officer.department_id == department_id)
+                .all()
+            )
+            id_to_assignment = {
+                assignment.id: assignment for assignment in existing_assignments
+            }
+            for row in csv_reader:
+                job_id = job_title_to_id.get(row["job_title"])
+                if job_id is None:
+                    raise Exception(
+                        "Job title {} not found for department.".format(
+                            row["job_title"]
+                        )
+                    )
+                row["job_id"] = job_id
+                if row["officer_id"].startswith("#"):
+                    row["officer_id"] = new_officers[row["officer_id"]].id
+                _create_or_update_model(
+                    row=row,
+                    existing_model_lookup=id_to_assignment,
+                    create_method=create_assignment_from_dict,
+                    update_method=update_assignment_from_dict,
+                    force_create=force_create,
+                )
+                counter += 1
+                if counter % 100 == 0:
+                    print("Processed {} assignments.".format(counter))
+        print("Done with assignments. Processed {} rows.".format(counter))
+
+    counter = 0
+    if salaries_csv is not None:
+        with open(salaries_csv) as f:
+            csv_reader = csv.DictReader(f)
+            field_names = [
+                field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
+            ]
+            csv_reader.fieldnames = field_names
+            _check_required_fields(
+                csv_reader, ["id", "officer_id", "salary", "year"], "salaries"
+            )
+            existing_salaries = (
+                Salary.query.join(Salary.officer)
+                .filter(Officer.department_id == department_id)
+                .all()
+            )
+            id_to_salary = {salary.id: salary for salary in existing_salaries}
+            for row in csv_reader:
+                if row["officer_id"].startswith("#"):
+                    row["officer_id"] = new_officers[row["officer_id"]].id
+                _create_or_update_model(
+                    row=row,
+                    existing_model_lookup=id_to_salary,
+                    create_method=create_salary_from_dict,
+                    update_method=update_salary_from_dict,
+                    force_create=force_create,
+                )
+                counter += 1
+                if counter % 100 == 0:
+                    print("Processed {} salaries.".format(counter))
+        print("Done with salaries. Processed {} rows.".format(counter))
+
+    if incidents_csv is not None or links_csv is not None:
+        existing_incidents = Incident.query.filter_by(department_id=department_id).all()
+        id_to_incident = {incident.id: incident for incident in existing_incidents}
+        all_incidents = {str(k): v for k, v in id_to_incident.items()}
+    counter = 0
+    if incidents_csv is not None:
+        with open(incidents_csv) as f:
+            csv_reader = csv.DictReader(f)
+            field_names = [
+                field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
+            ]
+            csv_reader.fieldnames = field_names
+            _check_required_fields(csv_reader, ["id", "department_id"], "incidents")
+
+            for row in csv_reader:
+                assert int(row["department_id"]) == department_id
+                row["officers"] = _objects_from_split_field(
+                    row.get("officer_ids"), all_officers
+                )
+                address, _ = get_or_create_location_from_dict(row)
+                row["address_id"] = address.id
+                license_plates = []
+                for license_plate_str in row.get("license_plates", "").split("|"):
+                    if license_plate_str:
+                        parts = license_plate_str.split("_")
+                        data = dict(zip(["number", "state"], parts))
+                        license_plate, _ = get_or_create_license_plate_from_dict(data)
+                        license_plates.append(license_plate)
+                db.session.flush()
+
+                if license_plates:
+                    row["license_plate_objects"] = license_plates
+                connection_id = None
+                if row["id"].startswith("#"):
+                    connection_id = row["id"]
+                    row["id"] = ""
+                incident = _create_or_update_model(
+                    row=row,
+                    existing_model_lookup=id_to_incident,
+                    create_method=create_incident_from_dict,
+                    update_method=update_incident_from_dict,
+                    force_create=force_create,
+                )
+                if connection_id:
+                    all_incidents[connection_id] = incident
+                counter += 1
+                if counter % 100 == 0:
+                    print("Processed {} incidents.".format(counter))
+            print("Done with incidents. Processed {} rows.".format(counter))
+
+    counter = 0
+    if links_csv is not None:
+        with open(links_csv) as f:
+            csv_reader = csv.DictReader(f)
+            field_names = [
+                field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
+            ]
+            csv_reader.fieldnames = field_names
+            _check_required_fields(csv_reader, ["id", "url"], "links")
+            existing_officer_links = (
+                Link.query.join(Link.officers)
+                .filter(Officer.department_id == department_id)
+                .all()
+            )
+            existing_incident_links = (
+                Link.query.join(Link.incidents)
+                .filter(Incident.department_id == department_id)
+                .all()
+            )
+            id_to_link = {
+                link.id: link
+                for link in existing_officer_links + existing_incident_links
+            }
+            for row in csv_reader:
+                row["officers"] = _objects_from_split_field(
+                    row.get("officer_ids"), all_officers
+                )
+                row["incidents"] = _objects_from_split_field(
+                    row.get("incident_ids"), all_incidents
+                )
+                _create_or_update_model(
+                    row=row,
+                    existing_model_lookup=id_to_link,
+                    create_method=create_link_from_dict,
+                    update_method=update_link_from_dict,
+                    force_create=force_create,
+                )
+                counter += 1
+                if counter % 100 == 0:
+                    print("Processed {} links.".format(counter))
+            print("Done with links. Processed {} rows.".format(counter))
+
+    db.session.commit()
+    print("All committed.")
 
 
 @click.command()
