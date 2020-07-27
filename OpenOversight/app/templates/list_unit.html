@@ -3,7 +3,13 @@
 
 {% block content %}
 <div class="container" role="main">
-  <h1>{{ department.name | title }} | {{ unit.descrip | title }} Unit | Officers</h1>
+    <div class="page-header">
+      <ol class="breadcrumb">
+          <li><a href="{{url_for('main.list_officer',department_id=department.id)}}">{{ department.name | title }}</a></li>
+          <li class="active"><a href="{{url_for('main.list_unit', unit_id=unit.id)}}">{{ unit.descrip | title }}</a></li>
+      </ol>
+      <h1>Unit Officers: <b>{{ unit.descrip | title }}</b></h1>
+  </div>
   <div class="row">
     <div class="filter-sidebar col-sm-3">
       <h3 class="sidebar-title">Filter officers</h3>
