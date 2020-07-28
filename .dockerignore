@@ -3,3 +3,4 @@ container_data
 .cache
 node_modules
 OpenOversight/app/static/dist/*
+/OpenOversight/tests/resources/.minio.sys/
