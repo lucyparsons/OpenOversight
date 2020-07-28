@@ -14,6 +14,7 @@ import os
 import random
 import sys
 from traceback import format_exc
+from distutils.util import strtobool
 
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
@@ -583,4 +584,28 @@ def merge_dicts(*dict_args):
 
 
 def str_is_true(str_):
-    return str_.lower() in ['true', 't', 'yes', 'y']
+    return strtobool(str_.lower())
+
+
+def prompt_yes_no(prompt, default="no"):
+    if default is None:
+        yn = " [y/n] "
+    elif default == "yes":
+        yn = " [Y/n] "
+    elif default == "no":
+        yn = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: {}".format(default))
+
+    while True:
+        sys.stdout.write(prompt + yn)
+        choice = input().lower()
+        if default is not None and choice == '':
+            return strtobool(default)
+        try:
+            ret = strtobool(choice)
+        except ValueError:
+            sys.stdout.write("Please respond with 'yes' or 'no' "
+                             "(or 'y' or 'n').\n")
+            continue
+        return ret
