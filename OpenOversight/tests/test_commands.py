@@ -766,7 +766,7 @@ def test_load_csv_into_database(session, department_with_ranks, test_csv_dir):
 
     link = Link(title="Existing Link", url="https://www.example.org")
     session.add(link)
-    officer.links.append(link)
+    officer.links = [link]
 
     run_command_print_output(
         load_csv_into_database,
@@ -861,3 +861,43 @@ def test_load_csv_into_database(session, department_with_ranks, test_csv_dir):
     assert link_new.title == "A Link"
     assert link_new.url == "https://www.example.com"
     assert {officer.id for officer in link_new.officers} == {cop1.id, cop4.id}
+
+
+def _create_csv(data, csv_file_name):
+    field_names = set().union(*[set(row.keys()) for row in data])
+    with open(csv_file_name, "w") as f:
+        csv_writer = csv.DictWriter(f, field_names)
+        csv_writer.writeheader()
+        csv_writer.writerows(data)
+
+
+def test_load_csv_into_database__force_create(session, department_with_ranks, tmp_path):
+    tmp_path = str(tmp_path)
+    officers_csv = os.path.join(tmp_path, "officers.csv")
+    department_id = department_with_ranks.id
+    officers_data = [
+        {"id": 99001, "department_id": department_id, "last_name": "Test", "first_name": "First"},
+        {"id": 99002, "department_id": department_id, "last_name": "Test", "first_name": "Second"},
+        {"id": 99003, "department_id": department_id, "last_name": "Test", "first_name": "Third"},
+    ]
+
+    _create_csv(officers_data, officers_csv)
+    run_command_print_output(
+        load_csv_into_database,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            officers_csv,
+            # "--assignments-csv",
+            # os.path.join(test_csv_dir, "assignments.csv"),
+            # "--salaries-csv",
+            # os.path.join(test_csv_dir, "salaries.csv"),
+            # "--links-csv",
+            # os.path.join(test_csv_dir, "links.csv"),
+            # "--incidents-csv",
+            # os.path.join(test_csv_dir, "incidents.csv"),
+            "--force-create",
+        ],
+    )
+    cop1 = Officer.query.filter_by(id=99001).one()
+    assert cop1.first_name == "First"

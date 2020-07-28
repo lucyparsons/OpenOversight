@@ -436,11 +436,18 @@ def _create_or_update_model(
             return create_method(row, force_id=True)
 
 
-def _check_required_fields(dict_reader, required_fields, csv_name):
-    for field in required_fields:
-        if field not in dict_reader.fieldnames:
-            raise Exception(
-                "'{}' is a mandatory field in {} csv.".format(field, csv_name)
+def _check_provided_fields(dict_reader, required_fields, optional_fields, csv_name):
+    missing_required = set(required_fields) - set(dict_reader.fieldnames)
+    if len(missing_required)>0:
+        raise Exception(
+                "Missing mandatory field(s) {} in {} csv."
+                .format(list(missing_required), csv_name)
+            )
+    unexpected_fields = set(dict_reader.fieldnames) - set(required_fields + optional_fields) 
+    if len(unexpected_fields)>0:
+        raise Exception(
+                "Received unexpected field(s) {} in {} csv."
+                .format(list(unexpected_fields), csv_name)
             )
 
 
@@ -486,12 +493,21 @@ def load_csv_into_database(
                 field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
             ]
             csv_reader.fieldnames = field_names
-            _check_required_fields(csv_reader, ["id", "department_id"], "officers")
+            _check_provided_fields(
+                csv_reader, 
+                required_fields=["id", "department_id"],
+                optional_fields=["last_name", "first_name", "middle_initial",
+                "suffix", "race", "gender", "employment_date", "birth_year",
+                "unique_internal_identifier",
+                # the following are unused, but allowed since they are included in the csv output
+                "badge_number", "job_title", "most_recent_salary"
+                ],
+                csv_name="officers"
+            )
 
             for row in csv_reader:
-                assert department_id == int(
-                    row["department_id"]
-                )  # can only update department with given name
+                 # can only update department with given name
+                assert department_id == int(row["department_id"])
                 connection_id = None
                 if row["id"].startswith("#"):
                     connection_id = row["id"]
@@ -522,9 +538,14 @@ def load_csv_into_database(
             ]
             if "start_date" in field_names:
                 field_names[field_names.index("start_date")] = "star_date"
+            if "badge_number" in field_names:
+                field_names[field_names.index("badge_number")] = "star_no"
             csv_reader.fieldnames = field_names
-            _check_required_fields(
-                csv_reader, ["id", "officer_id", "job_title"], "assignments"
+            _check_provided_fields(
+                csv_reader, 
+                required_fields=["id", "officer_id", "job_title"],
+                optional_fields=["star_no", "unit_id", "star_date", "resign_date"],
+                csv_name="assignments"
             )
             jobs_for_department = list(
                 Job.query.filter_by(department_id=department_id).all()
@@ -547,8 +568,10 @@ def load_csv_into_database(
                         )
                     )
                 row["job_id"] = job_id
-                if row["officer_id"].startswith("#"):
-                    row["officer_id"] = new_officers[row["officer_id"]].id
+                officer = all_officers.get(row["officer_id"])
+                if not officer:
+                    raise Exception("Officer with id {} does not exist (in this department)".format(row["officer_id"]))
+                row["officer_id"] = officer.id
                 _create_or_update_model(
                     row=row,
                     existing_model_lookup=id_to_assignment,
@@ -569,8 +592,11 @@ def load_csv_into_database(
                 field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
             ]
             csv_reader.fieldnames = field_names
-            _check_required_fields(
-                csv_reader, ["id", "officer_id", "salary", "year"], "salaries"
+            _check_provided_fields(
+                csv_reader, 
+                required_fields=["id", "officer_id", "salary", "year"],
+                optional_fields=["overtime_pay", "is_fiscal_year"],
+                csv_name="salaries"
             )
             existing_salaries = (
                 Salary.query.join(Salary.officer)
@@ -579,8 +605,10 @@ def load_csv_into_database(
             )
             id_to_salary = {salary.id: salary for salary in existing_salaries}
             for row in csv_reader:
-                if row["officer_id"].startswith("#"):
-                    row["officer_id"] = new_officers[row["officer_id"]].id
+                officer = all_officers.get(row["officer_id"])
+                if not officer:
+                    raise Exception("Officer with id {} does not exist (in this department)".format(row["officer_id"]))
+                row["officer_id"] = officer.id
                 _create_or_update_model(
                     row=row,
                     existing_model_lookup=id_to_salary,
@@ -605,7 +633,12 @@ def load_csv_into_database(
                 field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
             ]
             csv_reader.fieldnames = field_names
-            _check_required_fields(csv_reader, ["id", "department_id"], "incidents")
+            _check_provided_fields(
+                csv_reader,
+                required_fields=["id", "department_id"],
+                optional_fields=["date", "time", "report_number", "description", "street_name", "cross_street1", "cross_street2", "city", "state", "zip_code", "creator_id", "last_updated_id", "officer_ids", "license_plates"],
+                csv_name="incidents"
+            )
 
             for row in csv_reader:
                 assert int(row["department_id"]) == department_id
@@ -651,7 +684,12 @@ def load_csv_into_database(
                 field_name.replace(" ", "_") for field_name in csv_reader.fieldnames
             ]
             csv_reader.fieldnames = field_names
-            _check_required_fields(csv_reader, ["id", "url"], "links")
+            _check_provided_fields(
+                csv_reader,
+                required_fields=["id", "url"],
+                optional_fields=["title", "link_type", "description", "author", "user_id", "officer_ids", "incident_ids"],
+                csv_name="links"
+            )
             existing_officer_links = (
                 Link.query.join(Link.officers)
                 .filter(Officer.department_id == department_id)
