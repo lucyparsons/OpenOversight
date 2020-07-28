@@ -35,7 +35,7 @@ EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
-ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
+ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev
 
 WORKDIR /usr/src/app/OpenOversight
 
