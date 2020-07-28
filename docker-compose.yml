@@ -16,6 +16,7 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    network_mode: "host"
 
   web:
     restart: always
@@ -37,13 +38,10 @@ services:
     volumes:
       - ./OpenOversight/:/usr/src/app/OpenOversight/:z
     user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
-    links:
-      - postgres:postgres
-    expose:
-      - "3000"
     command: scripts/entrypoint.sh
     ports:
       - "3000:3000"
+    network_mode: "host"
 
   minio:
     image: minio/minio
