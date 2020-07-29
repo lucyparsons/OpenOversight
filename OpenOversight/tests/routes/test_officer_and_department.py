@@ -939,6 +939,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               job_title='COMMANDER',
                               department=department.id,
+                              unit=unit.id,
                               birth_year=1990,
                               last_employment_date=None)
 

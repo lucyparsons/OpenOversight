@@ -310,7 +310,7 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
-    if form.get('year') and form.get('year') in year_choices():
+    if form.get('year') is not None and form.get('year') in year_choices():
         year = int(form.get('year'))
         last_employment_date_comparator = datetime.date(year, 1, 1)
         employment_date_comparator = datetime.date(year + 1, 1, 1)

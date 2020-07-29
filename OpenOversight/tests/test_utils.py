@@ -3,12 +3,10 @@ from flask import current_app
 from flask_login import current_user
 from io import BytesIO
 import OpenOversight
-from OpenOversight.app.models import Image, Officer, Assignment, Salary, db
-from OpenOversight.app.commands import bulk_add_officers
-from OpenOversight.app.utils import get_officer, upload_image_to_s3_and_store_in_db, crop_image, year_choices
+from OpenOversight.app.models import Image, Officer, db
+from OpenOversight.app.utils import upload_image_to_s3_and_store_in_db, crop_image, year_choices
 from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
-import uuid
 import datetime
 
 

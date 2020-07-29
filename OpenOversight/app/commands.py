@@ -316,6 +316,7 @@ def process_salary(row, officer, compare=False):
                 from decimal import Decimal
                 print(vars(salary))
                 print(row)
+                # below compares the imported salary with the officer's existing salary
                 if Decimal('%.2f' % salary.salary) == Decimal('%.2f' % float(row['salary'])) and \
                         salary.year == int(row['salary_year']) and \
                         salary.is_fiscal_year == is_fiscal_year and \
