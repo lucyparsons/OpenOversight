@@ -652,7 +652,7 @@ def label_data(department_id=None, image_id=None):
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
             image = Image.query.filter_by(id=image_id) \
-                               .filter_by(department_id=department_id).one()
+                               .filter_by(department_id=department_id).first()
         else:  # Get a random image from that department
             image_query = Image.query.filter_by(contains_cops=True) \
                                .filter_by(department_id=department_id) \
@@ -680,6 +680,8 @@ def label_data(department_id=None, image_id=None):
                          .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+        elif department and officer_exists.department_id != department_id:
+            flash('The officer is not in {}. Are you sure that is the correct OpenOversight ID?'.format(department.name))
         elif not existing_tag:
             left = form.dataX.data
             upper = form.dataY.data
