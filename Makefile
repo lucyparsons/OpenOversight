@@ -18,11 +18,11 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker-compose run --rm web python ../create_db.py
+	docker-compose exec web python ../create_db.py
 
 .PHONY: assets
 assets:
-	docker-compose run --rm web yarn build
+	docker-compose exec web yarn build
 
 .PHONY: dev
 dev: build start create_db populate
@@ -35,14 +35,18 @@ populate: create_db  ## Build and run containers
 	done
 	@echo "Postgres is up"
 	## Populate database with test data
-	docker-compose run --rm web python ../test_data.py -p
+	docker-compose exec web python ../test_data.py -p
 
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
-	    else FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    then FLASK_ENV=testing docker-compose exec web pytest --doctest-modules -n 4 --dist=loadfile -v tests/ app; \
+	    else FLASK_ENV=testing docker-compose exec web pytest --doctest-modules -n 4 --dist=loadfile -v tests app -k $(name); \
 	fi
+
+.PHONY: lint
+lint: start
+	docker-compose exec web flake8
 
 .PHONY: cleanassets
 cleanassets:
@@ -71,3 +75,6 @@ help: ## Print this message and exit
 	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%s\033[0m : %s\n", $$1, $$2}' $(MAKEFILE_LIST) \
 		| sort \
 		| column -s ':' -t
+
+attach:
+	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev

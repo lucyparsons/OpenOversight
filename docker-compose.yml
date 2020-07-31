@@ -37,6 +37,7 @@ services:
       FLASK_ENV: "${FLASK_ENV:-development}"
     volumes:
       - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+      - /dev/shm:/dev/shm
     user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
     command: scripts/entrypoint.sh
     ports:

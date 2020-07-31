@@ -1,13 +1,14 @@
 from __future__ import division
 from contextlib import contextmanager
 import pytest
+import sqlalchemy
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from sqlalchemy.sql.expression import func
-from OpenOversight.app.models import Officer, Incident, Department
-from OpenOversight.app.config import BaseConfig
+from OpenOversight.app.models import Incident, Department
+from OpenOversight.app.config import DevelopmentConfig
 
 
 @contextmanager
@@ -30,7 +31,7 @@ def wait_for_element(browser, locator, text, timeout=10):
 
 
 def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
-    browser.get("http://localhost:5000")
+    browser.get("http://localhost:3000")
 
     # Complainant loads homepage
     assert "OpenOversight" in browser.title
@@ -42,7 +43,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
 
 
 def test_user_can_use_form_to_get_to_browse(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+    browser.get("http://localhost:3000/find")
 
     # Complainant selects department and proceeds to next step
     browser.find_element_by_id("activate-step-2").click()
@@ -65,7 +66,7 @@ def test_user_can_use_form_to_get_to_browse(mockdata, browser):
 
 
 def test_user_can_get_to_complaint(mockdata, browser):
-    browser.get("http://localhost:5000/complaint?officer_star=6265&officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png")
+    browser.get("http://localhost:3000/complaint?officer_star=6265&officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png")
 
     wait_for_element(browser, By.TAG_NAME, "h1")
     # Complainant arrives at page with the badge number, name, and link
@@ -77,12 +78,12 @@ def test_user_can_get_to_complaint(mockdata, browser):
 
 def test_officer_browse_pagination(mockdata, browser):
     dept_id = 1
-    total = Officer.query.filter_by(department_id=dept_id).count()
-    perpage = BaseConfig.OFFICERS_PER_PAGE
+    total = list(sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
+                 .execute('select count(1) from officers where department_id = 1'))[0][0]
+    perpage = DevelopmentConfig.OFFICERS_PER_PAGE
 
     # first page of results
-    browser.get("http://localhost:5000/department/{}?page=1"
-                .format(dept_id))
+    browser.get("http://localhost:3000/department/{}?page=1".format(dept_id))
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = 'Showing 1-{} of {}'.format(perpage, total)
@@ -90,8 +91,7 @@ def test_officer_browse_pagination(mockdata, browser):
 
     # last page of results
     last_page_index = (total // perpage) + 1
-    browser.get("http://localhost:5000/department/{}?page={}"
-                .format(dept_id, last_page_index))
+    browser.get("http://localhost:3000/department/{}?page={}".format(dept_id, last_page_index))
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = ('Showing {}-{} of {}'
@@ -100,7 +100,7 @@ def test_officer_browse_pagination(mockdata, browser):
 
 
 def test_last_name_capitalization(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
+    browser.get("http://localhost:3000/auth/login")
 
     # get past the login page
     elem = browser.find_element_by_id("email")
@@ -120,7 +120,7 @@ def test_last_name_capitalization(mockdata, browser):
         test_output = test_pair[1]
 
         # enter a last name to test
-        browser.get("http://localhost:5000/officer/new")
+        browser.get("http://localhost:3000/officer/new")
         wait_for_element(browser, By.ID, "last_name")
         elem = browser.find_element_by_id("last_name")
         elem.clear()
@@ -142,7 +142,7 @@ def test_last_name_capitalization(mockdata, browser):
 
 
 def test_last_name_capitalization_short_name(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
+    browser.get("http://localhost:3000/auth/login")
 
     # get past the login page
     elem = browser.find_element_by_id("email")
@@ -162,7 +162,7 @@ def test_last_name_capitalization_short_name(mockdata, browser):
         test_output = test_pair[1]
 
         # enter a last name to test
-        browser.get("http://localhost:5000/officer/new")
+        browser.get("http://localhost:3000/officer/new")
         wait_for_element(browser, By.ID, "last_name")
         elem = browser.find_element_by_id("last_name")
         elem.clear()
@@ -184,7 +184,7 @@ def test_last_name_capitalization_short_name(mockdata, browser):
 
 
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+    browser.get("http://localhost:3000/find")
 
     dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label.isnot(None)).first()
     dept_id = str(dept_with_uii.id)
@@ -198,7 +198,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+    browser.get("http://localhost:3000/find")
 
     dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).one_or_none()
     dept_id = str(dept_without_uii.id)
@@ -213,7 +213,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get("http://localhost:3000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     incident_id = str(incident_long_descrip.id)
@@ -224,7 +224,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_300_char
 
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get("http://localhost:3000/officer/1")
 
     # Select incident for officer that has description under 300 chars
     result = browser.find_element_by_id("description-overflow-row_1")
@@ -233,7 +233,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
 
 def test_click_to_read_more_displays_full_description(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get("http://localhost:3000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     orig_descrip = incident_long_descrip.description
@@ -249,7 +249,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get("http://localhost:3000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     incident_id = str(incident_long_descrip.id)

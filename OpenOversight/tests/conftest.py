@@ -555,12 +555,7 @@ def client(app, request):
 
 
 @pytest.fixture
-def browser(app, request):
-    # start server
-    threading.Thread(target=app.run).start()
-    # give the server a few seconds to ensure it is up
-    time.sleep(10)
-
+def browser():
     # start headless webdriver
     vdisplay = Xvfb()
     vdisplay.start()
@@ -568,10 +563,6 @@ def browser(app, request):
     # wait for browser to start up
     time.sleep(3)
     yield driver
-
-    # shutdown server
-    driver.get("http://localhost:5000/shutdown")
-    time.sleep(3)
 
     # shutdown headless webdriver
     driver.quit()
