@@ -632,6 +632,39 @@ def delete_tag(tag_id):
     return redirect(url_for('main.index'))
 
 
+@main.route('/tag/set_featured/<int:tag_id>', methods=['POST'])
+@login_required
+@ac_or_admin_required
+def set_featured_tag(tag_id):
+    tag = Face.query.filter_by(id=tag_id).first()
+
+    if not tag:
+        flash('Tag not found')
+        return redirect(url_for('main.index'))
+
+    if not current_user.is_administrator and current_user.is_area_coordinator:
+        if current_user.ac_department_id != tag.officer.department_id:
+            abort(403)
+
+    # Set featured=False on all other tags for the same officer
+    for face in Face.query.filter_by(officer_id=tag.officer_id).all():
+        face.featured = False
+    # Then set this tag as featured
+    tag.featured = True
+
+    try:
+        db.session.commit()
+        flash('Successfully set this tag as featured')
+    except:  # noqa
+        flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error setting featured tag: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc()])
+        ))
+    return redirect(url_for('main.officer_profile', officer_id=tag.officer_id))
+
+
 @main.route('/leaderboard')
 @login_required
 def leaderboard():

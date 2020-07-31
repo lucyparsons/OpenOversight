@@ -230,6 +230,7 @@ class Face(db.Model):
     original_image = db.relationship('Image', backref='tags', foreign_keys=[original_image_id], lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
+    featured = db.Column(db.Boolean, nullable=False, server_default='false')
 
     __table_args__ = (UniqueConstraint('officer_id', 'img_id',
                       name='unique_faces'), )

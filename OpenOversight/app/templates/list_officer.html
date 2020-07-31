@@ -131,11 +131,16 @@
     {% endwith %}
     <ul class="list-group">
       {% for officer in officers.items %}
-        {% if officer.face.first() is none %}
+        {% set featured_tag = officer.face.filter_by(featured=True).one_or_none() %}
+        {% if featured_tag %}
+          {% set officer_image = featured_tag.image.filepath %}
+        {% else %}
+          {% if officer.face.first() is none %}
             {% set officer_image = '/static/images/placeholder.png' %}
           {% else %}
             {% set officer_image = officer.face.first().image.filepath %}
           {% endif %}
+        {% endif %}
 	{% if officer.assignments.all() %}
           {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
 	  {% set star_no = "#" + assignment.star_no %}
