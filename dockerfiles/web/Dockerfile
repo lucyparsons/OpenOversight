@@ -31,11 +31,12 @@ COPY package.json /usr/src/app/
 RUN yarn
 
 COPY create_db.py test_data.py /usr/src/app/
+COPY .flake8 /usr/src/app/
 EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
-ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev
+ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
 WORKDIR /usr/src/app/OpenOversight
 
