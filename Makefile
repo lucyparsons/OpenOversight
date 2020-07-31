@@ -41,7 +41,7 @@ populate: create_db  ## Build and run containers
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
 	    then FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
-	    else FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/ -k $(name); \
+	    else FLASK_ENV=testing docker-compose run --rm web pytest -v tests/ -k $(name); \
 	fi
 
 .PHONY: cleanassets
