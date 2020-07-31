@@ -136,7 +136,11 @@
           {% else %}
             {% set officer_image = officer.face.first().image.filepath %}
           {% endif %}
-        {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
+	{% if officer.assignments.all() %}
+          {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
+	  {% set star_no = "#" + assignment.star_no %}
+	  {% set job_title = assignment.job.job_title %}
+	{% endif %}
         <li class="list-group-item">
             <div class="row">
               <div class="col-md-6 col-xs-12">
@@ -145,13 +149,13 @@
               <div class="col-md-6 col-xs-12">
                 <h2>
                   <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" id="officer-profile-{{ loop.index }}">{% include "partials/officer_name.html" %}</a>
-                  <small>#{{ assignment.star_no }}</small>
+                  <small>{{ star_no }}</small>
                 </h2>
                 <div class="row">
                   <div class="col-md-6 col-xs-6">
                     <dl>
                       <dt>Job Title</dt>
-                      <dd>{{ assignment.job.job_title|default('Unknown') }}</dd>
+                      <dd>{{ job_title|default('Unknown') }}</dd>
                       <dt>Race</dt>
                       <dd>{{ officer.race_label()|default('Unknown')|lower|title }}</dd>
                     </dl>

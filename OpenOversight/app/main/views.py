@@ -5,12 +5,11 @@ import os
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import text
 import sys
 from traceback import format_exc
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Response)
+                   flash, current_app, jsonify, Response, Markup)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -399,6 +398,7 @@ def edit_department(department_id):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
+    original_ranks = department.jobs
     if form.validate_on_submit():
         new_name = form.name.data
         if new_name != previous_name:
@@ -416,6 +416,23 @@ def edit_department(department_id):
                 if rank:
                     new_ranks.append((rank, order))
                     order += 1
+            updated_ranks = form.jobs.data
+            if len(updated_ranks) < len(original_ranks):
+                deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
+                if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
+                    for rank in deleted_ranks:
+                        db.session.delete(rank)
+                else:
+                    failed_deletions = []
+                    for rank in deleted_ranks:
+                        if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
+                            failed_deletions.append(rank)
+                    for rank in failed_deletions:
+                        formatted_rank = rank.job_title.replace(" ", "+")
+                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
+                        flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                    return redirect(url_for('main.edit_department', department_id=department_id))
+
             for (new_rank, order) in new_ranks:
                 existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
                 if existing_rank:
@@ -430,10 +447,6 @@ def edit_department(department_id):
                     ))
             db.session.commit()
 
-            # Prune any jobs from department that aren't referenced by any current officers
-            query = text("DELETE FROM jobs WHERE department_id = :department_id AND is_sworn_officer = False AND NOT EXISTS (SELECT 1 FROM assignments WHERE assignments.job_id = jobs.id)")
-            query = query.bindparams(department_id=department_id)
-            db.session.execute(query)
         flash('Department {} edited'.format(department.name))
         return redirect(url_for('main.list_officer', department_id=department.id))
     else:
