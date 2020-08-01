@@ -1,4 +1,5 @@
 from us import states
+from urllib.parse import urlparse
 
 
 def state_validator(state):
@@ -8,3 +9,11 @@ def state_validator(state):
         raise ValueError('Not a valid US state')
 
     return state
+
+
+def url_validator(url):
+    parsed = urlparse(url)
+    if parsed.scheme not in ['http', 'https']:
+        raise ValueError('Not a valid URL')
+
+    return url

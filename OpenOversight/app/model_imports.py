@@ -11,6 +11,7 @@ from OpenOversight.app.models import (
 from OpenOversight.app.main import choices
 import dateutil
 from OpenOversight.app.utils import get_or_create, str_is_true
+from OpenOversight.app.validators import state_validator, url_validator
 from typing import Optional, Sequence, Tuple, Union, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -28,43 +29,55 @@ def validate_choice(
     return None
 
 
-def validate_date(date_str: Optional[str]) -> Optional["datetime.date"]:
+def parse_date(date_str: Optional[str]) -> Optional["datetime.date"]:
     if date_str:
         return dateutil.parser.parse(date_str).date()
     return None
 
 
-def validate_time(time_str: Optional[str]) -> Optional["datetime.time"]:
+def parse_time(time_str: Optional[str]) -> Optional["datetime.time"]:
     if time_str:
         return dateutil.parser.parse(time_str).time()
     return None
 
 
-def validate_int(value: Optional[Union[str, int]]) -> Optional[int]:
+def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
     if value == 0 or value:
         return int(value)
     return None
 
 
-def validate_bool(value: Optional[str]) -> bool:
+def parse_float(value: Optional[Union[str, float]]) -> Optional[float]:
+    if value == 0. or value:
+        return float(value)
+    return None
+
+
+def parse_bool(value: Optional[str]) -> bool:
     if value:
         return str_is_true(value)
     return False
+
+
+def parse_str(value: Optional[str], default: Optional[str] = "") -> Optional[str]:
+    if value is None:
+        return default
+    return value.strip() or default
 
 
 def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Officer:
 
     officer = Officer(
         department_id=int(data["department_id"]),
-        last_name=data.get("last_name", ""),
-        first_name=data.get("first_name", ""),
-        middle_initial=data.get("middle_initial", ""),
+        last_name=parse_str(data.get("last_name", "")),
+        first_name=parse_str(data.get("first_name", "")),
+        middle_initial=parse_str(data.get("middle_initial", "")),
         suffix=validate_choice(data.get("suffix", ""), choices.SUFFIX_CHOICES),
         race=validate_choice(data.get("race"), choices.RACE_CHOICES),
         gender=validate_choice(data.get("gender"), choices.GENDER_CHOICES),
-        employment_date=validate_date(data.get("employment_date")),
-        birth_year=validate_int(data.get("birth_year")),
-        unique_internal_identifier=data.get("unique_internal_identifier") or None,
+        employment_date=parse_date(data.get("employment_date")),
+        birth_year=parse_int(data.get("birth_year")),
+        unique_internal_identifier=parse_str(data.get("unique_internal_identifier"), None),
     )
     if force_id and data.get("id"):
         officer.id = data["id"]
@@ -79,11 +92,11 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
     if "department_id" in data.keys():
         officer.department_id = int(data["department_id"])
     if "last_name" in data.keys():
-        officer.last_name = data.get("last_name", "")
+        officer.last_name = parse_str(data.get("last_name", ""))
     if "first_name" in data.keys():
-        officer.first_name = data.get("first_name", "")
+        officer.first_name = parse_str(data.get("first_name", ""))
     if "middle_initial" in data.keys():
-        officer.middle_initial = data.get("middle_initial", "")
+        officer.middle_initial = parse_str(data.get("middle_initial", ""))
     if "suffix" in data.keys():
         officer.suffix = validate_choice(data.get("suffix", ""), choices.SUFFIX_CHOICES)
     if "race" in data.keys():
@@ -91,12 +104,12 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
     if "gender" in data.keys():
         officer.gender = validate_choice(data.get("gender"), choices.GENDER_CHOICES)
     if "employment_date" in data.keys():
-        officer.employment_date = validate_date(data.get("employment_date"))
+        officer.employment_date = parse_date(data.get("employment_date"))
     if "birth_year" in data.keys():
-        officer.birth_year = validate_int(data.get("birth_year"))
+        officer.birth_year = parse_int(data.get("birth_year"))
     if "unique_internal_identifier" in data.keys():
         officer.unique_internal_identifier = (
-            data.get("unique_internal_identifier") or None
+            parse_str(data.get("unique_internal_identifier"), None)
         )
     db.session.flush()
     return officer
@@ -108,11 +121,11 @@ def create_assignment_from_dict(
 
     assignment = Assignment(
         officer_id=int(data["officer_id"]),
-        star_no=data.get("star_no") or "",
+        star_no=parse_str(data.get("star_no"), None),
         job_id=int(data["job_id"]),
-        unit_id=validate_int(data.get("unit_id")),
-        star_date=validate_date(data.get("star_date")),
-        resign_date=validate_date(data.get("resign_date")),
+        unit_id=parse_int(data.get("unit_id")),
+        star_date=parse_date(data.get("star_date")),
+        resign_date=parse_date(data.get("resign_date")),
     )
     if force_id and data.get("id"):
         assignment.id = data["id"]
@@ -125,17 +138,17 @@ def update_assignment_from_dict(
     data: Dict[str, Any], assignment: Assignment
 ) -> Assignment:
     if "officer_id" in data.keys():
-        assignment.officer_id = (int(data["officer_id"]),)
+        assignment.officer_id = int(data["officer_id"])
     if "star_no" in data.keys():
-        assignment.star_no = (data.get("star_no") or "",)
+        assignment.star_no = parse_str(data.get("star_no"), None)
     if "job_id" in data.keys():
-        assignment.job_id = (int(data["job_id"]),)
+        assignment.job_id = int(data["job_id"])
     if "unit_id" in data.keys():
-        assignment.unit_id = (validate_int(data.get("unit_id")),)
+        assignment.unit_id = parse_int(data.get("unit_id"))
     if "star_date" in data.keys():
-        assignment.star_date = (validate_date(data.get("star_date")),)
+        assignment.star_date = parse_date(data.get("star_date"))
     if "resign_date" in data.keys():
-        assignment.resign_date = validate_date(data.get("resign_date"))
+        assignment.resign_date = parse_date(data.get("resign_date"))
     db.session.flush()
 
     return assignment
@@ -144,10 +157,10 @@ def update_assignment_from_dict(
 def create_salary_from_dict(data: Dict[str, Any], force_id: bool = False) -> Salary:
     salary = Salary(
         officer_id=int(data["officer_id"]),
-        salary=int(data["salary"]),
-        overtime_pay=validate_int(data.get("overtime_pay")),
+        salary=float(data["salary"]),
+        overtime_pay=parse_float(data.get("overtime_pay")),
         year=int(data["year"]),
-        is_fiscal_year=validate_bool(data.get("is_fiscal_year")),
+        is_fiscal_year=parse_bool(data.get("is_fiscal_year")),
     )
     if force_id and data.get("id"):
         salary.id = data["id"]
@@ -162,11 +175,11 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
     if "salary" in data.keys():
         salary.salary = int(data["salary"])
     if "overtime_pay" in data.keys():
-        salary.overtime_pay = validate_int(data.get("overtime_pay"))
+        salary.overtime_pay = parse_int(data.get("overtime_pay"))
     if "year" in data.keys():
         salary.year = int(data["year"])
     if "is_fiscal_year" in data.keys():
-        salary.is_fiscal_year = validate_bool(data.get("is_fiscal_year"))
+        salary.is_fiscal_year = parse_bool(data.get("is_fiscal_year"))
     db.session.flush()
 
     return salary
@@ -175,21 +188,19 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
 def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
     link = Link(
         title=data.get("title", ""),
-        url=data["url"],
+        url=url_validator(data["url"]),
         link_type=validate_choice(data.get("link_type"), choices.LINK_CHOICES),
-        description=data.get("description"),
-        author=data.get("author"),
-        user_id=validate_int(data.get("user_id")),
+        description=parse_str(data.get("description"), None),
+        author=parse_str(data.get("author"), None),
+        user_id=parse_int(data.get("user_id")),
     )
 
     if force_id and data.get("id"):
         link.id = data["id"]
 
     db.session.add(link)
-    if data.get("officers"):
-        for officer in data["officers"]:
-            link.officers.append(officer)
-            print(link, officer)
+    link.officers = data.get("officers") or []
+    link.incidents = data.get("incidents") or []
     db.session.flush()
 
     return link
@@ -199,33 +210,42 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
     if "title" in data:
         link.title = data.get("title", "")
     if "url" in data:
-        link.url = data["url"]
+        link.url = url_validator(data["url"])
     if "link_type" in data:
         link.link_type = validate_choice(data.get("link_type"), choices.LINK_CHOICES)
     if "description" in data:
-        link.description = data.get("description")
+        link.description = parse_str(data.get("description"), None)
     if "author" in data:
-        link.author = data.get("author")
+        link.author = parse_str(data.get("author"), None)
     if "user_id" in data:
-        link.user_id = validate_int(data.get("user_id"))
+        link.user_id = parse_int(data.get("user_id"))
+    if "officers" in data:
+        link.officers = data.get("officers") or []
+    if "incidents" in data:
+        link.incidents = data.get("incidents") or []
     db.session.flush()
 
     return link
 
 
-def get_or_create_license_plate_from_dict(data: Dict[str, Any]) -> LicensePlate:
+def get_or_create_license_plate_from_dict(data: Dict[str, Any]) -> Tuple[LicensePlate, bool]:
     number = data["number"]
-    state = data.get("state") or None
+    state = parse_str(data.get("state"), None)
+    state_validator(state)
     return get_or_create(db.session, LicensePlate, number=number, state=state,)
 
 
-def get_or_create_location_from_dict(data: Dict[str, Any]) -> Location:
-    street_name = data.get("street_name") or None
-    cross_street1 = data.get("cross_street1") or None
-    cross_street2 = data.get("cross_street2") or None
-    city = data.get("city") or None
-    state = data.get("state") or None
-    zip_code = data.get("zip_code") or None
+def get_or_create_location_from_dict(data: Dict[str, Any]) -> Tuple[Optional[Location], bool]:
+    street_name = parse_str(data.get("street_name"), None)
+    cross_street1 = parse_str(data.get("cross_street1"), None)
+    cross_street2 = parse_str(data.get("cross_street2"), None)
+    city = parse_str(data.get("city"), None)
+    state = parse_str(data.get("state"), None)
+    state_validator(state)
+    zip_code = parse_str(data.get("zip_code"), None)
+
+    if not any([street_name, cross_street1, cross_street2, city, state, zip_code]):
+        return None, False
 
     return get_or_create(
         db.session,
@@ -241,14 +261,14 @@ def get_or_create_location_from_dict(data: Dict[str, Any]) -> Location:
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     incident = Incident(
-        date=validate_date(data.get("date")),
-        time=validate_time(data.get("time")),
-        report_number=data.get("report_number"),
-        description=data.get("description", ""),
+        date=parse_date(data.get("date")),
+        time=parse_time(data.get("time")),
+        report_number=parse_str(data.get("report_number"), None),
+        description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
-        department_id=validate_int(data.get("department_id")),
-        creator_id=validate_int(data.get("creator_id")),
-        last_updated_id=validate_int(data.get("last_updated_id")),
+        department_id=parse_int(data.get("department_id")),
+        creator_id=parse_int(data.get("creator_id")),
+        last_updated_id=parse_int(data.get("last_updated_id")),
     )
 
     incident.officers = data.get("officers", [])
@@ -264,21 +284,21 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
-        incident.date = validate_date(data.get("date"))
+        incident.date = parse_date(data.get("date"))
     if "time" in data:
-        incident.time = validate_time(data.get("time"))
+        incident.time = parse_time(data.get("time"))
     if "report_number" in data:
-        incident.report_number = data.get("report_number")
+        incident.report_number = parse_str(data.get("report_number"), None)
     if "description" in data:
-        incident.description = data.get("description", "")
+        incident.description = parse_str(data.get("description"), None)
     if "address_id" in data:
         incident.address_id = data.get("address_id")
     if "department_id" in data:
-        incident.department_id = validate_int(data.get("department_id"))
+        incident.department_id = parse_int(data.get("department_id"))
     if "creator_id" in data:
-        incident.creator_id = validate_int(data.get("creator_id"))
+        incident.creator_id = parse_int(data.get("creator_id"))
     if "last_updated_id" in data:
-        incident.last_updated_id = validate_int(data.get("last_updated_id"))
+        incident.last_updated_id = parse_int(data.get("last_updated_id"))
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
