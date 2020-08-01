@@ -934,7 +934,7 @@ def test_advanced_csv_import(session, department_with_ranks, test_csv_dir):
 
 
 def _create_csv(data, path, csv_file_name):
-    csv_path = os.path.join(path, csv_file_name)
+    csv_path = os.path.join(str(path), csv_file_name)
     field_names = set().union(*[set(row.keys()) for row in data])
     with open(csv_path, "w") as f:
         csv_writer = csv.DictWriter(f, field_names)
