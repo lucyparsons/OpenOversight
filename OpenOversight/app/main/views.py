@@ -892,28 +892,29 @@ def download_dept_assignments_csv(department_id):
         abort(404)
 
     assignments = (db.session.query(Assignment)
-                   .join(Assignment.job)
-                   .options(joinedload(Assignment.baseofficer))
+                   .join(Assignment.baseofficer)
+                   .filter(Officer.department_id == department_id)
+                   .options(contains_eager(Assignment.baseofficer))
                    .options(joinedload(Assignment.unit))
-                   .options(contains_eager(Assignment.job))
-                   .filter_by(department_id=Job.department_id)
+                   .options(joinedload(Assignment.job))
                    )
 
     csv_output = io.StringIO()
-    csv_fieldnames = ["officer id", "officer unique identifier", "badge number", "job title", "start date", "end date", "unit"]
+    csv_fieldnames = ["id", "officer id", "officer unique identifier", "badge number", "job title", "start date", "end date", "unit id"]
     csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
     csv_writer.writeheader()
 
     for assignment in assignments:
         officer = assignment.baseofficer
         record = {
+            "id": assignment.id,
             "officer id": assignment.officer_id,
             "officer unique identifier": officer and officer.unique_internal_identifier,
             "badge number": assignment.star_no,
-            "job title": check_output(assignment.job.job_title),
+            "job title": assignment.job and check_output(assignment.job.job_title),
             "start date": assignment.star_date,
             "end date": assignment.resign_date,
-            "unit": assignment.unit and assignment.unit.descrip,
+            "unit id": assignment.unit and assignment.unit.id,
         }
         csv_writer.writerow(record)
 
@@ -954,7 +955,7 @@ def download_incidents_csv(department_id):
 
 @main.route('/download/all', methods=['GET'])
 def all_data():
-    departments = Department.query.all()
+    departments = Department.query.filter(Department.officers.any())
     return render_template('all_depts.html', departments=departments)
 
 
