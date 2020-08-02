@@ -204,7 +204,7 @@ class AddOfficerForm(Form):
     employment_date = DateField('Employment Date', validators=[Optional()])
     last_employment_date = DateField('Last Employment Date', validators=[Optional()])
     last_employment_details = StringField('Last Employment Details', default='', validators=[
-        Regexp(r'\w*'), Length(max=50), Optional()])
+        Regexp(r'\w+', message="Last employment details must include a verbal explanation"), Length(max=50), Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     links = FieldList(FormField(
         LinkForm,
@@ -253,7 +253,7 @@ class EditOfficerForm(Form):
     employment_date = DateField('Employment Date', validators=[Optional()])
     last_employment_date = DateField('Last Employment Date', validators=[Optional()])
     last_employment_details = StringField('Last Employment Details', default='', validators=[
-        Regexp(r'\w*'), Length(max=50), Optional()])
+        Regexp(r'\w+', message="Last employment details must include a verbal explanation"), Length(max=50), Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     unique_internal_identifier = StringField('Unique Internal Identifier',
                                              default='',

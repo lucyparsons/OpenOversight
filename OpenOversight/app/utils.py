@@ -78,11 +78,13 @@ def dept_choices():
 
 
 def year_choices():
-    years = [year[0] for year in db.session.query(cast(func.extract('year', Officer.employment_date), Integer)).filter(Officer.employment_date.isnot(None)).order_by(func.extract('year', Officer.employment_date))]
-    years_deduped = list(set(years))
-    years_deduped.sort()
-    years_str = [str(year) for year in years_deduped]
-    return years_str
+    oldest_year = db.session.query(cast(func.extract('year', Officer.employment_date), Integer)) \
+                            .filter(Officer.employment_date.isnot(None)) \
+                            .order_by(func.extract('year', Officer.employment_date)) \
+                            .limit(1).first()[0]
+    current_year = datetime.datetime.now().year
+    year_choices = [str(year) for year in range(oldest_year, current_year + 1)]
+    return year_choices
 
 
 def add_new_assignment(officer_id, form):

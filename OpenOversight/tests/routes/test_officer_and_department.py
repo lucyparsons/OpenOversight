@@ -757,7 +757,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = Unit.query.filter_by(department_id=AC_DEPT).first()
         first_name = 'Testy'
         last_name = 'OTester'
         middle_initial = 'R'
@@ -923,7 +923,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = Unit.query.filter_by(department_id=AC_DEPT).first()
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
