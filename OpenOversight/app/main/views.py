@@ -13,7 +13,7 @@ from flask import (abort, render_template, request, redirect, url_for,
 from flask_login import current_user, login_required, login_user
 
 from . import main
-from .. import limiter
+from .. import limiter, sitemap
 from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
                      add_officer_profile, edit_officer_profile,
@@ -41,23 +41,39 @@ from sqlalchemy.orm import contains_eager, joinedload
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
 
+sitemap_endpoints = []
+
+
+def sitemap_include(view):
+    sitemap_endpoints.append(view.__name__)
+    return view
+
+
+@sitemap.register_generator
+def static_routes():
+    for endpoint in sitemap_endpoints:
+        yield 'main.' + endpoint, {}
+
 
 def redirect_url(default='index'):
     return request.args.get('next') or request.referrer or url_for(default)
 
 
+@sitemap_include
 @main.route('/')
 @main.route('/index')
 def index():
     return render_template('index.html')
 
 
+@sitemap_include
 @main.route('/browse', methods=['GET'])
 def browse():
     departments = Department.query.filter(Department.officers.any())
     return render_template('browse.html', departments=departments)
 
 
+@sitemap_include
 @main.route('/find', methods=['GET', 'POST'])
 def get_officer():
     jsloads = ['js/find_officer.js']
@@ -92,6 +108,7 @@ def get_ooid():
     return render_template('input_find_ooid.html', form=form)
 
 
+@sitemap_include
 @main.route('/label', methods=['GET', 'POST'])
 def get_started_labeling():
     form = LoginForm()
@@ -121,6 +138,7 @@ def sort_images(department_id):
                            department_id=department_id)
 
 
+@sitemap_include
 @main.route('/tutorial')
 def get_tutorial():
     return render_template('tutorial.html')
@@ -173,6 +191,12 @@ def officer_profile(officer_id):
 
     return render_template('officer.html', officer=officer, paths=face_paths,
                            faces=faces, assignments=assignments, form=form)
+
+
+@sitemap.register_generator
+def sitemap_officers():
+    for officer in Officer.query.all():
+        yield 'main.officer_profile', {'officer_id': officer.id}
 
 
 @main.route('/officer/<int:officer_id>/assignment/new', methods=['POST'])
@@ -652,7 +676,7 @@ def label_data(department_id=None, image_id=None):
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
             image = Image.query.filter_by(id=image_id) \
-                               .filter_by(department_id=department_id).one()
+                               .filter_by(department_id=department_id).first()
         else:  # Get a random image from that department
             image_query = Image.query.filter_by(contains_cops=True) \
                                .filter_by(department_id=department_id) \
@@ -680,6 +704,8 @@ def label_data(department_id=None, image_id=None):
                          .filter(Face.original_image_id == form.image_id.data).first()
         if not officer_exists:
             flash('Invalid officer ID. Please select a valid OpenOversight ID!')
+        elif department and officer_exists.department_id != department_id:
+            flash('The officer is not in {}. Are you sure that is the correct OpenOversight ID?'.format(department.name))
         elif not existing_tag:
             left = form.dataX.data
             upper = form.dataY.data
@@ -755,6 +781,7 @@ def submit_complaint():
                            officer_image=request.args.get('officer_image'))
 
 
+@sitemap_include
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
@@ -950,6 +977,7 @@ def download_incidents_csv(department_id):
     return Response(csv, mimetype="text/csv", headers=csv_headers)
 
 
+@sitemap_include
 @main.route('/download/all', methods=['GET'])
 def all_data():
     departments = Department.query.all()
@@ -999,11 +1027,13 @@ def upload(department_id, officer_id=None):
         return jsonify(error="Server error encountered. Try again later."), 500
 
 
+@sitemap_include
 @main.route('/about')
 def about_oo():
     return render_template('about.html')
 
 
+@sitemap_include
 @main.route('/privacy')
 def privacy_oo():
     return render_template('privacy.html')
@@ -1141,6 +1171,12 @@ main.add_url_rule(
     '/incidents/<int:obj_id>/delete',
     view_func=incident_view,
     methods=['GET', 'POST'])
+
+
+@sitemap.register_generator
+def sitemap_incidents():
+    for incident in Incident.query.all():
+        yield 'main.incident_api', {'obj_id': incident.id}
 
 
 class TextApi(ModelView):
