@@ -227,6 +227,35 @@ def create_officer_from_row(row, department_id):
     process_salary(row, officer, compare=False)
 
 
+def is_equal(a, b):
+    """exhaustive equality checking, originally to compare a sqlalchemy result object of various types to a csv string
+    Note: Stringifying covers object cases (as in the datetime example below)
+    >>> is_equal("1", 1)  # string == int
+    True
+    >>> is_equal("foo", "bar") # string != other string
+    False
+    >>> is_equal(1, "1") # int == string
+    True
+    >>> is_equal(1.0, "1") # float == string
+    True
+    >>> is_equal(datetime(2020, 1, 1), "2020-01-01 00:00:00") # datetime == string
+    True
+    """
+    def try_else_false(comparable):
+        try:
+            return comparable(a, b)
+        except TypeError:
+            return False
+        except ValueError:
+            return False
+
+    return any([
+        try_else_false(lambda _a, _b: str(_a) == str(_b)),
+        try_else_false(lambda _a, _b: int(_a) == int(_b)),
+        try_else_false(lambda _a, _b: float(_a) == float(_b))
+    ])
+
+
 def process_assignment(row, officer, compare=False):
     assignment_fields = {
         'required': ['job_title'],
@@ -252,7 +281,7 @@ def process_assignment(row, officer, compare=False):
                 for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
-                    if (current and fieldname in row and row[fieldname] == current) or \
+                    if (current and fieldname in row and is_equal(row[fieldname], current)) or \
                             (not current and (fieldname not in row or not row[fieldname])):
                         i += 1
                 if i == len(assignment_fieldnames):
