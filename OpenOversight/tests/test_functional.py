@@ -1,5 +1,9 @@
 from __future__ import division
+
+import os
 from contextlib import contextmanager
+from time import sleep
+
 import pytest
 import sqlalchemy
 from selenium.common.exceptions import TimeoutException
@@ -18,6 +22,12 @@ def wait_for_page_load(browser, timeout=10):
     WebDriverWait(browser, timeout).until(
         expected_conditions.staleness_of(old_page)
     )
+
+
+@pytest.fixture(scope='session')
+def engine():
+    sleep(10)
+    yield sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
 
 
 def wait_for_element(browser, locator, text, timeout=10):
@@ -78,8 +88,7 @@ def test_user_can_get_to_complaint(mockdata, browser):
 
 def test_officer_browse_pagination(mockdata, browser):
     dept_id = 1
-    total = list(sqlalchemy.create_engine(os.getenv('SQLALCHEMY_DATABASE_URI'))
-                 .execute('select count(1) from officers where department_id = 1'))[0][0]
+    total = list(engine.execute('select count(1) from officers where department_id = 1'))[0][0]
     perpage = DevelopmentConfig.OFFICERS_PER_PAGE
 
     # first page of results
@@ -183,11 +192,12 @@ def test_last_name_capitalization_short_name(mockdata, browser):
         assert rendered_name == test_output
 
 
-def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
+def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser, engine):
     browser.get("http://localhost:3000/find")
 
-    dept_with_uii = Department.query.filter(Department.unique_internal_identifier_label.isnot(None)).first()
-    dept_id = str(dept_with_uii.id)
+    dept_id = str(list(
+        engine.execute('select id from departments where unique_internal_identifier_label is not null limit 1;'))[0][0]
+    )
 
     dept_selector = Select(browser.find_element_by_id("dept"))
     dept_selector.select_by_value(dept_id)
@@ -197,11 +207,12 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
     assert "Do you know any part of the Officer's" in page_text
 
 
-def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
+def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser, engine):
     browser.get("http://localhost:3000/find")
 
-    dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).one_or_none()
-    dept_id = str(dept_without_uii.id)
+    dept_id = str(list(
+        engine.execute('select id from departments where unique_internal_identifier_label is null limit 1;'))[0][0]
+    )
 
     dept_selector = Select(browser.find_element_by_id("dept"))
     dept_selector.select_by_value(dept_id)
@@ -211,12 +222,13 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     assert len(results) == 0
 
 
-def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):
+def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser, engine):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:3000/officer/1")
 
-    incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(list(
+        engine.execute('select id from incidents where description > 300 limit 1;'))[0][0]
+    )
 
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
     assert result.is_displayed()
@@ -231,13 +243,13 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     assert not result.is_displayed()
 
 
-def test_click_to_read_more_displays_full_description(mockdata, browser):
+def test_click_to_read_more_displays_full_description(mockdata, browser, engine):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:3000/officer/1")
 
-    incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
-    orig_descrip = incident_long_descrip.description
-    incident_id = str(incident_long_descrip.id)
+    incident_id, orig_descrip = list(
+        engine.execute('select id, description from incidents where description > 300 limit 1;')
+    )[0]
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
@@ -247,12 +259,11 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
     assert description_text == orig_descrip
 
 
-def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
+def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, engine):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:3000/officer/1")
 
-    incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(list(engine.execute('select id from incidents where description > 300 limit 1;'))[0][0])
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
