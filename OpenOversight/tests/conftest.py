@@ -5,7 +5,6 @@ import pytest
 import random
 from selenium import webdriver
 import time
-import threading
 from xvfbwrapper import Xvfb
 from faker import Faker
 import csv
