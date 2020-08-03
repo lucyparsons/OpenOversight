@@ -10,8 +10,6 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
-from sqlalchemy.sql.expression import func
-from OpenOversight.app.models import Incident, Department
 from OpenOversight.app.config import DevelopmentConfig
 
 
@@ -86,7 +84,7 @@ def test_user_can_get_to_complaint(mockdata, browser):
     assert "File a Complaint" in title_text
 
 
-def test_officer_browse_pagination(mockdata, browser):
+def test_officer_browse_pagination(mockdata, browser, engine):
     dept_id = 1
     total = list(engine.execute('select count(1) from officers where department_id = 1'))[0][0]
     perpage = DevelopmentConfig.OFFICERS_PER_PAGE
@@ -227,7 +225,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_300_char
     browser.get("http://localhost:3000/officer/1")
 
     incident_id = str(list(
-        engine.execute('select id from incidents where description > 300 limit 1;'))[0][0]
+        engine.execute('select id from incidents where length(description) > 300 limit 1;'))[0][0]
     )
 
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
@@ -248,13 +246,13 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, engine)
     browser.get("http://localhost:3000/officer/1")
 
     incident_id, orig_descrip = list(
-        engine.execute('select id, description from incidents where description > 300 limit 1;')
+        engine.execute('select id, description from incidents where length(description) > 300 limit 1;')
     )[0]
 
-    button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    button = browser.find_element_by_id("description-overflow-button_" + str(incident_id))
     button.click()
 
-    description_text = browser.find_element_by_id("incident-description_" + incident_id).text
+    description_text = browser.find_element_by_id("incident-description_" + str(incident_id)).text
     assert len(description_text) == len(orig_descrip)
     assert description_text == orig_descrip
 
@@ -263,7 +261,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, engine
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:3000/officer/1")
 
-    incident_id = str(list(engine.execute('select id from incidents where description > 300 limit 1;'))[0][0])
+    incident_id = str(list(engine.execute('select id from incidents where length(description) > 300 limit 1;'))[0][0])
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
