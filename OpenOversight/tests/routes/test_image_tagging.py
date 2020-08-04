@@ -223,6 +223,25 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
         assert b'Invalid officer ID' in rv.data
 
 
+def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        tag = Face.query.first()
+        form = FaceTag(officer_id=tag.officer_id,
+                       image_id=tag.original_image_id,
+                       dataX=34,
+                       dataY=32,
+                       dataWidth=3,
+                       dataHeight=33)
+
+        rv = client.post(
+            url_for('main.label_data', department_id=2, image_id=tag.original_image_id),
+            data=form.data,
+            follow_redirects=True
+        )
+        assert b"The officer is not in Chicago Police Department. Are you sure that is the correct OpenOversight ID?" in rv.data
+
+
 def test_user_can_finish_tagging(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
