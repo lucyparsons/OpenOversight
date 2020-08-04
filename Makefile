@@ -40,7 +40,7 @@ populate: create_db  ## Build and run containers
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; \
-	    then FLASK_ENV=testing docker-compose run --rm web pytest -n 4 --dist=loadfile -v tests/; \
+	    then FLASK_ENV=testing docker-compose run --rm web pytest -n $$(nproc --all) --dist=loadfile -v tests/; \
 	    else FLASK_ENV=testing docker-compose run --rm web pytest -v tests/ -k $(name); \
 	fi
 
