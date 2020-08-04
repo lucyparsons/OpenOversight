@@ -159,7 +159,7 @@ def officer_profile(officer_id):
                               .all()
 
     try:
-        faces = Face.query.filter_by(officer_id=officer_id).all()
+        faces = Face.query.filter_by(officer_id=officer_id).order_by(Face.featured.desc()).all()
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
         face_paths = []
         for face in faces:
@@ -495,6 +495,10 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['rank'] = request.args.getlist('rank')
 
     officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    for officer in officers.items:
+        officer_face = officer.face.order_by(Face.featured.desc()).first()
+        if officer_face:
+            officer.image = officer_face.image.filepath
 
     choices = {
         'race': RACE_CHOICES,
@@ -612,7 +616,7 @@ def delete_tag(tag_id):
 
     if not tag:
         flash('Tag not found')
-        return redirect(url_for('main.index'))
+        abort(404)
 
     if not current_user.is_administrator and current_user.is_area_coordinator:
         if current_user.ac_department_id != tag.officer.department_id:
@@ -640,7 +644,7 @@ def set_featured_tag(tag_id):
 
     if not tag:
         flash('Tag not found')
-        return redirect(url_for('main.index'))
+        abort(404)
 
     if not current_user.is_administrator and current_user.is_area_coordinator:
         if current_user.ac_department_id != tag.officer.department_id:
