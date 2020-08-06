@@ -46,6 +46,7 @@ class FindOfficerForm(Form):
     unique_internal_identifier = StringField('unique_internal_identifier', default='', validators=[Regexp(r'\w*'), Length(max=55)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
+    unit = SelectField('unit', default='Not Sure')
     rank = StringField('rank', default='Not Sure', validators=[Optional()])  # Gets rewritten by Javascript
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
@@ -384,6 +385,7 @@ class IncidentForm(DateFieldForm):
 class BrowseForm(Form):
     rank = QuerySelectField('rank', validators=[Optional()], get_label='job_title',
                             get_pk=lambda job: job.job_title)  # query set in view function
+    unit = SelectField('unit', default='Not Sure')
     name = StringField('Last name')
     badge = StringField('Badge number')
     unique_internal_identifier = StringField('Unique ID')

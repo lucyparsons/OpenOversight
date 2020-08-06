@@ -478,7 +478,8 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None, badge=None, unique_internal_identifier=None):
+def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None,
+                 badge=None, unique_internal_identifier=None, unit=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -489,6 +490,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     form_data['max_age'] = max_age
     form_data['name'] = name
     form_data['badge'] = badge
+    form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
@@ -507,6 +509,8 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['name'] = request.args.get('name')
     if request.args.get('badge'):
         form_data['badge'] = request.args.get('badge')
+    if request.args.get('unit') and request.args.get('unit') != 'Not Sure':
+        form_data['unit'] = int(request.args.get('unit'))
     if request.args.get('unique_internal_identifier'):
         form_data['unique_internal_identifier'] = request.args.get('unique_internal_identifier')
     if request.args.get('race') and all(race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist('race')):
@@ -514,16 +518,19 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
         form_data['gender'] = request.args.getlist('gender')
 
+    unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    officers = filter_by_form(form_data, Officer.query, department_id).filter_by(department_id=department_id)\
+        .order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
 
     choices = {
         'race': RACE_CHOICES,
         'gender': GENDER_CHOICES,
-        'rank': [(rc, rc) for rc in rank_choices]
+        'rank': [(rc, rc) for rc in rank_choices],
+        'unit': [('Not Sure', 'Not Sure')] + unit_choices
     }
 
     return render_template(
