@@ -1,4 +1,6 @@
 import datetime
+from typing import List
+
 from flask import current_app
 from io import BytesIO
 import pytest
@@ -111,9 +113,9 @@ def generate_officer():
     )
 
 
-def build_assignment(officer: Officer, unit: Unit, jobs: Job):
+def build_assignment(officer: Officer, units: List[Unit], jobs: Job):
     return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
-                             officer=officer, unit_id=unit.id,
+                             officer=officer, unit_id=random.choice(units).id,
                              star_date=pick_date(officer.full_name().encode('utf-8')),
                              resign_date=pick_date(officer.full_name().encode('utf-8')))
 
@@ -149,10 +151,11 @@ def build_salary(officer):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        for num in range(1, len(images)):
-            return models.Face(officer_id=officer.id,
-                               img_id=num,
-                               original_image_id=random.choice(images).id)
+        # for num in range(1, len(images)):  # <-- bug here, we always return on the first one, the for-loop is unneeded
+        img_id = random.choice(images).id
+        return models.Face(officer_id=officer.id,
+                           img_id=img_id,
+                           original_image_id=img_id)
     else:
         return False
 
@@ -267,8 +270,15 @@ def add_mockdata(session):
     SEED = current_app.config['SEED']
     random.seed(SEED)
 
-    unit1 = models.Unit(descrip="test", department_id=1)
-    session.add(unit1)
+    test_units = [
+        models.Unit(descrip="test", department_id=1),
+        models.Unit(descrip='District 13', department_id=1),
+        models.Unit(descrip='Donut Devourers', department_id=1),
+        models.Unit(descrip='Bureau of Organized Crime', department_id=2),
+        models.Unit(descrip='Porky\'s BBQ: Rub Division', department_id=2)
+    ]
+    session.add_all(test_units)
+    session.commit()
 
     test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
         [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
@@ -289,8 +299,8 @@ def add_mockdata(session):
 
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
-    assignments_dept1 = [build_assignment(officer, unit1, jobs_dept1) for officer in officers_dept1]
-    assignments_dept2 = [build_assignment(officer, unit1, jobs_dept2) for officer in officers_dept2]
+    assignments_dept1 = [build_assignment(officer, test_units, jobs_dept1) for officer in officers_dept1]
+    assignments_dept2 = [build_assignment(officer, test_units, jobs_dept2) for officer in officers_dept2]
 
     salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
@@ -329,12 +339,6 @@ def add_mockdata(session):
                                         username='b_meson',
                                         password='dog', confirmed=False)
     session.add(test_unconfirmed_user)
-    session.commit()
-
-    test_units = [models.Unit(descrip='District 13', department_id=1),
-                  models.Unit(descrip='Bureau of Organized Crime',
-                              department_id=1)]
-    session.add_all(test_units)
     session.commit()
 
     test_addresses = [
