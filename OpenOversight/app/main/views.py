@@ -523,7 +523,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter_by(department_id=department_id)\
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id)\
         .order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
 
     choices = {
