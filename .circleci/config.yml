@@ -68,7 +68,7 @@ jobs:
             source .venv/bin/activate
             fab staging migrate
 
-  production_backup_and_deploy:
+  production_deploy:
     machine:
       enabled: true
       image: ubuntu-1604:201903-01
@@ -76,8 +76,6 @@ jobs:
       - checkout
       - *setup_dependencies
       - *add_ssh_keys
-      - *backup_production
-      - *encrypt_and_save_backup
 
       - run:
           name: Run migrations and deploy
@@ -104,7 +102,7 @@ workflows:
               only: develop
   production_cd:
     jobs:
-      - production_backup_and_deploy:
+      - production_deploy:
           filters:
             branches:
               only: main
