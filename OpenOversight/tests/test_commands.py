@@ -755,7 +755,7 @@ def test_bulk_add_officers__no_create_flag(session, department, csv_path):
     assert officer.gender == officer_gender_updated
 
 
-def test_advanced_csv_import(session, department_with_ranks, test_csv_dir):
+def test_advanced_csv_import__success(session, department_with_ranks, test_csv_dir):
     # make sure department name aligns with the csv files
     assert department_with_ranks.name == "Springfield Police Department"
 
@@ -948,9 +948,13 @@ def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_p
 
     department_id = department_with_ranks.id
     department_name = department_with_ranks.name
+
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+
     officer = Officer(
         id=99001,
-        department_id=department_id,
+        department_id=other_department.id,
         first_name="Already",
         last_name="InDatabase",
     )

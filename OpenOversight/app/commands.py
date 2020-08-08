@@ -422,7 +422,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
 
 def _create_or_update_model(
-    row, existing_model_lookup, create_method, update_method, force_create
+    row, existing_model_lookup, create_method, update_method, force_create=False, model=None
 ):
     if not row["id"]:
         return create_method(row)
@@ -430,10 +430,11 @@ def _create_or_update_model(
         if not force_create:
             return update_method(row, existing_model_lookup[int(row["id"])])
         else:
-            model = existing_model_lookup.get(int(row["id"]))
-            if model:
-                db.session.delete(model)
-                db.session.flush()
+            if model is not None:
+                existing = model.query.filter_by(id=int(row["id"])).first()
+                if existing:
+                    db.session.delete(existing)
+                    db.session.flush()
             return create_method(row, force_id=True)
 
 
@@ -500,6 +501,8 @@ def advanced_csv_import(
 
     new_officers = {}
     existing_officers = Officer.query.filter_by(department_id=department_id).all()
+    if force_create:
+        existing_officers = Officer.query.all()
     id_to_officer = {officer.id: officer for officer in existing_officers}
 
     counter = 0
@@ -524,6 +527,8 @@ def advanced_csv_import(
                     "badge_number",
                     "job_title",
                     "most_recent_salary",
+                    "last_employment_date",
+                    "last_employment_notice",
                 ],
                 csv_name="officers",
             )
@@ -541,6 +546,7 @@ def advanced_csv_import(
                     create_method=create_officer_from_dict,
                     update_method=update_officer_from_dict,
                     force_create=force_create,
+                    model=Officer,
                 )
                 if connection_id is not None:
                     new_officers[connection_id] = officer
@@ -610,6 +616,7 @@ def advanced_csv_import(
                     create_method=create_assignment_from_dict,
                     update_method=update_assignment_from_dict,
                     force_create=force_create,
+                    model=Assignment,
                 )
                 counter += 1
                 if counter % 1000 == 0:
@@ -648,6 +655,7 @@ def advanced_csv_import(
                     create_method=create_salary_from_dict,
                     update_method=update_salary_from_dict,
                     force_create=force_create,
+                    model=Salary,
                 )
                 counter += 1
                 if counter % 1000 == 0:
@@ -714,6 +722,7 @@ def advanced_csv_import(
                     create_method=create_incident_from_dict,
                     update_method=update_incident_from_dict,
                     force_create=force_create,
+                    model=Incident,
                 )
                 if connection_id:
                     all_incidents[connection_id] = incident
@@ -768,6 +777,7 @@ def advanced_csv_import(
                     create_method=create_link_from_dict,
                     update_method=update_link_from_dict,
                     force_create=force_create,
+                    model=Link,
                 )
                 counter += 1
                 if counter % 1000 == 0:
