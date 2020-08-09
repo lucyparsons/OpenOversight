@@ -732,7 +732,8 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               job_title=job.id,
                               department=department.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              unit=None)
 
         data = process_form_data(form.data)
 
