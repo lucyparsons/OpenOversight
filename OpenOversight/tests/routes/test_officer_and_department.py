@@ -732,8 +732,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
                               star_no=666,
                               job_title=job.id,
                               department=department.id,
-                              birth_year=1990,
-                              unit=None)
+                              birth_year=1990)
 
         data = process_form_data(form.data)
 
@@ -758,7 +757,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = random.choice(unit_choices(department_id=department.id))
         first_name = 'Testy'
         last_name = 'OTester'
         middle_initial = 'R'

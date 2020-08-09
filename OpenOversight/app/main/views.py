@@ -98,6 +98,8 @@ def get_officer():
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
+    else:
+        current_app.logger.info(form.errors)
     return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
@@ -106,6 +108,8 @@ def get_ooid():
     form = FindOfficerIDForm()
     if form.validate_on_submit():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
+    else:
+        current_app.logger.info(form.errors)
     return render_template('input_find_ooid.html', form=form)
 
 
@@ -119,6 +123,8 @@ def get_started_labeling():
             login_user(user, form.remember_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password.')
+    else:
+        current_app.logger.info(form.errors)
     departments = Department.query.all()
     return render_template('label_data.html', departments=departments, form=form)
 
@@ -213,19 +219,20 @@ def add_assignment(officer_id):
         flash('Officer not found')
         abort(404)
 
-    if form.validate_on_submit() and (current_user.is_administrator or
-                                      (current_user.is_area_coordinator and
-                                       officer.department_id == current_user.ac_department_id)):
-        try:
-            add_new_assignment(officer_id, form)
-            flash('Added new assignment!')
-        except IntegrityError:
-            flash('Assignment already exists')
-        return redirect(url_for('main.officer_profile',
-                                officer_id=officer_id), code=302)
-    elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
-        abort(403)
-
+    if form.validate_on_submit():
+        if (current_user.is_administrator
+                or (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+            try:
+                add_new_assignment(officer_id, form)
+                flash('Added new assignment!')
+            except IntegrityError:
+                flash('Assignment already exists')
+            return redirect(url_for('main.officer_profile',
+                                    officer_id=officer_id), code=302)
+        elif current_user.is_area_coordinator and not officer.department_id == current_user.ac_department_id:
+            abort(403)
+    else:
+        current_app.logger.info(form.errors)
     return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
@@ -254,6 +261,8 @@ def edit_assignment(officer_id, assignment_id):
         assignment = edit_existing_assignment(assignment, form)
         flash('Edited officer assignment ID {}'.format(assignment.id))
         return redirect(url_for('main.officer_profile', officer_id=officer_id))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('edit_assignment.html', form=form)
 
 
@@ -309,6 +318,8 @@ def edit_salary(officer_id, salary_id):
         db.session.commit()
         flash('Edited officer salary ID {}'.format(salary.id))
         return redirect(url_for('main.officer_profile', officer_id=officer_id))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('add_edit_salary.html', form=form, update=True)
 
 
@@ -412,6 +423,7 @@ def add_department():
             flash('Department {} already exists'.format(form.name.data))
         return redirect(url_for('main.get_started_labeling'))
     else:
+        current_app.logger.info(form.errors)
         return render_template('add_edit_department.html', form=form, jsloads=jsloads)
 
 
@@ -475,6 +487,7 @@ def edit_department(department_id):
         flash('Department {} edited'.format(department.name))
         return redirect(url_for('main.list_officer', department_id=department.id))
     else:
+        current_app.logger.info(form.errors)
         return render_template('add_edit_department.html', form=form, update=True, jsloads=jsloads)
 
 
@@ -589,6 +602,7 @@ def add_officer():
         flash('New Officer {} added to OpenOversight'.format(officer.last_name))
         return redirect(url_for('main.submit_officer_images', officer_id=officer.id))
     else:
+        current_app.logger.info(form.errors)
         return render_template('add_officer.html', form=form, jsloads=jsloads)
 
 
@@ -614,6 +628,7 @@ def edit_officer(officer_id):
         flash('Officer {} edited'.format(officer.last_name))
         return redirect(url_for('main.officer_profile', officer_id=officer.id))
     else:
+        current_app.logger.info(form.errors)
         return render_template('edit_officer.html', form=form, jsloads=jsloads)
 
 
@@ -633,6 +648,7 @@ def add_unit():
         flash('New unit {} added to OpenOversight'.format(unit.descrip))
         return redirect(url_for('main.get_started_labeling'))
     else:
+        current_app.logger.info(form.errors)
         return render_template('add_unit.html', form=form)
 
 
@@ -740,6 +756,8 @@ def label_data(department_id=None, image_id=None):
                 flash('There was a problem saving this tag. Please try again later.')
         else:
             flash('Tag already exists between this officer and image! Tag not added.')
+    else:
+        current_app.logger.info(form.errors)
 
     return render_template('cop_face.html', form=form,
                            image=image, path=proper_path,
@@ -776,6 +794,7 @@ def get_tagger_gallery(page=1):
                                form=form,
                                form_data=form_data)
     else:
+        current_app.logger.info(form.errors)
         return redirect(url_for('main.get_ooid'), code=307)
 
 
