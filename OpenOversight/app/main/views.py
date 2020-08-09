@@ -91,6 +91,7 @@ def get_officer():
             race=form.data['race'] if form.data['race'] != 'Not Sure' else None,
             gender=form.data['gender'] if form.data['gender'] != 'Not Sure' else None,
             rank=form.data['rank'] if form.data['rank'] != 'Not Sure' else None,
+            unit=form.data['unit'] if form.data['unit'] != 'Not Sure' else None,
             min_age=form.data['min_age'],
             max_age=form.data['max_age'],
             name=form.data['name'],

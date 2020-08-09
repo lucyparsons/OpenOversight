@@ -922,7 +922,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = random.choice(unit_choices(department.id))
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'

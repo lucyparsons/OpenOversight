@@ -1,3 +1,5 @@
+from typing import Optional
+
 from future.utils import iteritems
 from urllib.request import urlopen
 
@@ -69,7 +71,9 @@ def get_or_create(session, model, defaults=None, **kwargs):
         return instance, True
 
 
-def unit_choices():
+def unit_choices(department_id: Optional[int] = None):
+    if department_id is not None:
+        return db.session.query(Unit).filter_by(department_id=department_id).all()
     return db.session.query(Unit).all()
 
 
