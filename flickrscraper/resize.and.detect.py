@@ -84,7 +84,7 @@ def highlight_faces(image, faces, output_filename):
 
     for face in faces:
         box = [(v.get('x', 0.0), v.get('y', 0.0))  # noqa
-        for v in face['fdBoundingPoly']['vertices']]
+               for v in face['fdBoundingPoly']['vertices']]
         # draw.line(box + [box[0]], width=5, fill='#00ff00')
 # removed the boxes, maybe they're useful later - josh
     # im.save(output_filename)

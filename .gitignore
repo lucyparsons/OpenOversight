@@ -87,6 +87,7 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
+*.iml
 .vscode/
 .vscode/**
 

@@ -1214,7 +1214,10 @@ def test_assignments_csv(mockdata, client, session):
         )
         csv_data = rv.data.decode('utf-8')
         csv_reader = csv.DictReader(csv_data.split("\n"))
-        lines = [row for row in csv_reader if int(row["officer id"]) == officer.id]
+        all_rows = [row for row in csv_reader]
+        for row in all_rows:
+            assert Officer.query.get(int(row["officer id"])).department_id == department.id
+        lines = [row for row in all_rows if int(row["officer id"]) == officer.id]
         assert len(lines) == 2
         assert lines[0]["officer unique identifier"] == officer.unique_internal_identifier
         assert lines[1]["officer unique identifier"] == officer.unique_internal_identifier

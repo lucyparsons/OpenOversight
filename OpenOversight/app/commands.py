@@ -10,7 +10,7 @@ from flask.cli import with_appcontext
 from flask import current_app
 
 from .models import db, Assignment, Department, Officer, User, Salary, Job
-from .utils import get_officer
+from .utils import get_officer, str_is_true
 
 
 @click.command()
@@ -155,7 +155,7 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
         setattr(obj, attribute, val)
 
 
-def update_officer_from_row(row, officer):
+def update_officer_from_row(row, officer, update_static_fields=False):
     def update_officer_field(fieldname, allow_blank=True):
         if fieldname in row and (row[fieldname] or allow_blank) and \
                 getattr(officer, fieldname) != row[fieldname]:
@@ -183,14 +183,23 @@ def update_officer_from_row(row, officer):
         if fieldname in row:
             if row[fieldname] == '':
                 row[fieldname] = None
-            if str(getattr(officer, fieldname)) != str(row[fieldname]):
-                raise Exception('Officer {} {} has differing {} field. Old: {}, new: {}'.format(
+            old_value = getattr(officer, fieldname)
+            new_value = row[fieldname]
+            if old_value is None:
+                update_officer_field(fieldname, new_value)
+            elif str(old_value) != str(new_value):
+                msg = 'Officer {} {} has differing {} field. Old: {}, new: {}'.format(
                     officer.first_name,
                     officer.last_name,
                     fieldname,
-                    getattr(officer, fieldname),
-                    row[fieldname]
-                ))
+                    old_value,
+                    new_value
+                )
+                if update_static_fields:
+                    print(msg)
+                    update_officer_field(fieldname, new_value)
+                else:
+                    raise Exception(msg)
 
     process_assignment(row, officer, compare=True)
     process_salary(row, officer, compare=True)
@@ -297,10 +306,7 @@ def process_salary(row, officer, compare=False):
 
     # See if the row has salary data
     if row_has_data(row, salary_fields['required'], salary_fields['optional']):
-        is_fiscal_year = False
-        if row['salary_is_fiscal_year'] == 'y' or row['salary_is_fiscal_year'] == 'Y' \
-                or row['salary_is_fiscal_year'] == 'True' or row['salary_is_fiscal_year'] == 'true':
-            is_fiscal_year = True
+        is_fiscal_year = str_is_true(row['salary_is_fiscal_year'])
 
         add_salary = True
         if compare:
@@ -337,9 +343,12 @@ def process_salary(row, officer, compare=False):
 
 @click.command()
 @click.argument('filename')
+@click.option('--no-create', is_flag=True, help='only update officers; do not create new ones')
+@click.option('--update-by-name', is_flag=True, help='update officers by first and last name (useful when star_no or unique_internal_identifier are not available)')
+@click.option('--update-static-fields', is_flag=True, help='allow updating normally-static fields like race, birth year, etc.')
 @with_appcontext
-def bulk_add_officers(filename):
-    """Bulk adds officers."""
+def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
+    """Add or update officers from a CSV file."""
     with open(filename, 'r') as f:
         ImportLog.clear_logs()
         csvfile = csv.DictReader(f)
@@ -355,7 +364,9 @@ def bulk_add_officers(filename):
         for field in required_fields:
             if field not in csvfile.fieldnames:
                 raise Exception('Missing required field {}'.format(field))
-        if 'star_no' not in csvfile.fieldnames and 'unique_internal_identifier' not in csvfile.fieldnames:
+        if (not update_by_name
+                and 'star_no' not in csvfile.fieldnames
+                and 'unique_internal_identifier' not in csvfile.fieldnames):
             raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
 
         for row in csvfile:
@@ -368,22 +379,29 @@ def bulk_add_officers(filename):
                 else:
                     raise Exception('Department ID {} not found'.format(department_id))
 
-            # check for existing officer based on unique ID or name/badge
-            if 'unique_internal_identifier' in csvfile.fieldnames and row['unique_internal_identifier']:
+            if not update_by_name:
+                # check for existing officer based on unique ID or name/badge
+                if 'unique_internal_identifier' in csvfile.fieldnames and row['unique_internal_identifier']:
+                    officer = Officer.query.filter_by(
+                        department_id=department_id,
+                        unique_internal_identifier=row['unique_internal_identifier']
+                    ).one_or_none()
+                elif 'star_no' in csvfile.fieldnames and row['star_no']:
+                    officer = get_officer(department_id, row['star_no'],
+                                          row['first_name'], row['last_name'])
+                else:
+                    raise Exception('Officer {} {} missing badge number and unique identifier'.format(row['first_name'],
+                                                                                                      row['last_name']))
+            else:
                 officer = Officer.query.filter_by(
                     department_id=department_id,
-                    unique_internal_identifier=row['unique_internal_identifier']
+                    last_name=row['last_name'],
+                    first_name=row['first_name']
                 ).one_or_none()
-            elif 'star_no' in csvfile.fieldnames and row['star_no']:
-                officer = get_officer(department_id, row['star_no'],
-                                      row['first_name'], row['last_name'])
-            else:
-                raise Exception('Officer {} {} missing badge number and unique identifier'.format(row['first_name'],
-                                                                                                  row['last_name']))
 
             if officer:
-                update_officer_from_row(row, officer)
-            else:
+                update_officer_from_row(row, officer, update_static_fields)
+            elif not no_create:
                 create_officer_from_row(row, department_id)
 
         db.session.commit()
@@ -391,3 +409,32 @@ def bulk_add_officers(filename):
         ImportLog.print_logs()
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
+
+
+@click.command()
+@click.argument('name')
+@click.argument('short_name')
+@click.argument('unique_internal_identifier', required=False)
+@with_appcontext
+def add_department(name, short_name, unique_internal_identifier):
+    """Add a new department to OpenOversight."""
+    dept = Department(name=name, short_name=short_name, unique_internal_identifier_label=unique_internal_identifier)
+    db.session.add(dept)
+    db.session.commit()
+    print("Department added with id {}".format(dept.id))
+
+
+@click.command()
+@click.argument('department_id')
+@click.argument('job_title')
+@click.argument('is_sworn_officer', type=click.Choice(["true", "false"], case_sensitive=False))
+@click.argument('order', type=int)
+@with_appcontext
+def add_job_title(department_id, job_title, is_sworn_officer, order):
+    """Add a rank to a department."""
+    department = Department.query.filter_by(id=department_id).one_or_none()
+    is_sworn = (is_sworn_officer == "true")
+    job = Job(job_title=job_title, is_sworn_officer=is_sworn, order=order, department=department)
+    db.session.add(job)
+    print('Added {} to {}'.format(job.job_title, department.name))
+    db.session.commit()
