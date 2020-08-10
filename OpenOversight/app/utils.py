@@ -34,8 +34,8 @@ SAVED_UMASK = os.umask(0o077)
 
 
 def get_s3_connection(config=None):
-    if os.getenv("S3_ENDPOINT"):
-        return boto3.client('s3', config=config, endpoint_url=os.getenv('S3_ENDPOINT'))
+    if current_app.config['S3_ENDPOINT']:
+        return boto3.client('s3', config=config, endpoint_url=current_app.config['S3_ENDPOINT'])
     else:
         return boto3.client('s3', config=config)
 
@@ -245,7 +245,7 @@ def get_presigned_image_url(s3_path: str):
 
 
 def upload_obj_to_s3(file_obj, dest_filename):
-    if os.getenv('S3_CONNECTION'):
+    if current_app.config['S3_ENDPOINT']:
         s3_client = get_s3_connection(Config(signature_version='s3v4'))
     else:
         s3_client = get_s3_connection()
