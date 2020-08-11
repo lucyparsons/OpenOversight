@@ -946,7 +946,6 @@ def _create_csv(data, path, csv_file_name):
 def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_id = department_with_ranks.id
     department_name = department_with_ranks.name
 
     other_department = Department(name="Other department", short_name="OPD")

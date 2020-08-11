@@ -1,3 +1,8 @@
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
+
+import dateutil
+
+from OpenOversight.app.main import choices
 from OpenOversight.app.models import (
     Assignment,
     Incident,
@@ -8,11 +13,8 @@ from OpenOversight.app.models import (
     Salary,
     db,
 )
-from OpenOversight.app.main import choices
-import dateutil
 from OpenOversight.app.utils import get_or_create, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
-from typing import Optional, Sequence, Tuple, Union, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import datetime  # noqa
@@ -48,7 +50,7 @@ def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
 
 
 def parse_float(value: Optional[Union[str, float]]) -> Optional[float]:
-    if value == 0. or value:
+    if value == 0.0 or value:
         return float(value)
     return None
 
@@ -77,7 +79,9 @@ def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Of
         gender=validate_choice(data.get("gender"), choices.GENDER_CHOICES),
         employment_date=parse_date(data.get("employment_date")),
         birth_year=parse_int(data.get("birth_year")),
-        unique_internal_identifier=parse_str(data.get("unique_internal_identifier"), None),
+        unique_internal_identifier=parse_str(
+            data.get("unique_internal_identifier"), None
+        ),
     )
     if force_id and data.get("id"):
         officer.id = data["id"]
@@ -108,8 +112,8 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
     if "birth_year" in data.keys():
         officer.birth_year = parse_int(data.get("birth_year"))
     if "unique_internal_identifier" in data.keys():
-        officer.unique_internal_identifier = (
-            parse_str(data.get("unique_internal_identifier"), None)
+        officer.unique_internal_identifier = parse_str(
+            data.get("unique_internal_identifier"), None
         )
     db.session.flush()
     return officer
@@ -228,14 +232,18 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
     return link
 
 
-def get_or_create_license_plate_from_dict(data: Dict[str, Any]) -> Tuple[LicensePlate, bool]:
+def get_or_create_license_plate_from_dict(
+    data: Dict[str, Any]
+) -> Tuple[LicensePlate, bool]:
     number = data["number"]
     state = parse_str(data.get("state"), None)
     state_validator(state)
     return get_or_create(db.session, LicensePlate, number=number, state=state,)
 
 
-def get_or_create_location_from_dict(data: Dict[str, Any]) -> Tuple[Optional[Location], bool]:
+def get_or_create_location_from_dict(
+    data: Dict[str, Any]
+) -> Tuple[Optional[Location], bool]:
     street_name = parse_str(data.get("street_name"), None)
     cross_street1 = parse_str(data.get("cross_street1"), None)
     cross_street2 = parse_str(data.get("cross_street2"), None)
