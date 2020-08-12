@@ -418,12 +418,15 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except (BadSignature, BadData):
+        except (BadSignature, BadData) as e:
+            current_app.logger.warning("failed to decrypt token: %s", e)
             return False
         if data.get('confirm') != self.id:
+            current_app.logger.warning("incorrect id here, expected %s, got %s", data.get('confirm'), self.id)
             return False
         self.confirmed = True
         db.session.add(self)
+        db.session.commit()
         return True
 
     def generate_reset_token(self, expiration=3600):

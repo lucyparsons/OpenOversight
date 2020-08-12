@@ -5,6 +5,7 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
 services:
   - docker
 env:
@@ -17,10 +18,10 @@ before_install:
 install:
   - true
 before_script:
-  - pip install coveralls flake8==3.5.0
+  - pip install coveralls flake8==3.8.3
   - sudo service postgresql stop
 script:
   - sudo make test
-  - flake8 --ignore=E501,E722
+  - flake8 --ignore=E501,E722,W504,W503
 after_success:
   - coveralls
