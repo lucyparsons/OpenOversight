@@ -131,11 +131,13 @@
     {% endwith %}
     <ul class="list-group">
       {% for officer in officers.items %}
-	{% if officer.assignments.all() %}
+        {% if officer.assignments.all() %}
           {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
-	  {% set star_no = "#" + assignment.star_no %}
-	  {% set job_title = assignment.job.job_title %}
-	{% endif %}
+          {% if assignment is not none %}
+            {% set star_no = "#" + assignment.star_no %}
+            {% set job_title = assignment.job.job_title %}
+          {% endif %}
+        {% endif %}
         <li class="list-group-item">
             <div class="row">
               <div class="col-md-6 col-xs-12">
