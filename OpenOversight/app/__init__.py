@@ -10,6 +10,7 @@ from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
+from flask_sitemap import Sitemap
 
 from .config import config
 
@@ -24,6 +25,8 @@ login_manager.login_view = 'auth.login'
 limiter = Limiter(key_func=get_remote_address,
                   default_limits=["100 per minute", "5 per second"])
 
+sitemap = Sitemap()
+
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -36,6 +39,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
+    sitemap.init_app(app)
 
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
