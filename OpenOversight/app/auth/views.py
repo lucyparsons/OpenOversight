@@ -5,6 +5,7 @@ from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
+from .. import sitemap
 from ..models import User, db
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
@@ -13,6 +14,19 @@ from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
 from .utils import admin_required
 from ..utils import set_dynamic_default
 from .recaptcha3 import is_recaptcha_enabled
+
+sitemap_endpoints = []
+
+
+def sitemap_include(view):
+    sitemap_endpoints.append(view.__name__)
+    return view
+
+
+@sitemap.register_generator
+def static_routes():
+    for endpoint in sitemap_endpoints:
+        yield 'auth.' + endpoint, {}
 
 
 @auth.before_app_request
@@ -35,6 +49,7 @@ def unconfirmed():
         return render_template('auth/unconfirmed.html')
 
 
+@sitemap_include
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -55,6 +70,7 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+@sitemap_include
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     if current_app.config['DISABLE_REGISTRATION']:

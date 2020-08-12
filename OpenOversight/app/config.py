@@ -56,6 +56,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     NUM_OFFICERS = 15000
+    SITEMAP_URL_SCHEME = 'http'
 
 
 class TestingConfig(BaseConfig):
@@ -64,10 +65,12 @@ class TestingConfig(BaseConfig):
     WTF_CSRF_ENABLED = False
     NUM_OFFICERS = 120
     APPROVE_REGISTRATIONS = False
+    SITEMAP_URL_SCHEME = 'http'
 
 
 class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    SITEMAP_URL_SCHEME = 'https'
 
     @classmethod
     def init_app(cls, app):  # pragma: no cover
