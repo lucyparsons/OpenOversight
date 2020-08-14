@@ -188,7 +188,11 @@ def officer_profile(officer_id):
             ' '.join([str(exception_type), str(value),
                       format_exc()])
         ))
-
+    if faces:
+        officer.image_url = url_for('static', filename=faces[0].image.filepath.replace('/static/',''), _external=True)
+        if faces[0].face_width and faces[0].face_height:
+            officer.image_width = faces[0].face_width
+            officer.image_height = faces[0].face_height
     return render_template('officer.html', officer=officer, paths=face_paths,
                            faces=faces, assignments=assignments, form=form)
 

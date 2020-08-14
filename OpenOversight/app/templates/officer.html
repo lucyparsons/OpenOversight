@@ -1,4 +1,82 @@
 {% extends "base.html" %}
+{% block title %}{{ officer.full_name() }} - OpenOversight{% endblock %}
+{% block meta %}
+  {% set job_title = officer.assignments[0].job.job_title if officer.assignments[0] and officer.assignments[0].job.job_title != 'Not Sure' else 'Employee' %}
+  {% set description = 'See detailed information about ' ~ officer.full_name() ~ ', ' ~ job_title ~ ' of the ' ~ officer.department.name ~ '.' %}
+  {% set image_url = officer.image_url | default(url_for('static', filename='images/placeholder.png', _external=True)) %}
+  <meta name="description" content="{{ description }}">
+  <meta name="author" content="Lucy Parsons Labs">
+  <meta name="image" content="{{ image_url }}">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@openoversight">
+  <meta name="twitter:title" content="{{ officer.full_name() }}">
+  <meta name="twitter:description" content="{{ description }}">
+  <meta name="twitter:image" content="{{ image_url }}">
+  <!-- Open Graph -->
+  {% if officer.image_width and officer.image_height %}
+  <meta property="og:image:width" content="{{ officer.image_width }}">
+  <meta property="og:image:height" content="{{ officer.image_height }}">
+  {% elif not officer.image_url %}
+  <meta property="og:image:width" content="200">
+  <meta property="og:image:height" content="200">
+  {% endif %}
+  <meta property="og:title" content="{{ officer.full_name() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="{{ image_url }}">
+  <meta property="og:url" content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:site_name" content="OpenOversight">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "Person",
+    "name": "{{ officer.full_name() }}",
+    {% if officer.birth_year %}"birthDate": "{{ officer.birth_year }}",{% endif %}
+    "gender": "{{ officer.gender_label() }}",
+    "jobTitle": "{{ job_title }}",
+    "worksFor": {
+      "@type" : "Organization",
+      "name": "{{ officer.department.name | title }}"
+    },
+    {% if officer.unique_internal_identifier %}"identifier": "{{ officer.unique_internal_identifier }}",{% endif %}
+    {% if officer.image_url %}
+    "image": {
+      "@type": "URL",
+      "url": "{{ officer.image_url }}"
+    },
+    {% endif %}
+    "url": {
+      "@type": "URL",
+      "url": "{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}"
+    },
+    "description": "{{ description }}",
+  }
+  </script>
+  <!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "OpenOversight",
+      "item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ officer.department.name|title }}",
+      "item": "{{ url_for('main.list_officer', department_id=officer.department.id, _external=True) }}"
+    },{
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ officer.full_name() }}"
+    }]
+  }
+  </script>
+{% endblock %}
 {% block content %}
 
 <div class="container" role="main">
