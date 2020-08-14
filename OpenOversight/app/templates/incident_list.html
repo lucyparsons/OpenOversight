@@ -1,6 +1,18 @@
 {% extends "list.html" %}
-{% block title %}View all incidents for {{ incident.department.name }} - OpenOversight{% endblock %}
-{% block meta %}<meta name="description" content="View all incidents for {{ incident.department.name }}.">{% endblock %}
+{% block title -%}
+	{%- if objects.items|length > 0 -%}
+		View all incidents for {{ objects.items[0].department.name }} - OpenOversight
+	{%- else -%}
+		No Incidents Found
+	{%- endif -%}
+{% endblock %}
+{% block meta %}
+	{% if objects.items|length > 0 %}
+		<meta name="description" content="View all incidents for {{ objects.items[0].department.name }}.">
+	{% else %}
+		<meta name="description" content="No incidents found.">
+	{% endif %}
+{% endblock %}
 {% block list %}
 	<h1>Incidents</h1>
 	{% if department %}
