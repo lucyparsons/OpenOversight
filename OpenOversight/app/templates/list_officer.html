@@ -131,22 +131,19 @@
     {% endwith %}
     <ul class="list-group">
       {% for officer in officers.items %}
-        {% if officer.face.first() is none %}
-            {% set officer_image = '/static/images/placeholder.png' %}
-          {% else %}
-            {% set officer_image = officer.face.first().image.filepath %}
+        {% if officer.assignments.all() %}
+          {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
+          {% if assignment is not none and assignment.star_no is not none %}
+            {% set star_no = "#" + assignment.star_no %}
+            {% set job_title = assignment.job.job_title %}
           {% endif %}
-          {% if officer.assignments.all() %}
-            {% set assignment = officer.assignments.order_by(officer.assignments[0].__table__.c.star_date.desc()).first() %}
-            {% if assignment is not none and assignment.star_no is not none %}
-                {% set star_no = "#" + assignment.star_no %}
-                {% set job_title = assignment.job.job_title %}
-            {% endif %}
-          {% endif %}
+        {% endif %}
         <li class="list-group-item">
             <div class="row">
               <div class="col-md-6 col-xs-12">
-                <img src="{{ officer_image }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+                <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
+                  <img src="{{ officer.image | default('/static/images/placeholder.png') }}" class="img-responsive thumbnail" alt="{% include 'partials/officer_name.html' %}">
+                </a>
               </div>
               <div class="col-md-6 col-xs-12">
                 <h2>

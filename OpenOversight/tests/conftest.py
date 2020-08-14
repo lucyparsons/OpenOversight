@@ -134,7 +134,8 @@ def assign_faces(officer, images):
         for num in range(1, len(images)):
             return models.Face(officer_id=officer.id,
                                img_id=num,
-                               original_image_id=random.choice(images).id)
+                               original_image_id=random.choice(images).id,
+                               featured=False)
     else:
         return False
 
