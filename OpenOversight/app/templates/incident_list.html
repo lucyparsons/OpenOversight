@@ -1,5 +1,6 @@
 {% extends "list.html" %}
-
+{% block title %}View all incidents for {{ incident.department.name }} - OpenOversight{% endblock %}
+{% block meta %}<meta name="description" content="View all incidents for {{ incident.department.name }}.">{% endblock %}
 {% block list %}
 	<h1>Incidents</h1>
 	{% if department %}

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
+{% block title %}Browse {{ department.name|title }} officers - OpenOversight{% endblock %}
+{% block meta %}<meta name="description" content="Browse or search for officers in the {{ department.name|title }}.">{% endblock %}
 {% block content %}
 <div class="container" role="main">
   <h1>{{ department.name|title }} Officers</h1>
