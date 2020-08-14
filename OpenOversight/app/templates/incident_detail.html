@@ -2,7 +2,7 @@
 {% set incident = obj %}
 {% block title %}{{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %} - OpenOversight{% endblock %}
 {% block meta %}
-{% if incident.description is not None %}
+{% if incident.description != None %}
 <meta name="description" content="{{ incident.description }}">
 {% else %}
 <meta name="description" content="View details for {{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %}.">
