@@ -1,0 +1,5 @@
+id,officer_id,salary,year,is_fiscal_year
+,#1,10001,2019,True
+,#1,10000,2018,True
+,#2,20000,2019,False
+33001,49483,50000,2018,False

@@ -1,14 +1,31 @@
 import csv
+import datetime
+import operator
+import os
 import traceback
 import uuid
 
+from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 import pandas as pd
 import pytest
-from click.testing import CliRunner
-from OpenOversight.app.commands import add_department, add_job_title, bulk_add_officers
-from OpenOversight.app.models import Assignment, Department, Job, Officer, Salary
+from OpenOversight.app.commands import (
+    add_department,
+    add_job_title,
+    bulk_add_officers,
+    advanced_csv_import,
+)
+from OpenOversight.app.models import (
+    Assignment,
+    Department,
+    Incident,
+    Job,
+    Link,
+    Officer,
+    Salary,
+    Unit,
+)
 from OpenOversight.app.utils import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
@@ -736,3 +753,461 @@ def test_bulk_add_officers__no_create_flag(session, department, csv_path):
     officer = Officer.query.filter_by(department_id=department_id).one()
     assert officer.unique_internal_identifier == officer_uuid
     assert officer.gender == officer_gender_updated
+
+
+def test_advanced_csv_import__success(session, department_with_ranks, test_csv_dir):
+    # make sure department name aligns with the csv files
+    assert department_with_ranks.name == "Springfield Police Department"
+
+    # set up existing data
+    officer = Officer(
+        id=49483,
+        department_id=1,
+        first_name="Already",
+        last_name="InDatabase",
+        birth_year=1951,
+    )
+    session.add(officer)
+
+    assignment = Assignment(
+        id=77021,
+        officer_id=officer.id,
+        star_no="4567",
+        star_date=datetime.date(2020, 1, 1),
+        job_id=department_with_ranks.jobs[0].id,
+    )
+    session.add(assignment)
+
+    salary = Salary(
+        id=33001, salary=30000, officer_id=officer.id, year=2018, is_fiscal_year=False,
+    )
+    session.add(salary)
+
+    incident = Incident(
+        id=123456,
+        report_number="Old_Report_Number",
+        department_id=1,
+        description="description",
+        time=datetime.time(23, 45, 16),
+    )
+    incident.officers = [officer]
+    session.add(incident)
+
+    link = Link(id=55051, title="Existing Link", url="https://www.example.org")
+    session.add(link)
+    officer.links = [link]
+
+    # run command with the csv files in the test_csvs folder
+    result = run_command_print_output(
+        advanced_csv_import,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            os.path.join(test_csv_dir, "officers.csv"),
+            "--assignments-csv",
+            os.path.join(test_csv_dir, "assignments.csv"),
+            "--salaries-csv",
+            os.path.join(test_csv_dir, "salaries.csv"),
+            "--links-csv",
+            os.path.join(test_csv_dir, "links.csv"),
+            "--incidents-csv",
+            os.path.join(test_csv_dir, "incidents.csv"),
+        ],
+    )
+
+    # command did not fail
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    print(list(Officer.query.all()))
+    all_officers = {
+        officer.unique_internal_identifier: officer
+        for officer in Officer.query.filter_by(department_id=1).all()
+    }
+    # make sure all the data is imported as expected
+    cop1 = all_officers["UID-1"]
+    assert cop1.first_name == "Mark"
+    assert cop1.last_name == "Smith"
+    assert cop1.gender == "M"
+    assert cop1.race == "WHITE"
+    assert cop1.employment_date == datetime.date(2019, 7, 12)
+    assert cop1.birth_year == 1984
+    assert cop1.middle_initial == "O"
+    assert cop1.suffix is None
+
+    salary_2018, salary_2019 = sorted(cop1.salaries, key=operator.attrgetter("year"))
+    assert salary_2018.year == 2018
+    assert salary_2018.salary == 10000
+    assert salary_2018.is_fiscal_year is True
+    assert salary_2018.overtime_pay is None
+    assert salary_2019.salary == 10001
+
+    assignment_po, assignment_cap = sorted(
+        cop1.assignments, key=operator.attrgetter("star_date")
+    )
+    assert assignment_po.star_no == "1234"
+    assert assignment_po.star_date == datetime.date(2019, 7, 12)
+    assert assignment_po.resign_date == datetime.date(2020, 1, 1)
+    assert assignment_po.job.job_title == "Police Officer"
+    assert assignment_po.unit_id is None
+
+    assert assignment_cap.star_no == "2345"
+    assert assignment_cap.job.job_title == "Captain"
+
+    cop2 = all_officers["UID-2"]
+    assert cop2.first_name == "Claire"
+    assert cop2.last_name == "Fuller"
+    assert cop2.suffix == "III"
+
+    assert len(cop2.salaries) == 1
+    assert cop2.salaries[0].salary == 20000
+
+    assert len(cop2.assignments.all()) == 1
+    assert cop2.assignments[0].job.job_title == "Commander"
+
+    cop3 = all_officers["UID-3"]
+    assert cop3.first_name == "Robert"
+    assert cop3.last_name == "Brown"
+
+    assert len(cop3.assignments.all()) == 0
+    assert len(cop3.salaries) == 0
+
+    cop4 = all_officers["UID-4"]
+    assert cop4.id == 49483
+    assert cop4.first_name == "Already"
+    assert cop4.birth_year == 1952
+    assert cop4.gender == "Other"
+    assert cop4.salaries[0].salary == 50000
+
+    assert len(cop4.assignments.all()) == 2
+    updated_assignment, new_assignment = sorted(
+        cop4.assignments, key=operator.attrgetter("star_date")
+    )
+    assert updated_assignment.job.job_title == "Police Officer"
+    assert updated_assignment.resign_date == datetime.date(2020, 7, 10)
+    assert updated_assignment.star_no == "4567"
+    assert new_assignment.job.job_title == "Captain"
+    assert new_assignment.star_date == datetime.date(2020, 7, 10)
+    assert new_assignment.star_no == "54321"
+
+    incident = cop4.incidents[0]
+    assert incident.report_number == "CR-1234"
+    license_plates = {plate.state: plate.number for plate in incident.license_plates}
+    assert license_plates["NY"] == "ABC123"
+    assert license_plates["IL"] == "98UMC"
+
+    incident2 = Incident.query.filter_by(report_number="CR-9912").one()
+    address = incident2.address
+    assert address.street_name == "Fake Street"
+    assert address.cross_street1 == "Main Street"
+    assert address.cross_street2 is None
+    assert address.city == "Chicago"
+    assert address.state == "IL"
+    assert address.zip_code == "60603"
+    assert incident2.officers == [cop1]
+
+    incident3 = Incident.query.get(123456)
+    assert incident3.report_number == "CR-39283"
+    assert incident3.description == "Don't know where it happened"
+    assert incident3.officers == [cop1]
+    assert incident3.date == datetime.date(2020, 7, 26)
+    lp = incident3.license_plates[0]
+    assert lp.number == "XYZ11"
+    assert lp.state is None
+    assert incident3.address is None
+    assert incident3.time is None
+
+    link_new = cop4.links[0]
+    assert [link_new] == list(cop1.links)
+    assert link_new.title == "A Link"
+    assert link_new.url == "https://www.example.com"
+    assert {officer.id for officer in link_new.officers} == {cop1.id, cop4.id}
+    incident_link = incident2.links[0]
+    assert incident_link.url == "https://www.example.com/incident"
+    assert incident_link.title == "Another Link"
+    assert incident_link.author == "Example Times"
+
+    updated_link = Link.query.get(55051)
+    assert updated_link.title == "Updated Link"
+    assert updated_link.officers == []
+    assert updated_link.incidents == [incident3]
+
+
+def _create_csv(data, path, csv_file_name):
+    csv_path = os.path.join(str(path), csv_file_name)
+    field_names = set().union(*[set(row.keys()) for row in data])
+    with open(csv_path, "w") as f:
+        csv_writer = csv.DictWriter(f, field_names)
+        csv_writer.writeheader()
+        csv_writer.writerows(data)
+    return csv_path
+
+
+def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_path):
+    tmp_path = str(tmp_path)
+
+    department_name = department_with_ranks.name
+
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+
+    officer = Officer(
+        id=99001,
+        department_id=other_department.id,
+        first_name="Already",
+        last_name="InDatabase",
+    )
+    session.add(officer)
+    session.flush()
+
+    # create temporary csv files
+    officers_data = [
+        {
+            "id": 99001,
+            "department_name": department_name,
+            "last_name": "Test",
+            "first_name": "First",
+        },
+        {
+            "id": 99002,
+            "department_name": department_name,
+            "last_name": "Test",
+            "first_name": "Second",
+        },
+        {
+            "id": 99003,
+            "department_name": department_name,
+            "last_name": "Test",
+            "first_name": "Third",
+        },
+    ]
+
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    assignments_data = [
+        {
+            "id": 98001,
+            "officer_id": 99002,
+            "job title": RANK_CHOICES_1[1],
+            "badge number": "12345",
+            "start date": "2020-07-24",
+        }
+    ]
+    assignments_csv = _create_csv(assignments_data, tmp_path, "assignments.csv")
+
+    salaries_data = [{"id": 77001, "officer_id": 99003, "year": 2019, "salary": 98765}]
+    salaries_csv = _create_csv(salaries_data, tmp_path, "salaries.csv")
+
+    incidents_data = [
+        {
+            "id": 66001,
+            "officer_ids": "99002|99001",
+            "department_name": department_name,
+            "street_name": "Fake Street",
+        }
+    ]
+    incidents_csv = _create_csv(incidents_data, tmp_path, "incidents.csv")
+
+    links_data = [
+        {
+            "id": 55001,
+            "officer_ids": "99001",
+            "incident_ids": "",
+            "url": "https://www.example.org/3629",
+        }
+    ]
+    links_csv = _create_csv(links_data, tmp_path, "links.csv")
+
+    # run command with --force-create
+    result = run_command_print_output(
+        advanced_csv_import,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            officers_csv,
+            "--assignments-csv",
+            assignments_csv,
+            "--salaries-csv",
+            salaries_csv,
+            "--incidents-csv",
+            incidents_csv,
+            "--links-csv",
+            links_csv,
+            "--force-create",
+        ],
+    )
+
+    # make sure command did not fail
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    # make sure all the data is imported as expected
+    cop1 = Officer.query.get(99001)
+    assert cop1.first_name == "First"
+
+    cop2 = Officer.query.get(99002)
+    assert cop2.assignments[0].star_no == "12345"
+    assert cop2.assignments[0] == Assignment.query.get(98001)
+
+    cop3 = Officer.query.get(99003)
+    assert cop3.salaries[0].salary == 98765
+    assert cop3.salaries[0] == Salary.query.get(77001)
+
+    incident = Incident.query.get(66001)
+    assert incident.address.street_name == "Fake Street"
+    assert cop1.incidents[0] == incident
+    assert cop2.incidents[0] == incident
+
+    link = Link.query.get(55001)
+    assert link.url == "https://www.example.org/3629"
+    assert cop1.links[0] == link
+
+
+def test_advanced_csv_import__extra_fields_officers(
+    session, department_with_ranks, tmp_path
+):
+    department_name = department_with_ranks.name
+    # create csv with invalid field 'name'
+    officers_data = [
+        {"id": "", "department_name": department_name, "name": "John Smith"},
+    ]
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    # run command
+    result = run_command_print_output(
+        advanced_csv_import,
+        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+    )
+
+    # expect the command to fail because of unexpected field 'name'
+    assert result.exception is not None
+    assert "unexpected" in str(result.exception).lower()
+    assert "name" in str(result.exception)
+
+
+def test_advanced_csv_import__missing_required_field_officers(
+    session, department_with_ranks, tmp_path
+):
+    department_name = department_with_ranks.name
+    # create csv with missing field 'id'
+    officers_data = [
+        {
+            "department_name": department_name,
+            "first_name": "John",
+            "last_name": "Smith",
+        },
+    ]
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    # run command
+    result = run_command_print_output(
+        advanced_csv_import,
+        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+    )
+
+    # expect the command to fail because 'id' is missing
+    assert result.exception is not None
+    assert "missing" in str(result.exception).lower()
+    assert "id" in str(result.exception)
+
+
+def test_advanced_csv_import__wrong_department(
+    session, department_with_ranks, tmp_path
+):
+    department_name = department_with_ranks.name
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+
+    # create csv
+    officers_data = [
+        {
+            "id": "",
+            "department_name": department_name,
+            "first_name": "John",
+            "last_name": "Smith",
+        },
+    ]
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    # run command with wrong department name
+    result = run_command_print_output(
+        advanced_csv_import, [other_department.name, "--officers-csv", officers_csv],
+    )
+
+    # expect command to fail because the department name provided to the
+    # command is different than the one in the csv
+    assert result.exception is not None
+    assert result.exit_code != 0
+
+
+def test_advanced_csv_import__update_officer_different_department(
+    session, department_with_ranks, tmp_path
+):
+    department_name = department_with_ranks.name
+
+    # set up data
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+    officer = Officer(
+        id=99021, department_id=other_department.id, first_name="Chris", last_name="Doe"
+    )
+    session.add(officer)
+
+    # create csv to update the officer
+    officers_data = [
+        {
+            "id": 99021,
+            "department_name": department_name,
+            "first_name": "John",
+            "last_name": "Smith",
+        },
+    ]
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    # run command
+    result = run_command_print_output(
+        advanced_csv_import,
+        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+    )
+
+    # command fails because the officer is assigned to a different department
+    # and cannot be updated
+    assert result.exception is not None
+    assert result.exit_code != 0
+
+
+def test_advanced_csv_import__unit_other_department(
+    session, department_with_ranks, tmp_path
+):
+    department_id = department_with_ranks.id
+
+    # set up data
+    officer = generate_officer()
+    officer.department_id = department_id
+    session.add(officer)
+    session.flush()
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+    session.flush()
+    unit = Unit(department_id=other_department.id)
+    session.add(unit)
+    session.flush()
+
+    # csv with unit_id referring to a unit in a different department
+    assignments_data = [
+        {
+            "id": "",
+            "officer_id": officer.id,
+            "job title": RANK_CHOICES_1[1],
+            "unit_id": unit.id,
+        }
+    ]
+    assignments_csv = _create_csv(assignments_data, tmp_path, "assignments.csv")
+    result = run_command_print_output(
+        advanced_csv_import,
+        [department_with_ranks.name, "--assignments-csv", assignments_csv],
+    )
+
+    # command fails because the unit does not belong to the department
+    assert result.exception is not None
+    assert result.exit_code != 0
