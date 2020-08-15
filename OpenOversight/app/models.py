@@ -117,10 +117,11 @@ class Officer(db.Model):
 
     def full_name(self):
         if self.middle_initial:
+            middle_initial = self.middle_initial + '.' if len(self.middle_initial) == 1 else self.middle_initial
             if self.suffix:
-                return '{} {}. {} {}'.format(self.first_name, self.middle_initial, self.last_name, self.suffix)
+                return '{} {}. {} {}'.format(self.first_name, middle_initial, self.last_name, self.suffix)
             else:
-                return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+                return '{} {}. {}'.format(self.first_name, middle_initial, self.last_name)
         if self.suffix:
             return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
