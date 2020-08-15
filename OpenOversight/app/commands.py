@@ -12,6 +12,8 @@ from flask import current_app
 from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer, str_is_true
 
+from OpenOversight.app.csv_imports import import_csv_files
+
 
 @click.command()
 @with_appcontext
@@ -438,6 +440,48 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
         ImportLog.print_logs()
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
+
+
+@click.command()
+@click.argument("department-name")
+@click.option("--officers-csv", type=click.Path(exists=True))
+@click.option("--assignments-csv", type=click.Path(exists=True))
+@click.option("--salaries-csv", type=click.Path(exists=True))
+@click.option("--links-csv", type=click.Path(exists=True))
+@click.option("--incidents-csv", type=click.Path(exists=True))
+@click.option("--force-create", is_flag=True, help="Only for development/testing!")
+@with_appcontext
+def advanced_csv_import(
+    department_name,
+    officers_csv,
+    assignments_csv,
+    salaries_csv,
+    links_csv,
+    incidents_csv,
+    force_create,
+):
+    """
+    Add or update officers, assignments, salaries, links and incidents from csv
+    files in the department DEPARTMENT_NAME.
+
+    The csv files are treated as the source of truth.
+    Existing entries might be overwritten as a result, backing up the
+    database and running the command locally first is highly recommended.
+
+    See the documentation before running the command.
+    """
+    if force_create and current_app.config["ENV"] == "production":
+        raise Exception("--force-create cannot be used in production!")
+
+    import_csv_files(
+        department_name,
+        officers_csv,
+        assignments_csv,
+        salaries_csv,
+        links_csv,
+        incidents_csv,
+        force_create,
+    )
 
 
 @click.command()

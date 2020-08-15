@@ -184,7 +184,7 @@ def officer_profile(officer_id):
                               .all()
 
     try:
-        faces = Face.query.filter_by(officer_id=officer_id).all()
+        faces = Face.query.filter_by(officer_id=officer_id).order_by(Face.featured.desc()).all()
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
         face_paths = []
         for face in faces:
@@ -537,8 +537,11 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id)\
-        .order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    for officer in officers.items:
+        officer_face = officer.face.order_by(Face.featured.desc()).first()
+        if officer_face:
+            officer.image = officer_face.image.filepath
 
     choices = {
         'race': RACE_CHOICES,
@@ -660,7 +663,7 @@ def delete_tag(tag_id):
 
     if not tag:
         flash('Tag not found')
-        return redirect(url_for('main.index'))
+        abort(404)
 
     if not current_user.is_administrator and current_user.is_area_coordinator:
         if current_user.ac_department_id != tag.officer.department_id:
@@ -678,6 +681,39 @@ def delete_tag(tag_id):
                       format_exc()])
         ))
     return redirect(url_for('main.index'))
+
+
+@main.route('/tag/set_featured/<int:tag_id>', methods=['POST'])
+@login_required
+@ac_or_admin_required
+def set_featured_tag(tag_id):
+    tag = Face.query.filter_by(id=tag_id).first()
+
+    if not tag:
+        flash('Tag not found')
+        abort(404)
+
+    if not current_user.is_administrator and current_user.is_area_coordinator:
+        if current_user.ac_department_id != tag.officer.department_id:
+            abort(403)
+
+    # Set featured=False on all other tags for the same officer
+    for face in Face.query.filter_by(officer_id=tag.officer_id).all():
+        face.featured = False
+    # Then set this tag as featured
+    tag.featured = True
+
+    try:
+        db.session.commit()
+        flash('Successfully set this tag as featured')
+    except:  # noqa
+        flash('Unknown error occurred')
+        exception_type, value, full_tback = sys.exc_info()
+        current_app.logger.error('Error setting featured tag: {}'.format(
+            ' '.join([str(exception_type), str(value),
+                      format_exc()])
+        ))
+    return redirect(url_for('main.officer_profile', officer_id=tag.officer_id))
 
 
 @main.route('/leaderboard')
