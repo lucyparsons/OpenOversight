@@ -35,6 +35,10 @@
                 <td><b>Department</b></td>
                 <td>{{ face.image.department.name }}</td>
               </tr>
+              <tr>
+                <td><b>Featured</b></td>
+                <td>{{ face.featured }}</td>
+              </tr>
             </tbody>
           </table>
 
@@ -71,6 +75,14 @@
                   Tag this image
                 </button>
               </a>
+            </form>
+          </p>
+          <h3>Set as featured tag <small>Admin only</small></h3>
+          <p>
+            <form action="{{ url_for('main.set_featured_tag', tag_id=face.id) }}" method="post">
+              <button type="submit" name="action" class="btn btn-primary" {% if face.featured %}disabled{% endif %}>
+                Set as featured tag
+              </button>
             </form>
           </p>
           {% endif %}

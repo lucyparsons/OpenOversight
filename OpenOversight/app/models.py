@@ -1,5 +1,4 @@
 import re
-from urllib.parse import urlparse
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
@@ -9,7 +8,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, BadData
 from flask_login import UserMixin
 from flask import current_app
-from .validators import state_validator
+from .validators import state_validator, url_validator
 from . import login_manager
 
 db = SQLAlchemy()
@@ -230,6 +229,7 @@ class Face(db.Model):
     original_image = db.relationship('Image', backref='tags', foreign_keys=[original_image_id], lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     user = db.relationship('User', backref='faces')
+    featured = db.Column(db.Boolean, nullable=False, default=False, server_default='false')
 
     __table_args__ = (UniqueConstraint('officer_id', 'img_id',
                       name='unique_faces'), )
@@ -348,11 +348,7 @@ class Link(db.Model):
 
     @validates('url')
     def validate_url(self, key, url):
-        parsed = urlparse(url)
-        if parsed.scheme not in ['http', 'https']:
-            raise ValueError('Not a valid URL')
-
-        return url
+        return url_validator(url)
 
 
 class Incident(db.Model):

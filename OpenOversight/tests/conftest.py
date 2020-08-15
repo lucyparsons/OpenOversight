@@ -134,7 +134,8 @@ def assign_faces(officer, images):
         for num in range(1, len(images)):
             return models.Face(officer_id=officer.id,
                                img_id=num,
-                               original_image_id=random.choice(images).id)
+                               original_image_id=random.choice(images).id,
+                               featured=False)
     else:
         return False
 
@@ -212,6 +213,12 @@ def test_jpg_BytesIO():
     img.save(byte_io, img.format)
     byte_io.seek(0)
     return byte_io
+
+
+@pytest.fixture
+def test_csv_dir():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(test_dir, "test_csvs")
 
 
 def add_mockdata(session):
@@ -434,8 +441,12 @@ def mockdata(session):
 
 @pytest.fixture
 def department(session):
-    department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD', unique_internal_identifier_label='homer_number')
+    department = models.Department(
+        id=1,
+        name="Springfield Police Department",
+        short_name="SPD",
+        unique_internal_identifier_label="homer_number",
+    )
     session.add(department)
     session.commit()
     return department
@@ -444,12 +455,14 @@ def department(session):
 @pytest.fixture
 def department_with_ranks(department, session):
     for order, rank in enumerate(RANK_CHOICES_1):
-        session.add(models.Job(
-            job_title=rank,
-            order=order,
-            is_sworn_officer=True,
-            department=department
-        ))
+        session.add(
+            models.Job(
+                job_title=rank,
+                order=order,
+                is_sworn_officer=True,
+                department=department,
+            )
+        )
     session.commit()
     return department
 
