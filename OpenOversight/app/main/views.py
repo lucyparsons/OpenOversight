@@ -1302,9 +1302,9 @@ main.add_url_rule(
     methods=['GET', 'POST'])
 
 
-# This API only applies to links attached to officer profiles, not links
-# attached to incidents.
 class OfficerLinkApi(ModelView):
+    '''This API only applies to links attached to officer profiles, not links attached to incidents'''
+
     model = Link
     model_name = 'link'
     form = OfficerLinkForm
