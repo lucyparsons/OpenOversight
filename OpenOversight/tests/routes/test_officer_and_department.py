@@ -757,7 +757,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = Unit.query.filter_by(department_id=AC_DEPT).first()
         first_name = 'Testy'
         last_name = 'OTester'
         middle_initial = 'R'
@@ -849,7 +849,8 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
                               department=department.id,
                               unit=unit.id,
                               birth_year=1990,
-                              links=links)
+                              links=links,
+                              last_employment_date=None)
         data = process_form_data(form.data)
 
         rv = client.post(
@@ -922,7 +923,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        unit = random.choice(unit_choices())
+        unit = Unit.query.filter_by(department_id=AC_DEPT).first()
         first_name = 'Testier'
         last_name = 'OTester'
         middle_initial = 'R'
@@ -939,7 +940,8 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               job_title='COMMANDER',
                               department=department.id,
                               unit=unit.id,
-                              birth_year=1990)
+                              birth_year=1990,
+                              last_employment_date=None)
 
         data = process_form_data(form.data)
 
@@ -1470,7 +1472,7 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_p
         login_ac(client)
         data = dict(file=(test_png_BytesIO, '204Cat.png'),)
         department = Department.query.filter_by(id=AC_DEPT).first()
-        officer = department.officers[4]
+        officer = department.officers[-1]
         officer_face_count = officer.face.count()
 
         crop_mock = MagicMock(return_value=Image.query.first())
@@ -1501,7 +1503,7 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
         assert officer1.unique_internal_identifier is None
         assert officer2.unique_internal_identifier is None
 
-        form = EditOfficerForm(last_name='Changed', unique_internal_identifier='')
+        form = EditOfficerForm(last_name='Changed', unique_internal_identifier='', last_employment_date=datetime(2018, 12, 15).date())
         data = process_form_data(form.data)
 
         # Edit first officer

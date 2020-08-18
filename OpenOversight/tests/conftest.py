@@ -2,7 +2,6 @@ import datetime
 from flask import current_app
 from io import BytesIO
 import pytest
-import random
 from selenium import webdriver
 import time
 import threading
@@ -13,6 +12,7 @@ import uuid
 import sys
 import os
 from PIL import Image as Pimage
+import random
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
@@ -81,17 +81,40 @@ def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
+def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
+    # source: https://stackoverflow.com/questions/40351791/how-to-hash-strings-into-a-float-in-01
+    # Wanted to deterministically create a date from a seed string (e.g. the hash or uuid on an officer object)
+    from struct import unpack
+    from hashlib import sha256
+
+    def bytes_to_float(b):
+        return float(unpack('L', sha256(b).digest()[:8])[0]) / 2 ** 64
+
+    if seed is None:
+        seed = str(uuid.uuid4()).encode('utf-8')
+
+    return datetime.datetime(start_year, 1, 1, 00, 00, 00) \
+        + datetime.timedelta(days=365 * (end_year - start_year) * bytes_to_float(seed))
+
+
+def pick_last_employment_details():
+    random.choice(['', 'quit, no other info available', 'released by department', 'unknown'])
+
+
 def generate_officer():
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
+    last_employment_options = [pick_date(l_name.encode('utf-8'), 2010, 2020), None]
     return models.Officer(
         last_name=l_name, first_name=f_name,
         middle_initial=m_initial,
         race=pick_race(), gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=pick_date(l_name.encode('utf-8'), 1970, 2009),
         department_id=pick_department().id,
-        unique_internal_identifier=pick_uid()
+        unique_internal_identifier=pick_uid(),
+        last_employment_date=random.choice(last_employment_options),
+        last_employment_details=pick_last_employment_details(),
     )
 
 

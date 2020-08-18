@@ -13,7 +13,7 @@ import random
 import sys
 from traceback import format_exc
 
-from sqlalchemy import func
+from sqlalchemy import func, Integer
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
@@ -78,6 +78,16 @@ def dept_choices():
     return db.session.query(Department).all()
 
 
+def year_choices():
+    oldest_year = db.session.query(cast(func.extract('year', Officer.employment_date), Integer)) \
+                            .filter(Officer.employment_date.isnot(None)) \
+                            .order_by(func.extract('year', Officer.employment_date)) \
+                            .limit(1).first()[0]
+    current_year = datetime.datetime.now().year
+    year_choices = [str(year) for year in range(oldest_year, current_year + 1)]
+    return year_choices
+
+
 def add_new_assignment(officer_id, form):
     # Resign date should be null
     if form.unit.data:
@@ -126,6 +136,8 @@ def add_officer_profile(form, current_user):
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
+                      last_employment_date=form.last_employment_date.data,
+                      last_employment_details=form.last_employment_details.data,
                       department_id=form.department.data.id)
     db.session.add(officer)
     db.session.commit()
@@ -301,6 +313,15 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
+    if form.get('year') is not None and form.get('year') in year_choices():
+        year = int(form.get('year'))
+        last_employment_date_comparator = datetime.date(year, 1, 1)
+        employment_date_comparator = datetime.date(year + 1, 1, 1)
+        last_employment_date_query = db.or_(Officer.last_employment_date >= last_employment_date_comparator,
+                                            Officer.last_employment_date.is_(None))
+        employment_date_query = db.or_(Officer.employment_date < employment_date_comparator,
+                                       Officer.employment_date.is_(None))
+        officer_query = officer_query.filter(db.and_(last_employment_date_query, employment_date_query))
 
     officer_query = officer_query.outerjoin(Job, Assignment.job)
     rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]
