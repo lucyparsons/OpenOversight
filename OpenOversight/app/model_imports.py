@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil
 
-from OpenOversight.app.main import choices
-from OpenOversight.app.models import (
+from .main import choices
+from .models import (
     Assignment,
     Incident,
     LicensePlate,
@@ -13,8 +13,8 @@ from OpenOversight.app.models import (
     Salary,
     db,
 )
-from OpenOversight.app.utils import get_or_create, str_is_true
-from OpenOversight.app.validators import state_validator, url_validator
+from .utils import get_or_create, str_is_true
+from .validators import state_validator, url_validator
 
 if TYPE_CHECKING:
     import datetime  # noqa

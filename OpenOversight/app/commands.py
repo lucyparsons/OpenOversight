@@ -12,7 +12,7 @@ from flask import current_app
 from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer, str_is_true
 
-from OpenOversight.app.csv_imports import import_csv_files
+from .csv_imports import import_csv_files
 
 
 @click.command()
