@@ -41,13 +41,17 @@ populate: create_db  ## Build and run containers
 test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
 	    if [ "$$(uname)" == "Darwin" ]; then \
-			FLASK_ENV=testing docker-compose run --rm web pytest -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/; \
+			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/ app; \
 		else \
-			FLASK_ENV=testing docker-compose run --rm web pytest -n $$(nproc --all) --dist=loadfile -v tests/; \
+			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(nproc --all) --dist=loadfile -v tests/ app; \
 		fi; \
 	else \
-	    FLASK_ENV=testing docker-compose run --rm web pytest -v tests/ -k $(name); \
+	    FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -v tests/ app -k $(name); \
 	fi
+
+.PHONY: lint
+lint: start
+	docker-compose run --rm web flake8
 
 .PHONY: cleanassets
 cleanassets:
@@ -76,3 +80,6 @@ help: ## Print this message and exit
 	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%s\033[0m : %s\n", $$1, $$2}' $(MAKEFILE_LIST) \
 		| sort \
 		| column -s ':' -t
+
+attach:
+	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
