@@ -482,6 +482,14 @@ def crop_image(image, crop_data=None, department_id=None):
 
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
+    if not image_type:
+        image_type = os.path.splitext(image.filepath)[1].lower()[1:]
+        if image_type in ('jp2', 'j2k', 'jpf', 'jpx', 'jpm', 'mj2'):
+            image_type = 'jpeg2000'
+        elif image_type in ('jpg', 'jpeg', 'jpe', 'jif', 'jfif', 'jfi'):
+            image_type = 'jpeg'
+        elif image_type in ('tif', 'tiff'):
+            image_type = 'tiff'
     pimage = Pimage.open(image_buf)
 
     SIZE = 300, 300
