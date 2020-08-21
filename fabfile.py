@@ -67,7 +67,7 @@ def migrate():
 def backup():
     with cd(env.backup_dir):
         backup_datetime = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        run('%s/bin/python %s/OpenOversight/db_backup.py' % (env.venv_dir, env.code_dir))
+        run('%s/bin/python %s/db_backup.py' % (env.venv_dir, env.code_dir))
         run('mv backup.sql backup.sql_%s' % backup_datetime)
         run('su %s -c "aws s3 sync s3://%s /home/nginx/openoversight_backup/s3/%s"'
             % (env.unprivileged_user, env.s3bucket, env.s3bucket))

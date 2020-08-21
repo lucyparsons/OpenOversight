@@ -1,3 +1,5 @@
+from typing import Optional
+
 from future.utils import iteritems
 from urllib.request import urlopen
 
@@ -70,7 +72,9 @@ def get_or_create(session, model, defaults=None, **kwargs):
         return instance, True
 
 
-def unit_choices():
+def unit_choices(department_id: Optional[int] = None):
+    if department_id is not None:
+        return db.session.query(Unit).filter_by(department_id=department_id).all()
     return db.session.query(Unit).all()
 
 
@@ -262,7 +266,8 @@ def filter_by_form(form, officer_query, department_id=None):
         Assignment.officer_id,
         Assignment.job_id,
         Assignment.star_date,
-        Assignment.star_no
+        Assignment.star_no,
+        Assignment.unit_id
     ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
     officer_query = officer_query.outerjoin(subq)
 
@@ -279,6 +284,11 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(
             subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
         )
+    if form.get('unit'):
+        officer_query = officer_query.filter(
+            subq.c.assignments_unit_id == form['unit']
+        )
+
     if form.get('unique_internal_identifier'):
         officer_query = officer_query.filter(
             Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
