@@ -1,5 +1,5 @@
 import datetime
-from flask import render_template, redirect, request, url_for, flash, abort
+from flask import render_template, redirect, request, url_for, flash, abort, current_app
 from flask.views import MethodView
 from flask_login import login_required, current_user
 from ..auth.utils import ac_or_admin_required
@@ -56,6 +56,8 @@ class ModelView(MethodView):
             db.session.commit()
             flash('{} created!'.format(self.model_name))
             return self.get_redirect_url(obj_id=new_obj.id)
+        else:
+            current_app.logger.info(form.errors)
 
         return render_template('{}_new.html'.format(self.model_name), form=form)
 
