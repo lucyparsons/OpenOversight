@@ -59,6 +59,8 @@ def login():
             login_user(user, form.remember_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password.')
+    else:
+        current_app.logger.info(form.errors)
     return render_template('auth/login.html', form=form)
 
 
@@ -99,6 +101,8 @@ def register():
                        'auth/email/confirm', user=user, token=token)
             flash('A confirmation email has been sent to you.')
         return redirect(url_for('auth.login'))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('auth/register.html', form=form, jsloads=jsloads, registration_enabled=True)
 
 
@@ -142,6 +146,8 @@ def change_password():
             return redirect(url_for('main.index'))
         else:
             flash('Invalid password.')
+    else:
+        current_app.logger.info(form.errors)
     return render_template("auth/change_password.html", form=form, jsloads=jsloads)
 
 
@@ -161,6 +167,8 @@ def password_reset_request():
         flash('An email with instructions to reset your password has been '
               'sent to you.')
         return redirect(url_for('auth.login'))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('auth/reset_password.html', form=form)
 
 
@@ -178,6 +186,8 @@ def password_reset(token):
             return redirect(url_for('auth.login'))
         else:
             return redirect(url_for('main.index'))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('auth/reset_password.html', form=form)
 
 
@@ -197,6 +207,8 @@ def change_email_request():
             return redirect(url_for('main.index'))
         else:
             flash('Invalid email or password.')
+    else:
+        current_app.logger.info(form.errors)
     return render_template("auth/change_email.html", form=form)
 
 
@@ -225,6 +237,8 @@ def change_dept():
         db.session.commit()
         flash('Updated!')
         return redirect(url_for('main.index'))
+    else:
+        current_app.logger.info(form.errors)
     return render_template('auth/change_dept_pref.html', form=form)
 
 
