@@ -334,17 +334,19 @@ def test_featured_tag_replaces_others(mockdata, client, session):
         officer = Officer.query.filter_by(id=tag1.officer_id).one()
 
         # Add second tag for officer
-        mock = MagicMock(return_value=Image.query.filter(Image.id != tag1.img_id).first())
+        second_image = Image.query.filter(Image.department_id == officer.department_id).\
+            filter(Image.id != tag1.img_id).first()
+        assert second_image is not None
+        mock = MagicMock(return_value=second_image)
         with patch('OpenOversight.app.main.views.crop_image', mock):
-            image = Image.query.filter(Image.department_id == officer.department_id).first()
             form = FaceTag(officer_id=officer.id,
-                           image_id=image.id,
+                           image_id=second_image.id,
                            dataX=34,
                            dataY=32,
                            dataWidth=3,
                            dataHeight=33)
             rv = client.post(
-                url_for('main.label_data', image_id=image.id),
+                url_for('main.label_data', image_id=second_image.id),
                 data=form.data,
                 follow_redirects=True
             )
