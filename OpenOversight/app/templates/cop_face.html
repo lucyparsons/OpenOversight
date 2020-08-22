@@ -108,18 +108,18 @@
           {% else %}
           <a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">
           {% endif %}
-            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a>
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
         </div>
         <div class="col-sm-2 text-center done-button">
           <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-            Done with this image!
+            All officers have been identified!
           </a>
         </div>
 	<hr>
 
 	<div class="text-center button-explanation">
-	  <div class="text done-button-explanation"><b>Explanation</b>: click this button if you are done identifying officers in this image and would like to save OR if you cannot identify any officers.</div>
+          <div class="text done-button-explanation"><b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.</div>
 	  <div class="text skip-button-explanation"><b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.</div>
 	  <div class="text launchroster-button-explanation"><b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.</div>
 	</div>
