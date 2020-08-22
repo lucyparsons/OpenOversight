@@ -532,7 +532,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
         form_data['gender'] = request.args.getlist('gender')
 
-    unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).all()]
+    unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
