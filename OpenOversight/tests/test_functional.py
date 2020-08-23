@@ -4,6 +4,7 @@ import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.by import By
 from sqlalchemy.sql.expression import func
 from OpenOversight.app.models import db, Officer, Incident, Department
@@ -256,7 +257,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
 
 
 def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
-    # Set NULL race and gender for officer 2
+    # Set NULL race and gender for officer 1
     db.session.execute(
         Officer.__table__.update().where(Officer.id == 1).values(race=None, gender=None))
     db.session.commit()
@@ -265,16 +266,15 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
 
     # Nagivate to edit officer page for officer having NULL race and gender
     browser.get("http://localhost:5000/officer/1/edit")
-    wait_for_page_load(browser)
 
-    with wait_for_element(browser, By.ID, "gender"):
-        select = browser.find_element_by_id("gender")
-        selected_option = select.first_selected_option
-        selected_text = selected_option.text
-        assert selected_text == 'Not Sure'
+    wait_for_element(browser, By.ID, "gender")
+    select = Select(browser.find_element_by_id("gender"))
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
 
-    with wait_for_element(browser, By.ID, "race"):
-        select = browser.find_element_by_id("race")
-        selected_option = select.first_selected_option
-        selected_text = selected_option.text
-        assert selected_text == 'Not Sure'
+    wait_for_element(browser, By.ID, "race")
+    select = Select(browser.find_element_by_id("race"))
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
