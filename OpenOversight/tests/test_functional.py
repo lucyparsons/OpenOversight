@@ -19,6 +19,20 @@ def wait_for_page_load(browser, timeout=10):
     )
 
 
+def login_admin(browser):
+    browser.get("http://localhost:5000/auth/login")
+    with wait_for_page_load(browser):
+        elem = browser.find_element_by_id("email")
+        elem.clear()
+        elem.send_keys("test@example.org")
+        elem = browser.find_element_by_id("password")
+        elem.clear()
+        elem.send_keys("testtest")
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
+            wait_for_element(browser, By.TAG_NAME, "body")
+
+
 def wait_for_element(browser, locator, text, timeout=10):
     try:
         element_present = expected_conditions.presence_of_element_located(
@@ -100,17 +114,7 @@ def test_officer_browse_pagination(mockdata, browser):
 
 
 def test_last_name_capitalization(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
-
-    # get past the login page
-    elem = browser.find_element_by_id("email")
-    elem.clear()
-    elem.send_keys("test@example.org")
-    elem = browser.find_element_by_id("password")
-    elem.clear()
-    elem.send_keys("testtest")
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("submit").click()
+    login_admin(browser)
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("mcDonald", "McDonald"), ("Mei-Ying", "Mei-Ying")]
@@ -142,17 +146,7 @@ def test_last_name_capitalization(mockdata, browser):
 
 
 def test_last_name_capitalization_short_name(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
-
-    # get past the login page
-    elem = browser.find_element_by_id("email")
-    elem.clear()
-    elem.send_keys("test@example.org")
-    elem = browser.find_element_by_id("password")
-    elem.clear()
-    elem.send_keys("testtest")
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("submit").click()
+    login_admin(browser)
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("G", "G"), ("oh", "Oh")]
@@ -264,20 +258,23 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
 def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
     # Set NULL race and gender for officer 2
     db.session.execute(
-        Officer.__table__.update().where(Officer.id == 2).values(race=None, gender=None))
+        Officer.__table__.update().where(Officer.id == 1).values(race=None, gender=None))
     db.session.commit()
+
+    login_admin(browser)
+
     # Nagivate to edit officer page for officer having NULL race and gender
-    # NOTE: special test setup -- only the first officer gets this
-    browser.get("http://localhost:5000/officer/2/edit")
+    browser.get("http://localhost:5000/officer/1/edit")
     wait_for_page_load(browser)
-    wait_for_element(browser, By.ID, "gender")
 
-    select = browser.find_element_by_id("gender")
-    selected_option = select.first_selected_option
-    selected_text = selected_option.text
-    assert selected_text == 'Not Sure'
+    with wait_for_element(browser, By.ID, "gender"):
+        select = browser.find_element_by_id("gender")
+        selected_option = select.first_selected_option
+        selected_text = selected_option.text
+        assert selected_text == 'Not Sure'
 
-    select = browser.find_element_by_id("race")
-    selected_option = select.first_selected_option
-    selected_text = selected_option.text
-    assert selected_text == 'Not Sure'
+    with wait_for_element(browser, By.ID, "race"):
+        select = browser.find_element_by_id("race")
+        selected_option = select.first_selected_option
+        selected_text = selected_option.text
+        assert selected_text == 'Not Sure'
