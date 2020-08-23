@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from sqlalchemy.sql.expression import func
-from OpenOversight.app.models import Officer, Incident, Department
+from OpenOversight.app.models import db, Officer, Incident, Department
 from OpenOversight.app.config import BaseConfig
 
 
@@ -259,3 +259,25 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
 
     buttonRow = browser.find_element_by_id("description-overflow-row_" + incident_id)
     assert not buttonRow.is_displayed()
+
+def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
+    # Set NULL race and gender for officer 2
+    db.session.execute(
+        Officer.__table__.update().where(Officer.id == 2).values(race=None, gender=None))
+    db.session.commit()
+    # Nagivate to edit officer page for officer having NULL race and gender
+    # NOTE: special test setup -- only the first officer gets this
+    browser.get("http://localhost:5000/officer/2/edit")
+    wait_for_page_load(browser):
+    wait_for_element(browser, By.ID, "gender")
+
+    select = browser.find_element_by_id("gender")
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
+
+    select = browser.find_element_by_id("race")
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
+
