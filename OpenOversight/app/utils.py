@@ -21,6 +21,7 @@ import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
 from PIL import Image as Pimage
+from PIL import ExifTags
 from PIL.PngImagePlugin import PngImageFile
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
@@ -473,6 +474,32 @@ def create_description(self, form):
         date_updated=datetime.datetime.now())
 
 
+def conditionally_rotate_image(image):
+    try:
+        # NOTE: Pillow >= 6.0 provides `ImageOps.exif_transpose` which acts like the below code
+
+        # find the orientation key
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+
+        exif = dict(image._getexif().items())
+
+        if exif[orientation] == 3:
+            current_app.logger.info('image had EXIF orientation 3; rotating 180 degrees')
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            current_app.logger.info('image had EXIF orientation 6; rotating 270 degrees')
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            current_app.logger.info('image had EXIF orientation 8; rotating 90 degrees')
+            image = image.rotate(90, expand=True)
+        return image
+    except (AttributeError, KeyError, IndexError):
+        # cases: image don't have getexif
+        return image
+
+
 def crop_image(image, crop_data=None, department_id=None):
     if 'http' in image.filepath:
         with urlopen(image.filepath) as response:
@@ -487,6 +514,8 @@ def crop_image(image, crop_data=None, department_id=None):
     SIZE = 300, 300
     if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
         return image
+
+    pimage = conditionally_rotate_image(pimage)
 
     if crop_data:
         pimage = pimage.crop(crop_data)
