@@ -2,7 +2,7 @@ from __future__ import division
 from contextlib import contextmanager
 import pytest
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.by import By
