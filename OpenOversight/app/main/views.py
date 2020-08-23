@@ -621,9 +621,9 @@ def edit_officer(officer_id):
             link.user_id.data = current_user.get_id()
 
     if request.method == 'GET':
-        if officer.race == None:
+        if officer.race is None:
             form.race.data = 'Not Sure'
-        if officer.gender == None:
+        if officer.gender is None:
             form.gender.data = 'Not Sure'
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
