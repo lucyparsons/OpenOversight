@@ -620,6 +620,12 @@ def edit_officer(officer_id):
         if not link.user_id.data:
             link.user_id.data = current_user.get_id()
 
+    if request.method == 'GET':
+        if officer.race == None:
+            form.race.data = 'Not Sure'
+        if officer.gender == None:
+            form.gender.data = 'Not Sure'
+
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(403)
