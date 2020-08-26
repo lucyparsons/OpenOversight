@@ -1,4 +1,6 @@
 import datetime
+from typing import List
+
 from flask import current_app
 from io import BytesIO
 import pytest
@@ -16,7 +18,7 @@ from PIL import Image as Pimage
 
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
-from OpenOversight.app.models import db as _db
+from OpenOversight.app.models import db as _db, Unit, Job, Officer
 
 factory = Faker()
 
@@ -37,6 +39,22 @@ AC_DEPT = 1
 
 def pick_birth_date():
     return random.randint(1950, 2000)
+
+
+def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
+    # source: https://stackoverflow.com/questions/40351791/how-to-hash-strings-into-a-float-in-01
+    # Wanted to deterministically create a date from a seed string (e.g. the hash or uuid on an officer object)
+    from struct import unpack
+    from hashlib import sha256
+
+    def bytes_to_float(b):
+        return float(unpack('L', sha256(b).digest()[:8])[0]) / 2 ** 64
+
+    if seed is None:
+        seed = str(uuid.uuid4()).encode('utf-8')
+
+    return datetime.datetime(start_year, 1, 1, 00, 00, 00) \
+        + datetime.timedelta(days=365 * (end_year - start_year) * bytes_to_float(seed))
 
 
 def pick_race():
@@ -95,9 +113,11 @@ def generate_officer():
     )
 
 
-def build_assignment(officer, unit, jobs):
+def build_assignment(officer: Officer, units: List[Unit], jobs: Job):
     return models.Assignment(star_no=pick_star(), job_id=random.choice(jobs).id,
-                             officer=officer)
+                             officer=officer, unit_id=random.choice(units).id,
+                             star_date=pick_date(officer.full_name().encode('utf-8')),
+                             resign_date=pick_date(officer.full_name().encode('utf-8')))
 
 
 def build_note(officer, user):
@@ -131,10 +151,11 @@ def build_salary(officer):
 
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
-        for num in range(1, len(images)):
-            return models.Face(officer_id=officer.id,
-                               img_id=num,
-                               original_image_id=random.choice(images).id)
+        img_id = random.choice(images).id
+        return models.Face(officer_id=officer.id,
+                           img_id=img_id,
+                           original_image_id=img_id,
+                           featured=False)
     else:
         return False
 
@@ -214,6 +235,12 @@ def test_jpg_BytesIO():
     return byte_io
 
 
+@pytest.fixture
+def test_csv_dir():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(test_dir, "test_csvs")
+
+
 def add_mockdata(session):
     NUM_OFFICERS = current_app.config['NUM_OFFICERS']
     department = models.Department(name='Springfield Police Department',
@@ -249,7 +276,15 @@ def add_mockdata(session):
     SEED = current_app.config['SEED']
     random.seed(SEED)
 
-    unit1 = models.Unit(descrip="test")
+    test_units = [
+        models.Unit(descrip="test", department_id=1),
+        models.Unit(descrip='District 13', department_id=1),
+        models.Unit(descrip='Donut Devourers', department_id=1),
+        models.Unit(descrip='Bureau of Organized Crime', department_id=2),
+        models.Unit(descrip='Porky\'s BBQ: Rub Division', department_id=2)
+    ]
+    session.add_all(test_units)
+    session.commit()
 
     test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
         [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
@@ -270,15 +305,14 @@ def add_mockdata(session):
 
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
-    assignments_dept1 = [build_assignment(officer, unit1, jobs_dept1) for officer in officers_dept1]
-    assignments_dept2 = [build_assignment(officer, unit1, jobs_dept2) for officer in officers_dept2]
+    assignments_dept1 = [build_assignment(officer, test_units, jobs_dept1) for officer in officers_dept1]
+    assignments_dept2 = [build_assignment(officer, test_units, jobs_dept2) for officer in officers_dept2]
 
     salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
-    session.add(unit1)
     session.commit()
     session.add_all(assignments_dept1)
     session.add_all(assignments_dept2)
@@ -311,12 +345,6 @@ def add_mockdata(session):
                                         username='b_meson',
                                         password='dog', confirmed=False)
     session.add(test_unconfirmed_user)
-    session.commit()
-
-    test_units = [models.Unit(descrip='District 13', department_id=1),
-                  models.Unit(descrip='Bureau of Organized Crime',
-                              department_id=1)]
-    session.add_all(test_units)
     session.commit()
 
     test_addresses = [
@@ -434,8 +462,12 @@ def mockdata(session):
 
 @pytest.fixture
 def department(session):
-    department = models.Department(name='Springfield Police Department',
-                                   short_name='SPD', unique_internal_identifier_label='homer_number')
+    department = models.Department(
+        id=1,
+        name="Springfield Police Department",
+        short_name="SPD",
+        unique_internal_identifier_label="homer_number",
+    )
     session.add(department)
     session.commit()
     return department
@@ -444,12 +476,14 @@ def department(session):
 @pytest.fixture
 def department_with_ranks(department, session):
     for order, rank in enumerate(RANK_CHOICES_1):
-        session.add(models.Job(
-            job_title=rank,
-            order=order,
-            is_sworn_officer=True,
-            department=department
-        ))
+        session.add(
+            models.Job(
+                job_title=rank,
+                order=order,
+                is_sworn_officer=True,
+                department=department,
+            )
+        )
     session.commit()
     return department
 

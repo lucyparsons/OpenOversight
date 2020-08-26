@@ -1,0 +1,6 @@
+id,officer id,star no,start date,job title,unit id,resign date
+,#1,1234,2019-07-12,Police Officer,,2020-01-01
+,#1,2345,2020-01-01,Captain,,
+,#2,99,2018-01-01,Commander,,
+,49483,54321,2020-07-10,Captain,,
+77021,49483,4567,2020-01-01,Police Officer,,2020-07-10

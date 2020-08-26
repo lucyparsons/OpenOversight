@@ -45,6 +45,7 @@ def test_route_login_required(route, client, mockdata):
 @pytest.mark.parametrize("route", [
     ('/officer/3/assignment/new'),
     ('/tag/delete/1'),
+    ('/tag/set_featured/1'),
     ('/image/classify/1/1')
 ])
 def test_route_post_only(route, client, mockdata):
@@ -142,7 +143,7 @@ def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
         assert deleted_tag is None
 
 
-def test_ac_cannot_delete_tag_in_their_dept(mockdata, client, session):
+def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -276,3 +277,103 @@ def test_user_is_redirected_to_correct_department_after_tagging(mockdata, client
 
         assert rv.status_code == 200
         assert department.name in rv.data.decode('utf-8')
+
+
+def test_admin_can_set_featured_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for('main.set_featured_tag', tag_id=1),
+            follow_redirects=True
+        )
+        assert b'Successfully set this tag as featured' in rv.data
+
+
+def test_ac_can_set_featured_tag_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        tag = Face.query.filter(Face.officer.has(department_id=AC_DEPT)).first()
+        tag_id = tag.id
+
+        rv = client.post(
+            url_for('main.set_featured_tag', tag_id=tag_id),
+            follow_redirects=True
+        )
+        assert b'Successfully set this tag as featured' in rv.data
+
+        featured_tag = Face.query.filter(Face.officer_id == tag.officer_id).filter(Face.featured == True).one_or_none()  # noqa: E712
+        assert featured_tag is not None
+
+
+def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+
+        tag = Face.query.join(Face.officer, aliased=True).except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT))).first()
+
+        tag_id = tag.id
+
+        rv = client.post(
+            url_for('main.set_featured_tag', tag_id=tag_id),
+            follow_redirects=True
+        )
+        assert rv.status_code == 403
+
+        featured_tag = Face.query.filter(Face.officer_id == tag.officer_id).filter(Face.featured == True).one_or_none()  # noqa: E712
+        assert featured_tag is None
+
+
+@patch('OpenOversight.app.utils.serve_image', MagicMock(return_value=PROJECT_ROOT + '/app/static/images/test_cop1.png'))
+def test_featured_tag_replaces_others(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        tag1 = Face.query.first()
+        officer = Officer.query.filter_by(id=tag1.officer_id).one()
+
+        # Add second tag for officer
+        second_image = Image.query.filter(Image.department_id == officer.department_id).\
+            filter(Image.id != tag1.img_id).first()
+        assert second_image is not None
+        mock = MagicMock(return_value=second_image)
+        with patch('OpenOversight.app.main.views.crop_image', mock):
+            form = FaceTag(officer_id=officer.id,
+                           image_id=second_image.id,
+                           dataX=34,
+                           dataY=32,
+                           dataWidth=3,
+                           dataHeight=33)
+            rv = client.post(
+                url_for('main.label_data', image_id=second_image.id),
+                data=form.data,
+                follow_redirects=True
+            )
+            views.crop_image.assert_called_once()
+            assert b'Tag added to database' in rv.data
+
+        tag2 = Face.query.filter(Face.officer_id == tag1.officer_id).filter(Face.id != tag1.id).one_or_none()
+        assert tag2 is not None
+
+        # Set tag 1 as featured
+        rv = client.post(
+            url_for('main.set_featured_tag', tag_id=tag1.id),
+            follow_redirects=True
+        )
+        assert b'Successfully set this tag as featured' in rv.data
+
+        tag1 = Face.query.filter(Face.id == tag1.id).one()
+        assert tag1.featured is True
+
+        # Set tag 2 as featured
+        rv = client.post(
+            url_for('main.set_featured_tag', tag_id=tag2.id),
+            follow_redirects=True
+        )
+        assert b'Successfully set this tag as featured' in rv.data
+
+        tag1 = Face.query.filter(Face.id == tag1.id).one()
+        tag2 = Face.query.filter(Face.id == tag2.id).one()
+        assert tag1.featured is False
+        assert tag2.featured is True

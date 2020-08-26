@@ -12,6 +12,8 @@ from flask import current_app
 from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer, str_is_true
 
+from .csv_imports import import_csv_files
+
 
 @click.command()
 @with_appcontext
@@ -227,6 +229,35 @@ def create_officer_from_row(row, department_id):
     process_salary(row, officer, compare=False)
 
 
+def is_equal(a, b):
+    """exhaustive equality checking, originally to compare a sqlalchemy result object of various types to a csv string
+    Note: Stringifying covers object cases (as in the datetime example below)
+    >>> is_equal("1", 1)  # string == int
+    True
+    >>> is_equal("foo", "bar") # string != other string
+    False
+    >>> is_equal(1, "1") # int == string
+    True
+    >>> is_equal(1.0, "1") # float == string
+    True
+    >>> is_equal(datetime(2020, 1, 1), "2020-01-01 00:00:00") # datetime == string
+    True
+    """
+    def try_else_false(comparable):
+        try:
+            return comparable(a, b)
+        except TypeError:
+            return False
+        except ValueError:
+            return False
+
+    return any([
+        try_else_false(lambda _a, _b: str(_a) == str(_b)),
+        try_else_false(lambda _a, _b: int(_a) == int(_b)),
+        try_else_false(lambda _a, _b: float(_a) == float(_b))
+    ])
+
+
 def process_assignment(row, officer, compare=False):
     assignment_fields = {
         'required': ['job_title'],
@@ -252,7 +283,7 @@ def process_assignment(row, officer, compare=False):
                 for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
-                    if (current and fieldname in row and row[fieldname] == current) or \
+                    if (current and fieldname in row and is_equal(row[fieldname], current)) or \
                             (not current and (fieldname not in row or not row[fieldname])):
                         i += 1
                 if i == len(assignment_fieldnames):
@@ -409,6 +440,48 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
         ImportLog.print_logs()
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
+
+
+@click.command()
+@click.argument("department-name")
+@click.option("--officers-csv", type=click.Path(exists=True))
+@click.option("--assignments-csv", type=click.Path(exists=True))
+@click.option("--salaries-csv", type=click.Path(exists=True))
+@click.option("--links-csv", type=click.Path(exists=True))
+@click.option("--incidents-csv", type=click.Path(exists=True))
+@click.option("--force-create", is_flag=True, help="Only for development/testing!")
+@with_appcontext
+def advanced_csv_import(
+    department_name,
+    officers_csv,
+    assignments_csv,
+    salaries_csv,
+    links_csv,
+    incidents_csv,
+    force_create,
+):
+    """
+    Add or update officers, assignments, salaries, links and incidents from csv
+    files in the department DEPARTMENT_NAME.
+
+    The csv files are treated as the source of truth.
+    Existing entries might be overwritten as a result, backing up the
+    database and running the command locally first is highly recommended.
+
+    See the documentation before running the command.
+    """
+    if force_create and current_app.config["ENV"] == "production":
+        raise Exception("--force-create cannot be used in production!")
+
+    import_csv_files(
+        department_name,
+        officers_csv,
+        assignments_csv,
+        salaries_csv,
+        links_csv,
+        incidents_csv,
+        force_create,
+    )
 
 
 @click.command()
