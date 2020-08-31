@@ -27,7 +27,6 @@ from fuzzywuzzy import process, fuzz
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
-from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
@@ -362,6 +361,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 
 def filter_by_form(form, officer_query, department_id=None):
+    from .main.choices import RACE_CHOICES, GENDER_CHOICES
     # Some SQL acrobatics to left join only the most recent assignment per officer
     row_num_col = func.row_number().over(
         partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
