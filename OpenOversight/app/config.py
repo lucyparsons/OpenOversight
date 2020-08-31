@@ -41,6 +41,15 @@ class BaseConfig(object):
     # User settings
     APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
 
+    # Twitter bot settings
+    TWITTER_CONSUMER_KEY = os.environ.get('TWITTER_CONSUMER_KEY')
+    TWITTER_CONSUMER_SECRET = os.environ.get('TWITTER_CONSUMER_SECRET')
+    TWITTER_ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN')
+    TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('TWITTER_ACCESS_TOKEN_SECRET')
+    TWITTER_MATCH_CONFIDENCE = os.environ.get('TWITTER_MATCH_CONFIDENCE', 90)
+    TWITTER_WEBHOOK_ENV = os.environ.get('TWITTER_WEBHOOK_ENV')
+    TWITTER_WEBHOOK_URL = os.environ.get('TWITTER_WEBHOOK_URL', 'https://openoversight.com/webhooks/twitter')
+
     SEED = 666
 
     @staticmethod

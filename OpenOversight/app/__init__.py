@@ -41,6 +41,11 @@ def create_app(config_name='default'):
     limiter.init_app(app)
     sitemap.init_app(app)
 
+    from .twitterbot import TwitterBot
+    twitter_bot = TwitterBot()
+    twitter_bot.init_app(app)
+    app.twitter_bot = twitter_bot
+
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
 
@@ -96,7 +101,8 @@ def create_app(config_name='default'):
     Migrate(app, db, os.path.join(os.path.dirname(__file__), '..', 'migrations'))  # Adds 'db' command
     from .commands import (make_admin_user, link_images_to_department,
                            link_officers_to_department, bulk_add_officers,
-                           add_department, add_job_title, advanced_csv_import)
+                           add_department, add_job_title, advanced_csv_import,
+                           activate_twitterbot, deactivate_twitterbot)
     app.cli.add_command(make_admin_user)
     app.cli.add_command(link_images_to_department)
     app.cli.add_command(link_officers_to_department)
@@ -104,6 +110,8 @@ def create_app(config_name='default'):
     app.cli.add_command(add_department)
     app.cli.add_command(add_job_title)
     app.cli.add_command(advanced_csv_import)
+    app.cli.add_command(activate_twitterbot)
+    app.cli.add_command(deactivate_twitterbot)
 
     return app
 

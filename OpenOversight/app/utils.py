@@ -14,14 +14,16 @@ import os
 import random
 import sys
 from traceback import format_exc
+import copy
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
+from fuzzywuzzy import process, fuzz
 
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
@@ -29,6 +31,98 @@ from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+
+class NameMatcher:
+    equivalent_suffixes = [
+        ('sr'),
+        ('jr', '2nd', 'ii'),
+        ('3rd', 'iii'),
+        ('4th', 'iv')
+    ]
+
+    @classmethod
+    def permutate_names(cls, officer):
+        names = [officer.first_name + ' ' + officer.last_name]
+        if officer.middle_initial:
+            if len(officer.middle_initial) > 1:
+                names.append('{} {} {}'.format(officer.first_name, officer.middle_initial[0], officer.last_name))
+            names.append('{} {} {}'.format(officer.first_name, officer.middle_initial, officer.last_name))
+        if officer.suffix:
+            for suffix_set in cls.equivalent_suffixes:
+                if officer.suffix.lower() in suffix_set:
+                    names_copy = copy.deepcopy(names)
+                    for suffix in suffix_set:
+                        for name in names_copy:
+                            names.append(name + ' ' + suffix)
+        return names
+
+    def match_one_basic(self, texts, query=None):
+        query = query or Officer.query
+        texts = list(map(str.lower, texts))
+        officer_names = []
+        for officer in query.all():
+            officer_names.append({
+                'officer': officer,
+                'names': self.permutate_names(officer)
+            })
+        for officer_names_set in officer_names:
+            for name in officer_names_set['names']:
+                for text in texts:
+                    if name.lower() in text:
+                        return officer_names_set['officer']
+
+    def match_basic(self, texts, query=None):
+        query = query or Officer.query
+        matched_officers = set()
+        texts = list(map(str.lower, texts))
+        officer_names = []
+        for officer in query.all():
+            officer_names.append({
+                'officer': officer,
+                'names': self.permutate_names(officer)
+            })
+        for officer_names_set in officer_names:
+            matched = False
+            for name in officer_names_set['names']:
+                for text in texts:
+                    if name.lower() in text:
+                        matched_officers.add(officer_names_set['officer'])
+                        matched = True
+                        break
+                if matched:
+                    break
+        return matched_officers
+
+    def match_one_fuzzy(self, texts, query=None):
+        '''Uses Levenshtein distance to do fuzzy string matching of names'''
+
+        query = query or Officer.query
+        for officer in query.all():
+            officer_full_name = officer.full_name()
+            _, match_score = process.extractOne(
+                officer_full_name,
+                texts,
+                scorer=fuzz.token_set_ratio
+            )
+            if match_score >= current_app.config['TWITTER_MATCH_CONFIDENCE']:
+                return officer
+
+    def match_fuzzy(self, texts, query=None):
+        '''Uses Levenshtein distance to do fuzzy string matching of names'''
+
+        matched_officers = set()
+        query = query or Officer.query
+        for officer in query.all():
+            officer_full_name = officer.full_name()
+            _, match_score = process.extractOne(
+                officer_full_name,
+                texts,
+                scorer=fuzz.token_set_ratio
+            )
+            if match_score >= current_app.config['TWITTER_MATCH_CONFIDENCE']:
+                matched_officers.add(officer)
+        return matched_officers
 
 
 def set_dynamic_default(form_field, value):
@@ -231,6 +325,16 @@ def compute_hash(data_to_hash):
     return hashlib.sha256(data_to_hash).hexdigest()
 
 
+def compute_keyed_hash(str_to_hash):
+    h = hashlib.blake2b(key=current_app.config['SECRET_KEY'].encode('utf-8'))
+    h.update(str_to_hash.encode('utf-8'))
+    return h.hexdigest()
+
+
+def verify_keyed_hash(digest, str_to_compare):
+    return digest == compute_keyed_hash(str_to_compare)
+
+
 def upload_obj_to_s3(file_obj, dest_filename):
     s3_client = boto3.client('s3')
 
@@ -277,9 +381,9 @@ def filter_by_form(form, officer_query, department_id=None):
         )
     if not department_id and form.get('dept'):
         department_id = form['dept'].id
-        officer_query = officer_query.filter(
-            Officer.department_id == department_id
-        )
+    officer_query = officer_query.filter(
+        Officer.department_id == department_id
+    )
     if form.get('badge'):
         officer_query = officer_query.filter(
             subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
@@ -290,9 +394,16 @@ def filter_by_form(form, officer_query, department_id=None):
         )
 
     if form.get('unique_internal_identifier'):
-        officer_query = officer_query.filter(
-            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
-        )
+        if ',' in form['unique_internal_identifier']:
+            or_clauses = [
+                Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii.strip()))
+                for uii in form['unique_internal_identifier'].split(',')
+            ]
+            officer_query = officer_query.filter(or_(*or_clauses))
+        else:
+            officer_query = officer_query.filter(
+                Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
+            )
     race_values = [x for x, _ in RACE_CHOICES]
     if form.get('race') and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:

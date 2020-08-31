@@ -511,3 +511,17 @@ def add_job_title(department_id, job_title, is_sworn_officer, order):
     db.session.add(job)
     print('Added {} to {}'.format(job.job_title, department.name))
     db.session.commit()
+
+
+@click.command()
+@with_appcontext
+def activate_twitterbot():
+    """Sets the default Welcome Message for the Twitter bot and register webhooks."""
+    current_app.twitter_bot.activate()
+
+
+@click.command()
+@with_appcontext
+def deactivate_twitterbot():
+    """Deletes all Welcome Messages and webhooks."""
+    current_app.twitter_bot.deactivate()
