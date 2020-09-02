@@ -3,10 +3,11 @@ from flask import current_app
 from flask_login import current_user
 from io import BytesIO
 import OpenOversight
-from OpenOversight.app.models import Image
-from OpenOversight.app.utils import upload_image_to_s3_and_store_in_db, crop_image
+from OpenOversight.app.models import Image, Officer
+from OpenOversight.app.utils import upload_image_to_s3_and_store_in_db, crop_image, NameMatcher
 from OpenOversight.tests.routes.route_helpers import login_user
 import pytest
+import lorem
 
 
 # Utils tests
@@ -121,6 +122,14 @@ def test_compute_hash(mockdata):
     assert hash_result == expected_hash
 
 
+def test_compute_keyed_hash(mockdata):
+    current_app.config['SECRET_KEY'] = 'porkchops'
+    hash_result = OpenOversight.app.utils.compute_keyed_hash('sausage')
+    expected_hash = '16eb8e35fb5ac8d8db2708381d9d37307d7d7018a613b68c11ebab10dea12aa3'
+    assert hash_result == expected_hash
+    assert OpenOversight.app.utils.verify_keyed_hash(expected_hash, 'sausage') is True
+
+
 def test_s3_upload_png(mockdata, test_png_BytesIO):
     mocked_connection = Mock()
     mocked_resource = Mock()
@@ -219,3 +228,85 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(mockda
             crop_image(image, None, department.id)
 
             assert current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
+
+
+def test_name_matcher_one_basic(mockdata, session):
+    officer = Officer(
+        first_name='Ham',
+        middle_initial='AndCheese',
+        last_name='McMuffin',
+        suffix='Jr')
+    session.add(officer)
+    session.commit()
+
+    texts = ['{} Ham A. McMuffin II {}'.format(lorem.text(), lorem.text())]
+    matcher = NameMatcher()
+    matched_officer = matcher.match_one_basic(texts)
+
+    assert matched_officer is not None
+    assert matched_officer == officer
+
+
+def test_name_matcher_multi_basic(mockdata, session):
+    officer1 = Officer(
+        first_name='Ham',
+        middle_initial='AndCheese',
+        last_name='McMuffin',
+        suffix='Jr')
+    officer2 = Officer(
+        first_name='Porkrinds',
+        middle_initial='X',
+        last_name='McFunyuns')
+    session.add(officer1)
+    session.add(officer2)
+    session.commit()
+    matcher = NameMatcher()
+    texts = ['{} Ham A. McMuffin II {} porkrinds x. mcfunyuns {}'.format(
+        lorem.text(), lorem.text(), lorem.text())]
+    matched_officers = matcher.match_basic(texts)
+
+    assert matched_officers is not None
+    assert len(matched_officers) == 2
+    assert officer1 in matched_officers
+    assert officer2 in matched_officers
+
+
+def test_name_matcher_one_fuzzy(mockdata, session):
+    officer = Officer(
+        first_name='Ham',
+        middle_initial='AndCheese',
+        last_name='McMuffin',
+        suffix='Jr')
+    session.add(officer)
+    session.commit()
+
+    texts = ['Officer McMuffin Jr., Ham AndCheese']
+    matcher = NameMatcher()
+    matched_officer = matcher.match_one_fuzzy(texts)
+
+    assert matched_officer is not None
+    assert matched_officer == officer
+
+
+def test_name_matcher_multi_fuzzy(mockdata, session):
+    officer1 = Officer(
+        first_name='Ham',
+        middle_initial='AndCheese',
+        last_name='McMuffin',
+        suffix='Jr')
+    officer2 = Officer(
+        first_name='Porkrinds',
+        middle_initial='X',
+        last_name='McFunyuns')
+    session.add(officer1)
+    session.add(officer2)
+    session.commit()
+
+    texts = ['Officer McMuffin Jr., Ham AndCheese and Officer mcfunyuns, porkrinds x.']
+    matcher = NameMatcher()
+    matched_officers = matcher.match_fuzzy(texts)
+
+    assert matched_officers is not None
+    assert len(matched_officers) == 2
+    assert officer1 in matched_officers
+    assert officer2 in matched_officers

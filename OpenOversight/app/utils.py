@@ -15,6 +15,7 @@ import random
 import sys
 from traceback import format_exc
 import copy
+import hmac
 
 from sqlalchemy import func, or_
 from sqlalchemy.sql.expression import cast
@@ -68,7 +69,7 @@ class NameMatcher:
         for officer_names_set in officer_names:
             for name in officer_names_set['names']:
                 for text in texts:
-                    if name.lower() in text:
+                    if name.lower() in text.lower().replace('.', ''):
                         return officer_names_set['officer']
 
     def match_basic(self, texts, query=None):
@@ -85,7 +86,7 @@ class NameMatcher:
             matched = False
             for name in officer_names_set['names']:
                 for text in texts:
-                    if name.lower() in text:
+                    if name.lower() in text.lower().replace('.', ''):
                         matched_officers.add(officer_names_set['officer'])
                         matched = True
                         break
@@ -223,7 +224,8 @@ def add_officer_profile(form, current_user):
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
-                      department_id=form.department.data.id)
+                      department_id=form.department.data.id,
+                      unique_internal_identifier=form.unique_internal_identifier.data)
     db.session.add(officer)
     db.session.commit()
 
@@ -325,7 +327,7 @@ def compute_hash(data_to_hash):
 
 
 def compute_keyed_hash(str_to_hash):
-    h = hashlib.blake2b(key=current_app.config['SECRET_KEY'].encode('utf-8'))
+    h = hmac.new(key=current_app.config['SECRET_KEY'].encode('utf-8'), digestmod='sha256')
     h.update(str_to_hash.encode('utf-8'))
     return h.hexdigest()
 

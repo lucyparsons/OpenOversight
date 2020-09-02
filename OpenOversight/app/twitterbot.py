@@ -23,9 +23,9 @@ class TwitterBot:
             self.init_app(app)
 
     def init_app(self, app):
-        if not (app.config['TWITTER_CONSUMER_KEY'] and app.config['TWITTER_CONSUMER_SECRET']
-                and app.config['TWITTER_ACCESS_TOKEN'] and app.config['TWITTER_ACCESS_TOKEN_SECRET']
-                and app.config['TWITTER_WEBHOOK_ENV'] and app.config['TWITTER_WEBHOOK_URL']):
+        if not all([app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'],
+                    app.config['TWITTER_ACCESS_TOKEN'], app.config['TWITTER_ACCESS_TOKEN_SECRET'],
+                    app.config['TWITTER_WEBHOOK_ENV'], app.config['TWITTER_WEBHOOK_URL']]):
             return
 
         self.twitter_adapter = TwitterWebhookAdapter(
@@ -40,7 +40,7 @@ class TwitterBot:
             app.config['TWITTER_ACCESS_TOKEN_SECRET']
         )
         self.matcher = NameMatcher()
-        self.bind_routes()
+        self.register_handlers()
 
     def activate(self):
         self.delete_all_welcome_messages()
@@ -96,9 +96,7 @@ class TwitterBot:
         self.delete_all_webhooks()
         self.api_request(
             'account_activity/all/:{}/webhooks'.format(current_app.config['TWITTER_WEBHOOK_ENV']),
-            {
-                'url': current_app.config['TWITTER_WEBHOOK_URL']
-            }
+            {'url': current_app.config['TWITTER_WEBHOOK_URL']}
         )
 
     def delete_all_webhooks(self):
@@ -131,6 +129,11 @@ class TwitterBot:
         credentials = self.api_request('account/verify_credentials')
         return credentials['id']
 
+    def get_account_screen_name(self):
+        ''' Helper for fetching the bot's screen_name '''
+        credentials = self.api_request('account/verify_credentials')
+        return credentials['screen_name']
+
     def match_one_from_message(self, message_data):
         current_app.logger.debug("Parsing tweet: {}".format(message_data['text']))
         officer = self.matcher.match_one_fuzzy([message_data['text']])
@@ -151,8 +154,7 @@ class TwitterBot:
     def match_from_message(self, message_data):
         current_app.logger.debug("Parsing tweet: {}".format(message_data['text']))
         officers = self.matcher.match_fuzzy([message_data['text']])
-        if not officers:
-            officers = self.matcher.match_basic([message_data['text']])
+        officers |= self.matcher.match_basic([message_data['text']])
         # Check text of any links
         link_texts = []
         for link in message_data['entities']['urls']:
@@ -162,25 +164,27 @@ class TwitterBot:
         officers |= self.matcher.match_basic(link_texts)
         return officers
 
-    def bind_routes(self):
+    def register_handlers(self):
         @self.twitter_adapter.on("tweet_create_events")
         def handle_mentions(event_data):
             tweet = event_data['event']
+            if self.get_account_id() not in [user['id'] for user in tweet['entities']['user_mentions']]:
+                return
             other_mentions = [user['screen_name'] for user in tweet['entities']['user_mentions']]
             recipient_screen_names = set([tweet['user']['screen_name']] + other_mentions)
+            recipient_screen_names.remove(self.get_account_screen_name())
             in_reply_to = tweet['id']
 
             matched_officer = self.match_one_from_message(tweet)
             # Check text of quote retweet
-            if not matched_officer and tweet['is_quote_status']:
+            if not matched_officer and tweet.get('is_quote_status'):
                 matched_officer = self.match_one_from_message(tweet['quoted_status'])
 
             if matched_officer:
                 tweet_text = ''
-                for screen_name in recipient_screen_names:
+                for screen_name in sorted(recipient_screen_names):
                     tweet_text += '@{} '.format(screen_name)
                 tweet_text += self.generate_response([matched_officer])
-
                 self.api_request(
                     'statuses/update',
                     {
@@ -281,9 +285,21 @@ class TwitterBot:
 
 def generate_tweet(officer):
     text = ""
-    if officer.assignments.count() > 0 and officer.assignments[0].job.job_title != 'Not Sure':
-        text += "{} ".format(officer.assignments[0].job.job_title)
-    text += "{} ({})".format(officer.full_name(), officer.unique_internal_identifier.upper())
+    if officer.assignments.count() > 0:
+        if officer.assignments[0].job.job_title != 'Not Sure':
+            text += "{} ".format(officer.assignments[0].job.job_title)
+        if officer.assignments[0].star_no:
+            text += "{} ({})".format(officer.full_name(), officer.assignments[0].star_no.upper())
+        elif officer.unique_internal_identifier:
+            text += "{} ({})".format(officer.full_name(), officer.unique_internal_identifier.upper())
+        else:
+            text += officer.full_name()
+    else:
+        if officer.unique_internal_identifier:
+            text += "{} ({})".format(officer.full_name(), officer.unique_internal_identifier.upper())
+        else:
+            text += officer.full_name()
+
     if officer.salaries and len(officer.salaries) > 0:
         total_pay = officer.salaries[0].salary + officer.salaries[0].overtime_pay
         text += " made {} in {}.".format(locale.currency(total_pay, grouping=True), officer.salaries[0].year)

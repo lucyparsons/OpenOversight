@@ -1373,7 +1373,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         rv = client.get(
             url_for('main.list_officer', department_id=department_id),
-            data=data,
+            query_string=data,
             follow_redirects=True
         )
         filter_list = rv.data.decode('utf-8').split("<dt>Race</dt>")[1:]
@@ -1384,6 +1384,54 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
+def test_browse_filtering_multiple_uiis(client, mockdata, session):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+
+        # Add two officers
+        login_admin(client)
+        form = AddOfficerForm(first_name='Porkchops',
+                              last_name='McBacon',
+                              unique_internal_identifier='foo',
+                              department=department_id)
+        data = process_form_data(form.data)
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'Porkchops McBacon' in rv.data.decode('utf-8')
+
+        form = AddOfficerForm(first_name='Bacon',
+                              last_name='McPorkchops',
+                              unique_internal_identifier='bar',
+                              department=department_id)
+        data = process_form_data(form.data)
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'Bacon McPorkchops' in rv.data.decode('utf-8')
+
+        # Check the officers were added to the database
+        assert Officer.query.filter_by(unique_internal_identifier='foo').count() == 1
+        assert Officer.query.filter_by(unique_internal_identifier='bar').count() == 1
+
+        # Check that added officers appear when filtering for both UIIs
+        form = BrowseForm(unique_internal_identifier='foo,bar', race=None, gender=None)
+        data = process_form_data(form.data)
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id),
+            query_string=data,
+            follow_redirects=True
+        )
+        assert 'McBacon' in rv.data.decode('utf-8')
+        assert 'McPorkchops' in rv.data.decode('utf-8')
+        assert 'foo' in rv.data.decode('utf-8')
+        assert 'bar' in rv.data.decode('utf-8')
 
 
 def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, test_jpg_BytesIO):

@@ -15,6 +15,8 @@ from OpenOversight.app.commands import (
     add_job_title,
     bulk_add_officers,
     advanced_csv_import,
+    activate_twitterbot,
+    deactivate_twitterbot
 )
 from OpenOversight.app.models import (
     Assignment,
@@ -1211,3 +1213,23 @@ def test_advanced_csv_import__unit_other_department(
     # command fails because the unit does not belong to the department
     assert result.exception is not None
     assert result.exit_code != 0
+
+
+def test_activate_twitterbot(session):
+    result = run_command_print_output(activate_twitterbot)
+
+    # command ran successful
+    assert result.exit_code == 0
+    assert result.exception is None
+
+    # TODO Check that other effects are correct
+
+
+def test_deactivate_twitterbot(session):
+    result = run_command_print_output(deactivate_twitterbot)
+
+    # command ran successful
+    assert result.exit_code == 0
+    assert result.exception is None
+
+    # TODO Check that other effects are correct
