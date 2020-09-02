@@ -8,9 +8,6 @@ from datetime import date
 
 from OpenOversight.app.models import Officer, Job, Assignment
 
-TWITTER_USER_ID = 123456789
-TWITTER_SCREEN_NAME = 'openoversight'
-
 
 def test_webhook_route(client):
     route = urlparse(current_app.config['TWITTER_WEBHOOK_URL']).path
@@ -78,105 +75,8 @@ def test_twitter_api_request_error_response(app):
     response_mock.json.assert_called_once_with()
 
 
-rules_list_response = {
-    "welcome_message_rules": [
-        {
-            "id": "9910934913490319",
-            "created_timestamp": "1470182394258",
-            "welcome_message_id": "844385345234"
-        },
-        {
-            "id": "9910934913490431",
-            "created_timestamp": "1470182394265",
-            "welcome_message_id": "844385345238"
-        }
-    ],
-    "next_cursor": "NDUzNDUzNDY3Nzc3"
-}
-
-
-messages_list_response = {
-    "welcome_messages": [
-        {
-            "id": "844385345234",
-            "created_timestamp": "1470182274821",
-            "message_data": {
-                "text": "Welcome!",
-            }
-        },
-        {
-            "id": "844385345238",
-            "created_timestamp": "1470182275399",
-            "message_data": {
-                "text": "Welcome Again!",
-            }
-        }
-    ],
-    "next_cursor": "NDUzNDUzNDY3Nzc3"
-}
-
-
-messages_new_response = {
-    "welcome_message": {
-        "id": "844385345234",
-        "created_timestamp": "1470182274821",
-        "message_data": {
-            "text": "Welcome!"
-        }
-    },
-    "name": "simple_welcome-message 01"
-}
-
-
-rules_new_response = {
-    "welcome_message_rule": {
-        "id": "9910934913490319",
-        "created_timestamp": "1470182394258",
-        "welcome_message_id": "844385345234"
-    }
-}
-
-
-webhooks_list_response = {
-    "environments": [
-        {
-            "environment_name": "testing",
-            "webhooks": [
-                {
-                    "id": "1234567890",
-                    "url": "https://your_domain.com/webhook/twitter",
-                    "valid": True,
-                    "created_at": "2017-06-02T23:54:02Z"
-                }
-            ]
-        }
-    ]
-}
-
-
-credentials_response = {
-    'id': TWITTER_USER_ID,
-    'screen_name': TWITTER_SCREEN_NAME
-}
-
-
-def mock_api_request(endpoint, params=None):
-    if endpoint == 'direct_messages/welcome_messages/rules/list':
-        return rules_list_response
-    elif endpoint == 'direct_messages/welcome_messages/list':
-        return messages_list_response
-    elif endpoint == 'direct_messages/welcome_messages/new':
-        return messages_new_response
-    elif endpoint == 'direct_messages/welcome_messages/rules/new':
-        return rules_new_response
-    elif endpoint == 'account_activity/all/webhooks':
-        return webhooks_list_response
-    elif endpoint == 'account/verify_credentials':
-        return credentials_response
-
-
-def test_delete_welcome_messages(app):
-    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+def test_delete_welcome_messages(twitter_api_request, rules_list_response, messages_list_response):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
         current_app.twitter_bot.delete_all_welcome_messages()
 
     mocked_function.assert_any_call('direct_messages/welcome_messages/rules/list')
@@ -193,8 +93,8 @@ def test_delete_welcome_messages(app):
         )
 
 
-def test_set_welcome_message(mockdata):
-    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+def test_set_welcome_message(mockdata, twitter_api_request, messages_new_response):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
         current_app.twitter_bot.set_welcome_message()
 
     mocked_function.assert_any_call(
@@ -207,8 +107,8 @@ def test_set_welcome_message(mockdata):
     )
 
 
-def test_delete_webhooks(app):
-    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+def test_delete_webhooks(twitter_api_request, webhooks_list_response):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
         current_app.twitter_bot.delete_all_webhooks()
 
     mocked_function.assert_any_call('account_activity/all/webhooks')
@@ -220,8 +120,8 @@ def test_delete_webhooks(app):
     )
 
 
-def test_register_webhook(app):
-    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+def test_register_webhook(twitter_api_request, webhooks_list_response):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
         current_app.twitter_bot.register_webhook()
 
     mocked_function.assert_any_call('account_activity/all/webhooks')
@@ -386,7 +286,7 @@ def test_match_multiple_from_message_and_link(mockdata, session):
 
 
 @patch('twitterwebhooks.server.WebhookServer.verify_request', MagicMock(return_value=True))
-def test_handle_mention_basic(mockdata, session, client):
+def test_handle_mention_basic(mockdata, session, client, twitter_api_request):
     department_id = 1
     officer = Officer(
         first_name='Ham',
@@ -422,8 +322,8 @@ def test_handle_mention_basic(mockdata, session, client):
                 "entities": {
                     'user_mentions': [
                         {
-                            'id': TWITTER_USER_ID,
-                            'screen_name': TWITTER_SCREEN_NAME
+                            'id': 123456789,
+                            'screen_name': 'openoversight'
                         },
                         {
                             'id': 987654321,
@@ -436,7 +336,7 @@ def test_handle_mention_basic(mockdata, session, client):
     }
 
     with current_app.test_request_context():
-        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
             route = url_for('event')
             rv = client.post(
                 route,
@@ -460,7 +360,7 @@ def test_handle_mention_basic(mockdata, session, client):
 
 @patch('twitterwebhooks.server.WebhookServer.verify_request', MagicMock(return_value=True))
 @patch('OpenOversight.app.twitterbot.TwitterBot.generate_response')
-def test_handle_tweet_no_mention(mocked_generate_response, mockdata, session, client):
+def test_handle_tweet_no_mention(mocked_generate_response, mockdata, session, client, twitter_api_request):
     department_id = 1
     officer = Officer(
         first_name='Ham',
@@ -506,7 +406,7 @@ def test_handle_tweet_no_mention(mocked_generate_response, mockdata, session, cl
     }
 
     with current_app.test_request_context():
-        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
             route = url_for('event')
             rv = client.post(
                 route,
@@ -521,7 +421,7 @@ def test_handle_tweet_no_mention(mocked_generate_response, mockdata, session, cl
 
 
 @patch('twitterwebhooks.server.WebhookServer.verify_request', MagicMock(return_value=True))
-def test_handle_mention_quoted_status(mockdata, session, client):
+def test_handle_mention_quoted_status(mockdata, session, client, twitter_api_request):
     department_id = 1
     officer = Officer(
         first_name='Ham',
@@ -556,8 +456,8 @@ def test_handle_mention_quoted_status(mockdata, session, client):
                 "entities": {
                     'user_mentions': [
                         {
-                            'id': TWITTER_USER_ID,
-                            'screen_name': TWITTER_SCREEN_NAME
+                            'id': 123456789,
+                            'screen_name': 'openoversight'
                         }
                     ],
                     'urls': []
@@ -583,7 +483,7 @@ def test_handle_mention_quoted_status(mockdata, session, client):
     }
 
     with current_app.test_request_context():
-        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request) as mocked_function:
+        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
             route = url_for('event')
             rv = client.post(
                 route,
@@ -607,7 +507,7 @@ def test_handle_mention_quoted_status(mockdata, session, client):
 
 @patch('twitterwebhooks.server.WebhookServer.verify_request', MagicMock(return_value=True))
 @patch('OpenOversight.app.twitterbot.TwitterBot.generate_response')
-def test_handle_mention_no_match(mocked_generate_response, mockdata, session, client):
+def test_handle_mention_no_match(mocked_generate_response, mockdata, session, client, twitter_api_request):
     payload = {
         "for_user_id": "2244994945",
         "user_has_blocked": "false",
@@ -624,8 +524,8 @@ def test_handle_mention_no_match(mocked_generate_response, mockdata, session, cl
                 "entities": {
                     'user_mentions': [
                         {
-                            'id': TWITTER_USER_ID,
-                            'screen_name': TWITTER_SCREEN_NAME
+                            'id': 123456789,
+                            'screen_name': 'openoversight'
                         }
                     ],
                     'urls': []
@@ -635,7 +535,7 @@ def test_handle_mention_no_match(mocked_generate_response, mockdata, session, cl
     }
 
     with current_app.test_request_context():
-        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=mock_api_request):
+        with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request):
             route = url_for('event')
             rv = client.post(
                 route,

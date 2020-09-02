@@ -10,6 +10,7 @@ from sqlalchemy.orm.exc import MultipleResultsFound
 
 import pandas as pd
 import pytest
+from mock import patch
 from OpenOversight.app.commands import (
     add_department,
     add_job_title,
@@ -1215,21 +1216,21 @@ def test_advanced_csv_import__unit_other_department(
     assert result.exit_code != 0
 
 
-def test_activate_twitterbot(session):
-    result = run_command_print_output(activate_twitterbot)
+def test_activate_twitterbot(mockdata, twitter_api_request):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
+        result = run_command_print_output(activate_twitterbot)
 
     # command ran successful
     assert result.exit_code == 0
     assert result.exception is None
+    mocked_function.assert_called()
 
-    # TODO Check that other effects are correct
 
-
-def test_deactivate_twitterbot(session):
-    result = run_command_print_output(deactivate_twitterbot)
+def test_deactivate_twitterbot(app, twitter_api_request):
+    with patch('OpenOversight.app.twitterbot.TwitterBot.api_request', side_effect=twitter_api_request) as mocked_function:
+        result = run_command_print_output(deactivate_twitterbot)
 
     # command ran successful
     assert result.exit_code == 0
     assert result.exception is None
-
-    # TODO Check that other effects are correct
+    mocked_function.assert_called()

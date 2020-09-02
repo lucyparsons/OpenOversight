@@ -604,3 +604,123 @@ def browser(app, request):
     # shutdown headless webdriver
     driver.quit()
     vdisplay.stop()
+
+
+@pytest.fixture
+def rules_list_response():
+    return {
+        "welcome_message_rules": [
+            {
+                "id": "9910934913490319",
+                "created_timestamp": "1470182394258",
+                "welcome_message_id": "844385345234"
+            },
+            {
+                "id": "9910934913490431",
+                "created_timestamp": "1470182394265",
+                "welcome_message_id": "844385345238"
+            }
+        ],
+        "next_cursor": "NDUzNDUzNDY3Nzc3"
+    }
+
+
+@pytest.fixture
+def messages_list_response():
+    return {
+        "welcome_messages": [
+            {
+                "id": "844385345234",
+                "created_timestamp": "1470182274821",
+                "message_data": {
+                    "text": "Welcome!",
+                }
+            },
+            {
+                "id": "844385345238",
+                "created_timestamp": "1470182275399",
+                "message_data": {
+                    "text": "Welcome Again!",
+                }
+            }
+        ],
+        "next_cursor": "NDUzNDUzNDY3Nzc3"
+    }
+
+
+@pytest.fixture
+def messages_new_response():
+    return {
+        "welcome_message": {
+            "id": "844385345234",
+            "created_timestamp": "1470182274821",
+            "message_data": {
+                "text": "Welcome!"
+            }
+        },
+        "name": "simple_welcome-message 01"
+    }
+
+
+@pytest.fixture
+def rules_new_response():
+    return {
+        "welcome_message_rule": {
+            "id": "9910934913490319",
+            "created_timestamp": "1470182394258",
+            "welcome_message_id": "844385345234"
+        }
+    }
+
+
+@pytest.fixture
+def webhooks_list_response():
+    return {
+        "environments": [
+            {
+                "environment_name": "testing",
+                "webhooks": [
+                    {
+                        "id": "1234567890",
+                        "url": "https://your_domain.com/webhook/twitter",
+                        "valid": True,
+                        "created_at": "2017-06-02T23:54:02Z"
+                    }
+                ]
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def credentials_response():
+    return {
+        'id': 123456789,
+        'screen_name': 'openoversight'
+    }
+
+
+@pytest.fixture
+def twitter_api_request(
+    rules_list_response,
+    messages_list_response,
+    messages_new_response,
+    rules_new_response,
+    webhooks_list_response,
+    credentials_response
+):
+    def mock_api_request(endpoint, params=None):
+        if endpoint == 'direct_messages/welcome_messages/rules/list':
+            return rules_list_response
+        elif endpoint == 'direct_messages/welcome_messages/list':
+            return messages_list_response
+        elif endpoint == 'direct_messages/welcome_messages/new':
+            return messages_new_response
+        elif endpoint == 'direct_messages/welcome_messages/rules/new':
+            return rules_new_response
+        elif endpoint == 'account_activity/all/webhooks':
+            return webhooks_list_response
+        elif endpoint == 'account/verify_credentials':
+            return credentials_response
+
+    return mock_api_request
