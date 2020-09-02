@@ -225,7 +225,7 @@ def add_officer_profile(form, current_user):
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
                       department_id=form.department.data.id,
-                      unique_internal_identifier=form.unique_internal_identifier.data)
+                      unique_internal_identifier=form.unique_internal_identifier.data or None)
     db.session.add(officer)
     db.session.commit()
 
