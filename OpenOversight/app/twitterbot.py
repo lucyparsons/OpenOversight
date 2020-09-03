@@ -2,7 +2,6 @@ import inspect
 import locale
 import json
 import sys
-from urllib.parse import urlparse
 
 import requests
 from flask import current_app, url_for
@@ -14,7 +13,7 @@ from .models import Department, Job, Officer
 from .main.choices import RACE_CHOICES, GENDER_CHOICES
 from .main.forms import BrowseForm
 
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 
 class TwitterBot:
@@ -25,12 +24,12 @@ class TwitterBot:
     def init_app(self, app):
         if not all([app.config['TWITTER_CONSUMER_KEY'], app.config['TWITTER_CONSUMER_SECRET'],
                     app.config['TWITTER_ACCESS_TOKEN'], app.config['TWITTER_ACCESS_TOKEN_SECRET'],
-                    app.config['TWITTER_WEBHOOK_ENV'], app.config['TWITTER_WEBHOOK_URL']]):
+                    app.config['TWITTER_WEBHOOK_ENV'], app.config['TWITTER_WEBHOOK_PATH']]):
             return
 
         self.twitter_adapter = TwitterWebhookAdapter(
             app.config['TWITTER_CONSUMER_SECRET'],
-            urlparse(app.config['TWITTER_WEBHOOK_URL']).path,
+            app.config['TWITTER_WEBHOOK_PATH'],
             app
         )
         self.twitter_api = TwitterAPI(
@@ -96,7 +95,7 @@ class TwitterBot:
         self.delete_all_webhooks()
         self.api_request(
             'account_activity/all/:{}/webhooks'.format(current_app.config['TWITTER_WEBHOOK_ENV']),
-            {'url': current_app.config['TWITTER_WEBHOOK_URL']}
+            {'url': url_for('event', _external=True)}
         )
 
     def delete_all_webhooks(self):
@@ -202,14 +201,13 @@ class TwitterBot:
                 if str(sender_id) == str(self.get_account_id()):
                     return
 
-                recipient_id = event['message_create']['target']['recipient_id']
                 message_data = event['message_create']['message_data']
 
                 # conversation response
                 if 'quick_reply_response' in message_data and \
                         message_data['quick_reply_response']['type'] == 'options':
-                    state = unpack_signed_metadata(message_data['quick_reply_response']['metadata'])
                     try:
+                        state = unpack_signed_metadata(message_data['quick_reply_response']['metadata'])
                         conversation = Conversation(state)
                         response_data = conversation.handle_message(message_data)
                     except Exception:
@@ -233,7 +231,7 @@ class TwitterBot:
                         'type': 'message_create',
                         'message_create': {
                             'target': {
-                                'recipient_id': recipient_id
+                                'recipient_id': sender_id
                             },
                             'message_data': response_data
                         }
@@ -310,7 +308,7 @@ def generate_tweet(officer):
             text += " {} was involved in 1 incident.".format(officer.last_name)
         else:
             text += " {} was involved in {} incidents.".format(officer.last_name, len(officer.incidents))
-    text += " Full profile: https://bpdwatch.com/officer/{}.".format(officer.id)
+    text += " Full profile: {}.".format(url_for('main.officer_profile', officer_id=officer.id, _external=True))
     current_app.logger.info("[Twitter] Generated tweet: {}".format(text))
     return text
 
@@ -349,6 +347,9 @@ class Conversation:
 
 class ConversationStep:
     next_step_class = None
+
+    def __init__(self, state):
+        pass
 
     def handle_message(self, message):
         raise NotImplementedError()
@@ -393,7 +394,7 @@ class ConversationStep5(ConversationStep):
         form_data = form.data
         form_data['race'] = metadata['race']
         form_data['gender'] = metadata['gender']
-        form_data['rank'] = metadata['rank_id']
+        form_data['rank'] = [metadata['rank_id']]
         form_data['min_age'] = 16
         form_data['max_age'] = 100
         form_data['name'] = metadata['last_name']

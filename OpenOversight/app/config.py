@@ -48,7 +48,7 @@ class BaseConfig(object):
     TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('TWITTER_ACCESS_TOKEN_SECRET')
     TWITTER_MATCH_CONFIDENCE = os.environ.get('TWITTER_MATCH_CONFIDENCE', 90)
     TWITTER_WEBHOOK_ENV = os.environ.get('TWITTER_WEBHOOK_ENV')
-    TWITTER_WEBHOOK_URL = os.environ.get('TWITTER_WEBHOOK_URL', 'https://openoversight.com/webhooks/twitter')
+    TWITTER_WEBHOOK_PATH = os.environ.get('TWITTER_WEBHOOK_PATH', '/webhooks/twitter')
 
     SEED = 666
 
@@ -62,6 +62,7 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     NUM_OFFICERS = 15000
     SITEMAP_URL_SCHEME = 'http'
+    SERVER_NAME = 'localhost:3000'
 
 
 class TestingConfig(BaseConfig):
@@ -76,7 +77,7 @@ class TestingConfig(BaseConfig):
     TWITTER_ACCESS_TOKEN = 'TWITTER_ACCESS_TOKEN'
     TWITTER_ACCESS_TOKEN_SECRET = 'TWITTER_ACCESS_TOKEN_SECRET'
     TWITTER_WEBHOOK_ENV = 'testing'
-    TWITTER_WEBHOOK_URL = 'https://openoversight.com/webhooks/twitter'
+    SERVER_NAME = 'localhost:5000'
 
 
 class ProductionConfig(BaseConfig):

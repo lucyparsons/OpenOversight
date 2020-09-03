@@ -10,7 +10,7 @@ ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
 RUN wget -O - https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && \
-    apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
+    apt-get install -y -t stretch-backports libsqlite3-0 locales && apt-get clean
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
 RUN mkdir geckodriver
@@ -34,6 +34,12 @@ RUN yarn
 COPY create_db.py test_data.py /usr/src/app/
 COPY .flake8 /usr/src/app/
 EXPOSE 3000
+
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
