@@ -971,7 +971,7 @@ def test_signed_metadata(app):
     signed_metadata = generate_signed_metadata(metadata)
     assert '"department_id": 1' in signed_metadata
     assert '"step": "foo"' in signed_metadata
-    assert '"digest": "43c8da0645c43182092b345642db64c42f6cd8b18f0c05694535d9ec85d1812f"' in signed_metadata
+    assert '"digest": "7d7b29c4b029c468128a640e28c9f872af278f7d968db2e0a74149419d9cf213"' in signed_metadata
 
     unpacked_metadata = unpack_signed_metadata(signed_metadata)
     assert unpacked_metadata == metadata

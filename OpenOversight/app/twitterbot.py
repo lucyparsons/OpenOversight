@@ -60,7 +60,7 @@ class TwitterBot:
                     'name': 'Default OpenOversight',
                     'message_data': self.generate_welcome_message()
                 }
-            })
+            }, sort_keys=True)
         )
         welcome_message_id = response['welcome_message']['id']
 
@@ -71,7 +71,7 @@ class TwitterBot:
                 'welcome_message_rule': {
                     'welcome_message_id': welcome_message_id
                 }
-            })
+            }, sort_keys=True)
         )
 
     def delete_all_welcome_messages(self):
@@ -314,19 +314,19 @@ def generate_tweet(officer):
 
 
 def generate_signed_metadata(data):
-    data_str = json.dumps(data)
+    data_str = json.dumps(data, sort_keys=True)
     digest = compute_keyed_hash(data_str)
     obj = {
         'data': data,
         'digest': digest
     }
-    return json.dumps(obj)
+    return json.dumps(obj, sort_keys=True)
 
 
 def unpack_signed_metadata(metadata):
     obj = json.loads(metadata)
     digest = obj['digest']
-    data_str = json.dumps(obj['data'])
+    data_str = json.dumps(obj['data'], sort_keys=True)
     if not verify_keyed_hash(digest, data_str):
         raise Exception('Signed metadata digest failed to verify:\n{}\n{}'.format(digest, data_str))
     return obj['data']
