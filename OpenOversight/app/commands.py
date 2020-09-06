@@ -156,6 +156,8 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
             val = datetime.strptime(row[fieldname], '%Y-%m-%d').date()
         except ValueError:
             val = row[fieldname]
+            if attribute == 'gender':
+                val = normalize_gender(val)
         setattr(obj, attribute, val)
 
 
