@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
-import dateutil
+import dateutil.parser
 
 from .main import choices
 from .models import (
