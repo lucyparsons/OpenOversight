@@ -92,7 +92,8 @@
             <th><b>Job Title</b></th>
             <th><b>Badge No.</b></th>
             <th><b>Unit</b></th>
-            <th><b>Assignment Date</b></th>
+            <th><b>Start Date</b></th>
+            <th><b>End Date</b></th>
             {% if current_user.is_administrator
               or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
             <th><b>Edit</b></th>
@@ -104,8 +105,14 @@
             <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
             <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
-            <td>{% if assignment.star_date: %}
+            <td>{% if assignment.star_date %}
                 {{ assignment.star_date }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>{% if assignment.resign_date %}
+                {{ assignment.resign_date }}
                 {% else %}
                 Unknown
                 {% endif %}
@@ -129,6 +136,12 @@
             <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
             <td>{% if assignment.star_date: %}
                 {{ assignment.star_date }}
+                {% else %}
+                Unknown
+                {% endif %}
+            </td>
+            <td>{% if assignment.resign_date %}
+                {{ assignment.resign_date }}
                 {% else %}
                 Unknown
                 {% endif %}
@@ -187,6 +200,15 @@
             <td><b>Start date of new assignment:</b></td>
             <td>{{ form.star_date }}
                   {% for error in form.star_date.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>End date of new assignment:</b></td>
+            <td>{{ form.resign_date }}
+                  {% for error in form.resign_date.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
             </td>

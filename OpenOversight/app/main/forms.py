@@ -97,6 +97,7 @@ class AssignmentForm(Form):
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'None')
     star_date = DateField('Assignment start date', validators=[Optional()])
+    resign_date = DateField('Assignment end date', validators=[Optional()])
 
 
 class SalaryForm(Form):
