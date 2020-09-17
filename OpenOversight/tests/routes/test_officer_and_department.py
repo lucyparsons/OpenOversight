@@ -99,13 +99,18 @@ def test_ac_cannot_access_admin_on_non_dept_officer_profile(mockdata, client, se
         assert 'Admin only' not in rv.data.decode('utf-8')
 
 
-def test_admin_can_add_officer_badge_number(mockdata, client, session):
+def test_admin_can_add_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
         officer = Officer.query.filter_by(id=3).one()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
-        form = AssignmentForm(star_no='1234', job_title=job.id)
+        form = AssignmentForm(
+            star_no='1234',
+            job_title=job.id,
+            star_date=date(2019, 1, 1),
+            resign_date=date(2019, 12, 31),
+        )
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=3),
@@ -114,15 +119,21 @@ def test_admin_can_add_officer_badge_number(mockdata, client, session):
         )
 
         assert 'Added new assignment' in rv.data.decode('utf-8')
+        assert '2019-01-01' in rv.data.decode('utf-8')
+        assert '2019-12-31' in rv.data.decode('utf-8')
 
-
-def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session):
+def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
-        form = AssignmentForm(star_no='S1234', job_title=job.id)
+        form = AssignmentForm(
+            star_no='S1234',
+            job_title=job.id,
+            star_date=date(2019, 1, 1),
+            resign_date=date(2019, 12, 31),
+        )
 
         rv = client.post(
             url_for('main.add_assignment', officer_id=officer.id),
@@ -131,13 +142,15 @@ def test_ac_can_add_officer_badge_number_in_their_dept(mockdata, client, session
         )
 
         assert 'Added new assignment' in rv.data.decode('utf-8')
+        assert '2019-01-01' in rv.data.decode('utf-8')
+        assert '2019-12-31' in rv.data.decode('utf-8')
 
         # test that assignment exists in database
         officer = Officer.query.filter(Officer.assignments.any(star_no='S1234')).first()
         assert officer is not None
 
 
-def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
+def test_ac_cannot_add_non_dept_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -154,30 +167,7 @@ def test_ac_cannot_add_non_dept_officer_badge(mockdata, client, session):
         assert rv.status_code == 403
 
 
-def test_admin_can_add_assignment_start_end_date(mockdata, client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-
-        officer = Officer.query.filter_by(id=3).one()
-        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
-        form = AssignmentForm(
-            star_no='1234',
-            job_title=job.id,
-            star_date=date(2019, 1, 1),
-            resign_date=date(2019, 12, 31),
-        )
-
-        rv = client.post(
-            url_for('main.add_assignment', officer_id=3),
-            data=form.data,
-            follow_redirects=True
-        )
-
-        assert '2019-01-01' in rv.data.decode('utf-8')
-        assert '2019-12-31' in rv.data.decode('utf-8')
-
-
-def test_admin_can_edit_assignment_start_end_date(mockdata, client, session):
+def test_admin_can_edit_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -205,7 +195,7 @@ def test_admin_can_edit_assignment_start_end_date(mockdata, client, session):
 
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
         form = AssignmentForm(
-            star_no='1234',
+            star_no='12345',
             job_title=job.id,
             star_date=date(2019, 2, 1),
             resign_date=date(2019, 11, 30)
@@ -220,7 +210,7 @@ def test_admin_can_edit_assignment_start_end_date(mockdata, client, session):
         )
 
         assert 'Edited officer assignment' in rv.data.decode('utf-8')
-        assert '<td>1234</td>' in rv.data.decode('utf-8')
+        assert '<td>12345</td>' in rv.data.decode('utf-8')
         assert '2019-02-01' in rv.data.decode('utf-8')
         assert '2019-11-30' in rv.data.decode('utf-8')
 
@@ -228,42 +218,7 @@ def test_admin_can_edit_assignment_start_end_date(mockdata, client, session):
         assert officer.assignments[0].resign_date == date(2019, 11, 30)
 
 
-def test_admin_can_edit_officer_badge_number(mockdata, client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-
-        # Remove existing assignments
-        Assignment.query.filter_by(officer_id=3).delete()
-        officer = Officer.query.filter_by(id=3).one()
-        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
-        form = AssignmentForm(star_no='1234', job_title=job.id)
-
-        rv = client.post(
-            url_for('main.add_assignment', officer_id=3),
-            data=form.data,
-            follow_redirects=True
-        )
-
-        assert 'Added new assignment' in rv.data.decode('utf-8')
-        assert '<td>1234</td>' in rv.data.decode('utf-8')
-
-        job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
-        form = AssignmentForm(star_no='12345', job_title=job.id)
-        officer = Officer.query.filter_by(id=3).one()
-
-        rv = client.post(
-            url_for('main.edit_assignment', officer_id=officer.id,
-                    assignment_id=officer.assignments[0].id),
-            data=form.data,
-            follow_redirects=True
-        )
-
-        assert 'Edited officer assignment' in rv.data.decode('utf-8')
-        assert '<td>12345</td>' in rv.data.decode('utf-8')
-        assert officer.assignments[0].star_no == '12345'
-
-
-def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, session):
+def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -271,7 +226,12 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         new_star_no = '12345'
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
-        form = AssignmentForm(star_no=star_no, job_title=job.id)
+        form = AssignmentForm(
+            star_no=star_no,
+            job_title=job.id,
+            star_date=date(2019, 1, 1),
+            resign_date=date(2019, 12, 31),
+        )
 
         # Remove existing assignments
         Assignment.query.filter_by(officer_id=officer.id).delete()
@@ -283,10 +243,17 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
         )
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
+        assert '2019-01-01' in rv.data.decode('utf-8')
+        assert '2019-12-31' in rv.data.decode('utf-8')
 
         officer = Officer.query.filter_by(id=officer.id).one()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
-        form = AssignmentForm(star_no=new_star_no, job_title=job.id)
+        form = AssignmentForm(
+            star_no=new_star_no,
+            job_title=job.id,
+            star_date=date(2019, 2, 1),
+            resign_date=date(2019, 11, 30),
+        )
 
         rv = client.post(
             url_for('main.edit_assignment', officer_id=officer.id,
@@ -297,10 +264,12 @@ def test_ac_can_edit_officer_in_their_dept_badge_number(mockdata, client, sessio
 
         assert 'Edited officer assignment' in rv.data.decode('utf-8')
         assert '<td>{}</td>'.format(new_star_no) in rv.data.decode('utf-8')
+        assert '2019-02-01' in rv.data.decode('utf-8')
+        assert '2019-11-30' in rv.data.decode('utf-8')
         assert officer.assignments[0].star_no == new_star_no
 
 
-def test_ac_cannot_edit_officer_outside_their_dept_badge_number(mockdata, client, session):
+def test_ac_cannot_edit_assignemtn_outside_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
