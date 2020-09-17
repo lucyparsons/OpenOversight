@@ -122,6 +122,31 @@ def test_admin_can_add_assignment(mockdata, client, session):
         assert '2019-01-01' in rv.data.decode('utf-8')
         assert '2019-12-31' in rv.data.decode('utf-8')
 
+
+def test_admin_add_assignment_validation_error(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(
+            star_no='1234',
+            job_title=job.id,
+            star_date=date(2020, 1, 1),
+            resign_date=date(2019, 12, 31),
+        )
+
+        rv = client.post(
+            url_for('main.add_assignment', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert "End date must come after start date." in rv.data.decode('utf-8')
+        assignments = Assignment.query.filter_by(star_no='1234', job_id=job.id).scalar()
+        assert assignments is None
+
+
 def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -216,6 +241,45 @@ def test_admin_can_edit_assignment(mockdata, client, session):
 
         assert officer.assignments[0].star_date == date(2019, 2, 1)
         assert officer.assignments[0].resign_date == date(2019, 11, 30)
+
+
+def test_admin_edit_assignment_validation_error(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        # Remove existing assignments
+        Assignment.query.filter_by(officer_id=3).delete()
+        officer = Officer.query.filter_by(id=3).one()
+        job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
+        form = AssignmentForm(
+            star_no='1234',
+            job_title=job.id,
+            star_date=date(2019, 1, 1),
+            resign_date=date(2019, 12, 31),
+        )
+
+        rv = client.post(
+            url_for('main.add_assignment', officer_id=3),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        # Attempt to set resign date to a date before the start date
+        form = AssignmentForm(
+            resign_date=date(2018, 12, 31)
+        )
+        officer = Officer.query.filter_by(id=3).one()
+
+        rv = client.post(
+            url_for('main.edit_assignment', officer_id=officer.id,
+                    assignment_id=officer.assignments[0].id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert "End date must come after start date." in rv.data.decode('utf-8')
+        assert officer.assignments[0].star_date == date(2019, 1, 1)
+        assert officer.assignments[0].resign_date == date(2019, 12, 31)
 
 
 def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
