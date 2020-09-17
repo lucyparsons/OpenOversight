@@ -84,7 +84,6 @@ def dept_choices():
 
 
 def add_new_assignment(officer_id, form):
-    
     if form.unit.data:
         unit_id = form.unit.data.id
     else:

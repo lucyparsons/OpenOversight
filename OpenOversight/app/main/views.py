@@ -247,14 +247,9 @@ def add_assignment(officer_id):
                           format_exc()])
             ))
             return redirect(url_for('main.officer_profile', officer_id=officer_id))
-        
-        return render_template('officer.html', 
-                officer=officer,
-                paths=face_paths,
-                faces=faces,
-                assignments=assignments,
-                form=form
-            ) 
+
+        return render_template('officer.html', officer=officer, paths=face_paths,
+                               faces=faces, assignments=assignments, form=form)
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
