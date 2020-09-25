@@ -494,7 +494,7 @@ def edit_department(department_id):
 
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
-                 first_name=None, badge=None, unique_internal_identifier=None, unit=None):
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[]):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -508,6 +508,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     form_data['badge'] = badge
     form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
+    form_data['photo'] = photo
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
@@ -535,6 +536,8 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['race'] = request.args.getlist('race')
     if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
         form_data['gender'] = request.args.getlist('gender')
+    if request.args.get('photo') and all(photo in ['0', '1'] for photo in request.args.getlist('photo')):
+        form_data['photo'] = request.args.getlist('photo')
 
     unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]

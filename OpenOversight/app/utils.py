@@ -337,6 +337,17 @@ def filter_by_form(form, officer_query, department_id=None):
             form['rank'].append(None)
         officer_query = officer_query.filter(Job.job_title.in_(form['rank']))
 
+    if form.get('photo') and all(photo in ['0', '1'] for photo in form['photo']):
+        face_officer_ids = set([face.officer_id for face in Face.query.all()])
+        if '0' in form['photo'] and '1' not in form['photo']:
+            officer_query = officer_query.filter(
+                Officer.id.notin_(face_officer_ids)
+            )
+        elif '1' in form['photo'] and '0' not in form['photo']:
+            officer_query = officer_query.filter(
+                Officer.id.in_(face_officer_ids)
+            )
+
     return officer_query
 
 

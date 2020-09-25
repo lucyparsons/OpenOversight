@@ -62,12 +62,7 @@ class FindOfficerForm(Form):
     max_age = IntegerField('max_age', default=85, validators=[
         NumberRange(min=16, max=100)
     ])
-    latitude = DecimalField('latitude', default=False, validators=[
-        NumberRange(min=-90, max=90)
-    ])
-    longitude = DecimalField('longitude', default=False, validators=[
-        NumberRange(min=-180, max=180)
-    ])
+    photo = SelectField('photo', validators=[AnyOf(['0', '1'])])
 
 
 class FindOfficerIDForm(Form):
