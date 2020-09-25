@@ -557,16 +557,16 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         'unit': [('Not Sure', 'Not Sure')] + unit_choices
     }
 
-    next_url=url_for('main.list_officer', department_id=department.id,
-        page=officers.next_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
-        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
-        first_name=form_data['first_name'], badge=form_data['badge'],
-        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
-    prev_url=url_for('main.list_officer', department_id=department.id,
-        page=officers.prev_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
-        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
-        first_name=form_data['first_name'], badge=form_data['badge'],
-        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+    next_url = url_for('main.list_officer', department_id=department.id,
+                       page=officers.next_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+                       min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
+                       first_name=form_data['first_name'], badge=form_data['badge'],
+                       unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+    prev_url = url_for('main.list_officer', department_id=department.id,
+                       page=officers.prev_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+                       min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
+                       first_name=form_data['first_name'], badge=form_data['badge'],
+                       unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
 
     return render_template(
         'list_officer.html',

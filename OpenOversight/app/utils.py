@@ -15,7 +15,7 @@ import random
 import sys
 from traceback import format_exc
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.sql.expression import cast
 import imghdr as imghdr
 from flask import current_app, url_for
