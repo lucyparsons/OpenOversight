@@ -94,7 +94,8 @@ def get_officer():
             unit=form.data['unit'] if form.data['unit'] != 'Not Sure' else None,
             min_age=form.data['min_age'],
             max_age=form.data['max_age'],
-            name=form.data['name'],
+            last_name=form.data['last_name'],
+            first_name=form.data['first_name'],
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
@@ -492,8 +493,8 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', name=None,
-                 badge=None, unique_internal_identifier=None, unit=None):
+def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -502,7 +503,8 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     form_data['rank'] = rank
     form_data['min_age'] = min_age
     form_data['max_age'] = max_age
-    form_data['name'] = name
+    form_data['last_name'] = last_name
+    form_data['first_name'] = first_name
     form_data['badge'] = badge
     form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
@@ -519,8 +521,10 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['max_age'] = request.args.get('max_age')
     if request.args.get('page'):
         page = int(request.args.get('page'))
-    if request.args.get('name'):
-        form_data['name'] = request.args.get('name')
+    if request.args.get('last_name'):
+        form_data['last_name'] = request.args.get('last_name')
+    if request.args.get('first_name'):
+        form_data['first_name'] = request.args.get('first_name')
     if request.args.get('badge'):
         form_data['badge'] = request.args.get('badge')
     if request.args.get('unit') and request.args.get('unit') != 'Not Sure':
@@ -550,13 +554,26 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         'unit': [('Not Sure', 'Not Sure')] + unit_choices
     }
 
+    next_url=url_for('main.list_officer', department_id=department.id,
+        page=officers.next_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
+        first_name=form_data['first_name'], badge=form_data['badge'],
+        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+    prev_url=url_for('main.list_officer', department_id=department.id,
+        page=officers.prev_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
+        first_name=form_data['first_name'], badge=form_data['badge'],
+        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+
     return render_template(
         'list_officer.html',
         form=form,
         department=department,
         officers=officers,
         form_data=form_data,
-        choices=choices)
+        choices=choices,
+        next_url=next_url,
+        prev_url=prev_url)
 
 
 @main.route('/department/<int:department_id>/ranks')

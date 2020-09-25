@@ -117,10 +117,11 @@ class Officer(db.Model):
 
     def full_name(self):
         if self.middle_initial:
+            middle_initial = self.middle_initial + '.' if len(self.middle_initial) == 1 else self.middle_initial
             if self.suffix:
-                return '{} {}. {} {}'.format(self.first_name, self.middle_initial, self.last_name, self.suffix)
+                return '{} {} {} {}'.format(self.first_name, middle_initial, self.last_name, self.suffix)
             else:
-                return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+                return '{} {} {}'.format(self.first_name, middle_initial, self.last_name)
         if self.suffix:
             return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
@@ -136,6 +137,20 @@ class Officer(db.Model):
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
                 return label
+
+    def job_title(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .job.job_title
+
+    def badge_number(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .star_no
 
     def __repr__(self):
         if self.unique_internal_identifier:

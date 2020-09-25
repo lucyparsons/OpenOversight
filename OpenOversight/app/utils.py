@@ -271,9 +271,13 @@ def filter_by_form(form, officer_query, department_id=None):
     ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
     officer_query = officer_query.outerjoin(subq)
 
-    if form.get('name'):
+    if form.get('last_name'):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+            Officer.last_name.ilike('%%{}%%'.format(form['last_name']))
+        )
+    if form.get('first_name'):
+        officer_query = officer_query.filter(
+            Officer.first_name.ilike('%%{}%%'.format(form['first_name']))
         )
     if not department_id and form.get('dept'):
         department_id = form['dept'].id

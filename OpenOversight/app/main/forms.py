@@ -37,8 +37,12 @@ class HumintContribution(Form):
 
 
 class FindOfficerForm(Form):
-    name = StringField(
-        'name', default='', validators=[Regexp(r'\w*'), Length(max=50),
+    last_name = StringField(
+        'last_name', default='', validators=[Regexp(r'\w*'), Length(max=50),
+                                        Optional()]
+    )
+    first_name = StringField(
+        'first_name', default='', validators=[Regexp(r'\w*'), Length(max=50),
                                         Optional()]
     )
     badge = StringField('badge', default='', validators=[Regexp(r'\w*'),
