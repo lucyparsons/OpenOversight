@@ -281,18 +281,32 @@ def filter_by_form(form, officer_query, department_id=None):
             Officer.department_id == department_id
         )
     if form.get('badge'):
-        officer_query = officer_query.filter(
-            subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
-        )
+        if ',' in form['badge']:
+            or_clauses = [
+                subq.c.assignments_star_no.ilike('%%{}%%'.format(star_no.strip()))
+                for star_no in form['badge'].split(',')
+            ]
+            officer_query = officer_query.filter(or_(*or_clauses))
+        else:
+            officer_query = officer_query.filter(
+                subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
+            )
     if form.get('unit'):
         officer_query = officer_query.filter(
             subq.c.assignments_unit_id == form['unit']
         )
 
     if form.get('unique_internal_identifier'):
-        officer_query = officer_query.filter(
-            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
-        )
+        if ',' in form['unique_internal_identifier']:
+            or_clauses = [
+                Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii.strip()))
+                for uii in form['unique_internal_identifier'].split(',')
+            ]
+            officer_query = officer_query.filter(or_(*or_clauses))
+        else:
+            officer_query = officer_query.filter(
+                Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
+            )
     race_values = [x for x, _ in RACE_CHOICES]
     if form.get('race') and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
