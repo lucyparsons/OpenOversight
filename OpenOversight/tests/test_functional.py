@@ -2,11 +2,12 @@ from __future__ import division
 from contextlib import contextmanager
 import pytest
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.by import By
 from sqlalchemy.sql.expression import func
-from OpenOversight.app.models import Officer, Incident, Department
+from OpenOversight.app.models import db, Officer, Incident, Department, Unit
 from OpenOversight.app.config import BaseConfig
 
 
@@ -17,6 +18,20 @@ def wait_for_page_load(browser, timeout=10):
     WebDriverWait(browser, timeout).until(
         expected_conditions.staleness_of(old_page)
     )
+
+
+def login_admin(browser):
+    browser.get("http://localhost:5000/auth/login")
+    with wait_for_page_load(browser):
+        elem = browser.find_element_by_id("email")
+        elem.clear()
+        elem.send_keys("test@example.org")
+        elem = browser.find_element_by_id("password")
+        elem.clear()
+        elem.send_keys("testtest")
+        with wait_for_page_load(browser):
+            browser.find_element_by_id("submit").click()
+            wait_for_element(browser, By.TAG_NAME, "body")
 
 
 def wait_for_element(browser, locator, text, timeout=10):
@@ -100,17 +115,7 @@ def test_officer_browse_pagination(mockdata, browser):
 
 
 def test_last_name_capitalization(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
-
-    # get past the login page
-    elem = browser.find_element_by_id("email")
-    elem.clear()
-    elem.send_keys("test@example.org")
-    elem = browser.find_element_by_id("password")
-    elem.clear()
-    elem.send_keys("testtest")
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("submit").click()
+    login_admin(browser)
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("mcDonald", "McDonald"), ("Mei-Ying", "Mei-Ying")]
@@ -142,17 +147,7 @@ def test_last_name_capitalization(mockdata, browser):
 
 
 def test_last_name_capitalization_short_name(mockdata, browser):
-    browser.get("http://localhost:5000/auth/login")
-
-    # get past the login page
-    elem = browser.find_element_by_id("email")
-    elem.clear()
-    elem.send_keys("test@example.org")
-    elem = browser.find_element_by_id("password")
-    elem.clear()
-    elem.send_keys("testtest")
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("submit").click()
+    login_admin(browser)
     wait_for_element(browser, By.ID, "cpd")
 
     test_pairs = [("G", "G"), ("oh", "Oh")]
@@ -259,3 +254,48 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
 
     buttonRow = browser.find_element_by_id("description-overflow-row_" + incident_id)
     assert not buttonRow.is_displayed()
+
+
+def test_officer_form_has_units_alpha_sorted(mockdata, browser):
+    login_admin(browser)
+
+    # get the units from the DB in the sort we expect
+    db_units_sorted = list(map(lambda x: x.descrip, db.session.query(Unit).order_by(Unit.descrip.asc()).all()))
+    # the Select tag in the interface has a 'None' value at the start
+    db_units_sorted.insert(0, 'None')
+
+    # Check for the Unit sort on the 'add officer' form
+    browser.get("http://localhost:5000/officer/new")
+    unit_select = Select(browser.find_element_by_id("unit"))
+    select_units_sorted = list(map(lambda x: x.text, unit_select.options))
+    assert db_units_sorted == select_units_sorted
+
+    # Check for the Unit sort on the 'add assignment' form
+    browser.get("http://localhost:5000/officer/1")
+    unit_select = Select(browser.find_element_by_id("unit"))
+    select_units_sorted = list(map(lambda x: x.text, unit_select.options))
+    assert db_units_sorted == select_units_sorted
+
+
+def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
+    # Set NULL race and gender for officer 1
+    db.session.execute(
+        Officer.__table__.update().where(Officer.id == 1).values(race=None, gender=None))
+    db.session.commit()
+
+    login_admin(browser)
+
+    # Nagivate to edit officer page for officer having NULL race and gender
+    browser.get("http://localhost:5000/officer/1/edit")
+
+    wait_for_element(browser, By.ID, "gender")
+    select = Select(browser.find_element_by_id("gender"))
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
+
+    wait_for_element(browser, By.ID, "race")
+    select = Select(browser.find_element_by_id("race"))
+    selected_option = select.first_selected_option
+    selected_text = selected_option.text
+    assert selected_text == 'Not Sure'
