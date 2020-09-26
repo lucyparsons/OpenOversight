@@ -1,4 +1,7 @@
 import datetime
+from flask_sqlalchemy.model import DefaultMeta
+from flask_wtf import FlaskForm as Form
+from typing import Callable, Union
 from flask import render_template, redirect, request, url_for, flash, abort, current_app
 from flask.views import MethodView
 from flask_login import login_required, current_user
@@ -8,13 +11,13 @@ from ..utils import add_department_query, set_dynamic_default
 
 
 class ModelView(MethodView):
-    model = None
+    model = None  # type: DefaultMeta
     model_name = ''
     per_page = 20
     order_by = ''  # this should be a field on the model
     descending = False  # used for order_by
-    form = ''
-    create_function = ''
+    form = ''  # type: Form
+    create_function = ''  # type: Union[str, Callable]
     department_check = False
 
     def get(self, obj_id):
