@@ -192,7 +192,7 @@ class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descrip = db.Column(db.String(120), index=True, unique=False)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
-    department = db.relationship('Department', backref='unit_types')
+    department = db.relationship('Department', backref='unit_types', order_by='Unit.descrip.asc()')
 
     def __repr__(self):
         return 'Unit: {}'.format(self.descrip)
