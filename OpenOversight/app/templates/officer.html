@@ -84,9 +84,9 @@
   <div class="page-header">
       <ol class="breadcrumb">
           <li><a href="{{url_for('main.list_officer',department_id=officer.department.id)}}">{{ officer.department.name|title }}</a></li>
-          <li class="active">{% include 'partials/officer_name.html' %}</li>
+          <li class="active">{{ officer.full_name() }}</li>
       </ol>
-      <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
+      <h1>Officer Detail: <b>{{ officer.full_name() }}</b></h1>
   </div>
 
   <div class="row">
@@ -118,7 +118,7 @@
             <tbody>
               <tr>
                 <td><b>Name</b></td>
-                <td>{% include 'partials/officer_name.html' %}</td>
+                <td>{{ officer.full_name() }}</td>
               </tr>
               <tr>
                 <td><b>OpenOversight ID</b></td>

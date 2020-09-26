@@ -138,6 +138,20 @@ class Officer(db.Model):
             if self.gender == gender:
                 return label
 
+    def job_title(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .job.job_title
+
+    def badge_number(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .star_no
+
     def __repr__(self):
         if self.unique_internal_identifier:
             return '<Officer ID {}: {} {} {} {} ({})>'.format(self.id,
