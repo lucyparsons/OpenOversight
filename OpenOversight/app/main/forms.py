@@ -46,7 +46,7 @@ class FindOfficerForm(Form):
     unique_internal_identifier = StringField('unique_internal_identifier', default='', validators=[Regexp(r'\w*'), Length(max=55)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
-    unit = SelectField('unit', default='Not Sure', validators=[Optional()])
+    unit = StringField('unit', default='Not Sure', validators=[Optional()])
     rank = StringField('rank', default='Not Sure', validators=[Optional()])  # Gets rewritten by Javascript
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
@@ -91,7 +91,7 @@ class FaceTag(Form):
 class AssignmentForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
-    job_title = QuerySelectField('job_title', validators=[DataRequired()],
+    job_title = QuerySelectField('Job Title', validators=[DataRequired()],
                                  get_label='job_title', get_pk=lambda x: x.id)  # query set in view function
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',

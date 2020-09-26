@@ -532,12 +532,12 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     if request.args.get('gender') and all(gender in [gc[0] for gc in GENDER_CHOICES] for gender in request.args.getlist('gender')):
         form_data['gender'] = request.args.getlist('gender')
 
-    unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).all()]
+    unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name).paginate(page, OFFICERS_PER_PAGE, False)
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name, Officer.first_name, Officer.id).paginate(page, OFFICERS_PER_PAGE, False)
     for officer in officers.items:
         officer_face = officer.face.order_by(Face.featured.desc()).first()
         if officer_face:
@@ -619,6 +619,12 @@ def edit_officer(officer_id):
     for link in form.links:
         if not link.user_id.data:
             link.user_id.data = current_user.get_id()
+
+    if request.method == 'GET':
+        if officer.race is None:
+            form.race.data = 'Not Sure'
+        if officer.gender is None:
+            form.gender.data = 'Not Sure'
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
