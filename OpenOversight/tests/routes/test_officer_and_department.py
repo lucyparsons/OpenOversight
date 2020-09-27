@@ -650,7 +650,7 @@ def test_admin_can_add_new_officer(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -689,7 +689,7 @@ def test_admin_can_add_new_officer_with_unit(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               unit=unit.id,
                               department=department.id,
                               birth_year=1990,
@@ -730,7 +730,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
                               race=race,
                               gender=gender,
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -770,7 +770,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
                               race=race,
                               gender=gender,
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department.id,
                               unit=unit.id,
                               birth_year=1990)
@@ -811,7 +811,7 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
                               race=race,
                               gender=gender,
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990)
 
@@ -845,7 +845,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department.id,
                               unit=unit.id,
                               birth_year=1990,
@@ -929,6 +929,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         suffix = ''
         race = random.choice(RACE_CHOICES)[0]
         gender = random.choice(GENDER_CHOICES)[0]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name=first_name,
                               last_name=last_name,
                               middle_initial=middle_initial,
@@ -936,7 +937,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
                               race=race,
                               gender=gender,
                               star_no=666,
-                              job_title='COMMANDER',
+                              job_id=job.id,
                               department=department.id,
                               unit=unit.id,
                               birth_year=1990)
@@ -983,12 +984,13 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
         login_admin(client)
 
         department = random.choice(dept_choices())
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesty',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title='COMMANDER',
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -1015,13 +1017,14 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
         login_admin(client)
 
         department = random.choice(dept_choices())
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='Testersly',
                               middle_initial='T',
                               race='WHITE',
                               gender='M',
                               star_no='T666',
-                              job_title='COMMANDER',
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990)
         data = process_form_data(form.data)
@@ -1114,6 +1117,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
             LinkForm(url='http://www.avideo/?v=2345jk', link_type='video').data
         ]
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Testy',
                               last_name='McTesty',
                               middle_initial='T',
@@ -1121,7 +1125,7 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title='COMMANDER',
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1990,
                               links=links)
@@ -1162,6 +1166,7 @@ def test_officer_csv(mockdata, client, session):
         links = [
             LinkForm(url='http://www.pleasework.com', link_type='link').data,
         ]
+        job = Job.query.filter_by(department_id=department.id).filter(Job.job_title != 'Not Sure').first()
         form = AddOfficerForm(first_name='CKtVwe2gqhAIc',
                               last_name='FVkcjigWUeUyA',
                               middle_initial='T',
@@ -1169,7 +1174,7 @@ def test_officer_csv(mockdata, client, session):
                               race='WHITE',
                               gender='M',
                               star_no='90009',
-                              job_title='2',
+                              job_id=job.id,
                               department=department.id,
                               birth_year=1910,
                               links=links)
@@ -1192,7 +1197,7 @@ def test_officer_csv(mockdata, client, session):
         added_lines = [row for row in csv_reader if row["last name"] == form.last_name.data]
         assert len(added_lines) == 1
         assert form.first_name.data == added_lines[0]["first name"]
-        assert Job.query.get(form.job_title.data).job_title == added_lines[0]["job title"]
+        assert job.job_title == added_lines[0]["job title"]
         assert form.star_no.data == added_lines[0]["badge number"]
 
 
@@ -1333,14 +1338,13 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         ]
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id).first()
-        job_title = job.job_title
         form = AddOfficerForm(first_name='A',
                               last_name='A',
                               middle_initial='A',
                               race='WHITE',
                               gender='M',
                               star_no=666,
-                              job_title=job.id,
+                              job_id=job.id,
                               department=department_id,
                               birth_year=1990,
                               links=links)
@@ -1365,7 +1369,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         # Check that added officer appears when filtering for this race, gender, rank and age
         form = BrowseForm(race='WHITE',
                           gender='M',
-                          rank=job_title,
+                          rank=job.job_title,
                           min_age=datetime.now().year - 1991,
                           max_age=datetime.now().year - 1989)
 
@@ -1380,7 +1384,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         assert any("<dd>White</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode('utf-8').split("<dt>Job Title</dt>")[1:]
-        assert any("<dd>{}</dd>".format(job_title) in token for token in filter_list)
+        assert any("<dd>{}</dd>".format(job.job_title) in token for token in filter_list)
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)

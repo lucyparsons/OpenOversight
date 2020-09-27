@@ -142,7 +142,7 @@ def add_officer_profile(form, current_user):
 
     assignment = Assignment(baseofficer=officer,
                             star_no=form.star_no.data,
-                            job_id=form.job_title.data,
+                            job_id=form.job_id.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
     db.session.add(assignment)
