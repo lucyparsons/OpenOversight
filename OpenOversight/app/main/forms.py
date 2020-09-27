@@ -62,7 +62,7 @@ class FindOfficerForm(Form):
     max_age = IntegerField('max_age', default=85, validators=[
         NumberRange(min=16, max=100)
     ])
-    photo = SelectField('photo', validators=[AnyOf(['0', '1'])])
+    photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
 
 
 class FindOfficerIDForm(Form):

@@ -15,7 +15,7 @@ def test_department_filter(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
         {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
-         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': ''}
     )
     for element in results.all():
@@ -63,7 +63,7 @@ def test_rank_filter_select_all_police_officers(mockdata):
 def test_filter_by_name(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
-        {'name': 'J', 'dept': department}
+        {'last_name': 'J', 'dept': department}
     )
     for element in results.all():
         assert 'J' in element.last_name
@@ -73,7 +73,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     officer = OpenOversight.app.models.Officer(first_name='Rachel', last_name='S', department=department, birth_year=1992)
     results = OpenOversight.app.utils.grab_officers(
-        {'name': 'S', 'dept': department}
+        {'last_name': 'S', 'dept': department}
     )
     assert officer in results.all()
 
@@ -93,7 +93,7 @@ def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
     target_unique_internal_id = OpenOversight.app.models.Officer.query.first().unique_internal_identifier
     results = OpenOversight.app.utils.grab_officers(
         {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
-         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': target_unique_internal_id}
     )
     for element in results:
@@ -107,7 +107,7 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
     partial_identifier = identifier[:len(identifier) // 2]
     results = OpenOversight.app.utils.grab_officers(
         {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
-         'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
+         'min_age': 16, 'max_age': 85, 'last_name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': partial_identifier}
     )
     for element in results:

@@ -106,6 +106,23 @@
           </div>
         </div>
         <div class="panel">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-photo">
+            <h3 class="panel-title accordion-toggle">Photo</h3>
+          </div>
+          <div class="collapse in" id="filter-photo">
+            <div class="panel-body">
+              <div class="form-group checkbox">
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" id="photo_available" name="photo" value="1" {% if '1' in form_data['photo'] %}checked="checked" {% endif %}/>Available
+                </label>
+                <label class="form-check">
+                  <input type="checkbox" class="form-check-input" id="photo_not_available" name="photo" value="0" {% if '0' in form_data['photo'] %}checked="checked" {% endif %}/>Not Available
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-unit">
             <h3 class="panel-title accordion-toggle">Unit</h3>
           </div>
@@ -136,23 +153,6 @@
                   <label>Max</label>
                   <input type="number" class="form-control" id="max_age" name="max_age" value="{{ form_data['max_age'] or 100 }}" />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-photo">
-            <h3 class="panel-title accordion-toggle">Photo</h3>
-          </div>
-          <div class="collapse in" id="filter-photo">
-            <div class="panel-body">
-              <div class="form-group checkbox">
-                <label class="form-check">
-                  <input type="checkbox" class="form-check-input" id="photo_available" name="photo" value="1" {% if '1' in form_data['photo'] %}checked="checked" {% endif %}/>Available
-                </label>
-                <label class="form-check">
-                  <input type="checkbox" class="form-check-input" id="photo_not_available" name="photo" value="0" {% if '0' in form_data['photo'] %}checked="checked" {% endif %}/>Not Available
-                </label>
               </div>
             </div>
           </div>

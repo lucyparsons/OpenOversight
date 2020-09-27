@@ -94,12 +94,12 @@ def get_officer():
             min_age=form.data['min_age'],
             max_age=form.data['max_age'],
             last_name=form.data['last_name'],
-            first_name=form.data['first_name'],
             badge=form.data['badge'],
             unique_internal_identifier=form.data['unique_internal_identifier']),
             code=302)
     else:
         current_app.logger.info(form.errors)
+        # import pdb; pdb.set_trace()
     return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
