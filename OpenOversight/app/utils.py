@@ -131,7 +131,8 @@ def add_officer_profile(form, current_user):
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
-                      department_id=form.department.data.id)
+                      department_id=form.department.data.id,
+                      unique_internal_identifier=form.unique_internal_identifier.data)
     db.session.add(officer)
     db.session.commit()
 
@@ -140,12 +141,13 @@ def add_officer_profile(form, current_user):
     else:
         officer_unit = None
 
-    assignment = Assignment(baseofficer=officer,
-                            star_no=form.star_no.data,
-                            job_id=form.job_id.data,
-                            unit=officer_unit,
-                            star_date=form.employment_date.data)
-    db.session.add(assignment)
+    if form.job_id.data:
+        assignment = Assignment(baseofficer=officer,
+                                star_no=form.star_no.data,
+                                job_id=form.job_id.data,
+                                unit=officer_unit,
+                                star_date=form.employment_date.data)
+        db.session.add(assignment)
     if form.links.data:
         for link in form.data['links']:
             # don't try to create with a blank string
