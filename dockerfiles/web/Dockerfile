@@ -33,6 +33,7 @@ RUN yarn
 
 COPY create_db.py test_data.py /usr/src/app/
 COPY .flake8 /usr/src/app/
+COPY mypy.ini /usr/src/app/
 EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
