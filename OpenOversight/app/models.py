@@ -212,7 +212,7 @@ class Unit(BaseModel):
     department = db.relationship('Department', backref='unit_types', order_by='Unit.descrip.asc()')
 
     def __repr__(self):
-        return 'Unit: {}'.format(self.descrip)
+        return '<Unit: {}>'.format(self.descrip)
 
 
 class Face(BaseModel):

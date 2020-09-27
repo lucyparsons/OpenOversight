@@ -36,7 +36,7 @@ def test_face_repr(mockdata):
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert unit.__repr__() == 'Unit: {}'.format(unit.descrip)
+    assert unit.__repr__() == '<Unit: {}>'.format(unit.descrip)
 
 
 def test_user_repr(mockdata):
@@ -46,7 +46,7 @@ def test_user_repr(mockdata):
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert salary.__repr__() == '<Salary: ID {} : {}'.format(salary.officer_id, salary.salary)
+    assert salary.__repr__() == '<Salary: ID {} : {}>'.format(salary.officer_id, salary.salary)
 
 
 def test_password_not_printed(mockdata):
