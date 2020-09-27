@@ -514,6 +514,16 @@ tr:hover .row-actions {
     border: 0;
 }
 
+.search-results .top-paginate > nav {
+    width: 100%;
+}
+
+.search-results .top-sort .sort.form-group {
+    max-width: 250px;
+    margin: 0 0 0 auto;
+    display: block;
+}
+
 
 .console .button-explanation {
     height:35px;

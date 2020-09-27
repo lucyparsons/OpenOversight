@@ -839,7 +839,7 @@ def test_advanced_csv_import__success(session, department_with_ranks, test_csv_d
     assert salary_2018.year == 2018
     assert salary_2018.salary == 10000
     assert salary_2018.is_fiscal_year is True
-    assert salary_2018.overtime_pay is None
+    assert salary_2018.overtime_pay == 0
     assert salary_2019.salary == 10001
 
     assignment_po, assignment_cap = sorted(

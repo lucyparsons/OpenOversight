@@ -23,9 +23,8 @@ def allowed_values(choices, empty_allowed=True):
 
 
 def validate_money(form, field):
-    test_str = field if isinstance(field, str) else str(field.data)
-    if not re.fullmatch(r'\d+(\.\d\d)?0*', test_str):
-        raise ValidationError('Invalid monetary value ' + test_str)
+    if not re.fullmatch(r'\d+(\.\d\d)?0*', str(field.data)):
+        raise ValidationError('Invalid monetary value')
 
 
 class HumintContribution(Form):

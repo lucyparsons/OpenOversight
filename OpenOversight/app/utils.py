@@ -250,7 +250,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
     return url
 
 
-def filter_by_form(form, officer_query, department_id=None):
+def filter_by_form(form, officer_query, department_id=None, order=0):
     # Some SQL acrobatics to left join only the most recent assignment and salary per officer
     assignment_row_num_col = func.row_number().over(
         partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
@@ -341,7 +341,6 @@ def filter_by_form(form, officer_query, department_id=None):
                 Officer.id.in_(face_officer_ids)
             )
 
-    officer_query = officer_query.outerjoin(Officer.salaries)
     if form.get('max_pay') and form.get('min_pay') and float(form['max_pay']) > float(form['min_pay']):
         officer_query = officer_query.filter(
             db.and_(
@@ -357,6 +356,17 @@ def filter_by_form(form, officer_query, department_id=None):
         officer_query = officer_query.filter(
             salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
         )
+
+    if order == 0:  # Last name alphabetical
+        officer_query = officer_query.order_by(Officer.last_name, Officer.first_name, Officer.id)
+    elif order == 1:  # Rank
+        officer_query = officer_query.order_by(Job.order.desc())
+    elif order == 2:  # Total pay
+        officer_query = officer_query.order_by((salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay).desc())
+    elif order == 3:  # Salary
+        officer_query = officer_query.order_by(salary_subq.c.salaries_salary.desc())
+    elif order == 4:  # Overtime pay
+        officer_query = officer_query.order_by(salary_subq.c.salaries_overtime_pay.desc())
 
     return officer_query
 

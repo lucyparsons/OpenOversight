@@ -11,7 +11,6 @@ from traceback import format_exc
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response, Markup)
 from flask_login import current_user, login_required, login_user
-from wtforms.validators import ValidationError
 
 from . import main
 from .. import limiter, sitemap
@@ -28,7 +27,7 @@ from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
                     AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm,
-                    OfficerLinkForm, validate_money)
+                    OfficerLinkForm)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -499,8 +498,8 @@ def edit_department(department_id):
 
 
 @main.route('/department/<int:department_id>')
-def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
-                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], min_pay=0, max_pay=None):
+def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], min_pay=None, max_pay=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -530,6 +529,9 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['max_age'] = request.args.get('max_age')
     if request.args.get('page'):
         page = int(request.args.get('page'))
+    if request.args.get('order'):
+        order = int(request.args.get('order'))
+        form_data['order'] = order
     if request.args.get('last_name'):
         form_data['last_name'] = request.args.get('last_name')
     if request.args.get('first_name'):
@@ -546,25 +548,17 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['gender'] = request.args.getlist('gender')
     if request.args.get('photo') and all(photo in ['0', '1'] for photo in request.args.getlist('photo')):
         form_data['photo'] = request.args.getlist('photo')
-    if request.args.get('min_pay'):
+    if request.args.get('min_pay') and re.fullmatch(r'\d+(\.\d\d)?', request.args.get('min_pay')):
         form_data['min_pay'] = request.args.get('min_pay')
-    if request.args.get('max_pay'):
+    if request.args.get('max_pay') and re.fullmatch(r'\d+(\.\d\d)?', request.args.get('max_pay')):
         form_data['max_pay'] = request.args.get('max_pay')
-
-    try:
-        if form_data['min_pay']:
-            validate_money(None, form_data['min_pay'])
-        if form_data['max_pay']:
-            validate_money(None, form_data['max_pay'])
-    except ValidationError:
-        abort(400)
 
     unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name, Officer.first_name, Officer.id)
+    officers = filter_by_form(form_data, Officer.query, department_id, order).filter(Officer.department_id == department_id)
     officers = officers.paginate(page, OFFICERS_PER_PAGE, False)
     for officer in officers.items:
         officer_face = officer.face.order_by(Face.featured.desc()).first()
@@ -579,12 +573,12 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     }
 
     next_url = url_for('main.list_officer', department_id=department.id,
-                       page=officers.next_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+                       page=officers.next_num, order=order, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
                        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
                        first_name=form_data['first_name'], badge=form_data['badge'],
                        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
     prev_url = url_for('main.list_officer', department_id=department.id,
-                       page=officers.prev_num, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
+                       page=officers.prev_num, order=order, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
                        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
                        first_name=form_data['first_name'], badge=form_data['badge'],
                        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
