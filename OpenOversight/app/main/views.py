@@ -11,6 +11,7 @@ from traceback import format_exc
 from flask import (abort, render_template, request, redirect, url_for,
                    flash, current_app, jsonify, Response, Markup)
 from flask_login import current_user, login_required, login_user
+from wtforms.validators import ValidationError
 
 from . import main
 from .. import limiter, sitemap
@@ -26,7 +27,8 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
+                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm,
+                    OfficerLinkForm, validate_money)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -99,7 +101,6 @@ def get_officer():
             code=302)
     else:
         current_app.logger.info(form.errors)
-        # import pdb; pdb.set_trace()
     return render_template('input_find_officer.html', form=form, depts_dict=depts_dict, jsloads=jsloads)
 
 
@@ -499,7 +500,7 @@ def edit_department(department_id):
 
 @main.route('/department/<int:department_id>')
 def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16', max_age='100', last_name=None,
-                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[]):
+                 first_name=None, badge=None, unique_internal_identifier=None, unit=None, photo=[], min_pay=0, max_pay=None):
     form = BrowseForm()
     form.rank.query = Job.query.filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order.asc()).all()
     form_data = form.data
@@ -514,6 +515,8 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
     form_data['unit'] = unit
     form_data['unique_internal_identifier'] = unique_internal_identifier
     form_data['photo'] = photo
+    form_data['min_pay'] = min_pay
+    form_data['max_pay'] = max_pay
 
     OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
     department = Department.query.filter_by(id=department_id).first()
@@ -543,13 +546,26 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['gender'] = request.args.getlist('gender')
     if request.args.get('photo') and all(photo in ['0', '1'] for photo in request.args.getlist('photo')):
         form_data['photo'] = request.args.getlist('photo')
+    if request.args.get('min_pay'):
+        form_data['min_pay'] = request.args.get('min_pay')
+    if request.args.get('max_pay'):
+        form_data['max_pay'] = request.args.get('max_pay')
+
+    try:
+        if form_data['min_pay']:
+            validate_money(None, form_data['min_pay'])
+        if form_data['max_pay']:
+            validate_money(None, form_data['max_pay'])
+    except ValidationError:
+        abort(400)
 
     unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()]
     rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name, Officer.first_name, Officer.id).paginate(page, OFFICERS_PER_PAGE, False)
+    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name, Officer.first_name, Officer.id)
+    officers = officers.paginate(page, OFFICERS_PER_PAGE, False)
     for officer in officers.items:
         officer_face = officer.face.order_by(Face.featured.desc()).first()
         if officer_face:

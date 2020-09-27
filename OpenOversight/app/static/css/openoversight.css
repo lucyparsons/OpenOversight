@@ -491,6 +491,25 @@ tr:hover .row-actions {
     content: "\e253";
 }
 
+.filter-sidebar #filter-pay .form-group {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.filter-sidebar #filter-pay .input-group-prefix {
+    position: absolute;
+    z-index: 4;
+    line-height: 34px;
+    left: 9px;
+    color: #666;
+}
+
+.filter-sidebar #filter-pay input.form-control {
+    padding-left: 21px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
 .search-results .list-group-item {
     border: 0;
 }

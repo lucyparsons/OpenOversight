@@ -23,8 +23,9 @@ def allowed_values(choices, empty_allowed=True):
 
 
 def validate_money(form, field):
-    if not re.fullmatch(r'\d+(\.\d\d)?0*', str(field.data)):
-        raise ValidationError('Invalid monetary value')
+    test_str = field if isinstance(field, str) else str(field.data)
+    if not re.fullmatch(r'\d+(\.\d\d)?0*', test_str):
+        raise ValidationError('Invalid monetary value ' + test_str)
 
 
 class HumintContribution(Form):
@@ -40,10 +41,6 @@ class FindOfficerForm(Form):
     last_name = StringField(
         'last_name', default='', validators=[Regexp(r'\w*'), Length(max=50),
                                              Optional()]
-    )
-    first_name = StringField(
-        'first_name', default='', validators=[Regexp(r'\w*'), Length(max=50),
-                                              Optional()]
     )
     badge = StringField('badge', default='', validators=[Regexp(r'\w*'),
                                                          Length(max=10)])
@@ -62,7 +59,6 @@ class FindOfficerForm(Form):
     max_age = IntegerField('max_age', default=85, validators=[
         NumberRange(min=16, max=100)
     ])
-    photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
 
 
 class FindOfficerIDForm(Form):
@@ -383,7 +379,8 @@ class IncidentForm(DateFieldForm):
 class BrowseForm(Form):
     rank = QuerySelectField('rank', validators=[Optional()], get_label='job_title',
                             get_pk=lambda job: job.job_title)  # query set in view function
-    name = StringField('Last name')
+    last_name = StringField('Last name')
+    first_name = StringField('First name')
     badge = StringField('Badge number')
     unique_internal_identifier = StringField('Unique ID')
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
@@ -394,4 +391,7 @@ class BrowseForm(Form):
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
     max_age = SelectField('maximum age', default=100, choices=AGE_CHOICES,
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
+    photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
+    min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
+    max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')

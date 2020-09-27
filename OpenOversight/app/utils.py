@@ -251,18 +251,27 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 
 def filter_by_form(form, officer_query, department_id=None):
-    # Some SQL acrobatics to left join only the most recent assignment per officer
-    row_num_col = func.row_number().over(
+    # Some SQL acrobatics to left join only the most recent assignment and salary per officer
+    assignment_row_num_col = func.row_number().over(
         partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
-    ).label('row_num')
-    subq = db.session.query(
+    ).label('assignment_row_num')
+    assignment_subq = db.session.query(
         Assignment.officer_id,
         Assignment.job_id,
         Assignment.star_date,
         Assignment.star_no,
         Assignment.unit_id
-    ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
-    officer_query = officer_query.outerjoin(subq)
+    ).add_columns(assignment_row_num_col).from_self().filter(assignment_row_num_col == 1).subquery()
+    salary_row_num_col = func.row_number().over(
+        partition_by=Salary.officer_id, order_by=Salary.year.desc()
+    ).label('salary_row_num')
+    salary_subq = db.session.query(
+        Salary.officer_id,
+        Salary.salary,
+        Salary.overtime_pay,
+        Salary.year,
+    ).add_columns(salary_row_num_col).from_self().filter(salary_row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(assignment_subq).outerjoin(salary_subq)
 
     if form.get('last_name'):
         officer_query = officer_query.filter(
@@ -278,37 +287,28 @@ def filter_by_form(form, officer_query, department_id=None):
             Officer.department_id == department_id
         )
     if form.get('badge'):
-        if ',' in form['badge']:
-            or_clauses = [
-                subq.c.assignments_star_no.ilike('%%{}%%'.format(star_no.strip()))
-                for star_no in form['badge'].split(',')
-            ]
-            officer_query = officer_query.filter(or_(*or_clauses))
-        else:
-            officer_query = officer_query.filter(
-                subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
-            )
+        or_clauses = [
+            assignment_subq.c.assignments_star_no.ilike('%%{}%%'.format(star_no.strip()))
+            for star_no in form['badge'].split(',')
+        ]
+        officer_query = officer_query.filter(or_(*or_clauses))
     if form.get('unit'):
         officer_query = officer_query.filter(
-            subq.c.assignments_unit_id == form['unit']
+            assignment_subq.c.assignments_unit_id == form['unit']
         )
-
     if form.get('unique_internal_identifier'):
-        if ',' in form['unique_internal_identifier']:
-            or_clauses = [
-                Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii.strip()))
-                for uii in form['unique_internal_identifier'].split(',')
-            ]
-            officer_query = officer_query.filter(or_(*or_clauses))
-        else:
-            officer_query = officer_query.filter(
-                Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
-            )
+        or_clauses = [
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii.strip()))
+            for uii in form['unique_internal_identifier'].split(',')
+        ]
+        officer_query = officer_query.filter(or_(*or_clauses))
+
     race_values = [x for x, _ in RACE_CHOICES]
     if form.get('race') and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
             form['race'].append(None)
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
+
     gender_values = [x for x, _ in GENDER_CHOICES]
     if form.get('gender') and all(gender in gender_values for gender in form['gender']):
         if 'Not Sure' in form['gender']:
@@ -340,6 +340,23 @@ def filter_by_form(form, officer_query, department_id=None):
             officer_query = officer_query.filter(
                 Officer.id.in_(face_officer_ids)
             )
+
+    officer_query = officer_query.outerjoin(Officer.salaries)
+    if form.get('max_pay') and form.get('min_pay') and float(form['max_pay']) > float(form['min_pay']):
+        officer_query = officer_query.filter(
+            db.and_(
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay']),
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+            )
+        )
+    elif form.get('min_pay') and float(form['min_pay']) > 0 and not form.get('max_pay'):
+        officer_query = officer_query.filter(
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay'])
+        )
+    elif form.get('max_pay') and float(form['max_pay']) > 0 and not form.get('min_pay'):
+        officer_query = officer_query.filter(
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+        )
 
     return officer_query
 
