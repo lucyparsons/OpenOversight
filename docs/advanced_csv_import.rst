@@ -165,7 +165,7 @@ Details:
 Links csv
 ^^^^^^^^^
 - Required: ``id, url``
-- Optional: ``title, link_type, description, author, user_id, officer_ids, incident_ids``
+- Optional: ``title, link_type, description, author, creator_id, officer_ids, incident_ids``
 
 Details:
 ~~~~~~~~
@@ -174,7 +174,7 @@ Details:
 - ``description`` A short description of the link.
 - ``link_type`` Choice of ``Link``, ``YouTube Video`` and ``Other Video``.
 - ``author`` The source or author of the linked article, report, video.
-- ``user_id`` Id of existing user shown as responsible for adding this entry.
+- ``creator_id`` Id of existing user shown as responsible for adding this entry.
 - ``officer_ids`` Ids of officer profiles this link should be visible on, separated by ``|``. See same field in incidents above for more details.
 - ``incidents_ids`` Ids of incidents this link should be associated with, separated by ``|``. Just like ``officer_ids`` this can contain strings
   starting with ``#`` to refer to an incident created in the incident csv.
