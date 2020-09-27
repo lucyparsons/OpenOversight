@@ -121,7 +121,10 @@ def test_admin_can_add_assignment(mockdata, client, session):
         assert 'Added new assignment' in rv.data.decode('utf-8')
         assert '2019-01-01' in rv.data.decode('utf-8')
         assert '2019-12-31' in rv.data.decode('utf-8')
-
+        assignment = Assignment.query.filter_by(
+            star_no='1234', job_id=job.id).first()
+        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.resign_date == date(2019, 12, 31)
 
 def test_admin_add_assignment_validation_error(mockdata, client, session):
     with current_app.test_request_context():
@@ -151,6 +154,7 @@ def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
+        
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
@@ -171,8 +175,10 @@ def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
         assert '2019-12-31' in rv.data.decode('utf-8')
 
         # test that assignment exists in database
-        officer = Officer.query.filter(Officer.assignments.any(star_no='S1234')).first()
-        assert officer is not None
+        assignment = Assignment.query.filter_by(
+            star_no='S1234', officer_id=officer.id).first()
+        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.resign_date == date(2019, 12, 31)
 
 
 def test_ac_cannot_add_non_dept_assignment(mockdata, client, session):
@@ -190,14 +196,15 @@ def test_ac_cannot_add_non_dept_assignment(mockdata, client, session):
         )
 
         assert rv.status_code == 403
+        assignments = Assignment.query.filter_by(
+            star_no='1234', job_id=job.id).scalar()
+        assert assignments is None
 
 
 def test_admin_can_edit_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        # Remove existing assignments
-        Assignment.query.filter_by(officer_id=3).delete()
         officer = Officer.query.filter_by(id=3).one()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
@@ -217,6 +224,10 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert '<td>1234</td>' in rv.data.decode('utf-8')
         assert '2019-01-01' in rv.data.decode('utf-8')
         assert '2019-12-31' in rv.data.decode('utf-8')
+        
+        assignment = Assignment.query.filter_by(star_no='1234', job_id=job.id).first()
+        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.resign_date == date(2019, 12, 31)
 
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
         form = AssignmentForm(
@@ -239,8 +250,9 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert '2019-02-01' in rv.data.decode('utf-8')
         assert '2019-11-30' in rv.data.decode('utf-8')
 
-        assert officer.assignments[0].star_date == date(2019, 2, 1)
-        assert officer.assignments[0].resign_date == date(2019, 11, 30)
+        assignment = Assignment.query.filter_by(star_no='12345', job_id=job.id).first()
+        assert assignment.star_date == date(2019, 2, 1)
+        assert assignment.resign_date == date(2019, 11, 30)
 
 
 def test_admin_edit_assignment_validation_error(mockdata, client, session):
@@ -248,7 +260,6 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
         login_admin(client)
 
         # Remove existing assignments
-        Assignment.query.filter_by(officer_id=3).delete()
         officer = Officer.query.filter_by(id=3).one()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
@@ -276,10 +287,10 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
             data=form.data,
             follow_redirects=True
         )
-
+        assignment = Assignment.query.filter_by(star_no='1234', job_id=job.id).first()
         assert "End date must come after start date." in rv.data.decode('utf-8')
-        assert officer.assignments[0].star_date == date(2019, 1, 1)
-        assert officer.assignments[0].resign_date == date(2019, 12, 31)
+        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.resign_date == date(2019, 12, 31)
 
 
 def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
@@ -309,6 +320,10 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         assert '<td>{}</td>'.format(star_no) in rv.data.decode('utf-8')
         assert '2019-01-01' in rv.data.decode('utf-8')
         assert '2019-12-31' in rv.data.decode('utf-8')
+        assert officer.assignments[0].star_no == star_no
+        assert officer.assignments[0].star_date == date(2019, 1, 1)
+        assert officer.assignments[0].resign_date == date(2019, 12, 31)
+
 
         officer = Officer.query.filter_by(id=officer.id).one()
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Commander').one()
@@ -331,9 +346,11 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         assert '2019-02-01' in rv.data.decode('utf-8')
         assert '2019-11-30' in rv.data.decode('utf-8')
         assert officer.assignments[0].star_no == new_star_no
+        assert officer.assignments[0].star_date == date(2019, 2, 1)
+        assert officer.assignments[0].resign_date == date(2019, 11, 30)
 
 
-def test_ac_cannot_edit_assignemtn_outside_their_dept(mockdata, client, session):
+def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
