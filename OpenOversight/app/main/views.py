@@ -572,16 +572,16 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
         'unit': [('Not Sure', 'Not Sure')] + unit_choices
     }
 
-    next_url = url_for('main.list_officer', department_id=department.id,
+    def gen_pagination_url(page):
+        return url_for('main.list_officer', department_id=department.id,
                        page=officers.next_num, order=order, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
                        min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
                        first_name=form_data['first_name'], badge=form_data['badge'],
                        unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
-    prev_url = url_for('main.list_officer', department_id=department.id,
-                       page=officers.prev_num, order=order, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
-                       min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
-                       first_name=form_data['first_name'], badge=form_data['badge'],
-                       unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+    prev_url = gen_pagination_url(page=officers.prev_num)
+    next_url = gen_pagination_url(page=officers.next_num)
+    first_url = gen_pagination_url(page=1)
+    last_url = gen_pagination_url(page=officers.pages)
 
     return render_template(
         'list_officer.html',
@@ -591,7 +591,9 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
         form_data=form_data,
         choices=choices,
         next_url=next_url,
-        prev_url=prev_url)
+        prev_url=prev_url,
+        first_url=first_url,
+        last_url=last_url)
 
 
 @main.route('/department/<int:department_id>/ranks')
