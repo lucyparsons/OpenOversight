@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ officer.full_name() }} - OpenOversight{% endblock %}
 {% block meta %}
-  {% set job_title = officer.assignments[0].job.job_title if officer.assignments[0] and officer.assignments[0].job.job_title != 'Not Sure' else 'Employee' %}
+  {% set job_title = officer.job_title() if officer.job_title() and officer.job_title() != 'Not Sure' else 'Employee' %}
   {% set description = 'See detailed information about ' ~ officer.full_name() ~ ', ' ~ job_title ~ ' of the ' ~ officer.department.name ~ '.' %}
   {% set image_url = officer.image_url | default(url_for('static', filename='images/placeholder.png', _external=True)) %}
   <meta name="description" content="{{ description }}">
