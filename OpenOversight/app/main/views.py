@@ -23,11 +23,10 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      crop_image, create_incident, get_or_create, dept_choices,
                      upload_image_to_s3_and_store_in_db)
 
-
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
                     EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm)
+                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
 from .model_view import ModelView
 from .choices import GENDER_CHOICES, RACE_CHOICES, AGE_CHOICES
 from ..models import (db, Image, User, Face, Officer, Assignment, Department,
@@ -589,7 +588,7 @@ def add_officer():
     jsloads = ['js/dynamic_lists.js', 'js/add_officer.js']
     form = AddOfficerForm()
     for link in form.links:
-        link.user_id.data = current_user.get_id()
+        link.creator_id.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -618,9 +617,6 @@ def edit_officer(officer_id):
     jsloads = ['js/dynamic_lists.js']
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
-    for link in form.links:
-        if not link.user_id.data:
-            link.user_id.data = current_user.get_id()
 
     if request.method == 'GET':
         if officer.race is None:
@@ -1150,7 +1146,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get('officer_id')
 
         for link in form.links:
-            link.user_id.data = current_user.get_id()
+            link.creator_id.data = current_user.id
         return form
 
     def get_edit_form(self, obj):
@@ -1160,10 +1156,10 @@ class IncidentApi(ModelView):
         no_links = len(obj.links)
         no_officers = len(obj.officers)
         for link in form.links:
-            if link.user_id.data:
+            if link.creator_id.data:
                 continue
             else:
-                link.user_id.data = current_user.get_id()
+                link.creator_id.data = current_user.id
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id
@@ -1337,4 +1333,100 @@ main.add_url_rule(
 main.add_url_rule(
     '/officer/<int:officer_id>/description/<int:obj_id>/delete',
     view_func=description_view,
+    methods=['GET', 'POST'])
+
+
+class OfficerLinkApi(ModelView):
+    '''This API only applies to links attached to officer profiles, not links attached to incidents'''
+
+    model = Link
+    model_name = 'link'
+    form = OfficerLinkForm
+    department_check = True
+
+    @property
+    def officer(self):
+        if not hasattr(self, '_officer'):
+            self._officer = db.session.query(Officer).filter_by(id=self.officer_id).one()
+        return self._officer
+
+    @login_required
+    @ac_or_admin_required
+    def new(self, form=None):
+        if not current_user.is_administrator and current_user.ac_department_id != self.officer.department_id:
+            abort(403)
+        if not form:
+            form = self.get_new_form()
+            if hasattr(form, 'creator_id') and not form.creator_id.data:
+                form.creator_id.data = current_user.get_id()
+
+        if form.validate_on_submit():
+            link = Link(
+                title=form.title.data,
+                url=form.url.data,
+                link_type=form.link_type.data,
+                description=form.description.data,
+                author=form.author.data,
+                creator_id=form.creator_id.data)
+            self.officer.links.append(link)
+            db.session.add(link)
+            db.session.commit()
+            flash('{} created!'.format(self.model_name))
+            return self.get_redirect_url(obj_id=link.id)
+
+        return render_template('{}_new.html'.format(self.model_name), form=form)
+
+    @login_required
+    @ac_or_admin_required
+    def delete(self, obj_id):
+        obj = self.model.query.get_or_404(obj_id)
+        if not current_user.is_administrator and current_user.ac_department_id != self.get_department_id(obj):
+            abort(403)
+
+        if request.method == 'POST':
+            db.session.delete(obj)
+            db.session.commit()
+            flash('{} successfully deleted!'.format(self.model_name))
+            return self.get_post_delete_url()
+
+        return render_template('{}_delete.html'.format(self.model_name), obj=obj, officer_id=self.officer_id)
+
+    def get_new_form(self):
+        form = self.form()
+        form.officer_id.data = self.officer_id
+        return form
+
+    def get_edit_form(self, obj):
+        form = self.form(obj=obj)
+        form.officer_id.data = self.officer_id
+        return form
+
+    def get_redirect_url(self, *args, **kwargs):
+        return redirect(url_for('main.officer_profile', officer_id=self.officer_id))
+
+    def get_post_delete_url(self, *args, **kwargs):
+        return self.get_redirect_url()
+
+    def get_department_id(self, obj):
+        return self.officer.department_id
+
+    def dispatch_request(self, *args, **kwargs):
+        if 'officer_id' in kwargs:
+            officer = Officer.query.get_or_404(kwargs['officer_id'])
+            self.officer_id = kwargs.pop('officer_id')
+            self.department_id = officer.department_id
+        return super(OfficerLinkApi, self).dispatch_request(*args, **kwargs)
+
+
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/new',
+    view_func=OfficerLinkApi.as_view('link_api_new'),
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/<int:obj_id>/edit',
+    view_func=OfficerLinkApi.as_view('link_api_edit'),
+    methods=['GET', 'POST'])
+main.add_url_rule(
+    '/officer/<int:officer_id>/link/<int:obj_id>/delete',
+    view_func=OfficerLinkApi.as_view('link_api_delete'),
     methods=['GET', 'POST'])

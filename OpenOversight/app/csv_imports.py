@@ -349,7 +349,7 @@ def _handle_links_csv(
                 "link_type",
                 "description",
                 "author",
-                "user_id",
+                "creator_id",
                 "officer_ids",
                 "incident_ids",
             ],

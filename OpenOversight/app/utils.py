@@ -194,15 +194,7 @@ def add_officer_profile(form, current_user):
 
 def edit_officer_profile(officer, form):
     for field, data in iteritems(form.data):
-        if field == 'links':
-            for link in data:
-                # don't try to create with a blank string
-                if link['url']:
-                    li, _ = get_or_create(db.session, Link, **link)
-                    if li:
-                        officer.links.append(li)
-        else:
-            setattr(officer, field, data)
+        setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
