@@ -1,5 +1,12 @@
 {% extends "list.html" %}
-
+{% block title %}View incidents - OpenOversight{% endblock %}
+{% block meta %}
+	{% if objects.items|length > 0 %}
+		<meta name="description" content="View all incidents for {{ department.name if department else 'OpenOversight' }}.">
+	{% else %}
+		<meta name="description" content="No incidents found.">
+	{% endif %}
+{% endblock %}
 {% block list %}
 	<h1>Incidents</h1>
 	{% if department %}
