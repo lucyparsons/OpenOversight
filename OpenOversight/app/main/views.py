@@ -233,23 +233,8 @@ def add_assignment(officer_id):
             abort(403)
     else:
         current_app.logger.info(form.errors)
-        try:
-            faces = Face.query.filter_by(officer_id=officer_id).order_by(Face.featured.desc()).all()
-            assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-            face_paths = []
-            for face in faces:
-                face_paths.append(serve_image(face.image.filepath))
-
-        except:  # noqa
-            exception_type, value, full_tback = sys.exc_info()
-            current_app.logger.error('Error loading officer profile: {}'.format(
-                ' '.join([str(exception_type), str(value),
-                          format_exc()])
-            ))
-            return redirect(url_for('main.officer_profile', officer_id=officer_id))
-
-        return render_template('officer.html', officer=officer, paths=face_paths,
-                               faces=faces, assignments=assignments, form=form)
+        flash("Error: " + str(form.errors)) 
+        return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
