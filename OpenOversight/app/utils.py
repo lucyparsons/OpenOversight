@@ -14,6 +14,7 @@ import os
 import random
 import sys
 from traceback import format_exc
+from distutils.util import strtobool
 
 from sqlalchemy import func, or_
 from sqlalchemy.sql.expression import cast
@@ -74,8 +75,8 @@ def get_or_create(session, model, defaults=None, **kwargs):
 
 def unit_choices(department_id: Optional[int] = None):
     if department_id is not None:
-        return db.session.query(Unit).filter_by(department_id=department_id).all()
-    return db.session.query(Unit).all()
+        return db.session.query(Unit).filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()
+    return db.session.query(Unit).order_by(Unit.descrip.asc()).all()
 
 
 def dept_choices():
@@ -141,7 +142,7 @@ def add_officer_profile(form, current_user):
 
     assignment = Assignment(baseofficer=officer,
                             star_no=form.star_no.data,
-                            job_id=form.job_title.data,
+                            job_id=form.job_id.data,
                             unit=officer_unit,
                             star_date=form.employment_date.data)
     db.session.add(assignment)
@@ -192,15 +193,7 @@ def add_officer_profile(form, current_user):
 
 def edit_officer_profile(officer, form):
     for field, data in iteritems(form.data):
-        if field == 'links':
-            for link in data:
-                # don't try to create with a blank string
-                if link['url']:
-                    li, _ = get_or_create(db.session, Link, **link)
-                    if li:
-                        officer.links.append(li)
-        else:
-            setattr(officer, field, data)
+        setattr(officer, field, data)
 
     db.session.add(officer)
     db.session.commit()
@@ -412,9 +405,9 @@ def add_department_query(form, current_user):
 def add_unit_query(form, current_user):
     if not current_user.is_administrator:
         form.unit.query = Unit.query.filter_by(
-            department_id=current_user.ac_department_id)
+            department_id=current_user.ac_department_id).order_by(Unit.descrip.asc())
     else:
-        form.unit.query = Unit.query.all()
+        form.unit.query = Unit.query.order_by(Unit.descrip.asc()).all()
 
 
 def replace_list(items, obj, attr, model, db):
@@ -511,6 +504,14 @@ def crop_image(image, crop_data=None, department_id=None):
 
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
+    if not image_type:
+        image_type = os.path.splitext(image.filepath)[1].lower()[1:]
+        if image_type in ('jp2', 'j2k', 'jpf', 'jpx', 'jpm', 'mj2'):
+            image_type = 'jpeg2000'
+        elif image_type in ('jpg', 'jpeg', 'jpe', 'jif', 'jfif', 'jfi'):
+            image_type = 'jpeg'
+        elif image_type in ('tif', 'tiff'):
+            image_type = 'tiff'
     pimage = Pimage.open(image_buf)
 
     SIZE = 300, 300
@@ -612,4 +613,28 @@ def merge_dicts(*dict_args):
 
 
 def str_is_true(str_):
-    return str_.lower() in ['true', 't', 'yes', 'y']
+    return strtobool(str_.lower())
+
+
+def prompt_yes_no(prompt, default="no"):
+    if default is None:
+        yn = " [y/n] "
+    elif default == "yes":
+        yn = " [Y/n] "
+    elif default == "no":
+        yn = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: {}".format(default))
+
+    while True:
+        sys.stdout.write(prompt + yn)
+        choice = input().lower()
+        if default is not None and choice == '':
+            return strtobool(default)
+        try:
+            ret = strtobool(choice)
+        except ValueError:
+            sys.stdout.write("Please respond with 'yes' or 'no' "
+                             "(or 'y' or 'n').\n")
+            continue
+        return ret

@@ -50,7 +50,7 @@ class FindOfficerForm(Form):
     unique_internal_identifier = StringField('unique_internal_identifier', default='', validators=[Regexp(r'\w*'), Length(max=55)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
                             query_factory=dept_choices, get_label='name')
-    unit = SelectField('unit', default='Not Sure', validators=[Optional()])
+    unit = StringField('unit', default='Not Sure', validators=[Optional()])
     rank = StringField('rank', default='Not Sure', validators=[Optional()])  # Gets rewritten by Javascript
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
@@ -153,7 +153,7 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default='',
         validators=[AnyOf(allowed_values(LINK_CHOICES))])
-    user_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
+    creator_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
 
     def validate(self):
         success = super(LinkForm, self).validate()
@@ -163,6 +163,11 @@ class LinkForm(Form):
             success = False
 
         return success
+
+
+class OfficerLinkForm(LinkForm):
+    officer_id = HiddenField(validators=[DataRequired(message='Not a valid officer ID')])
+    submit = SubmitField(label='Submit')
 
 
 class BaseTextForm(Form):
@@ -197,7 +202,7 @@ class AddOfficerForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp(r'\w*'), Length(max=50)])
-    job_title = StringField('Job Title')  # Gets rewritten by Javascript
+    job_id = StringField('Job ID')  # Gets rewritten by Javascript
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'None')
@@ -258,12 +263,6 @@ class EditOfficerForm(Form):
         validators=[Optional()],
         query_factory=dept_choices,
         get_label='name')
-    links = FieldList(FormField(
-        LinkForm,
-        widget=FormFieldWidget()),
-        description='Links to articles about or videos of the officer.',
-        min_entries=1,
-        widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
 
 

@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% block title %}Search results - OpenOversight{% endblock %}
+{% block meta %}<meta name="description" content="View a gallery of matched officers according to your search results.">{% endblock %}
 {% block content %}
 
 <div class="container theme-showcase" role="main">
@@ -26,7 +28,6 @@
         {% else %}
           {% set officer_image = officer.face.first().image.filepath %}
         {% endif %}
-        {% set assignment = officer.assignments.first() %}
 
         {% if loop.index == 1 %}
           <div class="item active">
@@ -40,7 +41,7 @@
                   <h4 class="text-success"><b>OpenOversight ID: {{ officer.id }}</b></h4>
                   <h5 class="text-muted">Race: {{ officer.race }}</h5>
                   <h5 class="text-muted">Gender: {{ officer.gender }}</h5>
-                  <h5 class="text-muted">Current badge number: #{{ assignment.star_no }}</h5>
+                  <h5 class="text-muted">Current badge number: #{{ officer.badge_number()|default('') }}</h5>
 
 
               <div align="center">

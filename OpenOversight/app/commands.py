@@ -1,18 +1,19 @@
 from __future__ import print_function
-from builtins import input
-from getpass import getpass
-import sys
+
 import csv
+import sys
+from builtins import input
 from datetime import datetime
+from getpass import getpass
+from typing import Dict, List
 
 import click
-from flask.cli import with_appcontext
 from flask import current_app
-
-from .models import db, Assignment, Department, Officer, User, Salary, Job
-from .utils import get_officer, str_is_true
+from flask.cli import with_appcontext
 
 from .csv_imports import import_csv_files
+from .models import Assignment, Department, Job, Officer, Salary, User, db
+from .utils import get_officer, prompt_yes_no, str_is_true
 
 
 @click.command()
@@ -88,8 +89,8 @@ def link_officers_to_department():
 
 
 class ImportLog:
-    updated_officers = {}
-    created_officers = {}
+    updated_officers = {}  # type: Dict[int, List]
+    created_officers = {}  # type: Dict[int, List]
 
     @classmethod
     def log_change(cls, officer, msg):
@@ -158,9 +159,12 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname, allow_blank=True):
-        if fieldname in row and (row[fieldname] or allow_blank) and \
-                getattr(officer, fieldname) != row[fieldname]:
+    def update_officer_field(fieldname):
+        if fieldname not in row:
+            return
+        if row[fieldname] == '':
+            row[fieldname] = None
+        if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
             ImportLog.log_change(
                 officer,
                 'Updated {}: {} --> {}'.format(
@@ -168,10 +172,10 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             setattr(officer, fieldname, row[fieldname])
 
     # Name and gender are the only potentially changeable fields, so update those
-    update_officer_field('last_name', allow_blank=False)
-    update_officer_field('first_name', allow_blank=False)
+    update_officer_field('last_name')
+    update_officer_field('first_name')
     update_officer_field('middle_initial')
-    update_officer_field('suffix', allow_blank=False)
+    update_officer_field('suffix')
     update_officer_field('gender')
 
     # The rest should be static
@@ -188,7 +192,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             old_value = getattr(officer, fieldname)
             new_value = row[fieldname]
             if old_value is None:
-                update_officer_field(fieldname, new_value)
+                update_officer_field(fieldname)
             elif str(old_value) != str(new_value):
                 msg = 'Officer {} {} has differing {} field. Old: {}, new: {}'.format(
                     officer.first_name,
@@ -199,7 +203,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                 )
                 if update_static_fields:
                     print(msg)
-                    update_officer_field(fieldname, new_value)
+                    update_officer_field(fieldname)
                 else:
                     raise Exception(msg)
 
@@ -435,9 +439,14 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
             elif not no_create:
                 create_officer_from_row(row, department_id)
 
-        db.session.commit()
-
         ImportLog.print_logs()
+        if current_app.config['ENV'] == 'testing' or prompt_yes_no("Do you want to commit the above changes?"):
+            print("Commiting changes.")
+            db.session.commit()
+        else:
+            print("Aborting changes.")
+            db.session.rollback()
+            return 0, 0
 
         return len(ImportLog.created_officers), len(ImportLog.updated_officers)
 
