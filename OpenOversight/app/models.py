@@ -345,8 +345,8 @@ class Link(BaseModel):
     link_type = db.Column(db.String(100), index=True)
     description = db.Column(db.Text(), nullable=True)
     author = db.Column(db.String(255), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref='links', lazy=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    creator = db.relationship('User', backref='links', lazy=True)
 
     @validates('url')
     def validate_url(self, key, url):

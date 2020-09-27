@@ -18,9 +18,9 @@ from OpenOversight.app.main.forms import (AssignmentForm, DepartmentForm,
                                           EditOfficerForm, LinkForm,
                                           EditDepartmentForm, SalaryForm,
                                           LocationForm, BrowseForm, LicensePlateForm,
-                                          IncidentForm)
+                                          IncidentForm, OfficerLinkForm)
 
-from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job
+from OpenOversight.app.models import Department, Unit, Officer, Assignment, Salary, Image, Incident, Job, User
 
 
 @pytest.mark.parametrize("route", [
@@ -1741,3 +1741,295 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
         assert 'Commander' in data
 
         assert data.count('Commander') == 2  # Once for each test department
+
+
+def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        admin = User.query.filter_by(email='jen@example.org').first()
+        officer = Officer.query.first()
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=admin.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        ac = User.query.filter_by(email='raq929@example.org').first()
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=ac.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        ac = User.query.filter_by(email='raq929@example.org').first()
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=ac.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=1).one()
+
+        assert len(officer.links) > 0
+
+        link = officer.links[0]
+        form = OfficerLinkForm(
+            title='NEW TITLE',
+            description=link.description,
+            author=link.author,
+            url=link.url,
+            link_type=link.link_type,
+            creator_id=link.creator_id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link successfully updated!' in rv.data.decode('utf-8')
+        assert 'NEW TITLE' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        ac = User.query.filter_by(email='raq929@example.org').first()
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        assert len(officer.links) == 0
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=ac.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+        link = officer.links[0]
+        form = OfficerLinkForm(
+            title='NEW TITLE',
+            description=link.description,
+            author=link.author,
+            url=link.url,
+            link_type=link.link_type,
+            creator_id=link.creator_id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link successfully updated!' in rv.data.decode('utf-8')
+        assert 'NEW TITLE' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        admin = User.query.filter_by(email='jen@example.org').first()
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).all()[10]
+
+        assert len(officer.links) == 0
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=admin.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+        login_ac(client)
+
+        link = officer.links[0]
+        form = OfficerLinkForm(
+            title='NEW TITLE',
+            description=link.description,
+            author=link.author,
+            url=link.url,
+            link_type=link.link_type,
+            creator_id=link.creator_id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
+
+
+def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=1).one()
+
+        assert len(officer.links) > 0
+
+        link = officer.links[0]
+        rv = client.post(
+            url_for('main.link_api_delete', officer_id=officer.id, obj_id=link.id),
+            follow_redirects=True
+        )
+
+        assert 'link successfully deleted!' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_can_delete_link_from_officer_profile_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        ac = User.query.filter_by(email='raq929@example.org').first()
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        assert len(officer.links) == 0
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=ac.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+        link = officer.links[0]
+        rv = client.post(
+            url_for('main.link_api_delete', officer_id=officer.id, obj_id=link.id),
+            follow_redirects=True
+        )
+
+        assert 'link successfully deleted!' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+
+def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        admin = User.query.filter_by(email='jen@example.org').first()
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).all()[10]
+
+        assert len(officer.links) == 0
+
+        form = OfficerLinkForm(
+            title='BPD Watch',
+            description='Baltimore instance of OpenOversight',
+            author='OJB',
+            url='https://bpdwatch.com',
+            link_type='link',
+            creator_id=admin.id,
+            officer_id=officer.id)
+
+        rv = client.post(
+            url_for('main.link_api_new', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert 'link created!' in rv.data.decode('utf-8')
+        assert 'BPD Watch' in rv.data.decode('utf-8')
+        assert officer.unique_internal_identifier in rv.data.decode('utf-8')
+
+        login_ac(client)
+
+        link = officer.links[0]
+        rv = client.post(
+            url_for('main.link_api_delete', officer_id=officer.id, obj_id=link.id),
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
