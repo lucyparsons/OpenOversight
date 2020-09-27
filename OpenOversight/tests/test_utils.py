@@ -254,7 +254,7 @@ def test_user_cannot_submit_invalid_file_extension(mockdata):
 
 def test_unit_choices(mockdata):
     unit_choices = [str(x) for x in OpenOversight.app.utils.unit_choices()]
-    assert 'Unit: Bureau of Organized Crime' in unit_choices
+    assert '<Unit: Bureau of Organized Crime>' in unit_choices
 
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
