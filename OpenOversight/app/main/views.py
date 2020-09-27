@@ -233,7 +233,8 @@ def add_assignment(officer_id):
             abort(403)
     else:
         current_app.logger.info(form.errors)
-        flash("Error: " + str(form.errors)) 
+        flash("Error: " + str(form.errors))
+
         return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
