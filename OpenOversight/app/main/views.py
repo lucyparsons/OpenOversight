@@ -239,7 +239,9 @@ def add_assignment(officer_id):
             abort(403)
     else:
         current_app.logger.info(form.errors)
-    return redirect(url_for('main.officer_profile', officer_id=officer_id))
+        flash("Error: " + str(form.errors))
+
+        return redirect(url_for('main.officer_profile', officer_id=officer_id))
 
 
 @main.route('/officer/<int:officer_id>/assignment/<int:assignment_id>',
