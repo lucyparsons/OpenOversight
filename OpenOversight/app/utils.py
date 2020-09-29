@@ -17,7 +17,7 @@ from traceback import format_exc
 from distutils.util import strtobool
 
 from sqlalchemy import func, or_
-from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import cast, nullslast, desc
 import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
@@ -363,13 +363,13 @@ def filter_by_form(form, officer_query, department_id=None, order=0):
     if order == 0:  # Last name alphabetical
         officer_query = officer_query.order_by(Officer.last_name, Officer.first_name, Officer.id)
     elif order == 1:  # Rank
-        officer_query = officer_query.order_by(Job.order.desc())
+        officer_query = officer_query.order_by(nullslast(Job.order.desc()))
     elif order == 2:  # Total pay
-        officer_query = officer_query.order_by((salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay).desc())
+        officer_query = officer_query.order_by(nullslast(desc(salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay)))
     elif order == 3:  # Salary
-        officer_query = officer_query.order_by(salary_subq.c.salaries_salary.desc())
+        officer_query = officer_query.order_by(nullslast(salary_subq.c.salaries_salary.desc()))
     elif order == 4:  # Overtime pay
-        officer_query = officer_query.order_by(salary_subq.c.salaries_overtime_pay.desc())
+        officer_query = officer_query.order_by(nullslast(salary_subq.c.salaries_overtime_pay.desc()))
 
     return officer_query
 
