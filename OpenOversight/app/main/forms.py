@@ -27,6 +27,12 @@ def validate_money(form, field):
         raise ValidationError('Invalid monetary value')
 
 
+def validate_end_date(form, field):
+    if form.data["star_date"] and field.data:
+        if form.data["star_date"] > field.data:
+            raise ValidationError('End date must come after start date.')
+
+
 class HumintContribution(Form):
     photo = FileField(
         'image', validators=[FileRequired(message='There was no file!'),
@@ -91,6 +97,7 @@ class AssignmentForm(Form):
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'None')
     star_date = DateField('Assignment start date', validators=[Optional()])
+    resign_date = DateField('Assignment end date', validators=[Optional(), validate_end_date])
 
 
 class SalaryForm(Form):
