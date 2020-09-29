@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% block head %}<link href="{{bootstrap_find_resource('css/bootstrap.css', cdn='bootstrap')}}" rel="stylesheet">{% endblock %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Browse {{ department.name|title }} officers - OpenOversight{% endblock %}
 {% block meta %}<meta name="description" content="Browse or search for officers in the {{ department.name|title }}.">{% endblock %}
