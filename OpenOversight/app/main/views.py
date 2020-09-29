@@ -576,10 +576,11 @@ def list_officer(department_id, page=1, order=0, race=[], gender=[], rank=[], mi
 
     def gen_pagination_url(page):
         return url_for('main.list_officer', department_id=department.id,
-                       page=officers.next_num, order=order, race=form_data['race'], gender=form_data['gender'], rank=form_data['rank'],
-                       min_age=form_data['min_age'], max_age=form_data['max_age'], last_name=form_data['last_name'],
-                       first_name=form_data['first_name'], badge=form_data['badge'],
-                       unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'])
+                       page=officers.next_num, order=order, race=form_data['race'], gender=form_data['gender'],
+                       rank=form_data['rank'], min_age=form_data['min_age'], max_age=form_data['max_age'],
+                       last_name=form_data['last_name'], first_name=form_data['first_name'], badge=form_data['badge'],
+                       unique_internal_identifier=form_data['unique_internal_identifier'], unit=form_data['unit'],
+                       photo=form_data['photo'], min_pay=form_data['min_pay'], max_pay=form_data['max_pay'])
     prev_url = gen_pagination_url(page=officers.prev_num)
     next_url = gen_pagination_url(page=officers.next_num)
     first_url = gen_pagination_url(page=1)
