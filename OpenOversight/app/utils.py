@@ -84,7 +84,6 @@ def dept_choices():
 
 
 def add_new_assignment(officer_id, form):
-    # Resign date should be null
     if form.unit.data:
         unit_id = form.unit.data.id
     else:
@@ -99,7 +98,8 @@ def add_new_assignment(officer_id, form):
                                 star_no=form.star_no.data,
                                 job_id=job.id,
                                 unit_id=unit_id,
-                                star_date=form.star_date.data)
+                                star_date=form.star_date.data,
+                                resign_date=form.resign_date.data)
     db.session.add(new_assignment)
     db.session.commit()
 
@@ -117,6 +117,7 @@ def edit_existing_assignment(assignment, form):
 
     assignment.unit_id = officer_unit
     assignment.star_date = form.star_date.data
+    assignment.resign_date = form.resign_date.data
     db.session.add(assignment)
     db.session.commit()
     return assignment
