@@ -51,7 +51,7 @@ class FindOfficerForm(Form):
                                                          Length(max=10)])
     unique_internal_identifier = StringField('unique_internal_identifier', default='', validators=[Regexp(r'\w*'), Length(max=55)])
     dept = QuerySelectField('dept', validators=[DataRequired()],
-                            query_factory=active_dept_choices, get_label='name')
+                            get_label='name')  # query set in view
     unit = StringField('unit', default='Not Sure', validators=[Optional()])
     rank = StringField('rank', default='Not Sure', validators=[Optional()])  # Gets rewritten by Javascript
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
@@ -72,11 +72,6 @@ class FindOfficerForm(Form):
     ])
 
 
-class FindOfficerFormAdmin(FindOfficerForm):
-    dept = QuerySelectField('dept', validators=[DataRequired()],
-                            query_factory=all_dept_choices, get_label='name')
-
-
 class FindOfficerIDForm(Form):
     name = StringField(
         'name', default='', validators=[
@@ -88,11 +83,6 @@ class FindOfficerIDForm(Form):
     )
     dept = QuerySelectField('dept', validators=[Optional()],
                             query_factory=active_dept_choices, get_label='name')
-
-
-class FindOfficerIDFormAdmin(FindOfficerForm):
-    dept = QuerySelectField('dept', validators=[Optional()],
-                            query_factory=all_dept_choices, get_label='name')
 
 
 class FaceTag(Form):
@@ -278,16 +268,7 @@ class AddImageForm(Form):
     department = QuerySelectField(
         'Department',
         validators=[DataRequired()],
-        query_factory=active_dept_choices,
-        get_label='name')
-
-
-class AddImageFormAdmin(Form):
-    department = QuerySelectField(
-        'Department',
-        validators=[DataRequired()],
-        query_factory=all_dept_choices,
-        get_label='name')
+        get_label='name')  # query set in view
 
 
 class DateFieldForm(Form):

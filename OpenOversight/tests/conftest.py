@@ -488,7 +488,7 @@ def add_mockdata(session):
             department_id=INACTIVE_DEPT,
             address=test_addresses[0],
             license_plates=[test_license_plates[0]],
-            links=test_links,
+            links=test_incident_links,
             officers=[officers_dept3[o] for o in range(2)],
             creator_id=2,
             last_updated_id=2

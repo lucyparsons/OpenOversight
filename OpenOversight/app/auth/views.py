@@ -4,11 +4,13 @@ from flask import render_template, redirect, request, url_for, flash, current_ap
 from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
+from sqlalchemy.sql.expression import true
+from sqlalchemy import or_
 from . import auth
 from .. import sitemap
-from ..models import User, db
+from ..models import User, Department, db
 from ..email import send_email
-from ..auth.forms import ChangeDefaultDepartmentForm, ChangeDefaultDepartmentFormAdmin
+from ..auth.forms import ChangeDefaultDepartmentForm
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm, \
     EditUserForm
@@ -221,10 +223,17 @@ def change_email(token):
 @auth.route('/change-dept/', methods=['GET', 'POST'])
 @login_required
 def change_dept():
+    form = ChangeDefaultDepartmentForm()
     if current_user.is_administrator:
-        form = ChangeDefaultDepartmentFormAdmin()
+        form.dept_pref.query = Department.query.all()
     else:
-        form = ChangeDefaultDepartmentForm()
+        form.dept_pref.query = Department.query\
+            .filter(Department.is_active == true())\
+            .all()
+        if not current_user.is_anonymous and current_user.is_area_coordinator and not Department.query.filter_by(id=current_user.ac_department_id).one().is_active:
+            form.dept_pref.query = Department.query\
+                .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                .all()
     set_dynamic_default(form.dept_pref, current_user.dept_pref_rel)
 
     if form.validate_on_submit():

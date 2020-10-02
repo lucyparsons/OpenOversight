@@ -259,6 +259,7 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
 
         # Remove existing assignments
         officer = Officer.query.filter_by(id=3).one()
+        officer.assignments = []
         job = Job.query.filter_by(department_id=officer.department_id, job_title='Police Officer').one()
         form = AssignmentForm(
             star_no='1234',
@@ -1105,6 +1106,7 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
         login_admin(client)
 
         department = random.choice(all_dept_choices())
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='McTesty',
                               race='WHITE',
@@ -1137,6 +1139,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
         login_admin(client)
 
         department = random.choice(all_dept_choices())
+        job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(first_name='Test',
                               last_name='Testersly',
                               middle_initial='T',
@@ -1863,7 +1866,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
         data = [x[1] for x in data]
         assert 'Commander' in data
 
-        assert data.count('Commander') == 2  # Once for each test department
+        assert data.count('Commander') == len(all_dept_choices())  # One for each test department
 
 
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
@@ -1936,6 +1939,10 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(mockdata, clien
         rv = client.post(
             url_for('main.link_api_new', officer_id=officer.id),
             data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 403
 
 
 def test_get_department_ranks_with_inactive_department_fails_for_anonymous_user(mockdata, client, session):
@@ -2191,6 +2198,8 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(mockdata, 
         )
 
         assert rv.status_code == 403
+
+
 def test_get_department_ranks_with_inactive_department_works_for_admin(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)

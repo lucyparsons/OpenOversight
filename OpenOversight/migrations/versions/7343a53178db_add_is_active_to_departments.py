@@ -1,7 +1,7 @@
 """adds the is_active boolean column to departments
 
 Revision ID: 7343a53178db
-Revises: 8ce3de7679c2
+Revises: 79a14685454f
 Create Date: 2019-03-15 14:35:20.801060
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '7343a53178db'
-down_revision = '6045f42587ec'
+down_revision = '86eb228e4bc0'
 branch_labels = None
 depends_on = None
 

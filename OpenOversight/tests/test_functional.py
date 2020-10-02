@@ -142,9 +142,13 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     assert len(results) == 0
 
 
-def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser, client):
-    officer_id = Officer.query.filter_by(department_id=1).first().id
-    browser.get("http://localhost:5000/officer/{}".format(officer_id))
+def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     incident_id = str(incident_long_descrip.id)
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
@@ -152,9 +156,11 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_300_char
 
 
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
-    officer_id = Officer.query.filter_by(department_id=1).first().id
-    browser.get("http://localhost:5000/officer/{}".format(officer_id))
+    browser.get("http://localhost:5000/officer/1")
 
     # Select incident for officer that has description under 300 chars
     result = browser.find_element_by_id("description-overflow-row_1")
@@ -162,9 +168,11 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
 
 
 def test_click_to_read_more_displays_full_description(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
-    officer_id = Officer.query.filter_by(department_id=1).first().id
-    browser.get("http://localhost:5000/officer/{}".format(officer_id))
+    browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     orig_descrip = incident_long_descrip.description
@@ -179,9 +187,11 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
 
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
-    officer_id = Officer.query.filter_by(department_id=1).first().id
-    browser.get("http://localhost:5000/officer/{}".format(officer_id))
+    browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     incident_id = str(incident_long_descrip.id)

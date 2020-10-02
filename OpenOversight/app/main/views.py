@@ -4,7 +4,8 @@ import io
 import os
 import re
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound, joinedload, contains_eager
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import joinedload, contains_eager
 import sys
 from traceback import format_exc
 
@@ -31,11 +32,14 @@ from ..utils import (ac_can_edit_officer, add_department_query,
                      get_random_image, replace_list, roster_lookup, serve_image,
                      set_dynamic_default, get_random_image_from_active_department,
                      upload_image_to_s3_and_store_in_db)
-
-from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
-                    FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
-                    EditOfficerForm, IncidentForm, TextForm, EditTextForm,
-                    AddImageForm, EditDepartmentForm, BrowseForm, SalaryForm, OfficerLinkForm)
+from . import main
+from .. import sitemap
+from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
+from .forms import (AddImageForm, AddOfficerForm, AddUnitForm, AssignmentForm,
+                    BrowseForm, ChangeDepartmentStatusForm, DepartmentForm,
+                    EditDepartmentForm, EditOfficerForm, EditTextForm, FaceTag,
+                    FindOfficerForm, FindOfficerIDForm, IncidentForm,
+                    SalaryForm, TextForm, OfficerLinkForm)
 from .model_view import ModelView
 
 # Ensure the file is read/write by the creator only
@@ -88,9 +92,18 @@ def browse():
 def get_officer():
     jsloads = ['js/find_officer.js']
     form = FindOfficerForm()
+    form.dept.query = Department.query\
+                                .filter(Department.is_active == true())\
+                                .all()
     depts_dict = [dept_choice.toCustomDict() for dept_choice in active_dept_choices()]
+    if not current_user.is_anonymous and current_user.is_area_coordinator and not Department.query.filter_by(id=current_user.ac_department_id).one().is_active:
+        form.dept.query = Department.query\
+                                    .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                                    .all()
+        ac_dept_dict = Department.query.filter_by(id=current_user.ac_department_id).one().toCustomDict()
+        depts_dict.append(ac_dept_dict)
     if not current_user.is_anonymous and current_user.is_administrator:
-        form = FindOfficerFormAdmin()
+        form.dept.query = Department.query.all()
         depts_dict = [dept_choice.toCustomDict() for dept_choice in all_dept_choices()]
 
     if getattr(current_user, 'dept_pref_rel', None):
@@ -117,10 +130,17 @@ def get_officer():
 
 @main.route('/tagger_find', methods=['GET', 'POST'])
 def get_ooid():
+    form = FindOfficerIDForm()
     if not current_user.is_anonymous and current_user.is_administrator:
-        form = FindOfficerIDFormAdmin()
+        form.dept.query = Department.query.all()
     else:
-        form = FindOfficerIDForm()
+        form.dept.query = Department.query\
+                                    .filter(Department.is_active == true())\
+                                    .all()
+        if not current_user.is_anonymous and current_user.is_area_coordinator and not Department.query.filter_by(id=current_user.ac_department_id).one().is_active:
+            form.dept.query = Department.query\
+                                        .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                                        .all()
     if form.validate_on_submit():
         return redirect(url_for('main.get_tagger_gallery'), code=307)
     else:
@@ -192,7 +212,7 @@ def profile(username):
     if current_user.is_administrator:
         classifications = user.classifications
         tags = user.tags
-    if current_user.is_area_cAddUnitFormoordinator:
+    if current_user.is_area_coordinator:
         active_classifications = [classification for classification in user.classifications if classification.department.is_active]
         inactive_classifications = [classification for classification in user.classifications if not classification.department.is_active and classification.department_id == current_user.ac_department_id]
         classifications = active_classifications + inactive_classifications
@@ -890,10 +910,17 @@ def complete_tagging(image_id):
 @main.route('/tagger_gallery/<int:page>', methods=['GET', 'POST'])
 @main.route('/tagger_gallery', methods=['GET', 'POST'])
 def get_tagger_gallery(page=1):
+    form = FindOfficerForm()
     if not current_user.is_anonymous and current_user.is_administrator:
-        form = FindOfficerIDFormAdmin()
+        form.dept.query = Department.query.all()
     else:
-        form = FindOfficerForm()
+        form.dept.query = Department.query\
+                                    .filter(Department.is_active == true())\
+                                    .all()
+        if not current_user.is_anonymous and current_user.is_area_coordinator and not Department.query.filter_by(id=current_user.ac_department_id).one().is_active:
+            form.dept.query = Department.query\
+                                        .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                                        .all()
     if form.validate_on_submit():
         OFFICERS_PER_PAGE = int(current_app.config['OFFICERS_PER_PAGE'])
         form_data = form.data
@@ -921,15 +948,21 @@ def submit_complaint():
 @main.route('/submit', methods=['GET', 'POST'])
 @limiter.limit('5/minute')
 def submit_data():
+    form = AddImageForm()
     if current_user.is_anonymous:
         preferred_dept_id = Department.query.first().id
-        form = AddImageForm()
+        form.department.query = Department.query\
+            .filter(Department.is_active == true())\
+            .all()
     else:
         preferred_dept_id = Department.query.first().id if not current_user.dept_pref else current_user.dept_pref
         if current_user.is_administrator:
-            form = AddImageFormAdmin()
+            form.department.query = Department.query.all()
         else:
-            form = AddImageForm()
+            if not current_user.is_anonymous and current_user.is_area_coordinator and not Department.query.filter_by(id=current_user.ac_department_id).one().is_active:
+                form.department.query = Department.query\
+                    .filter(or_(Department.is_active == true(), Department.id == current_user.ac_department_id))\
+                    .all()
     return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
@@ -1188,7 +1221,7 @@ def server_shutdown():      # pragma: no cover
 @ac_or_admin_required
 def view_ac_dept():
     dept_id = current_user.ac_department_id
-    dept = Department.query.filter_by(id=dept_id).first()
+    dept = Department.query.filter_by(id=dept_id).one()
     form = ChangeDepartmentStatusForm(is_active=dept.is_active)
     if form.validate_on_submit():
         dept.is_active = form.data['is_active']
