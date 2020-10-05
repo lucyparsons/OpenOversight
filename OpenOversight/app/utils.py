@@ -610,3 +610,18 @@ def prompt_yes_no(prompt, default="no"):
                              "(or 'y' or 'n').\n")
             continue
         return ret
+
+    
+def normalize_gender(input_gender):
+    normalized_genders = {
+        "male": "M",
+        "m": "M",
+        "man": "M",
+        "female": "F",
+        "f": "F",
+        "woman": "F",
+        "nonbinary": "Other",
+        "other": "Other",
+    }
+
+    return normalized_genders.get(input_gender.lower().strip())

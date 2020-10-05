@@ -11,10 +11,11 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from .csv_imports import import_csv_files
-from .models import Assignment, Department, Job, Officer, Salary, User, db
-from .utils import get_officer, prompt_yes_no, str_is_true
+from .models import db, Assignment, Department, Officer, User, Salary, Job
+from .utils import get_officer, str_is_true, normalize_gender, prompt_yes_no
 
+
+from .csv_imports import import_csv_files
 
 @click.command()
 @with_appcontext
@@ -159,12 +160,18 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname):
+    def update_officer_field(fieldname, allow_blank=True):
         if fieldname not in row:
             return
         if row[fieldname] == '':
             row[fieldname] = None
-        if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
+
+        if fieldname == 'gender':
+            row[fieldname] = normalize_gender(row[fieldname])
+
+        if fieldname in row and (row[fieldname] or allow_blank) and \
+                getattr(officer, fieldname) != row[fieldname]:
+
             ImportLog.log_change(
                 officer,
                 'Updated {}: {} --> {}'.format(
@@ -175,8 +182,9 @@ def update_officer_from_row(row, officer, update_static_fields=False):
     update_officer_field('last_name')
     update_officer_field('first_name')
     update_officer_field('middle_initial')
-    update_officer_field('suffix')
-    update_officer_field('gender')
+
+    update_officer_field('suffix', allow_blank=False)
+    update_officer_field('gender', allow_blank=False)
 
     # The rest should be static
     static_fields = [
@@ -384,7 +392,15 @@ def process_salary(row, officer, compare=False):
 @with_appcontext
 def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
     """Add or update officers from a CSV file."""
+
+    encoding = 'utf-8'
+
+    # handles unicode errors that can occur when the file was made in Excel
     with open(filename, 'r') as f:
+        if u'\ufeff' in f.readline():
+            encoding = 'utf-8-sig'
+
+    with open(filename, 'r', encoding=encoding) as f:
         ImportLog.clear_logs()
         csvfile = csv.DictReader(f)
         departments = {}
