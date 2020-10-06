@@ -610,8 +610,10 @@ def prompt_yes_no(prompt, default="no"):
             continue
         return ret
 
-    
+
 def normalize_gender(input_gender):
+    if input_gender is None:
+        return None
     normalized_genders = {
         "male": "M",
         "m": "M",
