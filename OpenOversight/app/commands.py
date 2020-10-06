@@ -162,7 +162,7 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname, allow_blank=True):
+    def update_officer_field(fieldname):
         if fieldname not in row:
             return
 
@@ -182,8 +182,8 @@ def update_officer_from_row(row, officer, update_static_fields=False):
     update_officer_field('first_name')
     update_officer_field('middle_initial')
 
-    update_officer_field('suffix', allow_blank=False)
-    update_officer_field('gender', allow_blank=False)
+    update_officer_field('suffix')
+    update_officer_field('gender')
 
     # The rest should be static
     static_fields = [
