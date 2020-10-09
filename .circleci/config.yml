@@ -85,7 +85,7 @@ jobs:
 
   production_backup_only:
     docker:
-      - image: circleci/python:3.6
+      - image: ubuntu-1604
     steps:
       - checkout
       - *setup_dependencies
