@@ -5,8 +5,8 @@ from wtforms.compat import text_type
 
 class BootstrapListWidget(ListWidget):
     def __init__(self, html_tag='ul', prefix_label=True, classes='list-unstyled'):
-            super(BootstrapListWidget, self).__init__()
-            self.classes = classes
+        super(BootstrapListWidget, self).__init__()
+        self.classes = classes
 
     def __call__(self, field, **kwargs):
         c = kwargs.pop('classes', '') or kwargs.pop('class_', '')

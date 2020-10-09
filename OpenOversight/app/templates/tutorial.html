@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-
+{% block title %}Tutorial - OpenOversight{% endblock %}
+{% block meta %}<meta name="description" content="Learn how to contribute to OpenOversight.">{% endblock %}
 {% block content %}
 
 <div class="container theme-showcase" role="main">
@@ -29,7 +30,7 @@
     <p>When an image is displayed, look to see if any faces
       of law enforcement officers are visible. If you do, simply click <b>Yes</b>. If you don't, click <b>No</b>.
       A message will display letting you know that your classification has been saved.
-      If you prefer to skip an image, just click <b>Skip</b>.</p>
+      If you prefer to skip an image, just click <b>Next Photo</b>.</p>
 
     <div class="row">
       <div class="col-sm-6 col-md-6">
@@ -60,7 +61,8 @@
       </div>
 
     <p>Search for the officer using what you can see from their badge number and
-      name. Once you find the officer, look at their <b>OpenOversight ID</b> number in green:</p>
+      name (if available), or by seeing if you can match the officer's face to an existing face in the dataset.
+      Once you find the officer, look at their <b>OpenOversight ID</b> number in green:</p>
 
       <div class="row">
         <div class="col-sm-6 col-md-6">
@@ -77,7 +79,7 @@
       </div>
 
     <p>Follow this process for each officer in the image. Once you've identified every
-    officer from the image you are able to, click <b>Done with this image</b>:</p>
+    officer from the image you are able to, click <b>All officers have been identified</b>:</p>
 
       <div class="row">
         <div class="col-sm-6 col-md-6">

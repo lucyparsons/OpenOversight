@@ -1,8 +1,9 @@
 from pytest import raises
 import time
+import datetime
 from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
                                       User, db, Department, Location, Link,
-                                      LicensePlate, Incident)
+                                      LicensePlate, Incident, Salary)
 
 
 def test_department_repr(mockdata):
@@ -12,12 +13,15 @@ def test_department_repr(mockdata):
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
-    assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
+    if officer.unique_internal_identifier:
+        assert officer.__repr__() == '<Officer ID {}: {} {} {} {} ({})>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix, officer.unique_internal_identifier)
+    else:
+        assert officer.__repr__() == '<Officer ID {}: {} {} {} {}>'.format(officer.id, officer.first_name, officer.middle_initial, officer.last_name, officer.suffix)
 
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.id, assignment.star_no)
+    assert assignment.__repr__() == '<Assignment: ID {} : {}>'.format(assignment.officer.id, assignment.star_no)
 
 
 def test_image_repr(mockdata):
@@ -38,6 +42,11 @@ def test_unit_repr(mockdata):
 def test_user_repr(mockdata):
     user = User(username='bacon')
     assert user.__repr__() == "<User '{}'>".format(user.username)
+
+
+def test_salary_repr(mockdata):
+    salary = Salary.query.first()
+    assert salary.__repr__() == '<Salary: ID {} : {}'.format(salary.officer_id, salary.salary)
 
 
 def test_password_not_printed(mockdata):
@@ -287,3 +296,17 @@ def test_incident_m2m_license_plates(mockdata):
     db.session.commit()
     assert license_plate in incident.license_plates
     assert incident in license_plate.incidents
+
+
+def test_images_added_with_user_id(mockdata):
+    user_id = 1
+    new_image = Image(filepath="http://www.example.com", hash_img="1234",
+                      is_tagged=False,
+                      date_image_inserted=datetime.datetime.now(),
+                      department_id=1,
+                      date_image_taken=datetime.datetime.now(),
+                      user_id=user_id)
+    db.session.add(new_image)
+    db.session.commit()
+    saved = Image.query.filter_by(user_id=user_id).first()
+    assert saved is not None

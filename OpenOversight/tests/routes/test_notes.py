@@ -5,7 +5,7 @@ from OpenOversight.tests.conftest import AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac
 
 
-from OpenOversight.app.main.forms import NoteForm, EditNoteForm
+from OpenOversight.app.main.forms import TextForm, EditTextForm
 from OpenOversight.app.models import db, Officer, Note, User
 
 
@@ -35,10 +35,10 @@ def test_admins_can_create_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.first()
-        note = 'I can haz notez'
+        text_contents = 'I can haz notez'
         admin = User.query.filter_by(email='jen@example.org').first()
-        form = NoteForm(
-            note=note,
+        form = TextForm(
+            text_contents=text_contents,
             officer_id=officer.id,
             creator_id=admin.id
         )
@@ -50,9 +50,9 @@ def test_admins_can_create_notes(mockdata, client, session):
         )
 
         assert rv.status_code == 200
-        assert 'created' in rv.data
+        assert 'created' in rv.data.decode('utf-8')
 
-        created_note = Note.query.filter_by(note=note).first()
+        created_note = Note.query.filter_by(text_contents=text_contents).first()
         assert created_note is not None
         assert created_note.date_created is not None
 
@@ -63,8 +63,8 @@ def test_acs_can_create_notes(mockdata, client, session):
         officer = Officer.query.first()
         note = 'I can haz notez'
         ac = User.query.filter_by(email='raq929@example.org').first()
-        form = NoteForm(
-            note=note,
+        form = TextForm(
+            text_contents=note,
             officer_id=officer.id,
             creator_id=ac.id
         )
@@ -76,9 +76,9 @@ def test_acs_can_create_notes(mockdata, client, session):
         )
 
         assert rv.status_code == 200
-        assert 'created' in rv.data
+        assert 'created' in rv.data.decode('utf-8')
 
-        created_note = Note.query.filter_by(note=note).first()
+        created_note = Note.query.filter_by(text_contents=note).first()
         assert created_note is not None
         assert created_note.date_created is not None
 
@@ -91,7 +91,7 @@ def test_admins_can_edit_notes(mockdata, client, session):
         new_note = 'I can haz editing notez'
         original_date = datetime.now()
         note = Note(
-            note=old_note,
+            text_contents=old_note,
             officer_id=officer.id,
             creator_id=1,
             date_created=original_date,
@@ -100,8 +100,8 @@ def test_admins_can_edit_notes(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
 
-        form = EditNoteForm(
-            note=new_note,
+        form = EditTextForm(
+            text_contents=new_note,
         )
 
         rv = client.post(
@@ -109,11 +109,10 @@ def test_admins_can_edit_notes(mockdata, client, session):
             data=form.data,
             follow_redirects=True
         )
-        print(url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit')
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
-        assert note.note == new_note
+        assert note.text_contents == new_note
         assert note.date_updated > original_date
 
 
@@ -126,7 +125,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
         new_note = 'I can haz editing notez'
         original_date = datetime.now()
         note = Note(
-            note=old_note,
+            text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=original_date,
@@ -135,8 +134,8 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
 
-        form = EditNoteForm(
-            note=new_note,
+        form = EditTextForm(
+            text_contents=new_note,
         )
 
         rv = client.post(
@@ -145,13 +144,13 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
-        assert note.note == new_note
+        assert note.text_contents == new_note
         assert note.date_updated > original_date
 
 
-def test_ac_cannot_edit_others_notes(mockdata, client, session):
+def test_ac_can_edit_others_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email='raq929@example.org').first()
@@ -160,7 +159,7 @@ def test_ac_cannot_edit_others_notes(mockdata, client, session):
         new_note = 'I can haz editing notez'
         original_date = datetime.now()
         note = Note(
-            note=old_note,
+            text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id - 1,
             date_created=original_date,
@@ -169,8 +168,8 @@ def test_ac_cannot_edit_others_notes(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
 
-        form = EditNoteForm(
-            note=new_note,
+        form = EditTextForm(
+            text_contents=new_note,
         )
 
         rv = client.post(
@@ -179,9 +178,9 @@ def test_ac_cannot_edit_others_notes(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'updated' in rv.data
+        assert 'updated' in rv.data.decode('utf-8')
 
-        assert note.note == new_note
+        assert note.text_contents == new_note
         assert note.date_updated > original_date
 
 
@@ -195,7 +194,7 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
         new_note = 'I can haz editing notez'
         original_date = datetime.now()
         note = Note(
-            note=old_note,
+            text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=original_date,
@@ -204,8 +203,8 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
         db.session.add(note)
         db.session.commit()
 
-        form = EditNoteForm(
-            note=new_note,
+        form = EditTextForm(
+            text_contents=new_note,
         )
 
         rv = client.post(
@@ -236,7 +235,7 @@ def test_acs_can_delete_their_notes_in_their_department(mockdata, client, sessio
         ac = User.query.filter_by(email='raq929@example.org').first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         note = Note(
-            note='Hello',
+            text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=datetime.now(),
@@ -259,7 +258,7 @@ def test_acs_cannot_delete_notes_not_in_their_department(mockdata, client, sessi
         login_ac(client)
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
         note = Note(
-            note='Hello',
+            text_contents='Hello',
             officer_id=officer.id,
             creator_id=2,
             date_created=datetime.now(),
@@ -284,7 +283,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         ac = User.query.filter_by(email='raq929@example.org').first()
         note = Note(
-            note='Hello',
+            text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id,
             date_created=datetime.now(),
@@ -297,7 +296,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Update' in rv.data
+        assert 'Update' in rv.data.decode('utf-8')
 
 
 def test_acs_can_get_others_edit_form(mockdata, client, session):
@@ -306,7 +305,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         ac = User.query.filter_by(email='raq929@example.org').first()
         note = Note(
-            note='Hello',
+            text_contents='Hello',
             officer_id=officer.id,
             creator_id=ac.id - 1,
             date_created=datetime.now(),
@@ -319,7 +318,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
             follow_redirects=True
         )
         assert rv.status_code == 200
-        assert 'Update' in rv.data
+        assert 'Update' in rv.data.decode('utf-8')
 
 
 def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
@@ -327,7 +326,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         login_ac(client)
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
         note = Note(
-            note='Hello',
+            text_contents='Hello',
             officer_id=officer.id,
             creator_id=2,
             date_created=datetime.now(),
@@ -345,9 +344,9 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
 def test_users_cannot_see_notes(mockdata, client, session):
     with current_app.test_request_context():
         officer = Officer.query.first()
-        text = 'U can\'t see meeee'
+        text_contents = 'U can\'t see meeee'
         note = Note(
-            note=text,
+            text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
@@ -362,16 +361,16 @@ def test_users_cannot_see_notes(mockdata, client, session):
         # ensures we're looking for a note that exists
         assert note in officer.notes
         assert rv.status_code == 200
-        assert text not in rv.data
+        assert text_contents not in rv.data.decode('utf-8')
 
 
 def test_admins_can_see_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.first()
-        text = 'Kittens see everything'
+        text_contents = 'Kittens see everything'
         note = Note(
-            note=text,
+            text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
@@ -385,17 +384,16 @@ def test_admins_can_see_notes(mockdata, client, session):
         )
         assert note in officer.notes
         assert rv.status_code == 200
-        # import pdb; pdb.set_trace()
-        assert text in rv.data
+        assert text_contents in rv.data.decode('utf-8')
 
 
 def test_acs_can_see_notes_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        text = 'I can haz notez'
+        text_contents = 'I can haz notez'
         note = Note(
-            note=text,
+            text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
@@ -410,15 +408,15 @@ def test_acs_can_see_notes_in_their_department(mockdata, client, session):
         # ensures we're looking for a note that exists
         assert note in officer.notes
         assert rv.status_code == 200
-        assert text in rv.data
+        assert text_contents in rv.data.decode('utf-8')
 
 
 def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
-        text = 'Hello it me'
+        text_contents = 'Hello it me'
         note = Note(
-            note=text,
+            text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
             date_created=datetime.now(),
@@ -433,4 +431,4 @@ def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session)
         # ensures we're looking for a note that exists
         assert note in officer.notes
         assert rv.status_code == 200
-        assert text not in rv.data
+        assert text_contents not in rv.data.decode('utf-8')

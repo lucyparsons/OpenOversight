@@ -9,7 +9,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     # pagination
     OFFICERS_PER_PAGE = os.environ.get('OFFICERS_PER_PAGE', 20)
@@ -17,16 +16,16 @@ class BaseConfig(object):
 
     # Form Settings
     WTF_CSRF_ENABLED = True
-    SECRET_KEY = 'changemeplzorelsehax'
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'changemeplzorelsehax')
 
     # Mail Settings
-    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    OO_MAIL_SUBJECT_PREFIX = '[OpenOversight]'
-    OO_MAIL_SENDER = 'OpenOversight <OpenOversight@gmail.com>'
+    OO_MAIL_SUBJECT_PREFIX = os.environ.get('OO_MAIL_SUBJECT_PREFIX', '[OpenOversight]')
+    OO_MAIL_SENDER = os.environ.get('OO_MAIL_SENDER', 'OpenOversight <OpenOversight@gmail.com>')
     # OO_ADMIN = os.environ.get('OO_ADMIN')
 
     # AWS Settings
@@ -37,7 +36,10 @@ class BaseConfig(object):
 
     # Upload Settings
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
-    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+    ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif'])
+
+    # User settings
+    APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
 
     SEED = 666
 
@@ -50,6 +52,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     NUM_OFFICERS = 15000
+    SITEMAP_URL_SCHEME = 'http'
 
 
 class TestingConfig(BaseConfig):
@@ -57,10 +60,13 @@ class TestingConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     NUM_OFFICERS = 120
+    APPROVE_REGISTRATIONS = False
+    SITEMAP_URL_SCHEME = 'http'
 
 
 class ProductionConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    SITEMAP_URL_SCHEME = 'https'
 
     @classmethod
     def init_app(cls, app):  # pragma: no cover

@@ -1,0 +1,20 @@
+$body-bg: #fff;
+$body-color: #111;
+$navbar-link-color: #000;
+
+$navbar-height: 60px;
+
+$navbar-default-bg: #fff;
+$navbar-default-toggle-border-color: #333333;
+$navbar-default-toggle-icon-bar-bg: #333333;
+$navbar-default-toggle-hover-bg: #D3D3D3;
+
+@import "bootstrap";
+
+.navbar-link {
+  color: $navbar-link-color;
+}
+
+.navbar {
+  margin-bottom: 0;
+}

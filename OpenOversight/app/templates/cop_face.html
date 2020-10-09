@@ -24,13 +24,13 @@
           </div>
       </div>
 
-      <div class="row">
+      <div class="row console">
         <div class="col-sm-1 text-center">
           <div class="preview docs-preview clearfix">
             <div class="img-preview preview-lg"></div>
           </div>
         </div>
-        <div class="col-sm-3 text-center">
+        <div class="col-sm-3 text-center launchroster-button">
         <p class="subtle-pad"><a href="{{ url_for('main.get_ooid') }}" target='_blank'>
           <button type="button" class="btn btn-sm">Launch roster search form</button></a></p>
         </div>
@@ -73,7 +73,7 @@
                 <p><span style="color: red;">[{{ error }}]</span></p>
               {% endfor %}
 
-              <div class="input-group input-group-sm">
+              <div class="input-group input-group-sm id-input">
                 <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
                 <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="officer ID">
               </div>
@@ -87,29 +87,45 @@
               {% endfor %}
 
               <p>
-                <div class="input-group">
+                <div class="input-group addface-button">
                   <input type="submit" class="btn btn-sm btn-primary form-control" value="Add identified face"/>
                 </div>
               </p>
+
+
+	      <div class="text-center input-explanation">
+		<div class="text addface-button-explanation"><b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.</div>
+		<div class="text id-explanation"><b>Explanation</b>: after matching the officer's name, badge number, or face to the roster, enter the officer's OpenOversight ID here.</div>
+	      </div>
+
+
           </div>
 
         </div>
-        <div class="col-sm-2 text-center">
+        <div class="col-sm-2 text-center skip-button">
           {% if department %}
           <a href="{{ url_for('main.label_data', department_id=department.id)}}" class="btn btn-lg btn-primary" role="button">
           {% else %}
           <a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">
           {% endif %}
-            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Skip</a></p>
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
         </div>
-        <div class="col-sm-2 text-center">
+        <div class="col-sm-2 text-center done-button">
           <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}" class="btn btn-sm btn-success">
             <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-            Done with this image!
+            All officers have been identified!
           </a>
         </div>
+	<hr>
+
+	<div class="text-center button-explanation">
+	  <div class="text done-button-explanation"><b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.</div>
+	  <div class="text skip-button-explanation"><b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.</div>
+	  <div class="text launchroster-button-explanation"><b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.</div>
+	</div>
+
       </div>
-      <hr>
+
 
       {% elif current_user.is_disabled == True %}
       <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
@@ -122,9 +138,4 @@
     {% endif %}
 
 </div>
-{% endblock %}
-
-{% block js_footer %}
-  <script src="{{ url_for('static', filename='js/cropper.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/tagger.js') }}"></script>
 {% endblock %}

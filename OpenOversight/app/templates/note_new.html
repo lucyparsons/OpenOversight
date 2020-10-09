@@ -5,10 +5,6 @@
 {% endblock page_title %}
 
 {% block form %}
-	<p>For officer with OOID {{ form.officer_id.data }}</p>
+   <p>For officer with OOID {{ form.officer_id.data }}.<br>{{form.description}}</p>
 	{{ super() }}
 {% endblock form %}
-
-{% block js_footer %}
-	<script src="{{ url_for('static', filename='js/incidentAddButtons.js') }}"></script>
-{% endblock %}

@@ -10,27 +10,53 @@
 <div class="container" role="main">
 	<div class="horizontal-padding">
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num,
-        from_search=from_search),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num,
-          from_search=from_search),
+          next_url=url_for('auth.user_api', page=objects.next_num),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num),
           location='top' %}
 	    {% include "partials/paginate_nav.html" %}
 	  {% endwith %}
 		<div class="table-responsive">
 			<table class="table table-hover">
 				<tr>
-					<th>Email</th>
 					<th>Username</th>
+					<th>Email</th>
+					<th>Status</th>
 					<th>Is Area Coordinator?</th>
 					<th>Area Coordinator Department</th>
 					<th>Is Administator?</th>
 
 				</tr>
 				{% for user in objects.items %}
-				<tr>
-					<td><a href="{{user.id}}">{{ user.email }}</a></td>
-					<td>{{ user.username }}</td>
+				<tr id="user-{{user.id}}">
+					<td>
+						<a href="{{user.id}}"><strong>{{ user.username }}</strong></a>
+						<br />
+						<div class="row-actions">
+							<span class="edit"><a href="{{user.id}}">Edit</a> | </span>
+							<span class="delete"><a href="{{user.id}}/delete">Delete</a> | </span>
+							{% if user.is_disabled %}
+							<span class="enable"><a href="{{user.id}}/enable">Enable</a></span>
+							{% elif user.confirmed %}
+							<span class="disable"><a href="{{user.id}}/disable">Disable</a></span>
+							{% elif not user.approved %}
+							<span class="approve"><a href="{{user.id}}/approve">Approve</a></span>
+							{% else %}
+							<span class="resend"><a href="{{user.id}}/resend">Re-send confirmation email</a></span>
+							{% endif %}
+						</div>
+					</td>
+					<td><a href="mailto:{{user.email}}">{{ user.email }}</a></td>
+					<td>
+						{% if user.is_disabled %}
+							Disabled
+						{% elif user.confirmed %}
+							Active
+						{% elif user.approved %}
+							Pending Confirmation
+						{% else %}
+							Pending Approval
+						{% endif %}
+					</td>
 					<td class="{% if user.is_area_coordinator %} success {% else %} danger {% endif %}">
 						{% if user.is_area_coordinator %}
 							<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
@@ -54,13 +80,11 @@
 			</table>
 		</div>
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num,
-        from_search=from_search),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num,
-          from_search=from_search),
+          next_url=url_for('auth.user_api', page=objects.next_num),
+          prev_url=url_for('auth.user_api',  page=objects.prev_num),
           location='bottom' %}
-    {% include "partials/paginate_nav.html" %}
-  {% endwith %}
+	    {% include "partials/paginate_nav.html" %}
+	  {% endwith %}
 	</div>
 </div>
 {% endblock content %}

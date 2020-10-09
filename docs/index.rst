@@ -10,7 +10,16 @@ Welcome to OpenOversight's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-This is a placeholder for OpenOversight's documentation.
+   area_coordinator
+   bulk_upload
+   advanced_csv_import
+
+OpenOversight is a Lucy Parsons Labs project to improve law enforcement
+accountability through public and crowdsourced data. We maintain a database
+of officer demographic information and provide digital galleries of photographs.
+This is done to help people identify law enforcement officers for filing
+complaints and in order for the public to see work-related information about
+law enforcement officers that interact with the public.
 
 Indices and tables
 ==================

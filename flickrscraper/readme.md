@@ -26,10 +26,8 @@ All output is save in the folder named after the Group ID.
 
 Each image takes about 1-2 seconds to download including JPG and data fields (CSV).
 
-
 ## Dependencies
 
-Python 2.7  
 flickrapi  
 wgetter  
 

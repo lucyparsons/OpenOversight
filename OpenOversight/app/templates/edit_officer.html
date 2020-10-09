@@ -20,16 +20,12 @@
         {{ wtf.form_field(form.gender) }}
         {{ wtf.form_field(form.employment_date) }}
         {{ wtf.form_field(form.birth_year) }}
+        {{ wtf.form_field(form.unique_internal_identifier) }}
         {{ wtf.form_field(form.department) }}
-        {% include "partials/links_subform.html" %}
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
     </form>
     <br>
 </div>
 
 </div>
-{% endblock %}
-
-{% block js_footer %}
-    <script src="{{ url_for('static', filename='js/incidentAddButtons.js') }}"></script>
 {% endblock %}

@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Lookup an Officer's OpenOversight ID{% endblock %}
+{% block meta %}<meta name="description" content="See badge number or name? Lookup an Officer's OpenOversight ID">{% endblock %}
 {% block content %}
 
 <div class="container theme-showcase" role="main">
     {% if current_user and current_user.is_authenticated %}
       <div class="page-header">
-        <h2>Find an Officer's OpenOversight ID</h2>
+        <h2>See badge number or name? Lookup an Officer's OpenOversight ID</h2>
       </div>
 
       <p>Use the following form to put in the details you can see in the image. (It's okay if you can only see a partial name or badge number.)</p>
@@ -32,6 +34,14 @@
           <input class="btn btn-lg" type="submit" value="Lookup name/badge number in roster"/>
         </p>
       </form>
+
+      <div class="page-header">
+        <h2>See only a face?</h2>
+      </div>
+
+      <p>
+        <a href="{{ url_for('main.get_officer') }}" class="btn btn-lg">Launch Find an Officer to generate a face gallery</a>
+      </p>
     {% else %}
       <p>Please register or sign up to view this form:</p>
 

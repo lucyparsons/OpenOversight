@@ -417,3 +417,146 @@ a > .tutorial{
 .pt-35 {
     padding-top: 35px;
 }
+
+.browse-form-input{
+    display: inline-block;
+    vertical-align: middle;
+    width: 190px;
+}
+
+.row-actions {
+    white-space: nowrap;
+    position: relative;
+    left: -9999em;
+}
+
+tr:hover .row-actions {
+    position: static;
+}
+
+.row-actions span {
+    font-size: smaller;
+}
+
+.row-actions .delete a {
+    color: #a00;
+}
+
+.sortable-fields fieldset > div {
+  margin-bottom: 2rem;
+}
+
+.sortable-fields fieldset .glyphicon {
+  font-size: 14px;
+  cursor: move;
+}
+
+.filter-sidebar label.form-check {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.filter-sidebar .form-group {
+    margin-bottom: 0;
+}
+
+.filter-sidebar .checkbox {
+    margin-top: 0;
+}
+
+.filter-sidebar .panel {
+    margin-bottom: 10px;
+}
+
+.filter-sidebar .panel-heading {
+    background-color: transparent;
+    border-bottom: none;
+    padding: 5px 0;
+    cursor: pointer;
+}
+
+.filter-sidebar .panel-body {
+    padding: 5px 0;
+}
+
+.filter-sidebar .panel-heading .accordion-toggle:after {
+    font-family: 'Glyphicons Halflings';
+    content: "\e252";
+    float: right;
+    font-size: 0.7em;
+    padding-top: 0.3em;
+}
+
+.filter-sidebar .panel-heading.collapsed .accordion-toggle:after {
+    content: "\e253";
+}
+
+.search-results .list-group-item {
+    border: 0;
+}
+
+
+.console .button-explanation {
+    height:35px;
+    font-size:16px;
+    position:relative;
+    width: 90%;
+    float:left;
+}
+
+.docs-data .input-explanation {
+    height:35px;
+    font-size:16px;
+    position:relative;
+    width: 350%;
+    float:left;
+    left:-280px;
+    bottom:-35px;
+}
+
+@media (max-width: 760px) {
+    .docs-data .input-explanation {
+    height:10px;
+    position:relative;
+    width: 90%;
+    float:left;
+    left:0px;
+    bottom:-190px;
+    }
+
+    .console .button-explanation {
+    height:70px;
+    }
+    
+}
+
+    
+.console .button-explanation .text {
+    display:none;
+}
+
+.docs-data .input-explanation .text {
+    display:none;
+}
+
+.console .done-button:hover ~ .button-explanation .done-button-explanation{
+    display:block;
+}
+
+.console .skip-button:hover ~ .button-explanation .skip-button-explanation{
+    display:block;
+}
+
+
+.console .launchroster-button:hover ~ .button-explanation .launchroster-button-explanation{
+    display:block;
+}
+
+.docs-data .addface-button:hover ~ .input-explanation .addface-button-explanation{
+    display:block;
+}
+
+.docs-data .id-input:hover ~ .input-explanation .id-explanation{
+    display:block;
+}
+

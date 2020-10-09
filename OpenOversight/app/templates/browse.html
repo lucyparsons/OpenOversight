@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Browse OpenOversight{% endblock %}
+{% block meta %}<meta name="description" content="Browse a department on OpenOversight.">{% endblock %}
 {% block content %}
 
 <div class="container theme-showcase" role="main">
@@ -12,6 +14,12 @@
     <p>
       <div class="btn-group">
         <h2>{{ department.name }}
+        {% if current_user.is_administrator %}
+            <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            </a>
+        {% endif %}
+       </h2>
           <p>
           <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
              Officers

@@ -1,22 +1,27 @@
 language: python
-dist: trusty
-sudo: false
-addons:
-  firefox: "45.4.0esr"
+dist: xenial
+sudo: required
 python:
-  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+services:
+  - docker
+env:
+  - DOCKER_COMPOSE_VERSION=1.24.0
 before_install:
-  - wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
-  - mkdir geckodriver
-  - tar -xzf geckodriver-v0.11.1-linux64.tar.gz -C geckodriver
-  - export PATH=$PATH:$PWD/geckodriver
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 install:
+  - true
 before_script:
-  - pip install -r dev-requirements.txt
-  - pip install coveralls
-  - cd OpenOversight
+  - pip install coveralls flake8==3.8.3
+  - sudo service postgresql stop
 script:
-  - py.test -v --cov=app
-  - cd .. && flake8 --ignore=E501,E722
+  - sudo make test
+  - flake8 --ignore=E501,E722,W504,W503
 after_success:
   - coveralls

@@ -25,6 +25,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+ENV_DIR/
 build/
 develop-eggs/
 dist/
@@ -38,6 +39,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.mypy_cache
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -86,3 +88,12 @@ vagrant/puppet/.tmp
 
 # Editor files
 .idea/
+*.iml
+.vscode/
+.vscode/**
+*.code-workspace
+
+node_modules/
+OpenOverSight/app/static/dist/
+
+

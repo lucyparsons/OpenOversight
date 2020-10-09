@@ -1,5 +1,8 @@
 import datetime
-from flask import render_template, redirect, request, url_for, flash, abort
+from flask_sqlalchemy.model import DefaultMeta
+from flask_wtf import FlaskForm as Form
+from typing import Callable, Union
+from flask import render_template, redirect, request, url_for, flash, abort, current_app
 from flask.views import MethodView
 from flask_login import login_required, current_user
 from ..auth.utils import ac_or_admin_required
@@ -8,13 +11,13 @@ from ..utils import add_department_query, set_dynamic_default
 
 
 class ModelView(MethodView):
-    model = None
+    model = None  # type: DefaultMeta
     model_name = ''
     per_page = 20
     order_by = ''  # this should be a field on the model
     descending = False  # used for order_by
-    form = ''
-    create_function = ''
+    form = ''  # type: Form
+    create_function = ''  # type: Union[str, Callable]
     department_check = False
 
     def get(self, obj_id):
@@ -46,9 +49,9 @@ class ModelView(MethodView):
                 if getattr(current_user, 'dept_pref_rel', None):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, 'creator_id') and not form.creator_id.data:
-                form.creator_id.data = current_user.id
+                form.creator_id.data = current_user.get_id()
             if hasattr(form, 'last_updated_id'):
-                form.last_updated_id.data = current_user.id
+                form.last_updated_id.data = current_user.get_id()
 
         if form.validate_on_submit():
             new_obj = self.create_function(form)
@@ -56,6 +59,8 @@ class ModelView(MethodView):
             db.session.commit()
             flash('{} created!'.format(self.model_name))
             return self.get_redirect_url(obj_id=new_obj.id)
+        else:
+            current_app.logger.info(form.errors)
 
         return render_template('{}_new.html'.format(self.model_name), form=form)
 
@@ -70,15 +75,14 @@ class ModelView(MethodView):
         if not form:
             form = self.get_edit_form(obj)
             # if the object doesn't have a creator id set, st it to current user
-            # import pdb; pdb.set_trace()
-            if hasattr(obj, 'creator_id') and hasattr(form, 'creator_id') and not getattr(obj, 'creator_id'):
+            if hasattr(obj, 'creator_id') and hasattr(form, 'creator_id') and getattr(obj, 'creator_id'):
                 form.creator_id.data = obj.creator_id
             elif hasattr(form, 'creator_id'):
-                form.creator_id.data = current_user.id
+                form.creator_id.data = current_user.get_id()
 
             # if the object keeps track of who updated it last, set to current user
             if hasattr(form, 'last_updated_id'):
-                form.last_updated_id.data = current_user.id
+                form.last_updated_id.data = current_user.get_id()
 
         if hasattr(form, 'department'):
             add_department_query(form, current_user)
@@ -101,7 +105,7 @@ class ModelView(MethodView):
         if request.method == 'POST':
             db.session.delete(obj)
             db.session.commit()
-
+            flash('{} successfully deleted!'.format(self.model_name))
             return self.get_post_delete_url()
 
         return render_template('{}_delete.html'.format(self.model_name), obj=obj)
@@ -129,6 +133,7 @@ class ModelView(MethodView):
         if hasattr(obj, 'date_updated'):
             obj.date_updated = datetime.datetime.now()
         db.session.add(obj)
+        db.session.commit()
 
     def create_obj(self, form):
         self.model(**form.data)

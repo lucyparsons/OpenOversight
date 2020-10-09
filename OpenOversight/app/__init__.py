@@ -1,5 +1,7 @@
+import datetime
 import logging
 from logging.handlers import RotatingFileHandler
+import os
 
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
@@ -7,8 +9,10 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_sitemap import Sitemap
 
-from config import config
+from .config import config
 
 
 bootstrap = Bootstrap()
@@ -20,6 +24,8 @@ login_manager.login_view = 'auth.login'
 
 limiter = Limiter(key_func=get_remote_address,
                   default_limits=["100 per minute", "5 per second"])
+
+sitemap = Sitemap()
 
 
 def create_app(config_name='default'):
@@ -33,6 +39,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
+    sitemap.init_app(app)
 
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
@@ -79,6 +86,24 @@ def create_app(config_name='default'):
     @app.template_filter('capfirst')
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
+
+    @app.template_filter('get_age')
+    def get_age_from_birth_year(birth_year):
+        if birth_year:
+            return int(datetime.datetime.now().year - birth_year)
+
+    # Add commands
+    Migrate(app, db, os.path.join(os.path.dirname(__file__), '..', 'migrations'))  # Adds 'db' command
+    from .commands import (make_admin_user, link_images_to_department,
+                           link_officers_to_department, bulk_add_officers,
+                           add_department, add_job_title, advanced_csv_import)
+    app.cli.add_command(make_admin_user)
+    app.cli.add_command(link_images_to_department)
+    app.cli.add_command(link_officers_to_department)
+    app.cli.add_command(bulk_add_officers)
+    app.cli.add_command(add_department)
+    app.cli.add_command(add_job_title)
+    app.cli.add_command(advanced_csv_import)
 
     return app
 
