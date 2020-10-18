@@ -5,7 +5,6 @@ from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo, Opt
 from wtforms import ValidationError
 
 from ..models import User
-from ..utils import active_dept_choices
 
 
 class LoginForm(Form):
@@ -86,7 +85,7 @@ class ChangeDefaultDepartmentForm(Form):
 class EditUserForm(Form):
     is_area_coordinator = BooleanField('Is area coordinator?', false_values={'False', 'false', ''})
     ac_department = QuerySelectField('Department', validators=[Optional()],
-                                     query_factory=active_dept_choices, get_label='name', allow_blank=True)
+                                     get_label='name', allow_blank=True)  # query set in view
     is_administrator = BooleanField('Is administrator?', false_values={'False', 'false', ''})
     submit = SubmitField(label='Update')
 

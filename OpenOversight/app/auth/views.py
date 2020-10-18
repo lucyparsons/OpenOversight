@@ -282,6 +282,7 @@ class UserAPI(MethodView):
                     is_area_coordinator=user.is_area_coordinator,
                     ac_department=user.ac_department,
                     is_administrator=user.is_administrator)
+                form.ac_department.query = Department.query.all()
                 return render_template('auth/user.html', user=user, form=form)
 
     def post(self, user_id):
@@ -290,6 +291,7 @@ class UserAPI(MethodView):
 
         user = User.query.get(user_id)
         form = EditUserForm()
+        form.ac_department.query = Department.query.all()
 
         if user and end_of_url and end_of_url == 'delete':
             return self.delete(user)

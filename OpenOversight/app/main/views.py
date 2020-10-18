@@ -1263,8 +1263,8 @@ class DepartmentAPI(MethodView):
                 action = getattr(self, end_of_url, None)
                 return action(dept)
             else:
-                form = EditDepartmentForm(name=dept.name, short_name=dept.short_name, is_active=dept.is_active)
-                return render_template('department.html', department=dept, form=form)
+                form = EditDepartmentForm(obj=dept)
+                return render_template('add_edit_department.html', department=dept, update=True, form=form)
 
     def post(self, department_id):
         end_of_url = request.url.split('/')[-1].split('?')[0]
