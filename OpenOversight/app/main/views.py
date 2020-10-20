@@ -5,6 +5,7 @@ import os
 import re
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import selectinload
 import sys
 from traceback import format_exc
 
@@ -540,15 +541,23 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         form_data['gender'] = request.args.getlist('gender')
 
     unit_choices = [(unit.id, unit.descrip) for unit in Unit.query.filter_by(department_id=department_id).order_by(Unit.descrip.asc()).all()]
-    rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id, is_sworn_officer=True).order_by(Job.order).all()]
+    rank_choices = [jc[0] for jc in db.session.query(Job.job_title, Job.order).filter_by(department_id=department_id).order_by(Job.order).all()]
     if request.args.get('rank') and all(rank in rank_choices for rank in request.args.getlist('rank')):
         form_data['rank'] = request.args.getlist('rank')
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(Officer.department_id == department_id).order_by(Officer.last_name, Officer.first_name, Officer.id).paginate(page, OFFICERS_PER_PAGE, False)
+    officers = filter_by_form(
+        form_data, Officer.query, department_id
+    ).filter(Officer.department_id == department_id)
+    officers = officers.options(selectinload(Officer.face))
+    officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
+    officers = officers.paginate(page, OFFICERS_PER_PAGE, False)
     for officer in officers.items:
-        officer_face = officer.face.order_by(Face.featured.desc()).first()
-        if officer_face:
-            officer.image = officer_face.image.filepath
+        officer_face = sorted(officer.face, key=lambda x: x.featured)
+
+        # could do some extra work to not lazy load images but load them all together
+        # but we would want to ensure to only load the first picture of each officer
+        if officer_face and officer_face[0].image:
+            officer.image = officer_face[0].image.filepath
 
     choices = {
         'race': RACE_CHOICES,

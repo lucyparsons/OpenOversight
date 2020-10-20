@@ -163,7 +163,7 @@
                       <dt>Gender</dt>
                       <dd>{{ officer.gender_label()|default('Unknown') }}</dd>
                       <dt>Number of Photos</dt>
-                      <dd>{{ officer.face.count() }}</dd>
+                      <dd>{{ officer.face | count }}</dd>
                     </dl>
                   </div>
                 </div>
