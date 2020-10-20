@@ -13,7 +13,6 @@ from flask import (Response, abort, current_app, flash, jsonify, redirect,
                    render_template, request, url_for, Markup)
 from flask.views import MethodView
 from flask_login import current_user, login_required, login_user
-from future.utils import iteritems
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import true
 
@@ -494,70 +493,6 @@ def add_department():
     else:
         current_app.logger.info(form.errors)
         return render_template('add_edit_department.html', form=form, jsloads=jsloads)
-
-
-@main.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_department(department_id):
-    jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
-    department = Department.query.get_or_404(department_id)
-    previous_name = department.name
-    form = EditDepartmentForm(obj=department)
-    original_ranks = department.jobs
-    if form.validate_on_submit():
-        new_name = form.name.data
-        if new_name != previous_name:
-            if Department.query.filter_by(name=new_name).count() > 0:
-                flash('Department {} already exists'.format(new_name))
-                return redirect(url_for('main.edit_department',
-                                        department_id=department_id))
-        department.name = new_name
-        department.short_name = form.short_name.data
-        db.session.flush()
-        if form.jobs.data:
-            new_ranks = []
-            order = 1
-            for rank in form.data['jobs']:
-                if rank:
-                    new_ranks.append((rank, order))
-                    order += 1
-            updated_ranks = form.jobs.data
-            if len(updated_ranks) < len(original_ranks):
-                deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
-                if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
-                    for rank in deleted_ranks:
-                        db.session.delete(rank)
-                else:
-                    failed_deletions = []
-                    for rank in deleted_ranks:
-                        if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
-                            failed_deletions.append(rank)
-                    for rank in failed_deletions:
-                        formatted_rank = rank.job_title.replace(" ", "+")
-                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
-                        flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
-                    return redirect(url_for('main.edit_department', department_id=department_id))
-
-            for (new_rank, order) in new_ranks:
-                existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
-                if existing_rank:
-                    existing_rank.is_sworn_officer = True
-                    existing_rank.order = order
-                else:
-                    db.session.add(Job(
-                        job_title=new_rank,
-                        order=order,
-                        is_sworn_officer=True,
-                        department_id=department_id
-                    ))
-            db.session.commit()
-
-        flash('Department {} edited'.format(department.name))
-        return redirect(url_for('main.list_officer', department_id=department.id))
-    else:
-        current_app.logger.info(form.errors)
-        return render_template('add_edit_department.html', form=form, update=True, jsloads=jsloads)
 
 
 @main.route('/department/<int:department_id>')
@@ -1238,6 +1173,7 @@ class DepartmentAPI(MethodView):
 
     def get(self, department_id):
         # isolate the last part of the url
+        jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
         end_of_url = request.url.split('/')[-1].split('?')[0]
 
         def find_area_coords(department_id):
@@ -1264,12 +1200,14 @@ class DepartmentAPI(MethodView):
                 return action(dept)
             else:
                 form = EditDepartmentForm(obj=dept)
-                return render_template('add_edit_department.html', department=dept, update=True, form=form)
+                return render_template('add_edit_department.html', department=dept, update=True, form=form, jsloads=jsloads)
 
     def post(self, department_id):
+        jsloads = ['js/jquery-ui.min.js', 'js/deptRanks.js']
         end_of_url = request.url.split('/')[-1].split('?')[0]
 
         department = Department.query.get(department_id)
+        original_ranks = department.jobs
         form = EditDepartmentForm()
 
         if department and end_of_url and end_of_url == 'delete':
@@ -1279,16 +1217,54 @@ class DepartmentAPI(MethodView):
             if new_name != department.name:
                 if Department.query.filter_by(name=new_name).count() > 0:
                     flash('{} already exists'.format(new_name))
-                    return render_template('department.html', department=department, form=form)
-            for field, data in iteritems(form.data):
-                setattr(department, field, data)
-            db.session.add(department)
-            db.session.commit()
+                    return render_template('add_edit_department.html', department=department, form=form, jsloads=jsloads)
+            department.name = new_name
+            department.short_name = form.short_name.data
+            db.session.flush()
+
+            if form.jobs.data:
+                new_ranks = []
+                order = 1
+                for rank in form.data['jobs']:
+                    if rank:
+                        new_ranks.append((rank, order))
+                        order += 1
+                updated_ranks = form.jobs.data
+                if len(updated_ranks) < len(original_ranks):
+                    deleted_ranks = [rank for rank in original_ranks if rank.job_title not in updated_ranks]
+                    if Assignment.query.filter(Assignment.job_id.in_([rank.id for rank in deleted_ranks])).count() == 0:
+                        for rank in deleted_ranks:
+                            db.session.delete(rank)
+                    else:
+                        failed_deletions = []
+                        for rank in deleted_ranks:
+                            if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
+                                failed_deletions.append(rank)
+                        for rank in failed_deletions:
+                            formatted_rank = rank.job_title.replace(" ", "+")
+                            link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
+                            flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                        return render_template('add_edit_department.html', department=department, form=form, jsloads=jsloads)
+
+                for (new_rank, order) in new_ranks:
+                    existing_rank = Job.query.filter_by(department_id=department_id, job_title=new_rank).one_or_none()
+                    if existing_rank:
+                        existing_rank.is_sworn_officer = True
+                        existing_rank.order = order
+                    else:
+                        db.session.add(Job(
+                            job_title=new_rank,
+                            order=order,
+                            is_sworn_officer=True,
+                            department_id=department_id
+                        ))
+                db.session.commit()
+
             flash('{} has been updated!'.format(department.name))
-            return redirect(url_for('main.department_api'))
+            return render_template('add_edit_department.html', department=department, form=form, jsloads=jsloads)
         elif not form.validate_on_submit():
             flash('Invalid entry')
-            return render_template('department.html', department=department, form=form)
+            return render_template('add_edit_department.html', department=department, form=form, jsloads=jsloads)
         else:
             return render_template('403.html'), 403
 

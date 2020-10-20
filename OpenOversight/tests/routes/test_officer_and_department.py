@@ -476,12 +476,12 @@ def test_admin_can_edit_police_department(mockdata, client, session):
                                             short_name='MPD')
 
         corrected_rv = client.post(
-            url_for('main.edit_department', department_id=department.id),
+            url_for('main.department_api', department_id=department.id),
             data=corrected_form.data,
             follow_redirects=True
         )
 
-        assert 'Department Corrected Police Department edited' in corrected_rv.data.decode('utf-8')
+        assert 'Corrected Police Department has been updated!' in corrected_rv.data.decode('utf-8')
 
         # Check the department with the new name is now in the database.
         corrected_department = Department.query.filter_by(
@@ -496,12 +496,12 @@ def test_admin_can_edit_police_department(mockdata, client, session):
                                                   short_name='CPD')
 
         edit_short_name_rv = client.post(
-            url_for('main.edit_department', department_id=department.id),
+            url_for('main.department_api', department_id=department.id),
             data=edit_short_name_form.data,
             follow_redirects=True
         )
 
-        assert 'Department Corrected Police Department edited' in edit_short_name_rv.data.decode('utf-8')
+        assert 'Corrected Police Department has been updated!' in edit_short_name_rv.data.decode('utf-8')
 
         edit_short_name_department = Department.query.filter_by(
             name='Corrected Police Department').one()
@@ -518,7 +518,7 @@ def test_ac_cannot_edit_police_department(mockdata, client, session):
                                   short_name='CPD')
 
         rv = client.post(
-            url_for('main.edit_department', department_id=department.id),
+            url_for('main.department_api', department_id=department.id),
             data=form.data,
             follow_redirects=True
         )
@@ -540,13 +540,13 @@ def test_admin_can_edit_rank_order(mockdata, client, session):
         processed_data = process_form_data(rank_change_form.data)
 
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
 
         updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
-        assert 'Department Springfield Police Department edited' in rv.data.decode('utf-8')
+        assert 'Springfield Police Department has been updated!' in rv.data.decode('utf-8')
         assert updated_ranks[0].job_title == original_first_rank.job_title and updated_ranks[0].order != original_first_rank.order
 
 
@@ -562,7 +562,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         processed_data = process_form_data(rank_change_form.data)
 
         result = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -588,7 +588,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
 
         # add a new rank
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -604,7 +604,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
 
         # delete the rank that was added
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -627,7 +627,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
 
         # add a new rank
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -643,7 +643,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
 
         # delete the rank that was added
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -668,7 +668,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
 
         # add a new rank
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -685,7 +685,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
 
         # attempt to delete one rank in use and one rank not in use
         rv = client.post(
-            url_for('main.edit_department', department_id=1),
+            url_for('main.department_api', department_id=1),
             data=processed_data,
             follow_redirects=True
         )
@@ -726,7 +726,7 @@ def test_admin_cannot_duplicate_police_department_during_edit(mockdata, client, 
                                        short_name='EPD2')
 
         rv = client.post(
-            url_for('main.edit_department', department_id=new_department.id),
+            url_for('main.department_api', department_id=new_department.id),
             data=edit_form.data,
             follow_redirects=True
         )
