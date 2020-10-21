@@ -294,8 +294,8 @@ class AddImageForm(Form):
 
 
 class DateFieldForm(Form):
-    date_field = DateField('Date', validators=[DataRequired()])
-    time_field = TimeField('Time', validators=[Optional()])
+    date_field = DateField('Date*', validators=[DataRequired()])
+    time_field = TimeField('Time*', validators=[Optional()])
 
     def validate_time_field(self, field):
         if not type(field.data) == datetime.time:
@@ -310,8 +310,8 @@ class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
     cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
-    city = StringField('City', validators=[DataRequired()])
-    state = SelectField('State', choices=STATE_CHOICES,
+    city = StringField('City*', validators=[DataRequired()])
+    state = SelectField('State*', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
                            validators=[Optional(),
@@ -361,7 +361,7 @@ class IncidentForm(DateFieldForm):
         description='Incident number for the organization tracking incidents')
     description = TextAreaField(validators=[Optional()])
     department = QuerySelectField(
-        'Department',
+        'Department*',
         validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')
