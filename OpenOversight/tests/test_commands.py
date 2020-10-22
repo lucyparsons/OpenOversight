@@ -15,6 +15,7 @@ from OpenOversight.app.commands import (
     add_job_title,
     bulk_add_officers,
     advanced_csv_import,
+    create_officer_from_row,
 )
 from OpenOversight.app.models import (
     Assignment,
@@ -1211,3 +1212,34 @@ def test_advanced_csv_import__unit_other_department(
     # command fails because the unit does not belong to the department
     assert result.exception is not None
     assert result.exit_code != 0
+
+
+def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, session):
+    with app.app_context():
+        department = Department(name="Cityname Police Department", short_name="CNPD")
+        session.add(department)
+        session.commit()
+        lookup_officer = Officer.query.filter_by(
+            first_name="NewOfficerFromRow").one_or_none()
+        assert lookup_officer is None
+
+        row = {
+            "gender": "Female",
+            "first_name": "NewOfficerFromRow",
+            "last_name": "Jones",
+            "employment_date": "1980-12-01",
+            "unique_internal_identifier": "officer-jones-unique-id",
+        }
+        create_officer_from_row(row, department.id)
+
+        lookup_officer = Officer.query.filter_by(
+            first_name="NewOfficerFromRow").one_or_none()
+
+        # Was an officer created in the database?
+        assert lookup_officer is not None
+        # Was the gender properly normalized?
+        assert lookup_officer.gender == "F"
+
+
+
+
