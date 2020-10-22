@@ -14,8 +14,8 @@ from flask.cli import with_appcontext
 from .models import db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer, str_is_true, normalize_gender, prompt_yes_no
 
-
 from .csv_imports import import_csv_files
+
 
 @click.command()
 @with_appcontext
@@ -162,17 +162,14 @@ def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname, allow_blank=True):
+    def update_officer_field(fieldname):
         if fieldname not in row:
             return
-        if row[fieldname] == '':
-            row[fieldname] = None
 
         if fieldname == 'gender':
             row[fieldname] = normalize_gender(row[fieldname])
 
-        if fieldname in row and (row[fieldname] or allow_blank) and \
-                getattr(officer, fieldname) != row[fieldname]:
+        if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
 
             ImportLog.log_change(
                 officer,
@@ -185,8 +182,8 @@ def update_officer_from_row(row, officer, update_static_fields=False):
     update_officer_field('first_name')
     update_officer_field('middle_initial')
 
-    update_officer_field('suffix', allow_blank=False)
-    update_officer_field('gender', allow_blank=False)
+    update_officer_field('suffix')
+    update_officer_field('gender')
 
     # The rest should be static
     static_fields = [

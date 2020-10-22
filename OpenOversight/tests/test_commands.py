@@ -702,7 +702,7 @@ def test_bulk_add_officers__no_create_flag(session, department, csv_path):
     # department with one officer
     department_id = department.id
     officer = generate_officer()
-    officer.gender = "Not Sure"
+    officer.gender = None
     officer.department = department
     session.add(officer)
     session.commit()

@@ -1,7 +1,7 @@
 """constrain officer gender options
 
 Revision ID: cd39b33b5360
-Revises: 562bd5f1bc1f
+Revises: 86eb228e4bc0
 Create Date: 2020-07-13 02:45:07.533549
 
 """
@@ -11,18 +11,20 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'cd39b33b5360'
-down_revision = '562bd5f1bc1f'
+down_revision = '86eb228e4bc0'
 branch_labels = None
 depends_on = None
 
+
 def get_update_statement(normalized, options):
     template = """
-    UPDATE officers 
+    UPDATE officers
     SET gender = '{normalized}'
     WHERE gender::citext in ({options});
     """
     options = ', '.join(["'" + o + "'" for o in options])
     return template.format(normalized=normalized, options=options)
+
 
 def upgrade():
     conn = op.get_bind()
@@ -72,4 +74,3 @@ def downgrade():
                     type_=sa.VARCHAR(length=120),
                     existing_nullable=True)
     # ### end Alembic commands ###
-
