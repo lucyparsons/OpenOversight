@@ -295,7 +295,7 @@ class AddImageForm(Form):
 
 class DateFieldForm(Form):
     date_field = DateField('Date*', validators=[DataRequired()])
-    time_field = TimeField('Time*', validators=[Optional()])
+    time_field = TimeField('Time', validators=[Optional()])
 
     def validate_time_field(self, field):
         if not type(field.data) == datetime.time:
