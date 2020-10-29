@@ -16,7 +16,6 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    network_mode: "host"
 
   web:
     restart: always
@@ -29,9 +28,9 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-minio123}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-minio123}"
-      S3_ENDPOINT: "${S3_ENDPOINT:-'http://localhost:9000'}"
-      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-'us-east-1'}"
-      S3_BUCKET_NAME: "${S3_BUCKET_NAME:-'openoversight-test'}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://localhost:9000}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-us-east-1}"
+      S3_BUCKET_NAME: "${S3_BUCKET_NAME:-openoversight-test}"
       APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
       FLASK_APP: app
       FLASK_ENV: "${FLASK_ENV:-development}"
@@ -41,19 +40,17 @@ services:
     command: scripts/entrypoint.sh
     ports:
       - "3000:3000"
-    network_mode: "host"
 
   minio:
     image: minio/minio
     environment:
-      MINIO_ACCESS_KEY: "${AWS_ACCESS_KEY_ID}"
-      MINIO_SECRET_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      MINIO_ACCESS_KEY: "${AWS_ACCESS_KEY_ID:-minio123}"
+      MINIO_SECRET_KEY: "${AWS_SECRET_ACCESS_KEY:-minio123}"
     command: server /data
     volumes:
       - ./OpenOversight/tests/resources/:/data:rw
     ports:
       - "9000:9000"
-    network_mode: "host"
 
   mc:
     image: minio/mc
@@ -62,7 +59,6 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 10;
-      /usr/bin/mc config host add minio http://localhost:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY};
-      /usr/bin/mc policy set public minio/${S3_BUCKET_NAME};
+      /usr/bin/mc config host add minio http://minio:9000 ${AWS_ACCESS_KEY_ID:-minio123} ${AWS_SECRET_ACCESS_KEY:-minio123};
+      /usr/bin/mc policy set public minio/${S3_BUCKET_NAME:-openoversight-test};
       "
-    network_mode: "host"

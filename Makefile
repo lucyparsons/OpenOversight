@@ -41,12 +41,12 @@ populate: create_db  ## Build and run containers
 test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
 	    if [ "$$(uname)" == "Darwin" ]; then \
-			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/ app; \
+			FLASK_ENV=testing docker-compose run --rm web /bin/bash -c 'scripts/minio_forward.sh & pytest --doctest-modules -n "$$(sysctl -n hw.logicalcpu)" --dist=loadfile -v tests/ app'; \
 		else \
-			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(nproc --all) --dist=loadfile -v tests/ app; \
+			FLASK_ENV=testing docker-compose run --rm web /bin/bash -c 'scripts/minio_forward.sh & pytest --doctest-modules -n "$$(nproc --all)" --dist=loadfile -v tests/ app'; \
 		fi; \
 	else \
-	    FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -v tests/ app -k $(name); \
+	    FLASK_ENV=testing docker-compose run --rm web /bin/bash -c 'scripts/minio_forward.sh & pytest --doctest-modules -v tests/ app -k $(name)'; \
 	fi
 
 .PHONY: lint

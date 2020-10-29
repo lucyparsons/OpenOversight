@@ -9,7 +9,7 @@ ENV DISPLAY=:1
 ENV GECKODRIVER_VERSION="v0.26.0"
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
 RUN wget -O - https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && \
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs ncat && \
     apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
@@ -38,7 +38,7 @@ EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
-ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev
+ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
 WORKDIR /usr/src/app/OpenOversight
 
