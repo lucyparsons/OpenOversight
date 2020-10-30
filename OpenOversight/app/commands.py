@@ -191,7 +191,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             if row[fieldname] == '':
                 row[fieldname] = None
             old_value = getattr(officer, fieldname)
-            # If we're expecting a date type, attempt parse row[fieldname] as a datetime
+            # If we're expecting a date type, attempt to parse row[fieldname] as a datetime
             # This also normalizes all date formats, ensuring the following comparison works properly
             if isinstance(old_value, (date, datetime)):
                 try:
