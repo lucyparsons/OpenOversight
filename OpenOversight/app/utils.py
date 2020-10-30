@@ -562,7 +562,6 @@ def get_officer(department_id, star_no, first_name, last_name):
     officers = Officer.query.filter_by(department_id=department_id,
                                        first_name=first_name,
                                        last_name=last_name).all()
-
     if star_no is None:
         return officers[0]
     else:
