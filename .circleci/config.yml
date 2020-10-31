@@ -84,8 +84,9 @@ jobs:
             fab production migrate
 
   production_backup_only:
-    docker:
-      - image: ubuntu-1604
+    machine:
+      enabled: true
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
       - *setup_dependencies
