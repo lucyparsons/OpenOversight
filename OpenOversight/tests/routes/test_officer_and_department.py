@@ -1,4 +1,5 @@
 # Routing and view tests
+import re
 import csv
 import copy
 import json
@@ -1509,6 +1510,162 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         filter_list = rv.data.decode('utf-8').split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
+def test_browse_filtering_multiple_uiis(client, mockdata, session):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+
+        # Add two officers
+        login_admin(client)
+        form = AddOfficerForm(first_name='Porkchops',
+                              last_name='McBacon',
+                              unique_internal_identifier='foo',
+                              department=department_id)
+        data = process_form_data(form.data)
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'New Officer McBacon added' in rv.data.decode('utf-8')
+
+        form = AddOfficerForm(first_name='Bacon',
+                              last_name='McPorkchops',
+                              unique_internal_identifier='bar',
+                              department=department_id)
+        data = process_form_data(form.data)
+        rv = client.post(
+            url_for('main.add_officer'),
+            data=data,
+            follow_redirects=True
+        )
+        assert 'New Officer McPorkchops added' in rv.data.decode('utf-8')
+
+        # Check the officers were added to the database
+        assert Officer.query.filter_by(department_id=department_id).filter_by(unique_internal_identifier='foo').count() == 1
+        assert Officer.query.filter_by(department_id=department_id).filter_by(unique_internal_identifier='bar').count() == 1
+
+        # Check that added officers appear when filtering for both UIIs
+        form = BrowseForm(unique_internal_identifier='foo,bar', race=None, gender=None)
+        data = process_form_data(form.data)
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id),
+            query_string=data,
+            follow_redirects=True
+        )
+        assert 'McBacon' in rv.data.decode('utf-8')
+        assert 'McPorkchops' in rv.data.decode('utf-8')
+        assert 'foo' in rv.data.decode('utf-8')
+        assert 'bar' in rv.data.decode('utf-8')
+
+
+def test_browse_sort_by_last_name(client, mockdata):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id, order=0),
+            follow_redirects=True
+        )
+        response = rv.data.decode('utf-8')
+        officer_ids = re.findall(r'<a href="/officer/(\d+)">', response)
+        assert officer_ids is not None and len(officer_ids) == int(current_app.config['OFFICERS_PER_PAGE'])
+        for idx, officer_id in enumerate(officer_ids):
+            if idx + 1 < len(officer_ids):
+                officer = Officer.query.filter_by(id=officer_id).one()
+                next_officer_id = officer_ids[idx + 1]
+                next_officer = Officer.query.filter_by(id=next_officer_id).one()
+                assert officer.last_name <= next_officer.last_name
+
+
+def test_browse_sort_by_rank(client, mockdata):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id, order=1),
+            follow_redirects=True
+        )
+        response = rv.data.decode('utf-8')
+        officer_ids = re.findall(r'<a href="/officer/(\d+)">', response)
+        assert officer_ids is not None and len(officer_ids) == int(current_app.config['OFFICERS_PER_PAGE'])
+        for idx, officer_id in enumerate(officer_ids):
+            if idx + 1 < len(officer_ids):
+                officer = Officer.query.filter_by(id=officer_id).one()
+                next_officer_id = officer_ids[idx + 1]
+                next_officer = Officer.query.filter_by(id=next_officer_id).one()
+                officer_job = officer\
+                    .assignments\
+                    .order_by(Assignment.star_date.desc())\
+                    .first()\
+                    .job
+                next_officer_job = next_officer\
+                    .assignments\
+                    .order_by(Assignment.star_date.desc())\
+                    .first()\
+                    .job
+                assert officer_job.order >= next_officer_job.order
+
+
+def test_browse_sort_by_total_pay(client, mockdata):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id, order=2),
+            follow_redirects=True
+        )
+        response = rv.data.decode('utf-8')
+        officer_ids = re.findall(r'<a href="/officer/(\d+)">', response)
+        assert officer_ids is not None and len(officer_ids) == int(current_app.config['OFFICERS_PER_PAGE'])
+        for idx, officer_id in enumerate(officer_ids):
+            if idx + 1 < len(officer_ids):
+                officer = Officer.query.filter_by(id=officer_id).one()
+                next_officer_id = officer_ids[idx + 1]
+                next_officer = Officer.query.filter_by(id=next_officer_id).one()
+                officer_salary = officer.salaries[0]
+                next_officer_salary = next_officer.salaries[0]
+                officer_total_pay = officer_salary.salary + officer_salary.overtime_pay
+                next_officer_total_pay = next_officer_salary.salary + next_officer_salary.overtime_pay
+                assert officer_total_pay >= next_officer_total_pay
+
+
+def test_browse_sort_by_salary(client, mockdata):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id, order=3),
+            follow_redirects=True
+        )
+        response = rv.data.decode('utf-8')
+        officer_ids = re.findall(r'<a href="/officer/(\d+)">', response)
+        assert officer_ids is not None and len(officer_ids) == int(current_app.config['OFFICERS_PER_PAGE'])
+        for idx, officer_id in enumerate(officer_ids):
+            if idx + 1 < len(officer_ids):
+                officer = Officer.query.filter_by(id=officer_id).one()
+                next_officer_id = officer_ids[idx + 1]
+                next_officer = Officer.query.filter_by(id=next_officer_id).one()
+                officer_salary = officer.salaries[0]
+                next_officer_salary = next_officer.salaries[0]
+                assert officer_salary.salary >= next_officer_salary.salary
+
+
+def test_browse_sort_by_overtime_pay(client, mockdata):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rv = client.get(
+            url_for('main.list_officer', department_id=department_id, order=4),
+            follow_redirects=True
+        )
+        response = rv.data.decode('utf-8')
+        officer_ids = re.findall(r'<a href="/officer/(\d+)">', response)
+        assert officer_ids is not None and len(officer_ids) == int(current_app.config['OFFICERS_PER_PAGE'])
+        for idx, officer_id in enumerate(officer_ids):
+            if idx + 1 < len(officer_ids):
+                officer = Officer.query.filter_by(id=officer_id).one()
+                next_officer_id = officer_ids[idx + 1]
+                next_officer = Officer.query.filter_by(id=next_officer_id).one()
+                officer_salary = officer.salaries[0]
+                next_officer_salary = next_officer.salaries[0]
+                assert officer_salary.overtime_pay >= next_officer_salary.overtime_pay
 
 
 def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, test_jpg_BytesIO):

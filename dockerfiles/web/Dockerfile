@@ -7,10 +7,14 @@ WORKDIR /usr/src/app
 ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 ENV GECKODRIVER_VERSION="v0.26.0"
-RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
+ENV SQLITE3_VERSION="3330000"
 RUN wget -O - https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && \
-    apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && apt-get clean
+RUN wget https://www.sqlite.org/2020/sqlite-autoconf-${SQLITE3_VERSION}.tar.gz && \
+    tar -xzf sqlite-autoconf-${SQLITE3_VERSION}.tar.gz && \
+    cd sqlite-autoconf-${SQLITE3_VERSION} && \
+    ./configure && make && make install && ldconfig && \
+    cd .. && rm -r sqlite-autoconf-${SQLITE3_VERSION}
 
 RUN wget https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
 RUN mkdir geckodriver

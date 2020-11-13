@@ -16,8 +16,8 @@ import sys
 from traceback import format_exc
 from distutils.util import strtobool
 
-from sqlalchemy import func
-from sqlalchemy.sql.expression import cast
+from sqlalchemy import func, or_
+from sqlalchemy.sql.expression import cast, nullslast, desc
 import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
@@ -132,7 +132,8 @@ def add_officer_profile(form, current_user):
                       gender=form.gender.data,
                       birth_year=form.birth_year.data,
                       employment_date=form.employment_date.data,
-                      department_id=form.department.data.id)
+                      department_id=form.department.data.id,
+                      unique_internal_identifier=form.unique_internal_identifier.data)
     db.session.add(officer)
     db.session.commit()
 
@@ -141,12 +142,13 @@ def add_officer_profile(form, current_user):
     else:
         officer_unit = None
 
-    assignment = Assignment(baseofficer=officer,
-                            star_no=form.star_no.data,
-                            job_id=form.job_id.data,
-                            unit=officer_unit,
-                            star_date=form.employment_date.data)
-    db.session.add(assignment)
+    if form.job_id.data:
+        assignment = Assignment(baseofficer=officer,
+                                star_no=form.star_no.data,
+                                job_id=form.job_id.data,
+                                unit=officer_unit,
+                                star_date=form.employment_date.data)
+        db.session.add(assignment)
     if form.links.data:
         for link in form.data['links']:
             # don't try to create with a blank string
@@ -251,23 +253,36 @@ def upload_obj_to_s3(file_obj, dest_filename):
     return url
 
 
-def filter_by_form(form, officer_query, department_id=None):
-    # Some SQL acrobatics to left join only the most recent assignment per officer
-    row_num_col = func.row_number().over(
+def filter_by_form(form, officer_query, department_id=None, order=0):
+    # Some SQL acrobatics to left join only the most recent assignment and salary per officer
+    assignment_row_num_col = func.row_number().over(
         partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
-    ).label('row_num')
-    subq = db.session.query(
+    ).label('assignment_row_num')
+    assignment_subq = db.session.query(
         Assignment.officer_id,
         Assignment.job_id,
         Assignment.star_date,
         Assignment.star_no,
         Assignment.unit_id
-    ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
-    officer_query = officer_query.outerjoin(subq)
+    ).add_columns(assignment_row_num_col).from_self().filter(assignment_row_num_col == 1).subquery()
+    salary_row_num_col = func.row_number().over(
+        partition_by=Salary.officer_id, order_by=Salary.year.desc()
+    ).label('salary_row_num')
+    salary_subq = db.session.query(
+        Salary.officer_id,
+        Salary.salary,
+        Salary.overtime_pay,
+        Salary.year,
+    ).add_columns(salary_row_num_col).from_self().filter(salary_row_num_col == 1).subquery()
+    officer_query = officer_query.outerjoin(assignment_subq).outerjoin(salary_subq)
 
-    if form.get('name'):
+    if form.get('last_name'):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+            Officer.last_name.ilike('%%{}%%'.format(form['last_name']))
+        )
+    if form.get('first_name'):
+        officer_query = officer_query.filter(
+            Officer.first_name.ilike('%%{}%%'.format(form['first_name']))
         )
     if not department_id and form.get('dept'):
         department_id = form['dept'].id
@@ -275,23 +290,28 @@ def filter_by_form(form, officer_query, department_id=None):
             Officer.department_id == department_id
         )
     if form.get('badge'):
-        officer_query = officer_query.filter(
-            subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
-        )
+        or_clauses = [
+            assignment_subq.c.assignments_star_no.ilike('%%{}%%'.format(star_no.strip()))
+            for star_no in form['badge'].split(',')
+        ]
+        officer_query = officer_query.filter(or_(*or_clauses))
     if form.get('unit'):
         officer_query = officer_query.filter(
-            subq.c.assignments_unit_id == form['unit']
+            assignment_subq.c.assignments_unit_id == form['unit']
         )
-
     if form.get('unique_internal_identifier'):
-        officer_query = officer_query.filter(
-            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
-        )
+        or_clauses = [
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(uii.strip()))
+            for uii in form['unique_internal_identifier'].split(',')
+        ]
+        officer_query = officer_query.filter(or_(*or_clauses))
+
     race_values = [x for x, _ in RACE_CHOICES]
     if form.get('race') and all(race in race_values for race in form['race']):
         if 'Not Sure' in form['race']:
             form['race'].append(None)
         officer_query = officer_query.filter(Officer.race.in_(form['race']))
+
     gender_values = [x for x, _ in GENDER_CHOICES]
     if form.get('gender') and all(gender in gender_values for gender in form['gender']):
         if 'Not Sure' in form['gender']:
@@ -312,6 +332,44 @@ def filter_by_form(form, officer_query, department_id=None):
         if 'Not Sure' in form['rank']:
             form['rank'].append(None)
         officer_query = officer_query.filter(Job.job_title.in_(form['rank']))
+
+    if form.get('photo') and all(photo in ['0', '1'] for photo in form['photo']):
+        face_officer_ids = set([face.officer_id for face in Face.query.all()])
+        if '0' in form['photo'] and '1' not in form['photo']:
+            officer_query = officer_query.filter(
+                Officer.id.notin_(face_officer_ids)
+            )
+        elif '1' in form['photo'] and '0' not in form['photo']:
+            officer_query = officer_query.filter(
+                Officer.id.in_(face_officer_ids)
+            )
+
+    if form.get('max_pay') and form.get('min_pay') and float(form['max_pay']) > float(form['min_pay']):
+        officer_query = officer_query.filter(
+            db.and_(
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay']),
+                salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+            )
+        )
+    elif form.get('min_pay') and float(form['min_pay']) > 0 and not form.get('max_pay'):
+        officer_query = officer_query.filter(
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay >= float(form['min_pay'])
+        )
+    elif form.get('max_pay') and float(form['max_pay']) > 0 and not form.get('min_pay'):
+        officer_query = officer_query.filter(
+            salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay <= float(form['max_pay'])
+        )
+
+    if order == 0:  # Last name alphabetical
+        officer_query = officer_query.order_by(Officer.last_name, Officer.first_name, Officer.id)
+    elif order == 1:  # Rank
+        officer_query = officer_query.order_by(nullslast(Job.order.desc()))
+    elif order == 2:  # Total pay
+        officer_query = officer_query.order_by(nullslast(desc(salary_subq.c.salaries_salary + salary_subq.c.salaries_overtime_pay)))
+    elif order == 3:  # Salary
+        officer_query = officer_query.order_by(nullslast(salary_subq.c.salaries_salary.desc()))
+    elif order == 4:  # Overtime pay
+        officer_query = officer_query.order_by(nullslast(salary_subq.c.salaries_overtime_pay.desc()))
 
     return officer_query
 

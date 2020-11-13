@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block content %}
 {% block title %}Find an officer - OpenOversight{% endblock %}
+{% block content %}
 {% block meta %}<meta name="description" content="Find an officer you interacted with using this form.">{% endblock %}
 <div role="main">
     <div class="hero-section no-sub">
@@ -67,8 +67,8 @@
             <div class="col-md-12 well text-center">
                 <h2><small>Do you remember any part of the Officer's last name?</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.name(class="form-control") }}
-                  {% for error in form.name.errors %}
+                  {{ form.last_name(class="form-control") }}
+                  {% for error in form.last_name.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
                 </div>

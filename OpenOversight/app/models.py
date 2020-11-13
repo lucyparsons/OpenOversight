@@ -176,12 +176,12 @@ class Salary(BaseModel):
     officer_id = db.Column(db.Integer, db.ForeignKey('officers.id', ondelete='CASCADE'))
     officer = db.relationship('Officer', back_populates='salaries')
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
-    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=False, server_default='0')
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return '<Salary: ID {} : {}'.format(self.officer_id, self.salary)
+        return '<Salary: ID {} : {} {} {}>'.format(self.officer_id, self.salary, self.overtime_pay, self.year)
 
 
 class Assignment(BaseModel):
@@ -212,7 +212,7 @@ class Unit(BaseModel):
     department = db.relationship('Department', backref='unit_types', order_by='Unit.descrip.asc()')
 
     def __repr__(self):
-        return 'Unit: {}'.format(self.descrip)
+        return '<Unit: {}>'.format(self.descrip)
 
 
 class Face(BaseModel):

@@ -43,9 +43,9 @@ class HumintContribution(Form):
 
 
 class FindOfficerForm(Form):
-    name = StringField(
-        'name', default='', validators=[Regexp(r'\w*'), Length(max=50),
-                                        Optional()]
+    last_name = StringField(
+        'last_name', default='', validators=[Regexp(r'\w*'), Length(max=50),
+                                             Optional()]
     )
     badge = StringField('badge', default='', validators=[Regexp(r'\w*'),
                                                          Length(max=10)])
@@ -63,12 +63,6 @@ class FindOfficerForm(Form):
     ])
     max_age = IntegerField('max_age', default=85, validators=[
         NumberRange(min=16, max=100)
-    ])
-    latitude = DecimalField('latitude', default=False, validators=[
-        NumberRange(min=-90, max=90)
-    ])
-    longitude = DecimalField('longitude', default=False, validators=[
-        NumberRange(min=-180, max=180)
     ])
 
 
@@ -391,7 +385,8 @@ class IncidentForm(DateFieldForm):
 class BrowseForm(Form):
     rank = QuerySelectField('rank', validators=[Optional()], get_label='job_title',
                             get_pk=lambda job: job.job_title)  # query set in view function
-    name = StringField('Last name')
+    last_name = StringField('Last name')
+    first_name = StringField('First name')
     badge = StringField('Badge number')
     unique_internal_identifier = StringField('Unique ID')
     race = SelectField('race', default='Not Sure', choices=RACE_CHOICES,
@@ -402,4 +397,7 @@ class BrowseForm(Form):
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
     max_age = SelectField('maximum age', default=100, choices=AGE_CHOICES,
                           validators=[AnyOf(allowed_values(AGE_CHOICES))])
+    photo = SelectField('photo', validators=[Optional(), AnyOf(['0', '1'])])
+    min_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
+    max_pay = DecimalField('min_pay', validators=[Optional(), NumberRange(min=0, max=1000000), validate_money])
     submit = SubmitField(label='Submit')
