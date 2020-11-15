@@ -35,6 +35,14 @@ RANK_CHOICES_2 = ['Not Sure', 'Police Officer', 'Lieutenant', 'Sergeant', 'Comma
 
 
 AC_DEPT = 1
+ACTIVE_NON_AC_DEPT = 2
+INACTIVE_DEPT = 3
+
+ACTIVE_AC_ID = 3
+INACTIVE_AC_ID = 4
+
+ACTIVE_NON_AC_DEPT_NAME = 'Chicago Police Department'
+INACTIVE_DEPT_NAME = 'Candy Kingdom Police Department'
 
 
 def pick_birth_date():
@@ -155,7 +163,8 @@ def assign_faces(officer, images):
         return models.Face(officer_id=officer.id,
                            img_id=img_id,
                            original_image_id=img_id,
-                           featured=False)
+                           featured=False,
+                           user_id=ACTIVE_AC_ID)
     else:
         return False
 
@@ -247,8 +256,11 @@ def add_mockdata(session):
                                    short_name='SPD', unique_internal_identifier_label='homer_number')
     session.add(department)
     department2 = models.Department(name='Chicago Police Department',
-                                    short_name='CPD')
+                                    short_name='CPD', is_active=True)
     session.add(department2)
+    session.commit()
+    department3 = models.Department(name='Candy Kingdom Police Department', short_name='', is_active=False)
+    session.add(department3)
     session.commit()
 
     i = 0
@@ -270,6 +282,16 @@ def add_mockdata(session):
             department_id=2
         ))
         i += 1
+
+    i = 0
+    for rank in RANK_CHOICES_2:
+        session.add(models.Job(
+            job_title=rank,
+            order=i,
+            is_sworn_officer=True,
+            department_id=3
+        ))
+        i += 1
     session.commit()
 
     # Ensure test data is deterministic
@@ -287,7 +309,8 @@ def add_mockdata(session):
     session.commit()
 
     test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
-        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
+        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)] + \
+        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=3) for x in range(5)]
 
     test_officer_links = [
         models.Link(
@@ -312,27 +335,35 @@ def add_mockdata(session):
     all_officers = models.Officer.query.all()
     officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
     officers_dept2 = models.Officer.query.filter_by(department_id=2).all()
+    officers_dept3 = models.Officer.query.filter_by(department_id=3).all()
 
     # assures that there are some assigned and unassigned images in each department
     assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
     assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
+    assigned_images_dept3 = models.Image.query.filter_by(department_id=3).limit(3).all()
 
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+    jobs_dept3 = models.Job.query.filter_by(department_id=3).all()
     assignments_dept1 = [build_assignment(officer, test_units, jobs_dept1) for officer in officers_dept1]
     assignments_dept2 = [build_assignment(officer, test_units, jobs_dept2) for officer in officers_dept2]
+    assignments_dept3 = [build_assignment(officer, test_units, jobs_dept3) for officer in officers_dept3]
 
     salaries = [build_salary(officer) for officer in all_officers]
     faces_dept1 = [assign_faces(officer, assigned_images_dept1) for officer in officers_dept1]
     faces_dept2 = [assign_faces(officer, assigned_images_dept2) for officer in officers_dept2]
+    faces_dept3 = [assign_faces(officer, assigned_images_dept3) for officer in officers_dept3]
     faces1 = [f for f in faces_dept1 if f]
     faces2 = [f for f in faces_dept2 if f]
+    faces3 = [f for f in faces_dept3 if f]
     session.commit()
     session.add_all(assignments_dept1)
     session.add_all(assignments_dept2)
+    session.add_all(assignments_dept3)
     session.add_all(salaries)
     session.add_all(faces1)
     session.add_all(faces2)
+    session.add_all(faces3)
 
     test_user = models.User(email='jen@example.org',
                             username='test_user',
@@ -355,10 +386,24 @@ def add_mockdata(session):
                                         ac_department_id=AC_DEPT)
     session.add(test_area_coordinator)
 
+    inactive_area_coordinator = models.User(email='inactive_ac@example.org',
+                                            username='inactive_ac',
+                                            password='cow',
+                                            confirmed=True,
+                                            is_area_coordinator=True,
+                                            ac_department_id=INACTIVE_DEPT)
+    session.add(inactive_area_coordinator)
+
     test_unconfirmed_user = models.User(email='freddy@example.org',
                                         username='b_meson',
                                         password='dog', confirmed=False)
     session.add(test_unconfirmed_user)
+    session.commit()
+
+    # images classified by the inactive area coordinator, used to test that images displayed on the user profile page respect active/inactive department distinctions
+    inactive_dept_image = models.Image(filepath='/static/images/test_cop1.png', department_id=INACTIVE_DEPT, user_id=inactive_area_coordinator.id)
+    active_dept_image = models.Image(filepath='/static/images/test_cop1.png', department_id=ACTIVE_NON_AC_DEPT, user_id=inactive_area_coordinator.id)
+    session.add_all([inactive_dept_image, active_dept_image])
     session.commit()
 
     test_addresses = [
@@ -436,11 +481,23 @@ def add_mockdata(session):
             creator_id=2,
             last_updated_id=1
         ),
+        models.Incident(
+            date=datetime.datetime(2019, 11, 15),
+            report_number='43',
+            description='Incident in an inactive department.',
+            department_id=INACTIVE_DEPT,
+            address=test_addresses[0],
+            license_plates=[test_license_plates[0]],
+            links=test_incident_links,
+            officers=[officers_dept3[o] for o in range(2)],
+            creator_id=2,
+            last_updated_id=2
+        ),
     ]
     session.add_all(test_incidents)
     session.commit()
 
-    users_that_can_create_notes = [test_admin, test_area_coordinator]
+    users_that_can_create_notes = [test_admin, test_area_coordinator, inactive_area_coordinator]
 
     # for testing routes
     first_officer = models.Officer.query.get(1)
@@ -453,7 +510,7 @@ def add_mockdata(session):
 
     session.commit()
 
-    users_that_can_create_descriptions = [test_admin, test_area_coordinator]
+    users_that_can_create_descriptions = [test_admin, test_area_coordinator, inactive_area_coordinator]
 
     # for testing routes
     first_officer = models.Officer.query.get(1)

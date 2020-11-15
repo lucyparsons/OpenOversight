@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 from flask import url_for, current_app
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.conftest import AC_DEPT, INACTIVE_DEPT, ACTIVE_NON_AC_DEPT
 from .route_helpers import login_user, login_admin, login_ac
 
 
@@ -60,7 +60,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
 def test_acs_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        officer = Officer.query.first()
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         description = 'A description'
         ac = User.query.filter_by(email='raq929@example.org').first()
         form = TextForm(
@@ -343,7 +343,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
 
 def test_users_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        officer = Officer.query.first()
+        officer = Officer.query.except_(Officer.query.filter_by(department_id=INACTIVE_DEPT)).first()
         text_contents = 'You can see me'
         description = Description(
             text_contents=text_contents,
@@ -413,7 +413,7 @@ def test_acs_can_see_descriptions_in_their_department(mockdata, client, session)
 
 def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
-        officer = Officer.query.except_(Officer.query.filter_by(department_id=AC_DEPT)).first()
+        officer = Officer.query.filter_by(department_id=ACTIVE_NON_AC_DEPT).first()
         text_contents = 'Hello it me'
         description = Description(
             text_contents=text_contents,

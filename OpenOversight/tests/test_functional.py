@@ -131,7 +131,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
-    dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).one_or_none()
+    dept_without_uii = Department.query.filter_by(unique_internal_identifier_label=None).first()
     dept_id = str(dept_without_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
@@ -143,17 +143,22 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(func.length(Incident.description) > 300).one_or_none()
     incident_id = str(incident_long_descrip.id)
-
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
     assert result.is_displayed()
 
 
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
@@ -163,6 +168,9 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
 
 
 def test_click_to_read_more_displays_full_description(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
@@ -179,6 +187,9 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
 
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
+    # Need to log in as admin to see officer in active department
+    login_admin(browser)
+
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 

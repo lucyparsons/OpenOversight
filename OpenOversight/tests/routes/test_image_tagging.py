@@ -7,8 +7,9 @@ try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
-from ..conftest import AC_DEPT
-from .route_helpers import login_user, login_admin, login_ac
+from ..conftest import AC_DEPT, INACTIVE_DEPT, INACTIVE_DEPT_NAME
+from .route_helpers import login_user, login_admin, login_ac, login_inactive_ac
+from OpenOversight.app.utils import all_dept_choices, active_dept_choices
 from OpenOversight.app.main import views
 
 from OpenOversight.app.main.forms import FaceTag, FindOfficerIDForm
@@ -63,9 +64,9 @@ def test_tagger_lookup(client, session):
         assert urlparse(rv.location).path == '/tagger_gallery'
 
 
-def test_tagger_gallery(client, session):
+def test_tagger_gallery(mockdata, client, session):
     with current_app.test_request_context():
-        form = FindOfficerIDForm(dept='')
+        form = FindOfficerIDForm(dept=AC_DEPT)
         assert form.validate() is True
         rv = client.post(url_for('main.get_tagger_gallery'), data=form.data)
         assert rv.status_code == 200
@@ -377,3 +378,107 @@ def test_featured_tag_replaces_others(mockdata, client, session):
         tag2 = Face.query.filter(Face.id == tag2.id).one()
         assert tag1.featured is False
         assert tag2.featured is True
+
+
+def test_user_cannot_access_tagging_page_for_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        rv = client.get(
+            url_for('main.label_data', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 403
+
+
+def test_ac_can_access_tagging_page_for_own_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_inactive_ac(client)
+        rv = client.get(
+            url_for('main.label_data', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+
+
+def test_admin_can_access_tagging_page_for_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get(
+            url_for('main.label_data', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+
+
+def test_cannot_access_tagging_page_for_nonexistent_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get(
+            url_for('main.sort_images', department_id=773),
+            follow_redirects=True
+        )
+        assert rv.status_code == 404
+
+
+def test_admin_can_access_sorting_page_for_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get(
+            url_for('main.sort_images', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Do you see uniformed law enforcement officers in the photo?' in rv.data.decode('utf-8')
+
+
+def test_area_coordinator_can_access_sorting_page_for_their_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_inactive_ac(client)
+        rv = client.get(
+            url_for('main.sort_images', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'Do you see uniformed law enforcement officers in the photo?' in rv.data.decode('utf-8')
+
+
+def test_user_cannot_access_sorting_page_for_inactive_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        rv = client.get(
+            url_for('main.sort_images', department_id=INACTIVE_DEPT),
+            follow_redirects=True
+        )
+        assert rv.status_code == 404
+
+
+def test_admin_views_all_departments_on_label_page(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get('/label', follow_redirects=True)
+
+        result = rv.data.decode('utf-8')
+        for dept in all_dept_choices():
+            assert dept.name in result
+
+
+def test_user_only_views_active_departments_on_label_page(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        rv = client.get('/label', follow_redirects=True)
+
+        result = rv.data.decode('utf-8')
+        for dept in active_dept_choices():
+            assert dept.name in result
+        assert INACTIVE_DEPT_NAME not in result
+
+
+def test_area_coordinator_views_their_inactive_department_on_label_page(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        rv = client.get('/label', follow_redirects=True)
+
+        result = rv.data.decode('utf-8')
+        for dept in active_dept_choices():
+            assert dept.name in result
+        assert INACTIVE_DEPT_NAME in result

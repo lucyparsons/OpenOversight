@@ -8,7 +8,7 @@ from OpenOversight.app.models import (Officer, Assignment, Face, Image, Unit,
 
 def test_department_repr(mockdata):
     department = Department.query.first()
-    assert department.__repr__() == '<Department ID {}: {}>'.format(department.id, department.name)
+    assert department.__repr__() == '<Department ID {}: {}, is_active: {}>'.format(department.id, department.name, department.is_active)
 
 
 def test_officer_repr(mockdata):
@@ -310,3 +310,11 @@ def test_images_added_with_user_id(mockdata):
     db.session.commit()
     saved = Image.query.filter_by(user_id=user_id).first()
     assert saved is not None
+
+
+def test_department_defaults_to_active(mockdata):
+    dept = Department(name='Anytown', short_name='APD')
+    db.session.add(dept)
+    db.session.commit()
+    saved_dept = Department.query.filter_by(name='Anytown').first()
+    assert saved_dept.is_active

@@ -31,9 +31,10 @@ class Department(BaseModel):
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
     unique_internal_identifier_label = db.Column(db.String(100), unique=False, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     def __repr__(self):
-        return '<Department ID {}: {}>'.format(self.id, self.name)
+        return '<Department ID {}: {}, is_active: {}>'.format(self.id, self.name, self.is_active)
 
     def toCustomDict(self):
         return {'id': self.id,

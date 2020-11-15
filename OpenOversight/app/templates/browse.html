@@ -15,7 +15,7 @@
       <div class="btn-group">
         <h2>{{ department.name }}
         {% if current_user.is_administrator %}
-            <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
+            <a href="{{ url_for('main.department_api', department_id=department.id) }}">
               <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
             </a>
         {% endif %}

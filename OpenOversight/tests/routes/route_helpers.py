@@ -40,6 +40,18 @@ def login_ac(client):
     return rv
 
 
+def login_inactive_ac(client):
+    form = LoginForm(email='inactive_ac@example.org',
+                     password='cow',
+                     remember_me=True)
+    rv = client.post(
+        url_for('auth.login'),
+        data=form.data,
+        follow_redirects=False
+    )
+    return rv
+
+
 def process_form_data(form_dict):
     """Takes the dict from a form with embedded formd and flattens it
 
