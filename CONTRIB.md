@@ -2,11 +2,23 @@
 
 First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.  Please also read our [code of conduct](/CODE_OF_CONDUCT.md) before getting started.
 
-## Submitting a PR
+## Submitting a Pull Request (PR)
 
-When you come to implement your new feature, you should branch off `develop` and add commits to implement your feature. If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
+When you come to implement your new feature, clone the repository and then create a branch off `develop` locally and add commits to implement your feature.
+
+If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
+
+To submit your changes for review you have to fork the repository, push your new branch there and then create a Pull Request with `OpenOversight:develop` as the target.
 
 Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
+
+### Recommended privacy settings
+Whenever you make a commit with `git` the name and email saved locally is stored with that commit and will become part of the public history of the project. This can be an unwanted, for example when using a work computer. We recommond changing the email-settings in the github account at https://github.com/settings/emails and selecting "Keep my email addresses private" as well as "Block command line pushes that expose my email". Also find your github-email address of the form `<id>+<username>@users.noreply.github.com` in that section. Then you can change the email and username stored with your commits by running the following commands
+```
+git config user.email "<your-github-email>"
+git config user.name "<your-github-username>"
+```
+This will make sure that all commits you make locally are associated with your github account and do not contain any additional identifying information. More detailed information on this topic can be found [here](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address).
 
 ### Linting / Style Checks
 
