@@ -38,12 +38,7 @@ def validate_money(form, field):
 def validate_end_date(form, field):
     if form.data["star_date"] and field.data:
         if form.data["star_date"] > field.data:
-            raise ValidationError('End date must come after start date.')
-
-def coerce_gender(input_gender):
-    if input_gender == 'Not Sure':
-        return None
-    return input_gender
+            raise ValidationError('End date must come after start date.')\
 
 class HumintContribution(Form):
     photo = FileField(
@@ -270,8 +265,12 @@ class EditOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES, coerce=lambda x: x or None,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', choices=GENDER_CHOICES, coerce=coerce_gender,
-                         validators=[AnyOf(allowed_values(db_genders))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     unique_internal_identifier = StringField('Unique Internal Identifier',
