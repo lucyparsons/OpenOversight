@@ -139,6 +139,8 @@ class Officer(BaseModel):
                 return label
 
     def gender_label(self):
+        if self.gender is None:
+            return 'Data Missing'
         from .main.choices import GENDER_CHOICES
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
