@@ -871,8 +871,11 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
             last_name=last_name).one()
         assert officer.first_name == first_name
         assert officer.race == race
-        assert officer.gender == gender
-
+        if gender == "Not Sure":
+            assert officer.gender is None, "A form input of 'Not Sure' should lead to" \
+                " the officer's gender being saved as NULL/None."
+        else:
+            assert officer.gender == gender
 
 def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
@@ -912,7 +915,11 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
             last_name=last_name).one()
         assert officer.first_name == first_name
         assert officer.race == race
-        assert officer.gender == gender
+        if gender == "Not Sure":
+            assert officer.gender is None, "A form input of 'Not Sure' should lead to" \
+                " the officer's gender being saved as NULL/None."
+        else:
+            assert officer.gender == gender
         assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
 
 
