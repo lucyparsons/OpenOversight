@@ -212,8 +212,12 @@ class AddOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', default='M', choices=db_genders,
-                         validators=[AnyOf(allowed_values(db_genders))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp(r'\w*'), Length(max=50)])
