@@ -71,7 +71,7 @@ $(document).bind('keydown', 's', function(){
       {% else %}
       <h3>All images have been classfied!</h3>
       <p><a href="{{ url_for('main.submit_data')}}" class="btn btn-lg btn-primary" role="button">Submit officer pictures to us</a></p>
-      <p><a href="{{ url_for('main.label_data')}}" class="btn btn-lg btn-primary" role="button">identify officers in the classified images</a></p>
+      <p><a href="{{ url_for('main.label_data', department_id=department_id)}}" class="btn btn-lg btn-primary" role="button">identify officers in the classified images</a></p>
       {% endif %}
     {% endif %}
 
