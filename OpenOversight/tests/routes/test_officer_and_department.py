@@ -877,6 +877,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         else:
             assert officer.gender == gender
 
+
 def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)

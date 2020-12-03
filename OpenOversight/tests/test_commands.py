@@ -1239,7 +1239,3 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
         assert lookup_officer is not None
         # Was the gender properly normalized?
         assert lookup_officer.gender == "F"
-
-
-
-

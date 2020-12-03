@@ -23,7 +23,7 @@ import re
 db_genders = list(GENDER_CHOICES)
 for index, choice in enumerate(db_genders):
     if choice == ('Not Sure', 'Not Sure'):
-        db_genders[index] = (None, 'Not Sure')
+        db_genders[index] = (None, 'Not Sure')  # type: ignore
 
 
 def allowed_values(choices, empty_allowed=True):
@@ -38,7 +38,8 @@ def validate_money(form, field):
 def validate_end_date(form, field):
     if form.data["star_date"] and field.data:
         if form.data["star_date"] > field.data:
-            raise ValidationError('End date must come after start date.')\
+            raise ValidationError('End date must come after start date.')
+
 
 class HumintContribution(Form):
     photo = FileField(
