@@ -213,7 +213,19 @@ Next, in your terminal run `docker ps` to find the container id of the `openover
 
 ## Debugging OpenOversight - Use pdb with a test
 If you want to run an individual test in debug mode, use the below command.
-```yml
-`docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>`
+```bash
+docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>
 ```
+
+where `<test_name_here>` is the name of a single test function, such as `test_ac_cannot_add_new_officer_not_in_their_dept`
+
+Similarly, you can run all the tests in a file by specifying the file path:
+
+```bash
+docker-compose run --rm web pytest --pdb -v path/to/test/file 
+```
+
+where `path/to/test/file` is the relative file path, minus the initial `OpenOversight`, such as 
+`tests/routes/test_officer_and_department.py`.
+
 Again, add `import pdb` to the file you want to debug, then write `pdb.set_trace()` wherever you want to drop a breakpoint.  Once the test is up and running in your terminal, you can debug it using pdb prompts.

@@ -17,6 +17,14 @@ from ..models import Officer
 import datetime
 import re
 
+# Normalizes the "not sure" option to what it needs to be when writing to the database.
+# Note this should only be used for forms which save a record to the DB--not those that
+# are used to look up existing records.
+db_genders = list(GENDER_CHOICES)
+for index, choice in enumerate(db_genders):
+    if choice == ('Not Sure', 'Not Sure'):
+        db_genders[index] = (None, 'Not Sure')  # type: ignore
+
 
 def allowed_values(choices, empty_allowed=True):
     return [x[0] for x in choices if empty_allowed or x[0]]
@@ -205,8 +213,12 @@ class AddOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', default='WHITE', choices=RACE_CHOICES,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', default='M', choices=GENDER_CHOICES,
-                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp(r'\w*'), Length(max=50)])
@@ -258,8 +270,12 @@ class EditOfficerForm(Form):
                          validators=[AnyOf(allowed_values(SUFFIX_CHOICES))])
     race = SelectField('Race', choices=RACE_CHOICES, coerce=lambda x: x or None,
                        validators=[AnyOf(allowed_values(RACE_CHOICES))])
-    gender = SelectField('Gender', choices=GENDER_CHOICES, coerce=lambda x: x or None,
-                         validators=[AnyOf(allowed_values(GENDER_CHOICES))])
+    gender = SelectField(
+        'Gender',
+        choices=GENDER_CHOICES,
+        coerce=lambda x: None if x == 'Not Sure' else x,
+        validators=[AnyOf(allowed_values(db_genders))]
+    )
     employment_date = DateField('Employment Date', validators=[Optional()])
     birth_year = IntegerField('Birth Year', validators=[Optional()])
     unique_internal_identifier = StringField('Unique Internal Identifier',

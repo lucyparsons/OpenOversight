@@ -3,7 +3,7 @@ import re
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.orm import validates
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, BadData
@@ -98,7 +98,7 @@ class Officer(BaseModel):
     middle_initial = db.Column(db.String(120), unique=False, nullable=True)
     suffix = db.Column(db.String(120), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
-    gender = db.Column(db.String(120), index=True, unique=False)
+    gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
@@ -116,6 +116,10 @@ class Officer(BaseModel):
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
     salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
+
+    __table_args__ = (
+        CheckConstraint("gender in ('M', 'F', 'Other')", name='gender_options'),
+    )
 
     def full_name(self):
         if self.middle_initial:
@@ -135,6 +139,8 @@ class Officer(BaseModel):
                 return label
 
     def gender_label(self):
+        if self.gender is None:
+            return 'Data Missing'
         from .main.choices import GENDER_CHOICES
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
