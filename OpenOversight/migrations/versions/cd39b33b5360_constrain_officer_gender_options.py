@@ -20,7 +20,7 @@ def get_update_statement(normalized, options):
     template = """
     UPDATE officers
     SET gender = '{normalized}'
-    WHERE gender::citext in ({options});
+    WHERE LOWER(gender) in ({options});
     """
     options = ', '.join(["'" + o + "'" for o in options])
     return template.format(normalized=normalized, options=options)
@@ -28,8 +28,6 @@ def get_update_statement(normalized, options):
 
 def upgrade():
     conn = op.get_bind()
-    create_extn = "create extension IF NOT EXISTS citext;"
-    conn.execute(create_extn)
 
     genders = {
         "M": ('male', 'm', 'man'),
