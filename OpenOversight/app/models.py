@@ -1,6 +1,7 @@
 import re
 
 from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.orm import validates
 from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -13,6 +14,7 @@ from . import login_manager
 
 db = SQLAlchemy()
 
+BaseModel = db.Model  # type: DefaultMeta
 
 officer_links = db.Table('officer_links',
                          db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),
@@ -23,7 +25,7 @@ officer_incidents = db.Table('officer_incidents',
                              db.Column('incident_id', db.Integer, db.ForeignKey('incidents.id'), primary_key=True))
 
 
-class Department(db.Model):
+class Department(BaseModel):
     __tablename__ = 'departments'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
@@ -41,7 +43,7 @@ class Department(db.Model):
                 }
 
 
-class Job(db.Model):
+class Job(BaseModel):
     __tablename__ = 'jobs'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +63,7 @@ class Job(db.Model):
         return self.job_title
 
 
-class Note(db.Model):
+class Note(BaseModel):
     __tablename__ = 'notes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +76,7 @@ class Note(db.Model):
     date_updated = db.Column(db.DateTime)
 
 
-class Description(db.Model):
+class Description(BaseModel):
     __tablename__ = 'descriptions'
 
     creator = db.relationship('User', backref='descriptions')
@@ -87,7 +89,7 @@ class Description(db.Model):
     date_updated = db.Column(db.DateTime)
 
 
-class Officer(db.Model):
+class Officer(BaseModel):
     __tablename__ = 'officers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -117,10 +119,11 @@ class Officer(db.Model):
 
     def full_name(self):
         if self.middle_initial:
+            middle_initial = self.middle_initial + '.' if len(self.middle_initial) == 1 else self.middle_initial
             if self.suffix:
-                return '{} {}. {} {}'.format(self.first_name, self.middle_initial, self.last_name, self.suffix)
+                return '{} {} {} {}'.format(self.first_name, middle_initial, self.last_name, self.suffix)
             else:
-                return '{} {}. {}'.format(self.first_name, self.middle_initial, self.last_name)
+                return '{} {} {}'.format(self.first_name, middle_initial, self.last_name)
         if self.suffix:
             return '{} {} {}'.format(self.first_name, self.last_name, self.suffix)
         return '{} {}'.format(self.first_name, self.last_name)
@@ -137,6 +140,20 @@ class Officer(db.Model):
             if self.gender == gender:
                 return label
 
+    def job_title(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .job.job_title
+
+    def badge_number(self):
+        if self.assignments.all():
+            return self.assignments\
+                .order_by(self.assignments[0].__table__.c.star_date.desc())\
+                .first()\
+                .star_no
+
     def __repr__(self):
         if self.unique_internal_identifier:
             return '<Officer ID {}: {} {} {} {} ({})>'.format(self.id,
@@ -152,7 +169,7 @@ class Officer(db.Model):
                                                      self.suffix)
 
 
-class Salary(db.Model):
+class Salary(BaseModel):
     __tablename__ = 'salaries'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -167,7 +184,7 @@ class Salary(db.Model):
         return '<Salary: ID {} : {}'.format(self.officer_id, self.salary)
 
 
-class Assignment(db.Model):
+class Assignment(BaseModel):
     __tablename__ = 'assignments'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -186,19 +203,19 @@ class Assignment(db.Model):
                                                  self.star_no)
 
 
-class Unit(db.Model):
+class Unit(BaseModel):
     __tablename__ = 'unit_types'
 
     id = db.Column(db.Integer, primary_key=True)
     descrip = db.Column(db.String(120), index=True, unique=False)
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
-    department = db.relationship('Department', backref='unit_types')
+    department = db.relationship('Department', backref='unit_types', order_by='Unit.descrip.asc()')
 
     def __repr__(self):
         return 'Unit: {}'.format(self.descrip)
 
 
-class Face(db.Model):
+class Face(BaseModel):
     __tablename__ = 'faces'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -238,7 +255,7 @@ class Face(db.Model):
         return '<Tag ID {}: {} - {}>'.format(self.id, self.officer_id, self.img_id)
 
 
-class Image(db.Model):
+class Image(BaseModel):
     __tablename__ = 'raw_images'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -282,7 +299,7 @@ incident_officers = db.Table(
 )
 
 
-class Location(db.Model):
+class Location(BaseModel):
     __tablename__ = 'locations'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -320,7 +337,7 @@ class Location(db.Model):
             return '{} {}'.format(self.city, self.state)
 
 
-class LicensePlate(db.Model):
+class LicensePlate(BaseModel):
     __tablename__ = 'license_plates'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -334,7 +351,7 @@ class LicensePlate(db.Model):
         return state_validator(state)
 
 
-class Link(db.Model):
+class Link(BaseModel):
     __tablename__ = 'links'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -343,15 +360,15 @@ class Link(db.Model):
     link_type = db.Column(db.String(100), index=True)
     description = db.Column(db.Text(), nullable=True)
     author = db.Column(db.String(255), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    user = db.relationship('User', backref='links', lazy=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    creator = db.relationship('User', backref='links', lazy=True)
 
     @validates('url')
     def validate_url(self, key, url):
         return url_validator(url)
 
 
-class Incident(db.Model):
+class Incident(BaseModel):
     __tablename__ = 'incidents'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -376,7 +393,7 @@ class Incident(db.Model):
     last_updated_by = db.relationship('User', backref='incidents_updated', lazy=True, foreign_keys=[last_updated_id])
 
 
-class User(UserMixin, db.Model):
+class User(UserMixin, BaseModel):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)

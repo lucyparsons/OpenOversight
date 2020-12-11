@@ -50,8 +50,8 @@ test: start  ## Run tests
 	fi
 
 .PHONY: lint
-lint: start
-	docker-compose run --rm web flake8
+lint: 
+	docker-compose run --no-deps --rm web /bin/bash -c 'flake8; mypy app --config="../mypy.ini"'
 
 .PHONY: cleanassets
 cleanassets:

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
-import dateutil
+import dateutil.parser
 
 from .main import choices
 from .models import (
@@ -196,7 +196,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         link_type=validate_choice(data.get("link_type"), choices.LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
-        user_id=parse_int(data.get("user_id")),
+        creator_id=parse_int(data.get("creator_id")),
     )
 
     if force_id and data.get("id"):
@@ -221,8 +221,8 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
         link.description = parse_str(data.get("description"), None)
     if "author" in data:
         link.author = parse_str(data.get("author"), None)
-    if "user_id" in data:
-        link.user_id = parse_int(data.get("user_id"))
+    if "creator_id" in data:
+        link.creator_id = parse_int(data.get("creator_id"))
     if "officers" in data:
         link.officers = data.get("officers") or []
     if "incidents" in data:

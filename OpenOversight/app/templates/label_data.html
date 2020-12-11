@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Volunteer with OpenOversight{% endblock %}
+{% block meta %}
+<meta name="description" content="Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.">
+{% endblock %}
 {% block content %}
 
 {% if current_user and current_user.is_authenticated %}

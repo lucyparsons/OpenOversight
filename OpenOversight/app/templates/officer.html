@@ -1,4 +1,82 @@
 {% extends "base.html" %}
+{% block title %}{{ officer.full_name() }} - OpenOversight{% endblock %}
+{% block meta %}
+  {% set job_title = officer.job_title() if officer.job_title() and officer.job_title() != 'Not Sure' else 'Employee' %}
+  {% set description = 'See detailed information about ' ~ officer.full_name() ~ ', ' ~ job_title ~ ' of the ' ~ officer.department.name ~ '.' %}
+  {% set image_url = officer.image_url | default(url_for('static', filename='images/placeholder.png', _external=True)) %}
+  <meta name="description" content="{{ description }}">
+  <meta name="author" content="Lucy Parsons Labs">
+  <meta name="image" content="{{ image_url }}">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@openoversight">
+  <meta name="twitter:title" content="{{ officer.full_name() }}">
+  <meta name="twitter:description" content="{{ description }}">
+  <meta name="twitter:image" content="{{ image_url }}">
+  <!-- Open Graph -->
+  {% if officer.image_width and officer.image_height %}
+  <meta property="og:image:width" content="{{ officer.image_width }}">
+  <meta property="og:image:height" content="{{ officer.image_height }}">
+  {% elif not officer.image_url %}
+  <meta property="og:image:width" content="200">
+  <meta property="og:image:height" content="200">
+  {% endif %}
+  <meta property="og:title" content="{{ officer.full_name() }}">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="{{ image_url }}">
+  <meta property="og:url" content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:site_name" content="OpenOversight">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "Person",
+    "name": "{{ officer.full_name() }}",
+    {% if officer.birth_year %}"birthDate": "{{ officer.birth_year }}",{% endif %}
+    "gender": "{{ officer.gender_label() }}",
+    "jobTitle": "{{ job_title }}",
+    "worksFor": {
+      "@type" : "Organization",
+      "name": "{{ officer.department.name | title }}"
+    },
+    {% if officer.unique_internal_identifier %}"identifier": "{{ officer.unique_internal_identifier }}",{% endif %}
+    {% if officer.image_url %}
+    "image": {
+      "@type": "URL",
+      "url": "{{ officer.image_url }}"
+    },
+    {% endif %}
+    "url": {
+      "@type": "URL",
+      "url": "{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}"
+    },
+    "description": "{{ description }}"
+  }
+  </script>
+  <!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "OpenOversight",
+      "item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ officer.department.name|title }}",
+      "item": "{{ url_for('main.list_officer', department_id=officer.department.id, _external=True) }}"
+    },{
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ officer.full_name() }}"
+    }]
+  }
+  </script>
+{% endblock %}
 {% block content %}
 
 <div class="container" role="main">
@@ -6,9 +84,9 @@
   <div class="page-header">
       <ol class="breadcrumb">
           <li><a href="{{url_for('main.list_officer',department_id=officer.department.id)}}">{{ officer.department.name|title }}</a></li>
-          <li class="active">{% include 'partials/officer_name.html' %}</li>
+          <li class="active">{{ officer.full_name() }}</li>
       </ol>
-      <h1>Officer Detail: <b>{% include 'partials/officer_name.html' %}</b></h1>
+      <h1>Officer Detail: <b>{{ officer.full_name() }}</b></h1>
   </div>
 
   <div class="row">
@@ -40,7 +118,7 @@
             <tbody>
               <tr>
                 <td><b>Name</b></td>
-                <td>{% include 'partials/officer_name.html' %}</td>
+                <td>{{ officer.full_name() }}</td>
               </tr>
               <tr>
                 <td><b>OpenOversight ID</b></td>
@@ -92,7 +170,8 @@
             <th><b>Job Title</b></th>
             <th><b>Badge No.</b></th>
             <th><b>Unit</b></th>
-            <th><b>Assignment Date</b></th>
+            <th><b>Start Date</b></th>
+            <th><b>End Date</b></th>
             {% if current_user.is_administrator
               or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
             <th><b>Edit</b></th>
@@ -104,10 +183,14 @@
             <td>{{ assignment.job.job_title }}</td>
             <td>{{ assignment.star_no }}</td>
             <td>{% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}</td>
-            <td>{% if assignment.star_date: %}
+            <td>{% if assignment.star_date %}
                 {{ assignment.star_date }}
                 {% else %}
                 Unknown
+                {% endif %}
+            </td>
+            <td>{% if assignment.resign_date %}
+                {{ assignment.resign_date }}
                 {% endif %}
             </td>
             <td>
@@ -131,6 +214,10 @@
                 {{ assignment.star_date }}
                 {% else %}
                 Unknown
+                {% endif %}
+            </td>
+            <td>{% if assignment.resign_date %}
+                {{ assignment.resign_date }}
                 {% endif %}
             </td>
             <td>
@@ -187,6 +274,15 @@
             <td><b>Start date of new assignment:</b></td>
             <td>{{ form.star_date }}
                   {% for error in form.star_date.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>End date of new assignment:</b></td>
+            <td>{{ form.resign_date }}
+                  {% for error in form.resign_date.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
             </td>

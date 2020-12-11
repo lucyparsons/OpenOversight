@@ -1,12 +1,28 @@
+{% if obj.links|length > 0 or current_user.is_administrator
+	or (current_user.is_area_coordinator and current_user.ac_department_id == obj.department_id) %}
 <div class='row'>
-	{% for type, list in obj.links|groupby('link_type') %}
-		{% if type == 'link' %}
-		<div class="col-sm-12 col-md-6">
-			<h3>Links</h3>
+	<div class="col-sm-12 col-md-6">
+		<h3>Links</h3>
+		{% for type, list in obj.links|groupby('link_type') %}
+			{% if type == 'link' %}
 			<ul class='list-group'>
 				{% for link in list %}
 					<li class='list-group-item'>
 						<a href="{{ link.url }}">{{ link.title or link.url }}</a>
+						{% if officer and (current_user.is_administrator
+						  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
+							or link.creator_id == current_user.id) %}
+							<a href="{{ url_for('main.link_api_edit', officer_id=officer.id,
+											 obj_id=link.id) }}">
+							<span class='sr-only'>Edit</span>
+							<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+							</a>
+							<a href="{{ url_for('main.link_api_delete', officer_id=officer.id,
+											 obj_id=link.id) }}">
+							<span class='sr-only'>Delete</span>
+							<i class="fa fa-trash-o" aria-hidden="true"></i>
+							</a>
+						{% endif %}
 						{% if link.description or link.author %}
 							<div>
 								{% if link.description %}
@@ -20,8 +36,14 @@
 					</li>
 				{% endfor %}
 			</ul>
-		</div>
+			{% endif %}
+		{% endfor %}
+		{% if officer and (current_user.is_administrator
+				or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)) %}
+		<a href="{{ url_for('main.link_api_new', officer_id=officer.id) }}" class='btn btn-primary'>New Link/Video</a>
 		{% endif %}
+	</div>
+	{% for type, list in obj.links|groupby('link_type') %}
 		{% if type == 'video' %}
 		<div class="col-sm-12 col-md-6">
 			<h3>Videos</h3>
@@ -31,6 +53,20 @@
 						<li class='list-group-item'>
 							{% if link.title %}
 								<h5>{{ link.title }}</h5>
+							{% endif %}
+							{% if officer and (current_user.is_administrator
+								or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
+								or link.creator_id == current_user.id) %}
+								<a href="{{ url_for('main.link_api_edit', officer_id=officer.id,
+												 obj_id=link.id) }}">
+								<span class='sr-only'>Edit</span>
+								<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+								</a>
+								<a href="{{ url_for('main.link_api_delete', officer_id=officer.id,
+												 obj_id=link.id) }}">
+								<span class='sr-only'>Delete</span>
+								<i class="fa fa-trash-o" aria-hidden="true"></i>
+								</a>
 							{% endif %}
 							<div class='video-container'>
 								<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ link_url }}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
@@ -58,6 +94,20 @@
 				{% for link in list %}
 					<li class='list-group-item'>
 						<a href="{{ link.url }}">{{ link.title or link.url }}</a>
+						{% if officer and (current_user.is_administrator
+						  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
+							or link.creator_id == current_user.id) %}
+							<a href="{{ url_for('main.link_api_edit', officer_id=officer.id,
+											 obj_id=link.id) }}">
+							<span class='sr-only'>Edit</span>
+							<i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+							</a>
+							<a href="{{ url_for('main.link_api_delete', officer_id=officer.id,
+											 obj_id=link.id) }}">
+							<span class='sr-only'>Delete</span>
+							<i class="fa fa-trash-o" aria-hidden="true"></i>
+							</a>
+						{% endif %}
 						{% if link.description or link.author %}
 							<div>
 								{% if link.description %}
@@ -75,3 +125,4 @@
 		{% endif %}
 	{% endfor %}
 </div> {# end row #}
+{% endif %}

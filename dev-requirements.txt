@@ -8,6 +8,7 @@ pytest-cov==2.4.0
 pytest-pep8==1.0.6
 xvfbwrapper==0.2.9
 mock==2.0.0
+mypy==0.782
 sphinx==1.7.8
 sphinx-autobuild==0.7.1
 pandas>=0.23.4

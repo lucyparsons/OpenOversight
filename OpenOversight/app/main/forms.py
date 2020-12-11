@@ -27,6 +27,12 @@ def validate_money(form, field):
         raise ValidationError('Invalid monetary value')
 
 
+def validate_end_date(form, field):
+    if form.data["star_date"] and field.data:
+        if form.data["star_date"] > field.data:
+            raise ValidationError('End date must come after start date.')
+
+
 class HumintContribution(Form):
     photo = FileField(
         'image', validators=[FileRequired(message='There was no file!'),
@@ -97,6 +103,7 @@ class AssignmentForm(Form):
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'None')
     star_date = DateField('Assignment start date', validators=[Optional()])
+    resign_date = DateField('Assignment end date', validators=[Optional(), validate_end_date])
 
 
 class SalaryForm(Form):
@@ -154,7 +161,7 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default='',
         validators=[AnyOf(allowed_values(LINK_CHOICES))])
-    user_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
+    creator_id = HiddenField(validators=[DataRequired(message='Not a valid user ID')])
 
     def validate(self):
         success = super(LinkForm, self).validate()
@@ -164,6 +171,11 @@ class LinkForm(Form):
             success = False
 
         return success
+
+
+class OfficerLinkForm(LinkForm):
+    officer_id = HiddenField(validators=[DataRequired(message='Not a valid officer ID')])
+    submit = SubmitField(label='Submit')
 
 
 class BaseTextForm(Form):
@@ -198,7 +210,7 @@ class AddOfficerForm(Form):
     star_no = StringField('Badge Number', default='', validators=[
         Regexp(r'\w*'), Length(max=50)])
     unique_internal_identifier = StringField('Unique Internal Identifier', default='', validators=[Regexp(r'\w*'), Length(max=50)])
-    job_title = StringField('Job Title')  # Gets rewritten by Javascript
+    job_id = StringField('Job ID')  # Gets rewritten by Javascript
     unit = QuerySelectField('Unit', validators=[Optional()],
                             query_factory=unit_choices, get_label='descrip',
                             allow_blank=True, blank_text=u'None')
@@ -259,12 +271,6 @@ class EditOfficerForm(Form):
         validators=[Optional()],
         query_factory=dept_choices,
         get_label='name')
-    links = FieldList(FormField(
-        LinkForm,
-        widget=FormFieldWidget()),
-        description='Links to articles about or videos of the officer.',
-        min_entries=1,
-        widget=BootstrapListWidget())
     submit = SubmitField(label='Update')
 
 
@@ -288,7 +294,7 @@ class AddImageForm(Form):
 
 
 class DateFieldForm(Form):
-    date_field = DateField('Date <span class="text-danger">*</span>', validators=[DataRequired()])
+    date_field = DateField('Date*', validators=[DataRequired()])
     time_field = TimeField('Time', validators=[Optional()])
 
     def validate_time_field(self, field):
@@ -304,8 +310,8 @@ class LocationForm(Form):
     street_name = StringField(validators=[Optional()], description='Street on which incident occurred. For privacy reasons, please DO NOT INCLUDE street number.')
     cross_street1 = StringField(validators=[Optional()], description='Closest cross street to where incident occurred.')
     cross_street2 = StringField(validators=[Optional()])
-    city = StringField('City <span class="text-danger">*</span>', validators=[DataRequired()])
-    state = SelectField('State <span class="text-danger">*</span>', choices=STATE_CHOICES,
+    city = StringField('City*', validators=[DataRequired()])
+    state = SelectField('State*', choices=STATE_CHOICES,
                         validators=[AnyOf(allowed_values(STATE_CHOICES, False), message='Must select a state.')])
     zip_code = StringField('Zip Code',
                            validators=[Optional(),
@@ -355,7 +361,7 @@ class IncidentForm(DateFieldForm):
         description='Incident number for the organization tracking incidents')
     description = TextAreaField(validators=[Optional()])
     department = QuerySelectField(
-        'Department <span class="text-danger">*</span>',
+        'Department*',
         validators=[DataRequired()],
         query_factory=dept_choices,
         get_label='name')

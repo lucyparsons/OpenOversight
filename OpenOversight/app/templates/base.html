@@ -5,10 +5,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
+    {% block meta %}
+    <meta name="description" content="A public, searchable database of law enforcement officers">
+    <meta name="author" content="Lucy Parsons Labs">
+    {% endblock %}
 
-    <title>OpenOversight - a Lucy Parsons Labs project</title>
+    <title>{% block title %}OpenOversight - a Lucy Parsons Labs project{% endblock %}</title>
 
     <!-- Bundled CSS -->
     <link href="{{ url_for('static', filename='dist/index.css') }}" rel="stylesheet">
