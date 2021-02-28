@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import DefaultMeta
@@ -103,15 +104,14 @@ class Officer(BaseModel):
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     assignments_lazy = db.relationship('Assignment')
-    face = db.relationship('Face', backref='officer', lazy='dynamic')
+    face = db.relationship('Face', backref='officer')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
     unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
-    # we don't expect to pull up officers via link often so we make it lazy.
+
     links = db.relationship(
         'Link',
         secondary=officer_links,
-        lazy='subquery',
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
@@ -147,18 +147,12 @@ class Officer(BaseModel):
                 return label
 
     def job_title(self):
-        if self.assignments.all():
-            return self.assignments\
-                .order_by(self.assignments[0].__table__.c.star_date.desc())\
-                .first()\
-                .job.job_title
+        if self.assignments_lazy:
+            return max(self.assignments_lazy, key=lambda x: x.star_date or date.min).job.job_title
 
     def badge_number(self):
-        if self.assignments.all():
-            return self.assignments\
-                .order_by(self.assignments[0].__table__.c.star_date.desc())\
-                .first()\
-                .star_no
+        if self.assignments_lazy:
+            return max(self.assignments_lazy, key=lambda x: x.star_date or date.min).star_no
 
     def __repr__(self):
         if self.unique_internal_identifier:

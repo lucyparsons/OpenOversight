@@ -110,7 +110,7 @@ def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     target_unique_internal_id = OpenOversight.app.models.Officer.query.first().unique_internal_identifier
     results = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': target_unique_internal_id}
     )
@@ -124,7 +124,7 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
     identifier = OpenOversight.app.models.Officer.query.first().unique_internal_identifier
     partial_identifier = identifier[:len(identifier) // 2]
     results = OpenOversight.app.utils.grab_officers(
-        {'race': 'Not Sure', 'gender': 'Not Sure', 'rank': 'Not Sure',
+        {'race': ['Not Sure'], 'gender': ['Not Sure'], 'rank': ['Not Sure'],
          'min_age': 16, 'max_age': 85, 'name': '', 'badge': '',
          'dept': department, 'unique_internal_identifier': partial_identifier}
     )
