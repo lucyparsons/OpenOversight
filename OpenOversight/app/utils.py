@@ -16,8 +16,9 @@ import sys
 from traceback import format_exc
 from distutils.util import strtobool
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.sql.expression import cast
+from sqlalchemy.orm import selectinload
 import imghdr as imghdr
 from flask import current_app, url_for
 from flask_login import current_user
@@ -251,67 +252,65 @@ def upload_obj_to_s3(file_obj, dest_filename):
     return url
 
 
-def filter_by_form(form, officer_query, department_id=None):
-    # Some SQL acrobatics to left join only the most recent assignment per officer
-    row_num_col = func.row_number().over(
-        partition_by=Assignment.officer_id, order_by=Assignment.star_date.desc()
-    ).label('row_num')
-    subq = db.session.query(
-        Assignment.officer_id,
-        Assignment.job_id,
-        Assignment.star_date,
-        Assignment.star_no,
-        Assignment.unit_id
-    ).add_columns(row_num_col).from_self().filter(row_num_col == 1).subquery()
-    officer_query = officer_query.outerjoin(subq)
-
-    if form.get('name'):
+def filter_by_form(form_data, officer_query, department_id=None):
+    if form_data.get('name'):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike('%%{}%%'.format(form['name']))
+            Officer.last_name.ilike('%%{}%%'.format(form_data['name']))
         )
-    if not department_id and form.get('dept'):
-        department_id = form['dept'].id
+    if not department_id and form_data.get('dept'):
+        department_id = form_data['dept'].id
         officer_query = officer_query.filter(
             Officer.department_id == department_id
         )
-    if form.get('badge'):
+
+    if form_data.get('unique_internal_identifier'):
         officer_query = officer_query.filter(
-            subq.c.assignments_star_no.like('%%{}%%'.format(form['badge']))
-        )
-    if form.get('unit'):
-        officer_query = officer_query.filter(
-            subq.c.assignments_unit_id == form['unit']
+            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form_data['unique_internal_identifier']))
         )
 
-    if form.get('unique_internal_identifier'):
-        officer_query = officer_query.filter(
-            Officer.unique_internal_identifier.ilike('%%{}%%'.format(form['unique_internal_identifier']))
-        )
     race_values = [x for x, _ in RACE_CHOICES]
-    if form.get('race') and all(race in race_values for race in form['race']):
-        if 'Not Sure' in form['race']:
-            form['race'].append(None)
-        officer_query = officer_query.filter(Officer.race.in_(form['race']))
-    gender_values = [x for x, _ in GENDER_CHOICES]
-    if form.get('gender') and all(gender in gender_values for gender in form['gender']):
-        if 'Not Sure' in form['gender']:
-            form['gender'].append(None)
-        officer_query = officer_query.filter(Officer.gender.in_(form['gender']))
+    if form_data.get('race') and all(race in race_values for race in form_data['race']):
+        if 'Not Sure' in form_data['race']:
+            form_data['race'].append(None)
+        officer_query = officer_query.filter(Officer.race.in_(form_data['race']))
 
-    if form.get('min_age') and form.get('max_age'):
+    gender_values = [x for x, _ in GENDER_CHOICES]
+    if form_data.get('gender') and all(gender in gender_values for gender in form_data['gender']):
+        if 'Not Sure' not in form_data['gender']:
+            officer_query = officer_query.filter(or_(Officer.gender.in_(form_data['gender']), Officer.gender.is_(None)))
+
+    if form_data.get('min_age') and form_data.get('max_age'):
         current_year = datetime.datetime.now().year
-        min_birth_year = current_year - int(form['min_age'])
-        max_birth_year = current_year - int(form['max_age'])
+        min_birth_year = current_year - int(form_data['min_age'])
+        max_birth_year = current_year - int(form_data['max_age'])
         officer_query = officer_query.filter(db.or_(db.and_(Officer.birth_year <= min_birth_year,
                                                             Officer.birth_year >= max_birth_year),
                                                     Officer.birth_year == None))  # noqa
 
-    officer_query = officer_query.outerjoin(Job, Assignment.job)
-    rank_values = [x[0] for x in db.session.query(Job.job_title).filter_by(department_id=department_id, is_sworn_officer=True).all()]
-    if form.get('rank') and all(rank in rank_values for rank in form['rank']):
-        if 'Not Sure' in form['rank']:
-            form['rank'].append(None)
-        officer_query = officer_query.filter(Job.job_title.in_(form['rank']))
+    job_ids = []
+    if form_data.get('rank'):
+        job_ids = [job.id for job in Job.query.filter_by(department_id=department_id).filter(Job.job_title.in_(form_data.get("rank"))).all()]
+
+        print(form_data)
+        if 'Not Sure' in form_data['rank']:
+            form_data['rank'].append(None)
+
+    if form_data.get('badge') or form_data.get('unit') or job_ids:
+        officer_query = officer_query.join(Officer.assignments)
+        if form_data.get('badge'):
+            officer_query = officer_query.filter(
+                Assignment.star_no.like('%%{}%%'.format(form_data['badge']))
+            )
+        if form_data.get('unit'):
+            officer_query = officer_query.filter(
+                Assignment.unit_id == form_data['unit']
+            )
+        if job_ids:
+            officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
+    officer_query = (
+        officer_query
+        .options(selectinload(Officer.assignments_lazy))
+    )
 
     return officer_query
 
@@ -610,3 +609,20 @@ def prompt_yes_no(prompt, default="no"):
                              "(or 'y' or 'n').\n")
             continue
         return ret
+
+
+def normalize_gender(input_gender):
+    if input_gender is None:
+        return None
+    normalized_genders = {
+        "male": "M",
+        "m": "M",
+        "man": "M",
+        "female": "F",
+        "f": "F",
+        "woman": "F",
+        "nonbinary": "Other",
+        "other": "Other",
+    }
+
+    return normalized_genders.get(input_gender.lower().strip())

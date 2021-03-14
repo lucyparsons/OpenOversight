@@ -23,10 +23,10 @@
         <div class="carousel-inner" role="listbox">
         {% for officer in officers.items %}
 
-        {% if officer.face.first() is none %}
+        {% if officer.face | count == 0 %}
           {% set officer_image = '/static/images/placeholder.png' %}
         {% else %}
-          {% set officer_image = officer.face.first().image.filepath %}
+          {% set officer_image = officer.face[0].image.filepath %}
         {% endif %}
 
         {% if loop.index == 1 %}

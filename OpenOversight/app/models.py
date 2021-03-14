@@ -1,9 +1,10 @@
 import re
+from datetime import date
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.orm import validates
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, BadData
@@ -98,24 +99,27 @@ class Officer(BaseModel):
     middle_initial = db.Column(db.String(120), unique=False, nullable=True)
     suffix = db.Column(db.String(120), index=True, unique=False)
     race = db.Column(db.String(120), index=True, unique=False)
-    gender = db.Column(db.String(120), index=True, unique=False)
+    gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship('Assignment', backref='officer', lazy='dynamic')
     assignments_lazy = db.relationship('Assignment')
-    face = db.relationship('Face', backref='officer', lazy='dynamic')
+    face = db.relationship('Face', backref='officer')
     department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
     department = db.relationship('Department', backref='officers')
     unique_internal_identifier = db.Column(db.String(50), index=True, unique=True, nullable=True)
-    # we don't expect to pull up officers via link often so we make it lazy.
+
     links = db.relationship(
         'Link',
         secondary=officer_links,
-        lazy='subquery',
         backref=db.backref('officers', lazy=True))
     notes = db.relationship('Note', back_populates='officer', order_by='Note.date_created')
     descriptions = db.relationship('Description', back_populates='officer', order_by='Description.date_created')
     salaries = db.relationship('Salary', back_populates='officer', order_by='Salary.year.desc()')
+
+    __table_args__ = (
+        CheckConstraint("gender in ('M', 'F', 'Other')", name='gender_options'),
+    )
 
     def full_name(self):
         if self.middle_initial:
@@ -135,24 +139,20 @@ class Officer(BaseModel):
                 return label
 
     def gender_label(self):
+        if self.gender is None:
+            return 'Data Missing'
         from .main.choices import GENDER_CHOICES
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
                 return label
 
     def job_title(self):
-        if self.assignments.all():
-            return self.assignments\
-                .order_by(self.assignments[0].__table__.c.star_date.desc())\
-                .first()\
-                .job.job_title
+        if self.assignments_lazy:
+            return max(self.assignments_lazy, key=lambda x: x.star_date or date.min).job.job_title
 
     def badge_number(self):
-        if self.assignments.all():
-            return self.assignments\
-                .order_by(self.assignments[0].__table__.c.star_date.desc())\
-                .first()\
-                .star_no
+        if self.assignments_lazy:
+            return max(self.assignments_lazy, key=lambda x: x.star_date or date.min).star_no
 
     def __repr__(self):
         if self.unique_internal_identifier:

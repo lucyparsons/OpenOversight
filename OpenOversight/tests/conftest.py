@@ -63,7 +63,7 @@ def pick_race():
 
 
 def pick_gender():
-    return random.choice(['M', 'F', 'Not Sure'])
+    return random.choice(['M', 'F', 'Other', None])
 
 
 def pick_first():

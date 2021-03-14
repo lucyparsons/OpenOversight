@@ -67,10 +67,10 @@
           </div>
           <div class="collapse in" id="filter-gender">
             <div class="panel-body">
-              <div class="form-group checkbox">
+              <div class="form-group radio">
                 {% for choice in choices['gender'] %}
                   <label class="form-check">
-                    <input type="checkbox" class="form-check-input" id="gender-{{ choice[0] }}" name="gender" value="{{ choice[0] }}" {% if choice[0] in form_data['gender'] %}checked="checked" {% endif %}/>{{ choice[1] }}
+                    <input type="radio" class="form-check-input" id="gender-{{ choice[0] }}" name="gender" value="{{ choice[0] }}" {% if choice[0] in form_data['gender'] %}checked="checked" {% endif %}/>{{ choice[1] }}
                   </label>
                 {% endfor %}
               </div>
@@ -163,7 +163,7 @@
                       <dt>Gender</dt>
                       <dd>{{ officer.gender_label()|default('Unknown') }}</dd>
                       <dt>Number of Photos</dt>
-                      <dd>{{ officer.face.count() }}</dd>
+                      <dd>{{ officer.face | count }}</dd>
                     </dl>
                   </div>
                 </div>
