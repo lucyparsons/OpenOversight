@@ -38,14 +38,20 @@ You'll need to create an AWS account, if you don't already have one. Then, you'l
 For the officer identification UI to work, you'll need to create a CORS policy for the S3 bucket used with OpenOversight. In the AWS UI, this is done by navigating to the listing of buckets, clicking on the name of your bucket, and choosing the Permissions tab, and then "CORS configuration". Since we're not doing anything fancier than making a web browser GET it, we can just use the default policy:
 
 ```
-<CORSConfiguration>
-	<CORSRule>
-		<AllowedOrigin>*</AllowedOrigin>
-		<AllowedMethod>GET</AllowedMethod>
-		<MaxAgeSeconds>3000</MaxAgeSeconds>
-		<AllowedHeader>Authorization</AllowedHeader>
-	</CORSRule>
-</CORSConfiguration>
+[
+    {
+        "AllowedOrigins": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET"
+        ],
+        "MaxAgeSeconds": 3000,
+        "AllowedHeaders": [
+            "Authorizations"
+        ]
+    }
+]
 ```
 
 If you don't click "Save" on that policy, however, the policy will not actually be applied.
