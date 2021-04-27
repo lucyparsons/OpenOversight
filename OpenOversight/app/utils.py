@@ -160,8 +160,8 @@ def add_officer_profile(form, current_user):
             # don't try to create with a blank string
             if note['text_contents']:
                 new_note = Note(
-                    note=note['text_contents'],
-                    user_id=current_user.get_id(),
+                    text_contents=note['text_contents'],
+                    creator_id=current_user.get_id(),
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
@@ -171,8 +171,8 @@ def add_officer_profile(form, current_user):
             # don't try to create with a blank string
             if description['text_contents']:
                 new_description = Description(
-                    description=description['text_contents'],
-                    user_id=current_user.get_id(),
+                    text_contents=description['text_contents'],
+                    creator_id=current_user.get_id(),
                     officer=officer,
                     date_created=datetime.datetime.now(),
                     date_updated=datetime.datetime.now())
