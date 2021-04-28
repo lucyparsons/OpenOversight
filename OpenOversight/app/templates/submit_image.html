@@ -34,6 +34,7 @@
    </div>
 
    <h3>Drop images here to submit photos of officers:</h3>
+   <div id="upload-status" class="alert alert-danger">There was an error uploading file.</div>
 
    <form id="my-cop-dropzone" action="/upload/department/1" class='dropzone'>
    </form>
@@ -43,6 +44,10 @@
    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
 
    <script>
+   // Hide image upload error div when document ready
+   $(document).ready(function() {
+      $("#upload-status").hide();
+   }); 
    // Select user's preferred department by default
    document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
    // Save the preferred department in dept_id
@@ -71,7 +76,7 @@
       maxFiles: 50,
       init: function() {
          this.on("error", function(file, responseText) {
-            file.previewTemplate.appendChild(document.createTextNode(responseText));
+            $("#upload-status").show();
          });
       }
    });
