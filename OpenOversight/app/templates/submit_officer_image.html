@@ -15,6 +15,7 @@
   <div class='header'>
     <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
   </div>
+  <div id="upload-status" class="alert alert-danger">There was an error uploading file.</div>
   <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}" class="dropzone" id="my-cop-dropzone">
   </form>
     <p>Drag photographs from your computer directly into the box above or click the box to launch a finder window. If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.</p>
@@ -29,6 +30,10 @@
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
   <script>
+    $(document).ready(function() {
+      $("#upload-status").hide();
+    }); 
+    
     Dropzone.autoDiscover = false;
     let myDropzone = new Dropzone("#my-cop-dropzone", {
       url: "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
@@ -39,7 +44,7 @@
       maxFiles: 50,
       init: function() {
         this.on("error", function(file, responseText) {
-          file.previewTemplate.appendChild(document.createTextNode(responseText));
+          $("#upload-status").show();
         });
       }
     });
