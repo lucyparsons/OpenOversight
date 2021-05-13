@@ -11,6 +11,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sitemap import Sitemap
+from flask_wtf.csrf import CSRFProtect
 
 from .config import config
 
@@ -26,6 +27,7 @@ limiter = Limiter(key_func=get_remote_address,
                   default_limits=["100 per minute", "5 per second"])
 
 sitemap = Sitemap()
+csrf = CSRFProtect()
 
 
 def create_app(config_name='default'):
@@ -40,6 +42,7 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
     limiter.init_app(app)
     sitemap.init_app(app)
+    csrf.init_app(app)
 
     from .main import main as main_blueprint  # noqa
     app.register_blueprint(main_blueprint)
