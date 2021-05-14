@@ -1,7 +1,4 @@
-from future.utils import iteritems
-
 from flask import render_template, redirect, request, url_for, flash, current_app
-from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
@@ -101,7 +98,7 @@ def register():
     return render_template('auth/register.html', form=form, jsloads=jsloads)
 
 
-@auth.route('/confirm/<token>')
+@auth.route('/confirm/<token>', methods=['GET'])
 @login_required
 def confirm(token):
     if current_user.confirmed:
@@ -256,7 +253,7 @@ def get_users():
 def edit_user(user_id):
     user = User.query.get(user_id)
     if not user:
-        return render_template('403.html'), 403
+        return render_template('404.html'), 404
 
     if request.method == 'GET':
         form = EditUserForm(obj=user)
@@ -307,6 +304,6 @@ def admin_resend_confirmation(user):
     else:
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
-                    'auth/email/confirm', user=user, token=token)
+                   'auth/email/confirm', user=user, token=token)
         flash('A new confirmation email has been sent to {}.'.format(user.email))
     return redirect(url_for('auth.get_users'))

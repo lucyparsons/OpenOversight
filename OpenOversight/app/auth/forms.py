@@ -88,11 +88,11 @@ class EditUserForm(Form):
     ac_department = QuerySelectField('Department', validators=[Optional()],
                                      query_factory=dept_choices, get_label='name', allow_blank=True)
     is_administrator = BooleanField('Is administrator?', false_values={'False', 'false', ''})
-    is_disabled = BooleanField('Disabled?')
-    approved = BooleanField('Approved?')
-    submit = SubmitField(label='Update')
-    resend = SubmitField(label='Resend')
-    delete = SubmitField(label='Delete')
+    is_disabled = BooleanField('Disabled?', false_values={'False', 'false', ''})
+    approved = BooleanField('Approved?', false_values={'False', 'false', ''})
+    submit = SubmitField(label='Update', false_values={'False', 'false', ''})
+    resend = SubmitField(label='Resend', false_values={'False', 'false', ''})
+    delete = SubmitField(label='Delete', false_values={'False', 'false', ''})
 
     def validate(self):
         success = super(EditUserForm, self).validate()

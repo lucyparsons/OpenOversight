@@ -1,7 +1,7 @@
 # Routing and view tests
 import pytest
 from flask import url_for, current_app
-from .route_helpers import login_user, login_admin, login_ac
+from .route_helpers import login_user
 
 
 @pytest.mark.parametrize("route", [

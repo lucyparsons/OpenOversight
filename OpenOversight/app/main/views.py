@@ -459,7 +459,7 @@ def edit_department(department_id):
                         if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
-                        flash('You attempted to delete a rank {}, that is still in use.'.format(rank))
+                        flash('You attempted to delete a rank, {}, that is still in use'.format(rank))
                     return redirect(url_for('main.edit_department', department_id=department_id))
 
             for (new_rank, order) in new_ranks:
