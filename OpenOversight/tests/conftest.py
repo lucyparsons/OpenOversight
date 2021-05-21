@@ -19,6 +19,7 @@ from PIL import Image as Pimage
 from OpenOversight.app import create_app, models
 from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db, Unit, Job, Officer
+from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 factory = Faker()
 
@@ -340,9 +341,9 @@ def add_mockdata(session):
                             confirmed=True)
     session.add(test_user)
 
-    test_admin = models.User(email='test@example.org',
+    test_admin = models.User(email=ADMIN_EMAIL,
                              username='test_admin',
-                             password='testtest',
+                             password=ADMIN_PASSWORD,
                              confirmed=True,
                              is_administrator=True)
     session.add(test_admin)

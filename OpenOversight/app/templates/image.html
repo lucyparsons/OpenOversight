@@ -73,6 +73,7 @@
           <h3>Classify <small>Admin only</small></h3>
           <p>
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button type="submit" name="action" class="btn btn-primary">
                 No cops here
               </button>
@@ -80,6 +81,7 @@
           </p>
           <p>
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button type="submit" name="action" class="btn btn-primary">
                 Cops here
               </button>

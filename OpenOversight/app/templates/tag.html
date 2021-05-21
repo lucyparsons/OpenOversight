@@ -63,6 +63,7 @@
           <h3>Remove tag <small>Admin only</small></h3>
           <p>
             <form action="{{ url_for('main.delete_tag', tag_id=face.id) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button type="submit" name="action" class="btn btn-primary">
                 Delete tag
               </button>
@@ -80,6 +81,7 @@
           <h3>Set as featured tag <small>Admin only</small></h3>
           <p>
             <form action="{{ url_for('main.set_featured_tag', tag_id=face.id) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button type="submit" name="action" class="btn btn-primary" {% if face.featured %}disabled{% endif %}>
                 Set as featured tag
               </button>

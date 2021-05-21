@@ -38,6 +38,7 @@ $(document).bind('keydown', 's', function(){
         <div class="col-sm-4 text-center">
           <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
             <button type="submit" name="action" id="answer-no" class="btn btn-lg btn-danger">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
               <u>N</u>o
             </button>
@@ -49,6 +50,7 @@ $(document).bind('keydown', 's', function(){
         </div>
         <div class="col-sm-4 text-center">
           <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" name="action" id="answer-yes" class="btn btn-lg btn-success">
               <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
               <u>Y</u>es!

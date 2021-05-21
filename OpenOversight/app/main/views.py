@@ -10,7 +10,7 @@ import sys
 from traceback import format_exc
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Response, Markup)
+                   flash, current_app, jsonify, Response)
 from flask_login import current_user, login_required, login_user
 
 from . import main
@@ -331,23 +331,6 @@ def edit_salary(officer_id, salary_id):
     return render_template('add_edit_salary.html', form=form, update=True)
 
 
-@main.route('/user/toggle/<int:uid>', methods=['POST'])
-@login_required
-@admin_required
-def toggle_user(uid):
-    try:
-        user = User.query.filter_by(id=uid).one()
-        if user.is_disabled:
-            user.is_disabled = False
-        elif not user.is_disabled:
-            user.is_disabled = True
-        db.session.commit()
-        flash('Updated user status')
-    except NoResultFound:
-        flash('Unknown error occurred')
-    return redirect(url_for('main.profile', username=user.username))
-
-
 @main.route('/image/<int:image_id>')
 @login_required
 def display_submission(image_id):
@@ -376,6 +359,9 @@ def display_tag(tag_id):
 def classify_submission(image_id, contains_cops):
     try:
         image = Image.query.filter_by(id=image_id).one()
+        if image.contains_cops is not None and not current_user.is_administrator:
+            flash('Only administrator can re-classify image')
+            return redirect(redirect_url())
         image.user_id = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
@@ -473,9 +459,7 @@ def edit_department(department_id):
                         if Assignment.query.filter(Assignment.job_id.in_([rank.id])).count() != 0:
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
-                        formatted_rank = rank.job_title.replace(" ", "+")
-                        link = '/department/{}?name=&badge=&unique_internal_identifier=&rank={}&min_age=16&max_age=100&submit=Submit'.format(department_id, formatted_rank)
-                        flash(Markup('You attempted to delete a rank, {}, that is in use by <a href={}>the linked officers</a>.'.format(rank, link)))
+                        flash('You attempted to delete a rank, {}, that is still in use'.format(rank))
                     return redirect(url_for('main.edit_department', department_id=department_id))
 
             for (new_rank, order) in new_ranks:
@@ -782,6 +766,9 @@ def label_data(department_id=None, image_id=None):
             image = get_random_image(image_query)
 
     if image:
+        if image.is_tagged and not current_user.is_administrator:
+            flash('This image cannot be tagged anymore')
+            return redirect(url_for('main.label_data'))
         proper_path = serve_image(image.filepath)
     else:
         proper_path = None

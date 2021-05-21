@@ -1,7 +1,4 @@
-from future.utils import iteritems
-
 from flask import render_template, redirect, request, url_for, flash, current_app
-from flask.views import MethodView
 from flask_login import login_user, logout_user, login_required, \
     current_user
 from . import auth
@@ -101,7 +98,7 @@ def register():
     return render_template('auth/register.html', form=form, jsloads=jsloads)
 
 
-@auth.route('/confirm/<token>')
+@auth.route('/confirm/<token>', methods=['GET'])
 @login_required
 def confirm(token):
     if current_user.confirmed:
@@ -237,144 +234,76 @@ def change_dept():
     return render_template('auth/change_dept_pref.html', form=form)
 
 
-class UserAPI(MethodView):
-    decorators = [admin_required]
+@auth.route('/users/', methods=['GET'])
+@admin_required
+def get_users():
+    if request.args.get('page'):
+        page = int(request.args.get('page'))
+    else:
+        page = 1
+    USERS_PER_PAGE = int(current_app.config['USERS_PER_PAGE'])
+    users = User.query.order_by(User.username) \
+        .paginate(page, USERS_PER_PAGE, False)
 
-    def get(self, user_id):
-        # isolate the last part of the url
-        end_of_url = request.url.split('/')[-1].split('?')[0]
+    return render_template('auth/users.html', objects=users)
 
-        if user_id is None:
-            if request.args.get('page'):
-                page = int(request.args.get('page'))
+
+@auth.route('/users/<int:user_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return render_template('404.html'), 404
+
+    if request.method == 'GET':
+        form = EditUserForm(obj=user)
+        return render_template('auth/user.html', user=user, form=form)
+    elif request.method == 'POST':
+        form = EditUserForm()
+        if form.delete.data:
+            # forward to confirm delete
+            return redirect(url_for('auth.delete_user', user_id=user.id))
+        elif form.resend.data:
+            return admin_resend_confirmation(user)
+        elif form.submit.data:
+            if form.validate_on_submit():
+                # prevent user from removing own admin rights (or disabling account)
+                if user.id == current_user.id:
+                    flash('You cannot edit your own account!')
+                    form = EditUserForm(obj=user)
+                    return render_template('auth/user.html', user=user, form=form)
+                form.populate_obj(user)
+                db.session.add(user)
+                db.session.commit()
+                flash('{} has been updated!'.format(user.username))
+                return redirect(url_for('auth.edit_user', user_id=user.id))
             else:
-                page = 1
-            USERS_PER_PAGE = int(current_app.config['USERS_PER_PAGE'])
-            users = User.query.order_by(User.email) \
-                .paginate(page, USERS_PER_PAGE, False)
-
-            return render_template('auth/users.html', objects=users)
-        else:
-            user = User.query.get(user_id)
-            if not user:
-                return render_template('403.html'), 403
-
-            actions = ['delete', 'enable', 'disable', 'resend', 'approve']
-            if end_of_url in actions:
-                action = getattr(self, end_of_url, None)
-                return action(user)
-            else:
-                form = EditUserForm(
-                    email=user.email,
-                    is_area_coordinator=user.is_area_coordinator,
-                    ac_department=user.ac_department,
-                    is_administrator=user.is_administrator)
+                flash('Invalid entry')
                 return render_template('auth/user.html', user=user, form=form)
 
-    def post(self, user_id):
-        # isolate the last part of the url
-        end_of_url = request.url.split('/')[-1].split('?')[0]
 
-        user = User.query.get(user_id)
-        form = EditUserForm()
+@auth.route('/users/<int:user_id>/delete', methods=['GET', 'POST'])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user or user.is_administrator:
+        return render_template('403.html'), 403
+    if request.method == 'POST':
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        flash('User {} has been deleted!'.format(username))
+        return redirect(url_for('auth.get_users'))
 
-        if user and end_of_url and end_of_url == 'delete':
-            return self.delete(user)
-        elif user and form.validate_on_submit():
-            for field, data in iteritems(form.data):
-                setattr(user, field, data)
-
-            db.session.add(user)
-            db.session.commit()
-            flash('{} has been updated!'.format(user.username))
-            return redirect(url_for('auth.user_api'))
-        elif not form.validate_on_submit():
-            flash('Invalid entry')
-            return render_template('auth/user.html', user=user, form=form)
-        else:
-            return render_template('403.html'), 403
-
-    def delete(self, user):
-        if request.method == 'POST':
-            username = user.username
-            db.session.delete(user)
-            db.session.commit()
-            flash('User {} has been deleted!'.format(username))
-            return redirect(url_for('auth.user_api'))
-
-        return render_template('auth/user_delete.html', user=user)
-
-    def enable(self, user):
-        if not user.is_disabled:
-            flash('User {} is already enabled.'.format(user.username))
-        else:
-            user.is_disabled = False
-            db.session.add(user)
-            db.session.commit()
-            flash('User {} has been enabled!'.format(user.username))
-        return redirect(url_for('auth.user_api'))
-
-    def disable(self, user):
-        if user.is_disabled:
-            flash('User {} is already disabled.'.format(user.username))
-        else:
-            user.is_disabled = True
-            db.session.add(user)
-            db.session.commit()
-            flash('User {} has been disabled!'.format(user.username))
-        return redirect(url_for('auth.user_api'))
-
-    def resend(self, user):
-        if user.confirmed:
-            flash('User {} is already confirmed.'.format(user.username))
-        else:
-            token = user.generate_confirmation_token()
-            send_email(user.email, 'Confirm Your Account',
-                       'auth/email/confirm', user=user, token=token)
-            flash('A new confirmation email has been sent to {}.'.format(user.email))
-        return redirect(url_for('auth.user_api'))
-
-    def approve(self, user):
-        if user.approved:
-            flash('User {} is already approved.'.format(user.username))
-        else:
-            user.approved = True
-            db.session.add(user)
-            db.session.commit()
-            token = user.generate_confirmation_token()
-            send_email(user.email, 'Confirm Your Account',
-                       'auth/email/confirm', user=user, token=token)
-            flash('User {} has been approved!'.format(user.username))
-        return redirect(url_for('auth.user_api'))
+    return render_template('auth/user_delete.html', user=user)
 
 
-user_view = UserAPI.as_view('user_api')
-auth.add_url_rule(
-    '/users/',
-    defaults={'user_id': None},
-    view_func=user_view,
-    methods=['GET'])
-auth.add_url_rule(
-    '/users/<int:user_id>',
-    view_func=user_view,
-    methods=['GET', 'POST'])
-auth.add_url_rule(
-    '/users/<int:user_id>/delete',
-    view_func=user_view,
-    methods=['GET', 'POST'])
-auth.add_url_rule(
-    '/users/<int:user_id>/enable',
-    view_func=user_view,
-    methods=['GET'])
-auth.add_url_rule(
-    '/users/<int:user_id>/disable',
-    view_func=user_view,
-    methods=['GET'])
-auth.add_url_rule(
-    '/users/<int:user_id>/resend',
-    view_func=user_view,
-    methods=['GET'])
-auth.add_url_rule(
-    '/users/<int:user_id>/approve',
-    view_func=user_view,
-    methods=['GET'])
+def admin_resend_confirmation(user):
+    if user.confirmed:
+        flash('User {} is already confirmed.'.format(user.username))
+    else:
+        token = user.generate_confirmation_token()
+        send_email(user.email, 'Confirm Your Account',
+                   'auth/email/confirm', user=user, token=token)
+        flash('A new confirmation email has been sent to {}.'.format(user.email))
+    return redirect(url_for('auth.get_users'))

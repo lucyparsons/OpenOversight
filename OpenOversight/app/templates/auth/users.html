@@ -10,8 +10,8 @@
 <div class="container" role="main">
 	<div class="horizontal-padding">
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num),
+          next_url=url_for('auth.get_users', page=objects.next_num),
+          prev_url=url_for('auth.get_users',  page=objects.prev_num),
           location='top' %}
 	    {% include "partials/paginate_nav.html" %}
 	  {% endwith %}
@@ -29,20 +29,11 @@
 				{% for user in objects.items %}
 				<tr id="user-{{user.id}}">
 					<td>
-						<a href="{{user.id}}"><strong>{{ user.username }}</strong></a>
+						<a href="{{ url_for('auth.edit_user', user_id=user.id)}}"><strong>{{ user.username }}</strong></a>
 						<br />
 						<div class="row-actions">
-							<span class="edit"><a href="{{user.id}}">Edit</a> | </span>
-							<span class="delete"><a href="{{user.id}}/delete">Delete</a> | </span>
-							{% if user.is_disabled %}
-							<span class="enable"><a href="{{user.id}}/enable">Enable</a></span>
-							{% elif user.confirmed %}
-							<span class="disable"><a href="{{user.id}}/disable">Disable</a></span>
-							{% elif not user.approved %}
-							<span class="approve"><a href="{{user.id}}/approve">Approve</a></span>
-							{% else %}
-							<span class="resend"><a href="{{user.id}}/resend">Re-send confirmation email</a></span>
-							{% endif %}
+							<span class="edit"><a href="{{ url_for('auth.edit_user', user_id=user.id)}}">Edit user</a> | </span>
+							<span class="profile"><a href="{{ url_for('main.profile', username=user.username)}}">Profile</a></span>
 						</div>
 					</td>
 					<td><a href="mailto:{{user.email}}">{{ user.email }}</a></td>
@@ -80,8 +71,8 @@
 			</table>
 		</div>
 		{% with paginate=objects,
-          next_url=url_for('auth.user_api', page=objects.next_num),
-          prev_url=url_for('auth.user_api',  page=objects.prev_num),
+          next_url=url_for('auth.get_users', page=objects.next_num),
+          prev_url=url_for('auth.get_users',  page=objects.prev_num),
           location='bottom' %}
 	    {% include "partials/paginate_nav.html" %}
 	  {% endwith %}

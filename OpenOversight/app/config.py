@@ -78,5 +78,5 @@ config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
-    'default': DevelopmentConfig
 }
+config['default'] = config.get(os.environ.get('FLASK_ENV', ""), DevelopmentConfig)
