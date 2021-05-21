@@ -7,7 +7,7 @@ Email: {{ user.email }}
 
 To approve or delete this user, click on the following link:
 
-{{ url_for('auth.user_api', _external=True) }}
+{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}
 
 Sincerely,
 
