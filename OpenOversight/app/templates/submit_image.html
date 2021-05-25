@@ -47,6 +47,7 @@
    document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
    // Save the preferred department in dept_id
    var dept_id = document.getElementById("department").selectedIndex + 1;
+   var csrf_token = "{{ csrf_token() }}";
 
    // Store changes in drop down list in dept_id variable
    $(function() {
@@ -69,6 +70,9 @@
       parallelUploads: 50,
       acceptedFiles: "image/png, image/jpeg, image/gif, image/jpg, image/webp",
       maxFiles: 50,
+      headers: {
+        'X-CSRF-TOKEN': csrf_token
+      },
       init: function() {
          this.on("error", function(file, responseText) {
             file.previewTemplate.appendChild(document.createTextNode(responseText));

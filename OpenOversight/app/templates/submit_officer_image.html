@@ -29,6 +29,7 @@
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
   <script>
+    var csrf_token = "{{ csrf_token() }}";
     Dropzone.autoDiscover = false;
     let myDropzone = new Dropzone("#my-cop-dropzone", {
       url: "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
@@ -37,6 +38,9 @@
       parallelUploads: 50,
       acceptedFiles: "image/png, image/jpeg, image/gif, image/jpg",
       maxFiles: 50,
+      headers: {
+        'X-CSRF-TOKEN': csrf_token
+      },
       init: function() {
         this.on("error", function(file, responseText) {
           file.previewTemplate.appendChild(document.createTextNode(responseText));

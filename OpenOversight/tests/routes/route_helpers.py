@@ -3,6 +3,9 @@ from future.utils import iteritems
 from flask import url_for
 from OpenOversight.app.auth.forms import LoginForm
 
+ADMIN_EMAIL = "test@example.org"
+ADMIN_PASSWORD = "testtest"
+
 
 def login_user(client):
     form = LoginForm(email='jen@example.org',
@@ -17,8 +20,9 @@ def login_user(client):
 
 
 def login_admin(client):
-    form = LoginForm(email='test@example.org',
-                     password='testtest',
+
+    form = LoginForm(email=ADMIN_EMAIL,
+                     password=ADMIN_PASSWORD,
                      remember_me=True)
     rv = client.post(
         url_for('auth.login'),

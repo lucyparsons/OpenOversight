@@ -567,7 +567,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         )
 
         updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
-        assert 'You attempted to delete a rank, Commander, that is in use' in result.data.decode('utf-8')
+        assert 'You attempted to delete a rank, Commander, that is still in use' in result.data.decode('utf-8')
         assert len(updated_ranks) == len(original_ranks)
 
 
