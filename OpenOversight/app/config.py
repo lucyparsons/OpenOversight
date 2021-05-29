@@ -38,8 +38,12 @@ class BaseConfig(object):
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'jpe', 'png', 'gif', 'webp'])
 
-    # User settings
+    # User registration settings
+    DISABLE_REGISTRATION = os.environ.get('DISABLE_REGISTRATION', False)
     APPROVE_REGISTRATIONS = os.environ.get('APPROVE_REGISTRATIONS', False)
+    RECAPTCHA3_PUBLIC_KEY = os.environ.get('RECAPTCHA_V3_SITE_KEY')
+    RECAPTCHA3_PRIVATE_KEY = os.environ.get('RECAPTCHA_V3_SECRET_KEY')
+    RECAPTCHA3_THRESHOLD = float(os.environ.get('RECAPTCHA_V3_THRESHOLD', 0.5))
 
     SEED = 666
 

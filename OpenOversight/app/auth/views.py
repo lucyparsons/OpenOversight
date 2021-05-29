@@ -10,6 +10,7 @@ from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
     EditUserForm
 from .utils import admin_required
 from ..utils import set_dynamic_default
+from .recaptcha3 import is_recaptcha_enabled
 
 sitemap_endpoints = []
 
@@ -71,8 +72,12 @@ def logout():
 @sitemap_include
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_app.config['DISABLE_REGISTRATION']:
+        return render_template('auth/register.html', registration_enabled=False)
     jsloads = ['js/zxcvbn.js', 'js/password.js']
     form = RegistrationForm()
+    if is_recaptcha_enabled():
+        form.recaptcha.score_threshold = current_app.config['RECAPTCHA3_THRESHOLD']
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
@@ -95,7 +100,7 @@ def register():
         return redirect(url_for('auth.login'))
     else:
         current_app.logger.info(form.errors)
-    return render_template('auth/register.html', form=form, jsloads=jsloads)
+    return render_template('auth/register.html', form=form, jsloads=jsloads, registration_enabled=True)
 
 
 @auth.route('/confirm/<token>', methods=['GET'])
