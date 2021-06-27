@@ -113,6 +113,29 @@ The parts of the database URI are the user, password, server, and database respe
 The CSRF token should be a random string of reasonable length. 'terriblecsrftoken' is, of course, a terrible CSRF token.
 For more details about the S3 and AWS settings, see above. Please raise an issue on Github if you have any questions about the process.
 
+# Deployment Steps
+
+1. `dc build`
+1. `dc up -d`
+1. `dc run --rm web python ../create_db.py`
+1. `dc run --rm web flask make-admin-user`
+1. `dc run --rm web flask add-department "Seattle Police Department" "SPD"`
+1. `dc run --rm web flask bulk-add-officers /data/init_data.csv`
+1. `dc run --rm web npm run-script build`
+
+# Data ingestion
+
+Import from spd-lookup data:
+
+```python
+import pandas as pd
+df = pd.read_csv("SPD_Roster.csv")
+xdf = df.rename(columns={"title": "job_title", "badge": "star_no"})
+xdf = xdf[["star_no", "first_name", "last_name", "job_title"]]
+xdf["department_id"] = 1
+xdf.to_csv("./data/init_data.csv", index=False)
+```
+
 # Systemd
 
 You can write a simple systemd unit file to launch OpenOversight on boot. We defined ours in `/etc/systemd/system/openoversight.service`. You should create the proper usernames and groups that are defined in the unit file since this allows you to drop privileges on boot. This unit file was adopted from this [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-centos-7). More details can be found in [CONTRIB.md](/CONTRIB.md).

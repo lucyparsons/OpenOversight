@@ -25,12 +25,17 @@ from flask_login import current_user
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
 
+from .custom import add_jpeg_patch
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
 from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+
+# Call JPEG patch function
+add_jpeg_patch()
 
 
 def set_dynamic_default(form_field, value):
