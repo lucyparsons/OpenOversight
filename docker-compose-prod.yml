@@ -25,6 +25,7 @@ services:
    links:
      - postgres:postgres
    volumes:
+     - static_files:/usr/src/app/OpenOversight/app/static
      - ./data:/data/
    command: scripts/entrypoint.sh
    ports:
@@ -34,8 +35,9 @@ services:
      - default
 
 volumes:
+  static_files:
+    name: openoversight-static
   postgres:
-    driver: local
 
 networks:
   protonmail:
