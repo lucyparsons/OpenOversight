@@ -514,6 +514,8 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
+    if image_type not in current_app.config['ALLOWED_EXTENSIONS']:
+        raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
     date_taken = find_date_taken(pimage)
@@ -527,8 +529,6 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     existing_image = Image.query.filter_by(hash_img=hash_img).first()
     if existing_image:
         return existing_image
-    if image_type not in current_app.config['ALLOWED_EXTENSIONS']:
-        raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
