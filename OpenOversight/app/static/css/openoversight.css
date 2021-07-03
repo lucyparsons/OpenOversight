@@ -171,7 +171,7 @@ a > .tutorial{
 
  .hero-section {
      /*TODO: get background image- using color as standin for now*/
-     background-color: #d3d3d3;
+     background-color: #eee;
      text-align: center;
      padding: 150px;
  }
@@ -181,7 +181,7 @@ a > .tutorial{
 }
 
 .hero {
-    color:white;
+    color: #111;
     font-size:40px;
     text-shadow: 1px 1px 1px #999;
 }
@@ -323,10 +323,6 @@ a > .tutorial{
     text-transform: uppercase;
     color: #555555;
     font-size: smaller;
-}
-
-.text-gray-lighter {
-    color: #D3D3D3;
 }
 
 .bg-light-gray {
