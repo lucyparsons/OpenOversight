@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+ postgres:
+   restart: always
+   image: postgres:13
+   env_file:
+     - .env
+   environment:
+     POSTGRES_USER: openoversight
+     POSTGRES_DB: openoversight
+   volumes:
+     - postgres:/var/lib/postgresql/data
+
+ web:
+   restart: always
+   build:
+      context: .
+      dockerfile: ./dockerfiles/web/Dockerfile
+   env_file:
+     - .env
+   environment:
+     FLASK_APP: app
+     FLASK_ENV: "${FLASK_ENV:-development}"
+   links:
+     - postgres:postgres
+   volumes:
+     - ./data:/data/
+   command: scripts/entrypoint.sh
+   ports:
+     - "3005:3000"
+   networks:
+     - protonmail
+     - default
+
+volumes:
+  postgres:
+    driver: local
+
+networks:
+  protonmail:
+    external: True
+

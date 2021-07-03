@@ -1,6 +1,6 @@
 Flask==1.0.2
 python-dotenv==0.7.1
-boto3==1.5.10
+boto3==1.17.101
 werkzeug==1.0.1
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==1.0.1

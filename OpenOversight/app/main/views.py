@@ -541,7 +541,7 @@ def list_officer(department_id, page=1, race=[], gender=[], rank=[], min_age='16
         # could do some extra work to not lazy load images but load them all together
         # but we would want to ensure to only load the first picture of each officer
         if officer_face and officer_face[0].image:
-            officer.image = officer_face[0].image.filepath
+            officer.image = serve_image(officer_face[0].image.filepath)
 
     choices = {
         'race': RACE_CHOICES,

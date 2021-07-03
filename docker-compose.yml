@@ -12,6 +12,38 @@ services:
    volumes:
      - postgres:/var/lib/postgresql/data
 
+ minio:
+   image: minio/minio
+   volumes:
+     - minio:/data
+   ports:
+     - "9000:9000"
+   env_file:
+     - .env
+   environment:
+     MINIO_ROOT_USER: minio
+   command: server /data
+   healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+     interval: 30s
+     timeout: 20s
+     retries: 3
+
+ createbucket:
+   image: minio/mc
+   env_file:
+     - .env
+   depends_on:
+     - minio
+   # Add the desired bucket, and set its policy to public
+   entrypoint: >
+     /bin/sh -c "
+     /usr/bin/mc config host add myminio http://minio:9000 minio ${MINIO_ROOT_PASSWORD};
+     /usr/bin/mc mb myminio/${S3_BUCKET_NAME};
+     /usr/bin/mc policy set public myminio/${S3_BUCKET_NAME};
+     exit 0;
+     "
+
  web:
    restart: always
    build:
@@ -26,18 +58,11 @@ services:
      - postgres:postgres
    volumes:
      - ./data:/data/
+     - ./OpenOversight:/usr/src/app/OpenOversight
    command: scripts/entrypoint.sh
    ports:
-     - "3005:3000"
-   networks:
-     - protonmail
-     - default
+     - "3000:3000"
 
 volumes:
   postgres:
-    driver: local
-
-networks:
-  protonmail:
-    external: True
-
+  minio:
