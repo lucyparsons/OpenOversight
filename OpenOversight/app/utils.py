@@ -512,26 +512,31 @@ def crop_image(image, crop_data=None, department_id=None):
 
 
 def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
+    """
+    Just a quick explaination of the order of operations here...
+    we have to scrub the image before we do anything else like hash it
+    but we also have to get the date for the image before we scrub it.
+    """
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
-    image_data = image_buf.read()
     image_buf.seek(0)
+    pimage = Pimage.open(image_buf)
+    date_taken = find_date_taken(pimage)
+    if date_taken:
+        date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
+    scrubbed_image_buf = BytesIO()
+    scrub_exif(pimage).save(scrubbed_image_buf, image_type)
+    scrubbed_image_buf.seek(0)
+    image_data = scrubbed_image_buf.read()
     hash_img = compute_hash(image_data)
     existing_image = Image.query.filter_by(hash_img=hash_img).first()
     if existing_image:
         return existing_image
-    date_taken = None
-    if image_type in current_app.config['ALLOWED_EXTENSIONS']:
-        image_buf.seek(0)
-        pimage = Pimage.open(image_buf)
-        date_taken = find_date_taken(pimage)
-        if date_taken:
-            date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
-    else:
+    if image_type not in current_app.config['ALLOWED_EXTENSIONS']:
         raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
-        url = upload_obj_to_s3(image_buf, new_filename)
+        url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
                           department_id=department_id,
@@ -560,6 +565,14 @@ def find_date_taken(pimage):
             return pimage._getexif()[36867]
     else:
         return None
+
+
+# https://gist.github.com/ngtvspc/a686dda375df122ba1a5dd8e6654532b
+def scrub_exif(pimage):
+    image_data = list(pimage.getdata())
+    image_without_exif = Pimage.new(pimage.mode, pimage.size)
+    image_without_exif.putdata(image_data)
+    return image_without_exif
 
 
 def get_officer(department_id, star_no, first_name, last_name):
