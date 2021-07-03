@@ -37,6 +37,10 @@ populate: create_db  ## Build and run containers
 	## Populate database with test data
 	docker-compose run --rm web python ../test_data.py -p
 
+.PHONY: testlocal
+testlocal:
+	pytest
+
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
