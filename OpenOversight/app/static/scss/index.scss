@@ -18,3 +18,12 @@ $navbar-default-toggle-hover-bg: #D3D3D3;
 .navbar {
   margin-bottom: 0;
 }
+
+// Make it super obvious to use if we forget to set `rel` on external links
+a {
+  &[href*="//"]:not([rel*="noopener"]),
+  &[href*="//"]:not([rel*="noreferrer"]) {
+    outline: 6px solid red !important;
+    background-color: yellow !important;
+  }
+}

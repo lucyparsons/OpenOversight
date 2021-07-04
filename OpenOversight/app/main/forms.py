@@ -137,11 +137,11 @@ class SalaryForm(Form):
 
 class DepartmentForm(Form):
     name = StringField(
-        'Full name of law enforcement agency, e.g. Chicago Police Department',
+        'Full name of law enforcement agency, e.g. Seattle Police Department',
         default='', validators=[Regexp(r'\w*'), Length(max=255), DataRequired()]
     )
     short_name = StringField(
-        'Shortened acronym for law enforcement agency, e.g. CPD',
+        'Shortened acronym for law enforcement agency, e.g. SPD',
         default='', validators=[Regexp(r'\w*'), Length(max=100), DataRequired()]
     )
     jobs = FieldList(StringField('Job', default='', validators=[
