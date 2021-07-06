@@ -10,7 +10,7 @@ body {
 
 .footer {
   position: absolute;
-  bottom: 0;
+  bottom: 140px;
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 100px;
@@ -36,7 +36,7 @@ body {
 
 .frontpage-leads {
   margin-top: 5%;
-  margin-bottom: 10%;
+  margin-bottom: 5%;
 }
 
 .subtle-pad {
@@ -65,6 +65,10 @@ body {
      position: static;
      display: block;
      margin-bottom: 20px;
+ }
+
+ .theme-showcase {
+     margin-bottom: 40px;
  }
 
  .theme-showcase > p > .btn {
@@ -556,3 +560,6 @@ tr:hover .row-actions {
     display:block;
 }
 
+.setup-content {
+    margin-bottom: 20px;
+}
