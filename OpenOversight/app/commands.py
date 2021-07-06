@@ -12,7 +12,7 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from .models import db, Assignment, Department, Officer, User, Salary, Job
+from .models import Face, db, Assignment, Department, Officer, User, Salary, Job
 from .utils import get_officer, str_is_true, normalize_gender, prompt_yes_no
 
 from .csv_imports import import_csv_files
@@ -553,4 +553,16 @@ def add_job_title(department_id, job_title, is_sworn_officer, order):
     job = Job(job_title=job_title, is_sworn_officer=is_sworn, order=order, department=department)
     db.session.add(job)
     print('Added {} to {}'.format(job.job_title, department.name))
+    db.session.commit()
+
+
+@click.command()
+@with_appcontext
+def use_original_image_for_faces():
+    """
+    Migrate created Faces to use the original image ID instead of the cropped one
+    """
+    faces = Face.query.all()
+    for face in faces:
+        face.img_id = face.original_image_id
     db.session.commit()

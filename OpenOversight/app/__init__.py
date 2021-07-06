@@ -99,7 +99,8 @@ def create_app(config_name='default'):
     Migrate(app, db, os.path.join(os.path.dirname(__file__), '..', 'migrations'))  # Adds 'db' command
     from .commands import (make_admin_user, link_images_to_department,
                            link_officers_to_department, bulk_add_officers,
-                           add_department, add_job_title, advanced_csv_import)
+                           add_department, add_job_title, advanced_csv_import,
+                           use_original_image_for_faces)
     app.cli.add_command(make_admin_user)
     app.cli.add_command(link_images_to_department)
     app.cli.add_command(link_officers_to_department)
@@ -107,6 +108,7 @@ def create_app(config_name='default'):
     app.cli.add_command(add_department)
     app.cli.add_command(add_job_title)
     app.cli.add_command(advanced_csv_import)
+    app.cli.add_command(use_original_image_for_faces)
 
     return app
 
