@@ -526,8 +526,9 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     date_taken = find_date_taken(pimage)
     if date_taken:
         date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
+    pimage.getexif().clear()
     scrubbed_image_buf = BytesIO()
-    scrub_exif(pimage).save(scrubbed_image_buf, image_type)
+    pimage.save(scrubbed_image_buf, image_type)
     scrubbed_image_buf.seek(0)
     image_data = scrubbed_image_buf.read()
     hash_img = compute_hash(image_data)
@@ -559,20 +560,13 @@ def find_date_taken(pimage):
     if isinstance(pimage, PngImageFile):
         return None
 
-    if pimage._getexif():
+    exif = hasattr(pimage, '_getexif') and pimage._getexif()
+    if exif:
         # 36867 in the exif tags holds the date and the original image was taken https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
-        if 36867 in pimage._getexif():
-            return pimage._getexif()[36867]
+        if 36867 in exif:
+            return exif[36867]
     else:
         return None
-
-
-# https://gist.github.com/ngtvspc/a686dda375df122ba1a5dd8e6654532b
-def scrub_exif(pimage):
-    image_data = list(pimage.getdata())
-    image_without_exif = Pimage.new(pimage.mode, pimage.size)
-    image_without_exif.putdata(image_data)
-    return image_without_exif
 
 
 def get_officer(department_id, star_no, first_name, last_name):
