@@ -1,5 +1,4 @@
-{% if obj.links|length > 0 or current_user.is_administrator
-	or (current_user.is_area_coordinator and current_user.ac_department_id == obj.department_id) %}
+{% if obj.links|length > 0 or is_admin_or_coordinator %}
 <div class='row'>
 	<div class="col-sm-12 col-md-6">
 		<h3>Links</h3>
@@ -8,10 +7,8 @@
 			<ul class='list-group'>
 				{% for link in list %}
 					<li class='list-group-item'>
-						<a href="{{ link.url }}">{{ link.title or link.url }}</a>
-						{% if officer and (current_user.is_administrator
-						  or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
-							or link.creator_id == current_user.id) %}
+						<a href="{{ link.url }}" rel="noopener noreferrer" target="_blank">{{ link.title or link.url }}</a>
+						{% if officer and (is_admin_or_coordinator or link.creator_id == current_user.id) %}
 							<a href="{{ url_for('main.link_api_edit', officer_id=officer.id,
 											 obj_id=link.id) }}">
 							<span class='sr-only'>Edit</span>
