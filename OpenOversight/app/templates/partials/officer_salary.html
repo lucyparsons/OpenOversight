@@ -1,0 +1,54 @@
+<h3>Salary</h3>
+{% if officer.salaries %}
+<table class="table table-hover">
+    <tr>
+        <th><b>Annual Salary</b></th>
+        <th><b>Overtime</b></th>
+        <th><b>Total Pay</b></th>
+        <th><b>Year</b></th>
+        {% if is_admin_or_coordinator %}
+        <th><b>Edit</b></th>
+        {% endif %}
+    </tr>
+    <tbody>
+        {% for salary in officer.salaries %}
+            <tr>
+                <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+                {% if salary.overtime_pay %}
+                    {% if salary.overtime_pay > 0 %}
+                        <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
+                {% else %}
+                    <td></td>
+                    <td></td>
+                {% endif %}
+
+                <td>{% if salary.is_fiscal_year: %}FY {% endif %}{{ salary.year }}</td>
+
+                {% if is_admin_or_coordinator %}
+                    <td>
+                        <a
+                            href="{{ url_for('main.edit_salary', officer_id=officer.id,
+                            salary_id=salary.id) }}"
+                        >
+                            <span class="sr-only">Edit</span>
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                        </a>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if is_admin_or_coordinator %}
+    <a
+        href="{{ url_for('main.add_salary', officer_id=officer.id) }}"
+        class="btn btn-primary"
+        >New Salary</a
+    >
+{% endif %}
