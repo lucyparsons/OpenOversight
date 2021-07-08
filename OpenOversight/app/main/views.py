@@ -1094,11 +1094,9 @@ def upload(department_id, officer_id=None):
         if officer_id:
             image.is_tagged = True
             image.contains_cops = True
-            cropped_image = crop_image(image, department_id=department_id)
-            cropped_image.contains_cops = True
-            cropped_image.is_tagged = True
             face = Face(officer_id=officer_id,
-                        img_id=cropped_image.id,
+                        # Assuming photos uploaded with an officer ID are already cropped, so we set both images to the uploaded one
+                        img_id=image.id,
                         original_image_id=image.id,
                         user_id=current_user.get_id())
             db.session.add(face)

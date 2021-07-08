@@ -100,7 +100,7 @@
     {% endwith %}
     {% block content %}{% endblock %}
 
-    <footer class="footer container">
+    <footer class="footer container {% block footer_class %}{% endblock %}">
       <hr>
       <div class="row text-center horizontal-padding">
 
