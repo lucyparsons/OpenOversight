@@ -563,3 +563,7 @@ tr:hover .row-actions {
 .setup-content {
     margin-bottom: 20px;
 }
+
+.bottom-10 {
+    bottom: 10px;
+}

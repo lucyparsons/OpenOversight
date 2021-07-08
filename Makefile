@@ -86,4 +86,4 @@ help: ## Print this message and exit
 		| column -s ':' -t
 
 attach:
-	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
+	docker-compose exec postgres psql -h localhost -U openoversight openoversight
