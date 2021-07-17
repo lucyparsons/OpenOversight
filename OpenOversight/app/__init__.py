@@ -3,7 +3,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -109,6 +109,10 @@ def create_app(config_name='default'):
     app.cli.add_command(add_job_title)
     app.cli.add_command(advanced_csv_import)
     app.cli.add_command(use_original_image_for_faces)
+
+    @limiter.request_filter
+    def _endpoint_whitelist():
+        return request.endpoint == "static"
 
     return app
 
