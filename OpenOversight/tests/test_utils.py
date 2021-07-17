@@ -189,6 +189,8 @@ def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(mockdata, tes
 
 @patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
 def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(mockdata, test_png_BytesIO, client):
+    # Disable file closing for this test
+    test_png_BytesIO.close = lambda: None
     firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert type(secondUpload) == Image
