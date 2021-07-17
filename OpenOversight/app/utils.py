@@ -524,6 +524,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     pimage.getexif().clear()
     scrubbed_image_buf = BytesIO()
     pimage.save(scrubbed_image_buf, image_type)
+    pimage.close()
     scrubbed_image_buf.seek(0)
     image_data = scrubbed_image_buf.read()
     hash_img = compute_hash(image_data)
