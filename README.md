@@ -9,11 +9,17 @@ This repository represents the **Seattle fork** of the original project. For mor
 ## Development
 
 To run the project locally:
+1. [Install `just`](https://github.com/casey/just)
 1. Copy the sample data to the data folder mounted by the project `cp database/sample_init_data.csv data/init_data.csv`.
-1. Use the `fresh_start.sh` script to quickly build, start, and populate OpenOversight locally.
-1. Run `docker-compose up -d` and visit http://localhost:3000!
+1. Run `just fresh-start` to spin up the database and insert the initial data.
+1. Run `just up` and visit http://localhost:3000!
 
 
 ## Deployment
 
 Please see the [DEPLOY.md](/DEPLOY.md) file for deployment instructions.
+
+The same `just` commands can be used to deploy production.
+The `docker-compose-prod.yml` file defines the minimum services for running in production.
+In order to use this file, set the `IS_PROD` environment variable to `true`.
+This will run all commands using the prod docker file.

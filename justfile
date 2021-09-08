@@ -1,4 +1,6 @@
-DC := "docker-compose"
+IS_PROD := env_var_or_default("IS_PROD", "")
+COMPOSE_FILE := if IS_PROD == "true" {"-f docker-compose-prod.yml "} else {""}
+DC := "docker-compose " + COMPOSE_FILE
 RUN := DC + " run --rm web"
 set dotenv-load := false
 

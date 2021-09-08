@@ -56,7 +56,7 @@ def main(id_path: Path, link_path: Path, output: Path):
 @click.command()
 @click.argument("id_path", type=click.Path(exists=True, path_type=Path))
 @click.argument("link_path", type=click.Path(exists=True, path_type=Path))
-@click.argument("output", type=click.Path(exists=True, path_type=Path))
+@click.argument("output", type=click.Path(path_type=Path))
 def cli(id_path: Path, link_path: Path, output: Path):
     logging.basicConfig(
         format="[%(asctime)s - %(name)s - %(lineno)3d][%(levelname)s] %(message)s",
