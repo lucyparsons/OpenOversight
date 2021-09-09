@@ -6,6 +6,8 @@ services:
    image: postgres:13
    env_file:
      - .env
+   ports:
+     - "5434:5432"
    environment:
      POSTGRES_USER: openoversight
      POSTGRES_DB: openoversight
