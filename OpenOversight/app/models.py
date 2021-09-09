@@ -133,6 +133,8 @@ class Officer(BaseModel):
         return '{} {}'.format(self.first_name, self.last_name)
 
     def race_label(self):
+        if self.race is None:
+            return 'Data Missing'
         from .main.choices import RACE_CHOICES
         for race, label in RACE_CHOICES:
             if self.race == race:
