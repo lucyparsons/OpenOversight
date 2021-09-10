@@ -2,7 +2,7 @@ import re
 from datetime import date
 
 from flask_sqlalchemy import SQLAlchemy
-from flask_sqlalchemy.model import DefaultMeta
+# from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.orm import validates
 from sqlalchemy import UniqueConstraint, CheckConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,7 +15,7 @@ from . import login_manager
 
 db = SQLAlchemy()
 
-BaseModel = db.Model  # type: DefaultMeta
+BaseModel = db.Model  # This was here before but it's fucking with my IDE's typing - type: DefaultMeta (MJSB 2021-09-08)
 
 officer_links = db.Table('officer_links',
                          db.Column('officer_id', db.Integer, db.ForeignKey('officers.id'), primary_key=True),

@@ -123,12 +123,13 @@
     	</div>{# end col #}
     {% endif %}
 
-    {% if is_admin_or_coordinator %}
+    {% if officer.descriptions or is_admin_or_coordinator %}
       <div class='col-sm-12 col-md-6'>
         {% include "partials/officer_descriptions.html" %}
       </div>{# end col #}
     {% endif %}
 
+    {# Notes are for internal use #}
     {% if is_admin_or_coordinator %}
     <div class='col-sm-12 col-md-6'>
       {% include "partials/officer_notes.html" %}

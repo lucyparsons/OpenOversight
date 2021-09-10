@@ -1,6 +1,3 @@
-import csv
-from datetime import date
-import io
 import os
 import re
 from sqlalchemy.exc import IntegrityError
@@ -10,10 +7,10 @@ import sys
 from traceback import format_exc
 
 from flask import (abort, render_template, request, redirect, url_for,
-                   flash, current_app, jsonify, Response)
+                   flash, current_app, jsonify)
 from flask_login import current_user, login_required, login_user
 
-from . import main
+from . import main, downloads
 from .. import limiter, sitemap
 from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      allowed_file, add_new_assignment, edit_existing_assignment,
@@ -881,63 +878,9 @@ def submit_data():
         return render_template('submit_image.html', form=form, preferred_dept_id=preferred_dept_id)
 
 
-def check_input(str_input):
-    if str_input is None or str_input == "Not Sure":
-        return ""
-    else:
-        return str(str_input).replace(",", " ")  # no commas allowed
-
-
-@main.route('/download/department/<int:department_id>', methods=['GET'])
-@limiter.limit('5/minute')
-def deprecated_download_dept_csv(department_id):
-    department = Department.query.filter_by(id=department_id).first()
-    records = Officer.query.filter_by(department_id=department_id).all()
-    if not department or not records:
-        abort(404)
-    dept_name = records[0].department.name.replace(" ", "_")
-    first_row = "id, last, first, middle, suffix, gender, "\
-                "race, born, employment_date, assignments\n"
-
-    assign_dict = {}
-    assign_records = Assignment.query.all()
-    for r in assign_records:
-        if r.officer_id not in assign_dict:
-            assign_dict[r.officer_id] = []
-        assign_dict[r.officer_id].append("(#%s %s %s %s %s)" % (check_input(r.star_no), check_input(r.job_id), check_input(r.unit_id), check_input(r.star_date), check_input(r.resign_date)))
-
-    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
-                   (str(record.id),
-                    check_input(record.last_name),
-                    check_input(record.first_name),
-                    check_input(record.middle_initial),
-                    check_input(record.suffix),
-                    check_input(record.gender),
-                    check_input(record.race),
-                    check_input(record.birth_year),
-                    check_input(record.employment_date),
-                    " ".join(assign_dict.get(record.id, [])),
-                    ) for record in records]
-
-    csv_name = dept_name + "_Officers.csv"
-    csv = first_row + "".join(record_list)
-    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
-    return Response(csv, mimetype="text/csv", headers=csv_headers)
-
-
-def check_output(output_str):
-    if output_str == "Not Sure":
-        return ""
-    return output_str
-
-
 @main.route('/download/department/<int:department_id>/officers', methods=['GET'])
 @limiter.limit('5/minute')
 def download_dept_officers_csv(department_id):
-    department = Department.query.filter_by(id=department_id).first()
-    if not department:
-        abort(404)
-
     officers = (db.session.query(Officer)
                 .options(joinedload(Officer.assignments_lazy)
                          .joinedload(Assignment.job)
@@ -946,56 +889,14 @@ def download_dept_officers_csv(department_id):
                 .filter_by(department_id=department_id)
                 )
 
-    if not officers:
-        abort(404)
-    csv_output = io.StringIO()
-    csv_fieldnames = ["id", "unique identifier", "last name", "first name", "middle initial", "suffix", "gender",
-                      "race", "birth year", "employment date", "badge number", "job title", "most recent salary"]
-    csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
-    csv_writer.writeheader()
-
-    for officer in officers:
-        if officer.assignments_lazy:
-            most_recent_assignment = max(officer.assignments_lazy, key=lambda a: a.star_date or date.min)
-            most_recent_title = most_recent_assignment.job and check_output(most_recent_assignment.job.job_title)
-        else:
-            most_recent_assignment = None
-            most_recent_title = None
-        if officer.salaries:
-            most_recent_salary = max(officer.salaries, key=lambda s: s.year)
-        else:
-            most_recent_salary = None
-        record = {
-            "id": officer.id,
-            "unique identifier": officer.unique_internal_identifier,
-            "last name": officer.last_name,
-            "first name": officer.first_name,
-            "middle initial": officer.middle_initial,
-            "suffix": officer.suffix,
-            "gender": check_output(officer.gender),
-            "race": check_output(officer.race),
-            "birth year": officer.birth_year,
-            "employment date": officer.employment_date,
-            "badge number": most_recent_assignment and most_recent_assignment.star_no,
-            "job title": most_recent_title,
-            "most recent salary": most_recent_salary and most_recent_salary.salary,
-        }
-        csv_writer.writerow(record)
-
-    dept_name = department.name.replace(" ", "_")
-    csv_name = dept_name + "_Officers.csv"
-
-    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
-    return Response(csv_output.getvalue(), mimetype="text/csv", headers=csv_headers)
+    field_names = ["id", "unique identifier", "last name", "first name", "middle initial", "suffix", "gender",
+                   "race", "birth year", "employment date", "badge number", "job title", "most recent salary"]
+    return downloads.make_downloadable_csv(officers, department_id, "Officers", field_names, downloads.officer_record_maker)
 
 
 @main.route('/download/department/<int:department_id>/assignments', methods=['GET'])
 @limiter.limit('5/minute')
 def download_dept_assignments_csv(department_id):
-    department = Department.query.filter_by(id=department_id).first()
-    if not department:
-        abort(404)
-
     assignments = (db.session.query(Assignment)
                    .join(Assignment.baseofficer)
                    .filter(Officer.department_id == department_id)
@@ -1004,58 +905,55 @@ def download_dept_assignments_csv(department_id):
                    .options(joinedload(Assignment.job))
                    )
 
-    csv_output = io.StringIO()
-    csv_fieldnames = ["id", "officer id", "officer unique identifier", "badge number", "job title", "start date", "end date", "unit id"]
-    csv_writer = csv.DictWriter(csv_output, fieldnames=csv_fieldnames)
-    csv_writer.writeheader()
-
-    for assignment in assignments:
-        officer = assignment.baseofficer
-        record = {
-            "id": assignment.id,
-            "officer id": assignment.officer_id,
-            "officer unique identifier": officer and officer.unique_internal_identifier,
-            "badge number": assignment.star_no,
-            "job title": assignment.job and check_output(assignment.job.job_title),
-            "start date": assignment.star_date,
-            "end date": assignment.resign_date,
-            "unit id": assignment.unit and assignment.unit.id,
-        }
-        csv_writer.writerow(record)
-
-    dept_name = department.name.replace(" ", "_")
-    csv_name = dept_name + "_Assignments.csv"
-
-    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
-    return Response(csv_output.getvalue(), mimetype="text/csv", headers=csv_headers)
+    field_names = ["id", "officer id", "officer unique identifier", "badge number", "job title", "start date", "end date", "unit id", "unit description"]
+    return downloads.make_downloadable_csv(assignments, department_id, "Assignments", field_names, downloads.assignment_record_maker)
 
 
 @main.route('/download/department/<int:department_id>/incidents', methods=['GET'])
 @limiter.limit('5/minute')
 def download_incidents_csv(department_id):
-    department = Department.query.filter_by(id=department_id).first()
-    records = Incident.query.filter_by(department_id=department.id).all()
-    if not department or not records:
-        abort(404)
-    dept_name = records[0].department.name.replace(" ", "_")
-    first_row = "id,report_num,date,time,description,location,licences,links,officers\n"
+    incidents = Incident.query.filter_by(department_id=department_id).all()
+    field_names = ["id", "report_num", "date", "time", "description", "location", "licences", "links", "officers"]
+    return downloads.make_downloadable_csv(incidents, department_id, "Incidents", field_names, downloads.incidents_record_maker)
 
-    record_list = ["%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %
-                   (str(record.id),
-                    check_input(record.report_number),
-                    check_input(record.date),
-                    check_input(record.time),
-                    check_input(record.description),
-                    check_input(record.address),
-                    " ".join(map(lambda x: str(x), record.license_plates)),
-                    " ".join(map(lambda x: str(x), record.links)),
-                    " ".join(map(lambda x: str(x), record.officers)),
-                    ) for record in records]
 
-    csv_name = dept_name + "_Incidents.csv"
-    csv = first_row + "".join(record_list)
-    csv_headers = {"Content-disposition": "attachment; filename=" + csv_name}
-    return Response(csv, mimetype="text/csv", headers=csv_headers)
+@main.route('/download/department/<int:department_id>/salaries', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_salaries_csv(department_id):
+    salaries = (db.session.query(Salary)
+                .join(Salary.officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Salary.officer))
+                )
+
+    field_names = ["id", "officer id", "first name", "last name", "salary", "overtime_pay", "year", "is_fiscal_year"]
+    return downloads.make_downloadable_csv(salaries, department_id, "Salaries", field_names, downloads.salary_record_maker)
+
+
+@main.route('/download/department/<int:department_id>/links', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_links_csv(department_id):
+    links = (db.session.query(Link)
+             .join(Link.officers)
+             .filter(Officer.department_id == department_id)
+             .options(contains_eager(Link.officers))
+             )
+
+    field_names = ["id", "title", "url", "link_type", "description", "author", "officers", "incidents"]
+    return downloads.make_downloadable_csv(links, department_id, "Links", field_names, downloads.links_record_maker)
+
+
+@main.route('/download/department/<int:department_id>/descriptions', methods=['GET'])
+@limiter.limit('5/minute')
+def download_dept_descriptions_csv(department_id):
+    notes = (db.session.query(Description)
+             .join(Description.officer)
+             .filter(Officer.department_id == department_id)
+             .options(contains_eager(Description.officer))
+             )
+
+    field_names = ["id", "text_contents", "creator_id", "officer_id", "date_created", "date_updated"]
+    return downloads.make_downloadable_csv(notes, department_id, "Notes", field_names, downloads.descriptions_record_maker)
 
 
 @sitemap_include
