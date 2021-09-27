@@ -11,7 +11,7 @@ ENV DISPLAY=:1
 
 # install apt dependencies
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev nodejs && \
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
     apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
 
 # install node
@@ -20,6 +20,7 @@ RUN curl ${CURL_FLAGS} \
       https://raw.githubusercontent.com/nodesource/distributions/b8510857fb4ce4b023161be8490b00119884974c/deb/setup_12.x
 RUN echo "${NODE_SETUP_SHA}  setup_12.x" | sha256sum --check -
 RUN bash setup_12.x
+RUN apt-get install -y nodejs
 
 # install geckodriver
 ENV GECKODRIVER_VERSION="v0.26.0"
