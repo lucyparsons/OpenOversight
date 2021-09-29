@@ -25,7 +25,7 @@ services:
    links:
      - postgres:postgres
    volumes:
-     - static_files:/usr/src/app/OpenOversight/app/static
+     - static_files:/usr/src/app/OpenOversight/static
      - ./data:/data/
    command: scripts/entrypoint.sh
    ports:
