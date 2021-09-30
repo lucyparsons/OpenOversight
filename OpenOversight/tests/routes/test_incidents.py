@@ -609,3 +609,49 @@ def test_incident_markdown(mockdata, client, session):
         html = rv.data.decode()
         assert "<h3>A thing happened</h3>" in html
         assert "<p><strong>Markup</strong> description</p>" in html
+
+
+def test_admins_cannot_insert_unsafe_html(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        inc = Incident.query.options(
+            joinedload(Incident.links),
+            joinedload(Incident.license_plates),
+            joinedload(Incident.officers)).first()
+
+        address_form = LocationForm(
+            street_name=inc.address.street_name,
+            cross_street1=inc.address.cross_street1,
+            cross_street2=inc.address.cross_street2,
+            city=inc.address.city,
+            state=inc.address.state,
+            zip_code=inc.address.zip_code
+        )
+        links_forms = [LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links]
+        license_plates_forms = [LicensePlateForm(number=lp.number, state=lp.state).data for lp in inc.license_plates]
+
+        old_officer_ids = [officer.id for officer in inc.officers]
+        ooid_forms = [OOIdForm(oo_id=the_id) for the_id in old_officer_ids]
+
+        form = IncidentForm(
+            date_field=str(inc.date),
+            time_field=str(inc.time),
+            report_number=inc.report_number,
+            description="<script>alert();</script>",
+            department='1',
+            address=address_form.data,
+            links=links_forms,
+            license_plates=license_plates_forms,
+            officers=ooid_forms
+        )
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for('main.incident_api', obj_id=inc.id) + '/edit',
+            data=data,
+            follow_redirects=True
+        )
+        assert rv.status_code == 200
+        assert 'successfully updated' in rv.data.decode('utf-8')
+        assert "<script>" not in rv.data.decode()
+        assert "&lt;script&gt;" in rv.data.decode()
