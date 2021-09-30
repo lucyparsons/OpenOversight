@@ -403,7 +403,7 @@ def add_mockdata(session):
             date=datetime.date(2016, 3, 16),
             time=datetime.time(4, 20),
             report_number='42',
-            description='A thing happened',
+            description='### A thing happened\n **Markup** description',
             department_id=1,
             address=test_addresses[0],
             license_plates=test_license_plates,

@@ -601,3 +601,11 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
         officer_id = '1234'
         rv = client.get(url_for('main.incident_api') + 'new?officer_id={}'.format(officer_id))
         assert officer_id in rv.data.decode('utf-8')
+
+
+def test_incident_markdown(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = client.get(url_for('main.incident_api'))
+        html = rv.data.decode()
+        assert "<h3>A thing happened</h3>" in html
+        assert "<p><strong>Markup</strong> description</p>" in html
