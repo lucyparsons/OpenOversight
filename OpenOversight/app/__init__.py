@@ -3,6 +3,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 
+import bleach
+from bleach_allowlist import markdown_tags, markdown_attrs
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
@@ -12,6 +14,8 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
+import markdown as _markdown
+from markupsafe import Markup
 
 from .config import config
 
@@ -94,6 +98,11 @@ def create_app(config_name='default'):
     def get_age_from_birth_year(birth_year):
         if birth_year:
             return int(datetime.datetime.now().year - birth_year)
+
+    @app.template_filter('markdown')
+    def markdown(text):
+        html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
+        return Markup(html)
 
     # Add commands
     Migrate(app, db, os.path.join(os.path.dirname(__file__), '..', 'migrations'))  # Adds 'db' command

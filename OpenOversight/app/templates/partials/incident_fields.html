@@ -42,7 +42,7 @@
 			<tr>
 				<td><strong>Description</strong></td>
 				<td class="incident-description" id="incident-description_{{incident.id}}" data-incident='{{incident.id | tojson}}'>
-					{{ incident.description }}
+					{{ incident.description | markdown}}
 				</td>
 			</tr>
 			<tr id="description-overflow-row_{{ incident.id }}" >
