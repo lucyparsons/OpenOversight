@@ -46,7 +46,7 @@
 				{% endwith %}
 			</div>
 			<div class="col-sm-12 col-md-6">
-				<p>{{ incident.description | markdown}}</p>
+				{{ incident.description | markdown}}
 			</div>
 		</div>
 		{% include 'partials/links_and_videos_row.html' %}

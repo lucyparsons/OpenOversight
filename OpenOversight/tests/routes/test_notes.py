@@ -31,6 +31,40 @@ def test_route_admin_or_required(route, client, mockdata):
         assert rv.status_code == 403
 
 
+def test_officer_notes_markdown(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)  # need to be admin or AC to see notes
+        rv = client.get(url_for('main.officer_profile', officer_id=1))
+        assert rv.status_code == 200
+        html = rv.data.decode()
+        assert "<h3>A markdown note</h3>" in html
+        assert "<p>A <strong>test</strong> note!</p>" in html
+
+
+def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.first()
+        text_contents = 'New note\n<script>alert();</script>'
+        admin = User.query.filter_by(email='jen@example.org').first()
+        form = TextForm(
+            text_contents=text_contents,
+            officer_id=officer.id,
+            creator_id=admin.id
+        )
+
+        rv = client.post(
+            url_for('main.note_api', officer_id=officer.id),
+            data=form.data,
+            follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert 'created' in rv.data.decode('utf-8')
+        assert "<script>" not in rv.data.decode()
+        assert "&lt;script&gt;" in rv.data.decode()
+
+
 def test_admins_can_create_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)

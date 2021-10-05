@@ -611,7 +611,7 @@ def test_incident_markdown(mockdata, client, session):
         assert "<p><strong>Markup</strong> description</p>" in html
 
 
-def test_admins_cannot_insert_unsafe_html(mockdata, client, session):
+def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.options(

@@ -394,7 +394,7 @@
           {% for description in officer.descriptions %}
           <li class="list-group-item">
                 <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br/>
-                {{ description.text_contents }} <br/>
+                {{ description.text_contents | markdown }} 
                 <em>{{ description.creator.username }} </em>
              {% if description.creator_id == current_user.get_id() or current_user.is_administrator %}
                 <a href="{{ url_for('main.description_api', officer_id=officer.id,
@@ -426,7 +426,7 @@
         {% for note in officer.notes %}
           <li class="list-group-item">
               <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em> <br/>
-              {{ note.text_contents }} <br/>
+              {{ note.text_contents | markdown }}
               <em>{{ note.creator.username }} </em>
             {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
               <a href="{{ url_for('main.note_api', officer_id=officer.id,

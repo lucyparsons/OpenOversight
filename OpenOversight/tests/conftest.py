@@ -121,20 +121,24 @@ def build_assignment(officer: Officer, units: List[Unit], jobs: Job):
                              resign_date=pick_date(officer.full_name().encode('utf-8')))
 
 
-def build_note(officer, user):
+def build_note(officer, user, content=None):
     date = factory.date_time_this_year()
+    if content is None:
+        content = factory.text()
     return models.Note(
-        text_contents=factory.text(),
+        text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
         date_created=date,
         date_updated=date)
 
 
-def build_description(officer, user):
+def build_description(officer, user, content=None):
     date = factory.date_time_this_year()
+    if content is None:
+        content = factory.text()
     return models.Description(
-        text_contents=factory.text(),
+        text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
         date_created=date,
@@ -445,7 +449,7 @@ def add_mockdata(session):
 
     # for testing routes
     first_officer = models.Officer.query.get(1)
-    note = build_note(first_officer, test_admin)
+    note = build_note(first_officer, test_admin, "### A markdown note\nA **test** note!")
     session.add(note)
     for officer in models.Officer.query.limit(20):
         user = random.choice(users_that_can_create_notes)
@@ -458,7 +462,7 @@ def add_mockdata(session):
 
     # for testing routes
     first_officer = models.Officer.query.get(1)
-    description = build_description(first_officer, test_admin)
+    description = build_description(first_officer, test_admin, "### A markdown description\nA **test** description!")
     session.add(description)
     for officer in models.Officer.query.limit(20):
         user = random.choice(users_that_can_create_descriptions)
