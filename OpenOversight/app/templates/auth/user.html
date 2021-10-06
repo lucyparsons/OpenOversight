@@ -13,7 +13,7 @@
 	</div>
 	<div class="col-md-6 col-xs-12">
 	    <form class="form" method="post" role="form">
-				{{ wtf.quick_form(form, button_map={'submit':'primary'}) }}
+				{{ wtf.quick_form(form, button_map={"submit":"primary", "delete": "danger"}) }}
 	    </form>
 	    <br>
 	</div>

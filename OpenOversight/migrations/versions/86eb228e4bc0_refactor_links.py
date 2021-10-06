@@ -1,7 +1,7 @@
 """Refactor links
 
 Revision ID: 86eb228e4bc0
-Revises: 562bd5f1bc1f
+Revises: 79a14685454f
 Create Date: 2019-03-15 22:40:10.473917
 
 """

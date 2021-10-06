@@ -567,7 +567,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         )
 
         updated_ranks = Department.query.filter_by(name='Springfield Police Department').one().jobs
-        assert 'You attempted to delete a rank, Commander, that is in use' in result.data.decode('utf-8')
+        assert 'You attempted to delete a rank, Commander, that is still in use' in result.data.decode('utf-8')
         assert len(updated_ranks) == len(original_ranks)
 
 
@@ -871,7 +871,11 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
             last_name=last_name).one()
         assert officer.first_name == first_name
         assert officer.race == race
-        assert officer.gender == gender
+        if gender == "Not Sure":
+            assert officer.gender is None, "A form input of 'Not Sure' should lead to" \
+                " the officer's gender being saved as NULL/None."
+        else:
+            assert officer.gender == gender
 
 
 def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, session):
@@ -912,7 +916,11 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
             last_name=last_name).one()
         assert officer.first_name == first_name
         assert officer.race == race
-        assert officer.gender == gender
+        if gender == "Not Sure":
+            assert officer.gender is None, "A form input of 'Not Sure' should lead to" \
+                " the officer's gender being saved as NULL/None."
+        else:
+            assert officer.gender == gender
         assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
 
 
@@ -1519,7 +1527,7 @@ def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, tes
 
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[3]
-        officer_face_count = officer.face.count()
+        officer_face_count = len(officer.face)
 
         crop_mock = MagicMock(return_value=Image.query.first())
         upload_mock = MagicMock(return_value=Image.query.first())
@@ -1533,7 +1541,7 @@ def test_admin_can_upload_photos_of_dept_officers(mockdata, client, session, tes
                 assert rv.status_code == 200
                 assert b'Success' in rv.data
                 # check that Face was added to database
-                assert officer.face.count() == officer_face_count + 1
+                assert len(officer.face) == officer_face_count + 1
 
 
 def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_BytesIO):
@@ -1545,7 +1553,7 @@ def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_
         department = Department.query.filter_by(id=AC_DEPT).first()
         mock = MagicMock(return_value=None)
         officer = department.officers[0]
-        officer_face_count = officer.face.count()
+        officer_face_count = len(officer.face)
         with patch('OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db', mock):
             rv = client.post(
                 url_for('main.upload', department_id=department.id, officer_id=officer.id),
@@ -1555,7 +1563,7 @@ def test_upload_photo_sends_500_on_s3_error(mockdata, client, session, test_png_
             assert rv.status_code == 500
             assert b'error' in rv.data
             # check that Face was not added to database
-            assert officer.face.count() == officer_face_count
+            assert len(officer.face) == officer_face_count
 
 
 def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
@@ -1596,7 +1604,7 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_p
         data = dict(file=(test_png_BytesIO, '204Cat.png'),)
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]
-        officer_face_count = officer.face.count()
+        officer_face_count = len(officer.face)
 
         crop_mock = MagicMock(return_value=Image.query.first())
         upload_mock = MagicMock(return_value=Image.query.first())
@@ -1610,7 +1618,7 @@ def test_ac_can_upload_photos_of_dept_officers(mockdata, client, session, test_p
                 assert rv.status_code == 200
                 assert b'Success' in rv.data
                 # check that Face was added to database
-                assert officer.face.count() == officer_face_count + 1
+                assert len(officer.face) == officer_face_count + 1
 
 
 def test_edit_officers_with_blank_uids(mockdata, client, session):
