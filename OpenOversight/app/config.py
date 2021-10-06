@@ -79,4 +79,4 @@ config = {
     'testing': TestingConfig,
     'production': ProductionConfig,
 }
-config['default'] = config.get(os.environ.get('FLASK_ENV'), DevelopmentConfig)
+config['default'] = config.get(os.environ.get('FLASK_ENV', ""), DevelopmentConfig)
