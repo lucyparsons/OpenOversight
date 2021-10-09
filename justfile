@@ -14,6 +14,9 @@ up service="":
 down:
 	{{ DC }} down
 
+logs service="":
+	{{ DC }} logs -f {{ service }}
+
 fresh-start:
 	# Tear down existing containers, remove volume
 	{{ DC }} down

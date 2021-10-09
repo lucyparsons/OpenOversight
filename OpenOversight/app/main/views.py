@@ -965,7 +965,6 @@ def all_data():
 
 @main.route('/submit_officer_images/officer/<int:officer_id>', methods=['GET', 'POST'])
 @login_required
-@ac_or_admin_required
 def submit_officer_images(officer_id):
     officer = Officer.query.get_or_404(officer_id)
     return render_template('submit_officer_image.html', officer=officer)
@@ -979,8 +978,9 @@ def upload(department_id, officer_id=None):
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
             return jsonify(error='This officer does not exist.'), 404
-        if not (current_user.is_administrator or
-                (current_user.is_area_coordinator and officer.department_id == current_user.ac_department_id)):
+        if current_user.is_anonymous or (
+            not current_user.is_administrator and current_user.ac_department_id != officer.department_id
+        ):
             return jsonify(error='You are not authorized to upload photos of this officer.'), 403
     file_to_upload = request.files['file']
     if not allowed_file(file_to_upload.filename):
