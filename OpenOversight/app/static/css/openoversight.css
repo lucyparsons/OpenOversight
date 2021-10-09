@@ -567,3 +567,8 @@ tr:hover .row-actions {
 .bottom-10 {
     bottom: 10px;
 }
+
+.officer-face {
+    min-width: 200px;
+    min-height: 200px;
+}
