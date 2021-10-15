@@ -1,0 +1,19 @@
+name: Lint and Test
+
+on: pull_request
+
+jobs:
+
+  static-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: extractions/setup-just@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install Dependencies
+        run: pip install pre-commit
+      - name: Run static checks
+        run: just lint

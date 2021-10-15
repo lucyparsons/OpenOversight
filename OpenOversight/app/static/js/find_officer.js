@@ -18,7 +18,7 @@ $(document).ready(function() {
             $target.show();
         }
     });
-    
+
     let $deptSelectionId = $('#dept').val()
 
     $('ul.setup-panel li.active a').trigger('click');
@@ -55,11 +55,11 @@ $(document).ready(function() {
         if (targetDeptUii) {
             $('#current-uii').text(targetDeptUii);
         } else {
-            $('#uii-question').hide();    
+            $('#uii-question').hide();
         }
         $(this).remove();
     })
-    
+
     $('#activate-step-3').on('click', function(e) {
         $('ul.setup-panel li:eq(2)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-3"]').trigger('click');

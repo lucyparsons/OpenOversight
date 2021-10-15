@@ -27,7 +27,7 @@ def test_jpeg3(h, f):
 
 
 def add_jpeg_patch():
-    """Custom JPEG identification patch.
+    """Add a custom JPEG identification patch.
 
     It turns out that imghdr sucks at identifying jpegs and needs a custom patch to
     behave correctly. This function adds that.

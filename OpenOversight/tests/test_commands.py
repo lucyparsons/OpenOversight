@@ -5,16 +5,16 @@ import os
 import traceback
 import uuid
 
+import pandas as pd
+import pytest
 from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-import pandas as pd
-import pytest
 from OpenOversight.app.commands import (
     add_department,
     add_job_title,
-    bulk_add_officers,
     advanced_csv_import,
+    bulk_add_officers,
     create_officer_from_row,
 )
 from OpenOversight.app.models import (
@@ -780,7 +780,11 @@ def test_advanced_csv_import__success(session, department_with_ranks, test_csv_d
     session.add(assignment)
 
     salary = Salary(
-        id=33001, salary=30000, officer_id=officer.id, year=2018, is_fiscal_year=False,
+        id=33001,
+        salary=30000,
+        officer_id=officer.id,
+        year=2018,
+        is_fiscal_year=False,
     )
     session.add(salary)
 
@@ -1132,7 +1136,8 @@ def test_advanced_csv_import__wrong_department(
 
     # run command with wrong department name
     result = run_command_print_output(
-        advanced_csv_import, [other_department.name, "--officers-csv", officers_csv],
+        advanced_csv_import,
+        [other_department.name, "--officers-csv", officers_csv],
     )
 
     # expect command to fail because the department name provided to the
@@ -1220,7 +1225,8 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
         session.add(department)
         session.commit()
         lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow").one_or_none()
+            first_name="NewOfficerFromRow"
+        ).one_or_none()
         assert lookup_officer is None
 
         row = {
@@ -1233,7 +1239,8 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
         create_officer_from_row(row, department.id)
 
         lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow").one_or_none()
+            first_name="NewOfficerFromRow"
+        ).one_or_none()
 
         # Was an officer created in the database?
         assert lookup_officer is not None

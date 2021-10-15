@@ -50,13 +50,13 @@ def main(id_path: Path, data: Path, output: Path):
     merged = merged[~merged.officer_id.isna()]
     # Convert the salary from "$###,###.##" to a float
     merged.loc[:, "salary"] = (
-        merged["salary"].replace("[\$,]", "", regex=True).astype(float)
+        merged["salary"].replace(r"[\$,]", "", regex=True).astype(float)
     )
     # Do the same for overtime pay, but overtime pay may also be null
     # so we have to do some special replacements so the float conversion works
     merged.loc[:, "overtime_pay"] = (
         merged["overtime_pay"]
-        .replace("[\$, ]", "", regex=True)
+        .replace(r"[\$, ]", "", regex=True)
         .replace("", np.nan)
         .astype(float)
     )

@@ -79,7 +79,7 @@ def make_assignments(df: pd.DataFrame, end_dates: pd.Series) -> pd.DataFrame:
         last,
     ]
     # Some middle names are actually team names (in very old rosters), remove these
-    df.loc[:, "middle_name"] = df["middle_name"].replace("^\(.*\)$", "", regex=True)
+    df.loc[:, "middle_name"] = df["middle_name"].replace(r"^\(.*\)$", "", regex=True)
     # Rename columns
     df = df.rename({"date": "start_date"}, axis="columns")
     # Assume the date listed as the "start date", shift all values up one for end date.

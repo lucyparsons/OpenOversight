@@ -1,20 +1,21 @@
 import csv
 import io
 from datetime import date
-from typing import List, TypeVar, Callable, Dict, Any
+from typing import Any, Callable, Dict, List, TypeVar
 
 from flask import Response, abort
 from sqlalchemy.orm import Query
 
 from ..models import (
-    Department,
-    Salary,
-    Officer,
     Assignment,
+    Department,
+    Description,
     Incident,
     Link,
-    Description,
+    Officer,
+    Salary,
 )
+
 
 T = TypeVar("T")
 _Record = Dict[str, Any]
