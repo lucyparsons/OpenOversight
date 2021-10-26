@@ -40,6 +40,10 @@ fresh-start:
 run +args:
 	{{ RUN }} {{ args }}
 
+# Launch into a database shell
+db-shell:
+    {{ DC }} exec postgres psql -U openoversight openoversight
+
 # Import a CSV file
 import +args:
 	{{ RUN }} flask advanced-csv-import {{ args }}

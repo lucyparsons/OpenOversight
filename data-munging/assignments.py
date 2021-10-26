@@ -16,15 +16,25 @@ DELETE FROM jobs WHERE department_id = 1;
 
 Alternatively, if there are no other departments to worry about:
 TRUNCATE jobs, assignments RESTART IDENTITY;
+
+Additionally, the now-defunct units can be removed with the following command:
+DELETE FROM unit_types WHERE id IN (
+    SELECT u.id
+    FROM unit_types u
+    LEFT JOIN assignments a
+        ON u.id = a.unit_id
+        WHERE a.id IS NULL
+);
 """
 import bisect
 import logging
 from functools import partial
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import click
 import pandas as pd
+from assignment_correction import title_corrections, unit_corrections
 
 
 log = logging.getLogger()
@@ -90,12 +100,40 @@ def make_assignments(df: pd.DataFrame, end_dates: pd.Series) -> pd.DataFrame:
     return df
 
 
+def apply_correction_mapping(
+    column: pd.Series, correction: Dict[str, Tuple[str, ...]]
+) -> pd.Series:
+    """
+    Apply corrections to a column. The corrections should come in the form of
+    "valid name" -> "list of names to correct". A new mapping will be generated from
+    this (of "bad name" -> "good name") which can be used to replace the values in the
+    column provided. Panda's `map` function will change all values not found in the
+    mapping to NaN, so we fillna with the original column to retain all values.
+    """
+    correct_mapping = {}
+    for good, bad_list in correction.items():
+        if isinstance(bad_list, str):
+            print(f"Error row: {good} - {bad_list}")
+            continue
+        for bad in bad_list:
+            correct_mapping[bad] = good
+    return column.map(correct_mapping).fillna(column)
+
+
 def main(id_path: Path, historic_data_path: Path, output: Path):
     log.info("Starting import")
     ids = pd.read_csv(id_path, usecols=["id", "badge number"])
     hist = pd.read_csv(historic_data_path)
     # Get a sorted list of all the unique roster dates
     roster_dates = sorted(hist["date"].unique())
+    log.info("Correcting unit/title info")
+    # Correct the unit and title names
+    hist.loc[:, "title"] = apply_correction_mapping(
+        hist["title"], title_corrections.title_corrections
+    )
+    hist.loc[:, "unit_description"] = apply_correction_mapping(
+        hist["unit_description"], unit_corrections.unit_corrections
+    )
     log.info("Computing last known job date for officers")
     # Get the end dates for each officer
     end_dates = hist.groupby("badge").apply(
