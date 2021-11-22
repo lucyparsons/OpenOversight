@@ -16,6 +16,10 @@ body {
   height: 100px;
 }
 
+div[role=main] {
+    padding-bottom: 30px;
+}
+
 .social:hover {
     color: #000000;
      -webkit-transform: scale(1.1);
