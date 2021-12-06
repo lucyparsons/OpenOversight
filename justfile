@@ -51,3 +51,11 @@ import +args:
 # Run the static checks
 lint:
     pre-commit run --all-files
+
+# Back up the postgres data using loomchild/volume-backup
+backup location:
+    docker run --rm \
+        -v openoversight_postgres:/volume \
+        -v {{ location }}:/backup \
+        loomchild/volume-backup \
+        backup openoversight-postgres-$(date '+%Y-%m-%d').tar.bz2
