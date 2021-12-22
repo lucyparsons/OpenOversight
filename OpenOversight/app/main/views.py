@@ -213,6 +213,7 @@ def get_tutorial():
 
 
 @main.route("/user/<username>")
+@login_required
 def profile(username):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
         user = User.query.filter_by(username=username).one()
