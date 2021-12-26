@@ -11,6 +11,12 @@ import pytest
 
 # Utils tests
 
+upload_s3_patch = patch(
+    "OpenOversight.app.utils.upload_obj_to_s3",
+    MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
+)
+
+
 def test_department_filter(mockdata):
     department = OpenOversight.app.models.Department.query.first()
     results = OpenOversight.app.utils.grab_officers(
@@ -179,24 +185,32 @@ def test_unit_choices(mockdata):
     assert 'Unit: Bureau of Organized Crime' in unit_choices
 
 
-@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(mockdata, test_png_BytesIO, client):
+@upload_s3_patch
+def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(
+    mockdata, test_png_BytesIO, client
+):
     original_image_count = Image.query.count()
 
     upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert Image.query.count() == original_image_count + 1
 
 
-@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(mockdata, test_png_BytesIO, client):
+@upload_s3_patch
+def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(
+    mockdata, test_png_BytesIO, client
+):
+    # Disable file closing for this test
+    test_png_BytesIO.close = lambda: None
     firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert type(secondUpload) == Image
     assert firstUpload.id == secondUpload.id
 
 
-@patch('OpenOversight.app.utils.upload_obj_to_s3', MagicMock(return_value='https://s3-some-bucket/someaddress.jpg'))
-def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(mockdata, test_png_BytesIO, client):
+@upload_s3_patch
+def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
+    mockdata, test_png_BytesIO, client
+):
     upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
     assert not upload.is_tagged
 
