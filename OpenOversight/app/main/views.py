@@ -913,7 +913,7 @@ def download_dept_assignments_csv(department_id):
 @limiter.limit('5/minute')
 def download_incidents_csv(department_id):
     incidents = Incident.query.filter_by(department_id=department_id).all()
-    field_names = ["id", "report_num", "date", "time", "description", "location", "licences", "links", "officers"]
+    field_names = ["id", "report_num", "date", "time", "description", "location", "licenses", "links", "officers"]
     return downloads.make_downloadable_csv(incidents, department_id, "Incidents", field_names, downloads.incidents_record_maker)
 
 
