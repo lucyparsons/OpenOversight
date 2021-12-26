@@ -13,6 +13,11 @@ from OpenOversight.tests.routes.route_helpers import login_user
 
 # Utils tests
 
+upload_s3_patch = patch(
+    "OpenOversight.app.utils.upload_obj_to_s3",
+    MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
+)
+
 
 def test_department_filter(mockdata):
     department = OpenOversight.app.models.Department.query.first()
@@ -216,10 +221,7 @@ def test_unit_choices(mockdata):
     assert "Unit: Bureau of Organized Crime" in unit_choices
 
 
-@patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
-    MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
-)
+@upload_s3_patch
 def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(
     mockdata, test_png_BytesIO, client
 ):
@@ -229,10 +231,7 @@ def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(
     assert Image.query.count() == original_image_count + 1
 
 
-@patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
-    MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
-)
+@upload_s3_patch
 def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(
     mockdata, test_png_BytesIO, client
 ):
@@ -244,10 +243,7 @@ def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(
     assert firstUpload.id == secondUpload.id
 
 
-@patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
-    MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
-)
+@upload_s3_patch
 def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
     mockdata, test_png_BytesIO, client
 ):
