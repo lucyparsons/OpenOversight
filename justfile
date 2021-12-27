@@ -1,5 +1,8 @@
 IS_PROD := env_var_or_default("IS_PROD", "")
-COMPOSE_FILE := if IS_PROD == "true" {"-f docker-compose-prod.yml "} else {""}
+COMPOSE_FILE := "--file=docker-compose.yml" + (
+    if IS_PROD == "true" {" --file=docker-compose.prod.yml"}
+    else {" --file=docker-compose.dev.yml"}
+)
 DC := "docker-compose " + COMPOSE_FILE
 RUN := DC + " run --rm web"
 set dotenv-load := false
@@ -23,6 +26,16 @@ down:
 # Attach logs to all (or the specified) services
 logs service="":
 	{{ DC }} logs -f {{ service }}
+
+# Pull all docker images
+pull:
+    {{ DC }} pull
+
+# Pull and deploy all images
+deploy:
+    -git pull
+    @just pull
+    @just up
 
 # Tear down the database, remove the volumes, recreate the database, and populate it with sample data
 fresh-start:

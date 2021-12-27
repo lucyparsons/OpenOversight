@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  web:
+    environment:
+      FLASK_ENV: production
+    volumes:
+      - static_files:/usr/src/app/OpenOversight/static
+    ports:
+      - "3005:3000"
+    networks:
+      - protonmail
+      - default
+
+volumes:
+  static_files:
+    name: openoversight-static
+
+networks:
+  protonmail:
+    external: True
