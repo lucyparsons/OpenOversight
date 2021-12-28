@@ -30,6 +30,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          # Force the use of the production requirements only
+          build-args: REQUIREMENTS_FILE=requirements.txt
           tags: |
             ghcr.io/${{ env.image_name }}:${{ github.sha }}
             ghcr.io/${{ env.image_name }}:${{ github.ref_name }}

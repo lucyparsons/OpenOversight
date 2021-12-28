@@ -14,6 +14,8 @@ services:
 
   web:
     restart: always
+    depends_on:
+      - postgres
     image: ghcr.io/orcacollective/openoversight:${DB_IMAGE_TAG:-latest}
     env_file:
       - .env

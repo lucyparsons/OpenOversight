@@ -1174,7 +1174,7 @@ def download_incidents_csv(department_id):
         "time",
         "description",
         "location",
-        "licences",
+        "licenses",
         "links",
         "officers",
     ]

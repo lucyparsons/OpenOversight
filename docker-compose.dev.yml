@@ -41,6 +41,9 @@ services:
 
   web:
     build: .
+    depends_on:
+      - postgres
+      - minio
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1

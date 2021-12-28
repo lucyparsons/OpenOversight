@@ -31,6 +31,12 @@ from OpenOversight.app.utils import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
 
+@pytest.fixture(autouse=True)
+def input_yes(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda *_: "y")
+    yield
+
+
 def run_command_print_output(cli, args=None, **kwargs):
     """
     This function runs the given command with the provided arguments

@@ -6,8 +6,8 @@
 
 ## Tests and linting
 
- - [ ] I have rebased my changes on current `develop`
+ - [ ] I have rebased my changes on `main`
 
- - [ ] pytests pass in the development environment on my local machine
+ - [ ] `just lint` passes
 
- - [ ] `flake8` checks pass
+ - [ ] `just test` passes

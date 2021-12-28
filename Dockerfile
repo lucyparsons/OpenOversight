@@ -2,6 +2,8 @@ FROM python:3.9-slim
 
 WORKDIR /usr/src/app
 
+ARG REQUIREMENTS_FILE=requirements-dev.txt
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV DEBIAN-FRONTEND noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -28,8 +30,9 @@ RUN npm install -g yarn && \
 COPY yarn.lock /usr/src/app/
 RUN chmod -R 777 /usr/src/app/ /.cache /.yarn
 
-COPY requirements.txt /usr/src/app/
-RUN pip3 install -r requirements.txt
+# Always add the prod req because the dev reqs depend on it for deduplication
+COPY ${REQUIREMENTS_FILE} requirements.txt /usr/src/app/
+RUN pip3 install -r ${REQUIREMENTS_FILE}
 
 COPY package.json /usr/src/app/
 RUN yarn

@@ -4,15 +4,20 @@ COMPOSE_FILE := "--file=docker-compose.yml" + (
     else {" --file=docker-compose.dev.yml"}
 )
 DC := "docker-compose " + COMPOSE_FILE
-RUN := DC + " run --rm web"
+RUN := DC + " run --rm"
+RUN_WEB := RUN + " web"
 set dotenv-load := false
 
 
 default:
     @just -lu
 
+# Create the .env file from the template
+dotenv:
+    @([ ! -f .env ] && cp .env.example .env) || true
+
 # Build all containers
-build:
+build: dotenv
 	{{ DC }} build
 
 # Spin up all (or the specified) services
@@ -44,12 +49,12 @@ fresh-start:
 	{{ DC }} build
 
 	# Start up and populate fields
-	{{ RUN }} python ../create_db.py
-	{{ RUN }} flask make-admin-user
-	{{ RUN }} flask add-department "Seattle Police Department" "SPD"
-	{{ RUN }} flask bulk-add-officers /data/init_data.csv
+	{{ RUN_WEB }} python ../create_db.py
+	{{ RUN_WEB }} flask make-admin-user
+	{{ RUN_WEB }} flask add-department "Seattle Police Department" "SPD"
+	{{ RUN_WEB }} flask bulk-add-officers /data/init_data.csv
 
-# Run a command using the web image
+# Run a command on a provided service
 run +args:
 	{{ RUN }} {{ args }}
 
@@ -59,11 +64,15 @@ db-shell:
 
 # Import a CSV file
 import +args:
-	{{ RUN }} flask advanced-csv-import {{ args }}
+	{{ RUN_WEB }} flask advanced-csv-import {{ args }}
 
 # Run the static checks
 lint:
     pre-commit run --all-files
+
+# Run tests in the web container
+test:
+    @just run --no-deps web pytest
 
 # Back up the postgres data using loomchild/volume-backup
 backup location:
