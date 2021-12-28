@@ -22,8 +22,6 @@ services:
     volumes:
       - ./data:/data/
     command: scripts/entrypoint.sh
-    ports:
-      - "3000:3000"
 
 volumes:
   postgres:
