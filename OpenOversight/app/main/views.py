@@ -617,9 +617,9 @@ def edit_department(department_id):
 def list_officer(
     department_id,
     page=1,
-    race=[],
-    gender=[],
-    rank=[],
+    race=None,
+    gender=None,
+    rank=None,
     min_age="16",
     max_age="100",
     name=None,
@@ -634,14 +634,14 @@ def list_officer(
         .all()
     )
     form_data = form.data
-    form_data["race"] = race
-    form_data["gender"] = gender
-    form_data["rank"] = rank
+    form_data["race"] = race or []
+    form_data["gender"] = gender or []
+    form_data["rank"] = rank or []
     form_data["min_age"] = min_age
     form_data["max_age"] = max_age
     form_data["name"] = name
     form_data["badge"] = badge
-    form_data["unit"] = unit
+    form_data["unit"] = unit or []
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
@@ -649,30 +649,29 @@ def list_officer(
     if not department:
         abort(404)
 
+    age_range = {ac[0] for ac in AGE_CHOICES}
+
     # Set form data based on URL
-    if request.args.get("min_age") and request.args.get("min_age") in [
-        ac[0] for ac in AGE_CHOICES
-    ]:
-        form_data["min_age"] = request.args.get("min_age")
-    if request.args.get("max_age") and request.args.get("max_age") in [
-        ac[0] for ac in AGE_CHOICES
-    ]:
-        form_data["max_age"] = request.args.get("max_age")
-    if request.args.get("page"):
-        page = int(request.args.get("page"))
-    if request.args.get("name"):
-        form_data["name"] = request.args.get("name")
-    if request.args.get("badge"):
-        form_data["badge"] = request.args.get("badge")
-    if request.args.get("unit") and request.args.get("unit") != "Not Sure":
-        form_data["unit"] = int(request.args.get("unit"))
-    if request.args.get("unique_internal_identifier"):
-        form_data["unique_internal_identifier"] = request.args.get(
-            "unique_internal_identifier"
-        )
-    if request.args.get("race") and all(
-        race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist("race")
-    ):
+    min_age_arg = request.args.get("min_age")
+    if (min_age_arg) and min_age_arg in age_range:
+        form_data["min_age"] = min_age_arg
+    max_age_arg = request.args.get("max_age")
+    if (max_age_arg) and max_age_arg in age_range:
+        form_data["max_age"] = max_age_arg
+    page_arg = request.args.get("page")
+    if page_arg:
+        page = int(page_arg)
+    name_arg = request.args.get("name")
+    if name_arg:
+        form_data["name"] = name_arg
+    badge_arg = request.args.get("badge")
+    if badge_arg:
+        form_data["badge"] = badge_arg
+    uid = request.args.get("unique_internal_identifier")
+    if uid:
+        form_data["unique_internal_identifier"] = uid
+    races = request.args.getlist("race")
+    if (races) and all(race in [rc[0] for rc in RACE_CHOICES] for race in races):
         form_data["race"] = request.args.getlist("race")
     if request.args.get("gender") and all(
         gender in [gc[0] for gc in GENDER_CHOICES]
@@ -681,8 +680,9 @@ def list_officer(
         form_data["gender"] = request.args.getlist("gender")
 
     unit_choices = [
-        (unit.id, unit.descrip)
-        for unit in Unit.query.filter_by(department_id=department_id)
+        uc[0]
+        for uc in db.session.query(Unit.descrip)
+        .filter_by(department_id=department_id)
         .order_by(Unit.descrip.asc())
         .all()
     ]
@@ -690,12 +690,14 @@ def list_officer(
         jc[0]
         for jc in db.session.query(Job.job_title, Job.order)
         .filter_by(department_id=department_id)
-        .order_by(Job.order)
+        .order_by(Job.job_title)
         .all()
     ]
-    if request.args.get("rank") and all(
-        rank in rank_choices for rank in request.args.getlist("rank")
-    ):
+    units = request.args.getlist("unit")
+    if units and all(unit in unit_choices for unit in units):
+        form_data["unit"] = units
+    ranks = request.args.getlist("rank")
+    if ranks and all(rank in rank_choices for rank in ranks):
         form_data["rank"] = request.args.getlist("rank")
 
     officers = filter_by_form(form_data, Officer.query, department_id).filter(
@@ -716,7 +718,7 @@ def list_officer(
         "race": RACE_CHOICES,
         "gender": GENDER_CHOICES,
         "rank": [(rc, rc) for rc in rank_choices],
-        "unit": [("Not Sure", "Not Sure")] + unit_choices,
+        "unit": [("Not Sure", "Not Sure")] + [(uc, uc) for uc in unit_choices],
     }
 
     next_url = url_for(

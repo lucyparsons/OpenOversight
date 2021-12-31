@@ -343,20 +343,30 @@ def filter_by_form(form_data, officer_query, department_id=None):
             .all()
         ]
 
-        print(form_data)
         if "Not Sure" in form_data["rank"]:
             form_data["rank"].append(None)
 
-    if form_data.get("badge") or form_data.get("unit") or job_ids:
+    unit_ids = []
+    if form_data.get("unit"):
+        unit_ids = [
+            unit.id
+            for unit in Unit.query.filter_by(department_id=department_id)
+            .filter(Unit.descrip.in_(form_data.get("unit")))
+            .all()
+        ]
+
+        if "Not Sure" in form_data["unit"]:
+            # Convert "Not Sure" to None, so the resulting SQL query allows NULL values
+            form_data["unit"].append(None)
+
+    if form_data.get("badge") or unit_ids or job_ids:
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
                 Assignment.star_no.like("%%{}%%".format(form_data["badge"]))
             )
-        if form_data.get("unit"):
-            officer_query = officer_query.filter(
-                Assignment.unit_id == form_data["unit"]
-            )
+        if unit_ids:
+            officer_query = officer_query.filter(Assignment.unit_id.in_(unit_ids))
         if job_ids:
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
     officer_query = officer_query.options(
