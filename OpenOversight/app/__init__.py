@@ -108,6 +108,14 @@ def create_app(config_name="default"):
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
         return Markup(html)
 
+    @app.template_filter("field_in_query")
+    def field_in_query(form_data, field):
+        """
+        Determine if a field is specified in the form data, and if so return a Bootstrap
+        class which will render the field accordion open.
+        """
+        return " in " if form_data.get(field) else ""
+
     # Add commands
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
