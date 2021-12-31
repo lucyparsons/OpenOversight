@@ -71,8 +71,8 @@ lint:
     pre-commit run --all-files
 
 # Run tests in the web container
-test:
-    @just run --no-deps web pytest
+test *pytestargs:
+    @just run --no-deps web pytest {{ pytestargs }}
 
 # Back up the postgres data using loomchild/volume-backup
 backup location:

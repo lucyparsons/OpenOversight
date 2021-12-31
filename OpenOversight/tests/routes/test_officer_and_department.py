@@ -9,6 +9,7 @@ from io import BytesIO
 import pytest
 from flask import current_app, url_for
 from mock import MagicMock, patch
+from sqlalchemy.sql.operators import Operators
 
 from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.main.forms import (
@@ -101,6 +102,32 @@ def test_user_can_access_officer_list(mockdata, client, session):
         rv = client.get(url_for("main.list_officer", department_id=2))
 
         assert "Officers" in rv.data.decode("utf-8")
+
+
+@pytest.mark.parametrize(
+    "filter_func, has_placeholder",
+    [
+        # Officer without faces should have placeholder
+        (Operators.__invert__, True),
+        # Officer with faces should not have placeholder
+        (lambda x: x, False),
+    ],
+)
+def test_officer_appropriately_shows_placeholder(
+    filter_func, has_placeholder, mockdata, client, session
+):
+    with current_app.test_request_context():
+        officer = Officer.query.filter(filter_func(Officer.face.any())).first()
+        placeholder = url_for(
+            "static", filename="images/placeholder.png", _external=True
+        )
+
+        rv = client.get(
+            url_for("main.officer_profile", officer_id=officer.id),
+            follow_redirects=True,
+        )
+
+        assert (placeholder in rv.data.decode("utf-8")) == has_placeholder
 
 
 def test_ac_can_access_admin_on_dept_officer_profile(mockdata, client, session):

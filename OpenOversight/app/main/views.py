@@ -253,6 +253,11 @@ def officer_profile(officer_id):
         face_paths = []
         for face in faces:
             face_paths.append(serve_image(face.image.filepath))
+        if not face_paths:
+            # Add in the placeholder image if no faces are found
+            face_paths = [
+                url_for("static", filename="images/placeholder.png", _external=True)
+            ]
     except Exception:
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
