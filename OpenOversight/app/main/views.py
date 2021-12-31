@@ -767,13 +767,15 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         ranks = Job.query.filter_by(department_id=department_id)
         if is_sworn_officer:
             ranks = ranks.filter_by(is_sworn_officer=True)
-        ranks = ranks.order_by(Job.order.asc()).all()
+        ranks = ranks.order_by(Job.job_title).all()
         rank_list = [(rank.id, rank.job_title) for rank in ranks]
     else:
         ranks = Job.query.all()  # Not filtering by is_sworn_officer
-        rank_list = list(
-            set([(rank.id, rank.job_title) for rank in ranks])
-        )  # Prevent duplicate ranks
+        # Prevent duplicate ranks
+        rank_list = sorted(
+            set((rank.id, rank.job_title) for rank in ranks),
+            key=lambda x: x[1],
+        )
 
     return jsonify(rank_list)
 
