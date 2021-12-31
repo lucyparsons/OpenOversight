@@ -103,6 +103,14 @@ def create_app(config_name="default"):
         if birth_year:
             return int(datetime.datetime.now().year - birth_year)
 
+    @app.template_filter("field_in_query")
+    def field_in_query(form_data, field):
+        """
+        Determine if a field is specified in the form data, and if so return a Bootstrap
+        class which will render the field accordion open.
+        """
+        return " in " if form_data.get(field) else ""
+
     @app.template_filter("currently_on_force")
     def officer_currently_on_force(assignments):
         if not assignments:

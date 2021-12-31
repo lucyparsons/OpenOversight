@@ -34,22 +34,10 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading{% if not form_data['unique_internal_identifier'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-unique_internal_identifier">
-            <h3 class="panel-title accordion-toggle">Unique ID</h3>
-          </div>
-          <div class="collapse{% if form_data['unique_internal_identifier'] %} in{% endif %}" id="filter-unique_internal_identifier">
-            <div class="panel-body">
-              <div class="form-group">
-                <input type="text" class="form-control" id="unique_internal_identifier" name="unique_internal_identifier" value="{{ form_data['unique_internal_identifier'] or '' }}" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-race">
             <h3 class="panel-title accordion-toggle">Race</h3>
           </div>
-          <div class="collapse" id="filter-race">
+          <div class="collapse {{ form_data | field_in_query("race") }}" id="filter-race">
             <div class="panel-body">
               <div class="form-group checkbox">
                 {% for choice in choices['race'] %}
@@ -65,7 +53,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-gender">
             <h3 class="panel-title accordion-toggle">Gender</h3>
           </div>
-          <div class="collapse" id="filter-gender">
+          <div class="collapse {{ form_data | field_in_query("gender") }}" id="filter-gender">
             <div class="panel-body">
               <div class="form-group radio">
                 {% for choice in choices['gender'] %}
@@ -81,7 +69,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-rank">
             <h3 class="panel-title accordion-toggle">Rank</h3>
           </div>
-          <div class="collapse" id="filter-rank">
+          <div class="collapse {{ form_data | field_in_query("rank") }}" id="filter-rank">
             <div class="panel-body">
               <div class="form-group checkbox">
                 {% for choice in choices['rank'] %}
@@ -97,7 +85,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-unit">
             <h3 class="panel-title accordion-toggle">Unit</h3>
           </div>
-          <div class="collapse" id="filter-unit">
+          <div class="collapse {{ form_data | field_in_query("unit") }}" id="filter-unit">
             <div class="panel-body">
               <div class="form-group">
                 <select class="form-control" name="unit">
@@ -124,6 +112,18 @@
                   <label>Max</label>
                   <input type="number" class="form-control" id="max_age" name="max_age" value="{{ form_data['max_age'] or 100 }}" />
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading{% if not form_data['unique_internal_identifier'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-unique_internal_identifier">
+            <h3 class="panel-title accordion-toggle">Unique ID</h3>
+          </div>
+          <div class="collapse {{ form_data | field_in_query("unique_internal_identifier") }}" id="filter-unique_internal_identifier">
+            <div class="panel-body">
+              <div class="form-group">
+                <input type="text" class="form-control" id="unique_internal_identifier" name="unique_internal_identifier" value="{{ form_data['unique_internal_identifier'] or '' }}" />
               </div>
             </div>
           </div>
