@@ -1654,6 +1654,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         ]
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id).first()
+        unit = Unit.query.filter_by(department_id=officer.department_id).first()
         form = AddOfficerForm(
             first_name="A",
             last_name="A",
@@ -1662,6 +1663,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             gender="M",
             star_no=666,
             job_id=job.id,
+            unit=unit.id,
             department=department_id,
             birth_year=1990,
             links=links,
@@ -1695,13 +1697,17 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             data=data,
             follow_redirects=True,
         )
-        filter_list = rv.data.decode("utf-8").split("<dt>Race</dt>")[1:]
-        assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = rv.data.decode("utf-8").split("<dt>Job Title</dt>")[1:]
+        filter_list = rv.data.decode("utf-8").split("<dt>Rank</dt>")[1:]
         assert any(
             "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
         )
+
+        filter_list = rv.data.decode("utf-8").split("<dt>Unit</dt>")[1:]
+        assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
+
+        filter_list = rv.data.decode("utf-8").split("<dt>Race</dt>")[1:]
+        assert any("<dd>White</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode("utf-8").split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
