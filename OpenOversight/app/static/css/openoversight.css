@@ -484,6 +484,11 @@ tr:hover .row-actions {
     padding: 5px 0;
 }
 
+.filter-sidebar .panel-body-long {
+    max-height: 20vh;
+    overflow-y: auto;
+}
+
 .filter-sidebar .panel-heading .accordion-toggle:after {
     font-family: 'Glyphicons Halflings';
     content: "\e252";

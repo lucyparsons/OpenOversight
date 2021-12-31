@@ -563,6 +563,12 @@ class BrowseForm(Form):
         get_label="job_title",
         get_pk=lambda job: job.job_title,
     )  # query set in view function
+    unit = QuerySelectField(
+        "unit",
+        validators=[Optional()],
+        get_label="descrip",
+        get_pk=lambda unit: unit.descrip,
+    )  # query set in view function
     name = StringField("Last name")
     badge = StringField("Badge number")
     unique_internal_identifier = StringField("Unique ID")

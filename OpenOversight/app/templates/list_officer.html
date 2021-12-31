@@ -70,7 +70,7 @@
             <h3 class="panel-title accordion-toggle">Rank</h3>
           </div>
           <div class="collapse {{ form_data | field_in_query("rank") }}" id="filter-rank">
-            <div class="panel-body">
+            <div class="panel-body panel-body-long">
               <div class="form-group checkbox">
                 {% for choice in choices['rank'] %}
                   <label class="form-check">
@@ -86,13 +86,15 @@
             <h3 class="panel-title accordion-toggle">Unit</h3>
           </div>
           <div class="collapse {{ form_data | field_in_query("unit") }}" id="filter-unit">
-            <div class="panel-body">
+            <div class="panel-body panel-body-long">
               <div class="form-group">
-                <select class="form-control" name="unit">
-                  {% for choice in choices['unit'] %}
-                  <option id="unit-{{ choice[0] }}" value="{{choice[0]}}" {% if choice[0] == form_data['unit'] %}selected='true'{% endif %}>{{choice[1]}}</option>
-                  {% endfor %}
-                </select>
+                <div class="form-group checkbox">
+                    {% for choice in choices['unit'] %}
+                        <label class="form-check">
+                            <input type="checkbox" class="form-check-input" id="unit-{{ choice[0] }}" name="unit" value="{{ choice[0] }}" {% if choice[0] in form_data['unit'] %}checked="checked" {% endif %}/>{{choice[1]}}
+                        </label>
+                    {% endfor %}
+                </div>
               </div>
             </div>
           </div>
@@ -152,14 +154,18 @@
                 <div class="row">
                   <div class="col-md-6 col-xs-6">
                     <dl>
-                      <dt>Job Title</dt>
+                      <dt>Rank</dt>
                       <dd>{{ officer.job_title()|default('Unknown') }}</dd>
-                      <dt>Race</dt>
-                      <dd>{{ officer.race_label()|default('Unknown')|lower|title }}</dd>
+                      <dt>Unit</dt>
+                      <dd>{{ officer.unit_descrip()|default('Unknown') }}</dd>
+                      <dt>Currently on the Force</dt>
+                      <dd>{{ officer.currently_on_force() }}</dd>
                     </dl>
                   </div>
                   <div class="col-md-6 col-xs-6">
                     <dl>
+                      <dt>Race</dt>
+                      <dd>{{ officer.race_label()|default('Unknown')|lower|title }}</dd>
                       <dt>Gender</dt>
                       <dd>{{ officer.gender_label()|default('Unknown') }}</dd>
                       <dt>Number of Photos</dt>

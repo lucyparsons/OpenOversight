@@ -107,13 +107,6 @@ def create_app(config_name="default"):
         """
         return " in " if form_data.get(field) else ""
 
-    @app.template_filter("currently_on_force")
-    def officer_currently_on_force(assignments):
-        if not assignments:
-            return "Uncertain"
-        most_recent = max(assignments, key=lambda x: x.star_date or datetime.date.min)
-        return "Yes" if most_recent.resign_date is None else "No"
-
     # Add commands
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
