@@ -316,17 +316,22 @@ def edit_user(user_id):
                     flash("You cannot edit your own account!")
                     form = EditUserForm(obj=user)
                     return render_template("auth/user.html", user=user, form=form)
-                if (
-                    current_app.config["APPROVE_REGISTRATIONS"]
-                    and form.approved.data
-                    and not user.approved
-                    and not user.confirmed
-                ):
-                    admin_resend_confirmation(user)
+                already_approved = user.approved
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
+
+                # automatically send a confirmation email when approving an unconfirmed user
+                if (
+                    current_app.config["APPROVE_REGISTRATIONS"]
+                    and not already_approved
+                    and user.approved
+                    and not user.confirmed
+                ):
+                    admin_resend_confirmation(user)
+
                 flash("{} has been updated!".format(user.username))
+
                 return redirect(url_for("auth.edit_user", user_id=user.id))
             else:
                 flash("Invalid entry")
