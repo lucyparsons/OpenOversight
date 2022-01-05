@@ -60,6 +60,14 @@ def test_valid_user_can_login(mockdata, client, session):
         assert urlparse(rv.location).path == "/index"
 
 
+def test_valid_user_can_login_with_email_differently_cased(mockdata, client, session):
+    with current_app.test_request_context():
+        form = LoginForm(email="JEN@EXAMPLE.ORG", password="dog", remember_me=True)
+        rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
+        assert rv.status_code == 302
+        assert urlparse(rv.location).path == "/index"
+
+
 def test_invalid_user_cannot_login(mockdata, client, session):
     with current_app.test_request_context():
         form = LoginForm(
@@ -81,6 +89,25 @@ def test_user_cannot_register_with_existing_email(mockdata, client, session):
     with current_app.test_request_context():
         form = RegistrationForm(
             email="jen@example.org",
+            username="redshiftzero",
+            password="dog",
+            password2="dog",
+        )
+        rv = client.post(
+            url_for("auth.register"), data=form.data, follow_redirects=False
+        )
+
+        # Form will return 200 only if the form does not validate
+        assert rv.status_code == 200
+        assert b"Email already registered" in rv.data
+
+
+def test_user_cannot_register_with_existing_email_differently_cased(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        form = RegistrationForm(
+            email="JEN@EXAMPLE.ORG",
             username="redshiftzero",
             password="dog",
             password2="dog",
@@ -164,10 +191,44 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
         assert b"An email with instructions to reset your password" in rv.data
 
 
+def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        form = PasswordResetRequestForm(email="JEN@EXAMPLE.ORG")
+
+        rv = client.post(
+            url_for("auth.password_reset_request"),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert b"An email with instructions to reset your password" in rv.data
+
+
 def test_user_can_get_reset_password_with_valid_token(mockdata, client, session):
     with current_app.test_request_context():
         form = PasswordResetForm(
             email="jen@example.org", password="catdog", password2="catdog"
+        )
+        user = User.query.filter_by(email="jen@example.org").one()
+        token = user.generate_reset_token()
+
+        rv = client.post(
+            url_for("auth.password_reset", token=token),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert b"Your password has been updated." in rv.data
+
+
+def test_user_can_get_reset_password_with_valid_token_differently_cased(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        form = PasswordResetForm(
+            email="JEN@EXAMPLE.ORG", password="catdog", password2="catdog"
         )
         user = User.query.filter_by(email="jen@example.org").one()
         token = user.generate_reset_token()
@@ -203,6 +264,34 @@ def test_user_cannot_get_email_reset_token_sent_without_valid_password(
     with current_app.test_request_context():
         login_user(client)
         form = ChangeEmailForm(email="jen@example.org", password="dogdogdogdog")
+
+        rv = client.post(
+            url_for("auth.change_email_request"), data=form.data, follow_redirects=True
+        )
+
+        assert b"An email with instructions to confirm your new email" not in rv.data
+
+
+def test_user_cannot_get_email_reset_token_sent_to_existing_email(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_user(client)
+        form = ChangeEmailForm(email="freddy@example.org", password="dogdogdogdog")
+
+        rv = client.post(
+            url_for("auth.change_email_request"), data=form.data, follow_redirects=True
+        )
+
+        assert b"An email with instructions to confirm your new email" not in rv.data
+
+
+def test_user_cannot_get_email_reset_token_sent_to_existing_email_differently_cased(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_user(client)
+        form = ChangeEmailForm(email="FREDDY@EXAMPLE.ORG", password="dogdogdogdog")
 
         rv = client.post(
             url_for("auth.change_email_request"), data=form.data, follow_redirects=True
