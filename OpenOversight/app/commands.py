@@ -23,7 +23,7 @@ def make_admin_user():
     """Add confirmed administrator account."""
     while True:
         username = input("Username: ")
-        user = User.query.filter_by(username=username).one_or_none()
+        user = User.by_username(username).one_or_none()
         if user:
             print("Username is already in use")
         else:
@@ -31,7 +31,7 @@ def make_admin_user():
 
     while True:
         email = input("Email: ")
-        user = User.query.filter_by(email=email).one_or_none()
+        user = User.by_email(email).one_or_none()
         if user:
             print("Email address already in use")
         else:
