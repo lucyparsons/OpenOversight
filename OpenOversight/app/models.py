@@ -1,11 +1,11 @@
 import re
+import time
 from datetime import date
 
+from authlib.jose import JoseError, JsonWebToken
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import BadData, BadSignature
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 
 # from flask_sqlalchemy.model import DefaultMeta
@@ -17,6 +17,7 @@ from .validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
+jwt = JsonWebToken("HS512")
 
 BaseModel = (
     db.Model
@@ -510,6 +511,22 @@ class User(UserMixin, BaseModel):
     classifications = db.relationship("Image", backref="users")
     tags = db.relationship("Face", backref="users")
 
+    def _jwt_encode(self, payload, expiration):
+        secret = current_app.config["SECRET_KEY"]
+        header = {"alg": "HS512"}
+
+        now = int(time.time())
+        payload["iat"] = now
+        payload["exp"] = now + expiration
+
+        return jwt.encode(header, payload, secret)
+
+    def _jwt_decode(self, token):
+        secret = current_app.config["SECRET_KEY"]
+        token = jwt.decode(token, secret)
+        token.validate()
+        return token
+
     @property
     def password(self):
         raise AttributeError("password is not a readable attribute")
@@ -534,14 +551,13 @@ class User(UserMixin, BaseModel):
         return check_password_hash(self.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"confirm": self.id}).decode("utf-8")
+        payload = {"confirm": self.id}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def confirm(self, token):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData) as e:
+            data = self._jwt_decode(token)
+        except JoseError as e:
             current_app.logger.warning("failed to decrypt token: %s", e)
             return False
         if data.get("confirm") != self.id:
@@ -555,14 +571,13 @@ class User(UserMixin, BaseModel):
         return True
 
     def generate_reset_token(self, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"reset": self.id}).decode("utf-8")
+        payload = {"reset": self.id}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def reset_password(self, token, new_password):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData):
+            data = self._jwt_decode(token)
+        except JoseError:
             return False
         if data.get("reset") != self.id:
             return False
@@ -571,16 +586,13 @@ class User(UserMixin, BaseModel):
         return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"change_email": self.id, "new_email": new_email}).decode(
-            "utf-8"
-        )
+        payload = {"change_email": self.id, "new_email": new_email}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def change_email(self, token):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData):
+            data = self._jwt_decode(token)
+        except JoseError:
             return False
         if data.get("change_email") != self.id:
             return False
