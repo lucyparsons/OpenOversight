@@ -158,6 +158,15 @@ def test_invalid_reset_token(mockdata):
     assert user2.verify_password("vegan bacon") is True
 
 
+def test_expired_reset_token(mockdata):
+    user = User(password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    token = user.generate_reset_token(expiration=-1)
+    assert user.reset_password(token, "tempeh") is False
+    assert user.verify_password("bacon") is True
+
+
 def test_valid_email_change_token(mockdata):
     user = User(email="brian@example.com", password="bacon")
     db.session.add(user)
@@ -165,6 +174,15 @@ def test_valid_email_change_token(mockdata):
     token = user.generate_email_change_token("lucy@example.org")
     assert user.change_email(token) is True
     assert user.email == "lucy@example.org"
+
+
+def test_email_change_token_no_email(mockdata):
+    user = User(email="brian@example.com", password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    token = user.generate_email_change_token(None)
+    assert user.change_email(token) is False
+    assert user.email == "brian@example.com"
 
 
 def test_invalid_email_change_token(mockdata):
@@ -176,6 +194,15 @@ def test_invalid_email_change_token(mockdata):
     token = user1.generate_email_change_token("mason@example.net")
     assert user2.change_email(token) is False
     assert user2.email == "freddy@example.com"
+
+
+def test_expired_email_change_token(mockdata):
+    user = User(email="jen@example.com", password="cat")
+    db.session.add(user)
+    db.session.commit()
+    token = user.generate_email_change_token("mason@example.net", expiration=-1)
+    assert user.change_email(token) is False
+    assert user.email == "jen@example.com"
 
 
 def test_duplicate_email_change_token(mockdata):
