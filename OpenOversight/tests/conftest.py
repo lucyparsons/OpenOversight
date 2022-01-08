@@ -662,11 +662,9 @@ def client(app, request):
 
 @pytest.fixture
 def browser(app, request):
-    # FIXME: Skip for now until I can get this working
-    # Possible solution: https://stackoverflow.com/questions/32151043/xvfb-docker-cannot-open-display
-    pytest.skip("Xvfb not available in docker, it needs to be installed")
-    # start server
-    threading.Thread(target=app.run).start()
+    # start server without werkzeug auto-refresh
+    # https://stackoverflow.com/questions/38087283/
+    threading.Thread(target=app.run, kwargs={"debug": False}).start()
     # give the server a few seconds to ensure it is up
     time.sleep(10)
 

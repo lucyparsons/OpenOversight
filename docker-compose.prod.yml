@@ -2,6 +2,9 @@ version: "3"
 
 services:
   web:
+    build:
+      context: .
+      target: production
     environment:
       FLASK_ENV: production
     volumes:

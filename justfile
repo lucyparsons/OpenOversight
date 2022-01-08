@@ -7,6 +7,9 @@ DC := "docker-compose " + COMPOSE_FILE
 RUN := DC + " run --rm"
 RUN_WEB := RUN + " web"
 set dotenv-load := false
+# Force just to hand down positional arguments so quoted arguments with spaces are
+# handled appropriately
+set positional-arguments
 
 
 default:
@@ -55,8 +58,8 @@ fresh-start:
 	{{ RUN_WEB }} flask bulk-add-officers /data/init_data.csv
 
 # Run a command on a provided service
-run +args:
-	{{ RUN }} {{ args }}
+run *args:
+	{{ RUN }} "$@"
 
 # Launch into a database shell
 db-shell:
@@ -70,9 +73,14 @@ import +args:
 lint:
     pre-commit run --all-files
 
-# Run tests in the web container
+# Run unit tests in the web container
 test *pytestargs:
-    @just run --no-deps web pytest {{ pytestargs }}
+    just run --no-deps web pytest -n auto -m "not acceptance" {{ pytestargs }}
+
+# Run all of the tests, including the acceptance ones
+test-acceptance *pytestargs:
+    @just test
+    just run --no-deps web pytest -n 0 -m "acceptance" {{ pytestargs }}
 
 # Back up the postgres data using loomchild/volume-backup
 backup location:

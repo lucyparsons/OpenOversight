@@ -40,7 +40,9 @@ services:
       "
 
   web:
-    build: .
+    build:
+      context: .
+      target: development
     depends_on:
       - postgres
       - minio
