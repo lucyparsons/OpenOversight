@@ -14,6 +14,9 @@ from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
 
+DESCRIPTION_CUTOFF = 500
+
+
 @contextmanager
 def wait_for_page_load(browser, timeout=10):
     old_page = browser.find_element_by_tag_name("html")
@@ -157,14 +160,14 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
 
 @pytest.mark.acceptance
-def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(
+def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     mockdata, browser
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
     incident_id = str(incident_long_descrip.id)
 
@@ -173,13 +176,13 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_300_char
 
 
 @pytest.mark.acceptance
-def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(
+def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
     mockdata, browser
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
-    # Select incident for officer that has description under 300 chars
+    # Select incident for officer that has description under cuttoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
     assert not result.is_displayed()
 
@@ -190,9 +193,9 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    orig_descrip = incident_long_descrip.description
+    orig_descrip = incident_long_descrip.description.strip()
     incident_id = str(incident_long_descrip.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
@@ -200,7 +203,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
 
     description_text = browser.find_element_by_id(
         "incident-description_" + incident_id
-    ).text
+    ).text.strip()
     assert len(description_text) == len(orig_descrip)
     assert description_text == orig_descrip
 
@@ -211,7 +214,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
     incident_id = str(incident_long_descrip.id)
 

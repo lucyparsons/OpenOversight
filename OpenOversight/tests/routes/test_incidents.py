@@ -44,11 +44,19 @@ def test_route_admin_or_required(route, client, mockdata):
         assert rv.status_code == 403
 
 
-def test_admins_can_create_basic_incidents(mockdata, client, session):
+@pytest.mark.parametrize(
+    "report_number",
+    [
+        # Ensure different report number formats are accepted
+        "42",
+        "My-Special-Case",
+        "PPP Case 92",
+    ],
+)
+def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         date = datetime(2000, 5, 25, 1, 45)
-        report_number = "42"
 
         address_form = LocationForm(
             street_name="AAAAA",
@@ -81,6 +89,45 @@ def test_admins_can_create_basic_incidents(mockdata, client, session):
 
         inc = Incident.query.filter_by(date=date.date()).first()
         assert inc is not None
+
+
+def test_admins_cannot_create_incident_with_invalid_report_number(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_admin(client)
+        date = datetime(2000, 5, 25, 1, 45)
+        report_number = "Will Not Work! #45"
+
+        address_form = LocationForm(
+            street_name="AAAAA",
+            cross_street1="BBBBB",
+            city="FFFFF",
+            state="IA",
+            zip_code="03435",
+        )
+        # These have to have a dropdown selected because if not, an empty Unicode string is sent, which does not mach the '' selector.
+        link_form = LinkForm(link_type="video")
+        license_plates_form = LicensePlateForm(state="AZ")
+        form = IncidentForm(
+            date_field=str(date.date()),
+            time_field=str(date.time()),
+            report_number=report_number,
+            description="Something happened",
+            department="1",
+            address=address_form.data,
+            links=[link_form.data],
+            license_plates=[license_plates_form.data],
+            officers=[],
+        )
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+        )
+
+        assert rv.status_code == 200
+        assert "Report cannot contain special characters" in rv.data.decode("utf-8")
 
 
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):

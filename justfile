@@ -24,16 +24,16 @@ build: dotenv
 	{{ DC }} build
 
 # Spin up all (or the specified) services
-up service="":
-	{{ DC }} up -d {{ service }}
+up *args:
+	{{ DC }} up -d {{ args }}
 
 # Tear down all services
-down:
-	{{ DC }} down
+down *args:
+	{{ DC }} down {{ args }}
 
 # Attach logs to all (or the specified) services
-logs service="":
-	{{ DC }} logs -f {{ service }}
+logs *args:
+	{{ DC }} logs -f {{ args }}
 
 # Pull all docker images
 pull:
@@ -48,14 +48,17 @@ deploy:
 # Tear down the database, remove the volumes, recreate the database, and populate it with sample data
 fresh-start:
 	# Tear down existing containers, remove volume
-	{{ DC }} down -v
-	{{ DC }} build
+	@just down -v
+	@just build
 
 	# Start up and populate fields
 	{{ RUN_WEB }} python ../create_db.py
 	{{ RUN_WEB }} flask make-admin-user
 	{{ RUN_WEB }} flask add-department "Seattle Police Department" "SPD"
 	{{ RUN_WEB }} flask bulk-add-officers /data/init_data.csv
+
+	# Start containers
+	@just up
 
 # Run a command on a provided service
 run *args:
@@ -79,7 +82,6 @@ test *pytestargs:
 
 # Run all of the tests, including the acceptance ones
 test-acceptance *pytestargs:
-    @just test
     just run --no-deps web pytest -n 0 -m "acceptance" {{ pytestargs }}
 
 # Back up the postgres data using loomchild/volume-backup
