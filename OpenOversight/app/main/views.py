@@ -1307,9 +1307,14 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    image = upload_image_to_s3_and_store_in_db(
-        file_to_upload, current_user.get_id(), department_id=department_id
-    )
+
+    try:
+        image = upload_image_to_s3_and_store_in_db(
+            file_to_upload, current_user.get_id(), department_id=department_id
+        )
+    except ValueError:
+        # Raised if MIME type not allowed
+        return jsonify(error="Invalid data type!"), 415
 
     if image:
         db.session.add(image)

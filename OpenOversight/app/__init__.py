@@ -3,7 +3,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -73,21 +73,33 @@ def create_app(config_name="default"):
     # Also log when endpoints are getting hit hard
     limiter.logger.addHandler(file_handler)
 
-    @app.errorhandler(404)
-    def page_not_found(e):
-        return render_template("404.html"), 404
+    # Define error handlers
+    def create_errorhandler(code, error, template):
+        """
+        Create an error handler that returns a JSON or a template response
+        based on the request "Accept" header.
+        :param code: status code to handle
+        :param error: response error message, if JSON
+        :param template: template response
+        """
 
-    @app.errorhandler(403)
-    def forbidden(e):
-        return render_template("403.html"), 403
+        def _handler_method(e):
+            if request.accept_mimetypes.best == "application/json":
+                return jsonify(error=error), code
+            return render_template(template), code
 
-    @app.errorhandler(500)
-    def internal_error(e):
-        return render_template("500.html"), 500
+        return _handler_method
 
-    @app.errorhandler(429)
-    def rate_exceeded(e):
-        return render_template("429.html"), 429
+    error_handlers = [
+        (403, "Forbidden", "403.html"),
+        (404, "Not found", "404.html"),
+        (413, "File too large", "413.html"),
+        (429, "Too many requests", "429.html"),
+        (500, "Internal Server Error", "500.html"),
+    ]
+    for code, error, template in error_handlers:
+        # Pass generated errorhandler function to @app.errorhandler decorator
+        app.errorhandler(code)(create_errorhandler(code, error, template))
 
     # create jinja2 filter for titles with multiple capitals
     @app.template_filter("capfirst")
