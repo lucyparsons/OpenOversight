@@ -37,7 +37,7 @@ import pandas as pd
 from assignment_correction import title_corrections, unit_corrections
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def find_termination(df: pd.DataFrame, roster_dates: List[str]) -> Optional[str]:
@@ -120,10 +120,15 @@ def apply_correction_mapping(
     return column.map(correct_mapping).fillna(column)
 
 
-def main(id_path: Path, historic_data_path: Path, output: Path):
-    log.info("Starting import")
-    ids = pd.read_csv(id_path, usecols=["id", "badge number"])
-    hist = pd.read_csv(historic_data_path)
+def extract_all_assignments(
+    ids: pd.DataFrame, hist: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Construct a list of assignments & officers that may be missing from OpenOversight
+    for officers that were active *after* 2020-01-01 by using the IDs provided and
+    the historical records for all rosters.
+    Returns the assignments and missing officers as dfs ready to be written to CSV.
+    """
     # Get a sorted list of all the unique roster dates
     roster_dates = sorted(hist["date"].unique())
     log.info("Correcting unit/title info")
@@ -155,7 +160,7 @@ def main(id_path: Path, historic_data_path: Path, output: Path):
     # provide this pseudo-badge as an internal reference for the importer. It will match
     # the records in the assignments CSV to any new officers that are created with the
     # same pseudo-badge.
-    merged["pseudo_badge"] = "#" + merged["badge"]
+    merged["pseudo_badge"] = "#" + merged["badge"].astype(str)
     # Convert the OOID column to a nullable interger, then to a string. If this isn't
     # done, then we get floating point numbers where we want ints.
     merged = merged.astype({"ooid": pd.Int64Dtype()}).astype({"ooid": str})
@@ -169,18 +174,18 @@ def main(id_path: Path, historic_data_path: Path, output: Path):
     )
     merged = merged[merged["badge"].isin(recently_active_officers)]
     # Pull out officers not currently in OO
-    missing_officers = merged[merged["ooid"].str.startswith("#")].drop_duplicates(
-        subset=["badge"], keep="last"
+    missing_officers = (
+        merged[merged["ooid"].str.startswith("#")]
+        .drop_duplicates(subset=["badge"], keep="last")
+        .reset_index(drop=True)
     )
-    log.info("Writing output files")
+    log.info("Building output dataframes")
     # Reduce to minimum necessary and rename columns
     missing_officers = missing_officers[
         ["last_name", "first_name", "middle_name", "ooid"]
     ].rename({"ooid": "id", "middle_name": "middle_initial"}, axis="columns")
     # Department name needed for ingestion
     missing_officers["department_name"] = "Seattle Police Department"
-    missing_path = output.parent / f"{output.stem}_missing_officers.csv"
-    missing_officers.to_csv(missing_path, index=False)
     # Pull out assignments
     # Reduce to minimum necessary and rename columns
     assignments = merged[
@@ -192,6 +197,18 @@ def main(id_path: Path, historic_data_path: Path, output: Path):
     )
     # Empty ID column needed for ingestion
     assignments["id"] = None
+    return assignments, missing_officers
+
+
+def main(id_path: Path, historic_data_path: Path, output: Path):
+    log.info("Starting import")
+    ids = pd.read_csv(id_path, usecols=["id", "badge number"])
+    hist = pd.read_csv(historic_data_path)
+    assignments, missing_officers = extract_all_assignments(ids, hist)
+    log.info("Writing output files")
+    # Reduce to minimum necessary and rename columns
+    missing_path = output.parent / f"{output.stem}_missing_officers.csv"
+    missing_officers.to_csv(missing_path, index=False)
     assignments.to_csv(output, index=False)
 
 

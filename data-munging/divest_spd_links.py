@@ -6,7 +6,7 @@ import click
 import pandas as pd
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def main(id_path: Path, link_path: Path, output: Path):

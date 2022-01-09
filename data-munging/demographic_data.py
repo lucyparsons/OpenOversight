@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 import logging
+from io import StringIO
 from pathlib import Path
 
 import click
+import common
 import pandas as pd
+import requests
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
+
+URL = "https://data.seattle.gov/api/views/i2q9-thny/rows.csv?accessType=DOWNLOAD"
 
 
-def main(id_path: Path, demographic_path: Path, output: Path):
-    log.info("Starting import")
-    ids = pd.read_csv(id_path, usecols=["id", "badge number"])
+def match_demographics(ids: pd.DataFrame, url: str, convert_badge: bool = True):
+    response = requests.get(url)
+    buffer = StringIO(response.text)
     # Read only specific columns from the Crisis Data CSV
     demo = pd.read_csv(
-        demographic_path,
+        buffer,
         usecols=[
             "Officer ID",
             "Officer Gender",
@@ -48,9 +53,10 @@ def main(id_path: Path, demographic_path: Path, output: Path):
     # Badge has spaces after it in the Crisis Data CSV, so drop that
     demo.loc[:, "badge"] = demo["badge"].str.strip()
     # Merge with the ID spreadsheet based on badge
-    merged = demo.merge(
-        ids, how="left", left_on="badge", right_on="badge number"
-    ).astype({"id": pd.Int64Dtype()})
+    merged = demo.merge(ids, how="left", left_on="badge", right_on="badge number")
+    if convert_badge:
+        # Convert this to a nullable integer type if specified to ensure validity
+        merged = merged.astype({"id": pd.Int64Dtype()})
     # Split off the links that don't have an OpenOversight badge associated with them
     _has_id = merged["id"].notna()
     missing = merged[~_has_id]
@@ -63,24 +69,25 @@ def main(id_path: Path, demographic_path: Path, output: Path):
     merged = merged[_has_id]
     # Add the extra column info
     merged["department_name"] = "Seattle Police Department"
-    missing_output = output.parent / f"{output.stem}__missing.csv"
-    log.info(f"Writing {len(missing)} missing records to {missing_output}")
-    missing.to_csv(missing_output, index=False)
-    log.info(f"Writing {len(merged)} output records to {output}")
-    merged.to_csv(output, index=False)
-    log.info("Finished")
+    return merged, missing
+
+
+def main(id_path: Path, output: Path):
+    log.info("Starting import")
+    ids = pd.read_csv(id_path, usecols=["id", "badge number"])
+    merged, missing = match_demographics(ids, URL)
+    common.write_files_with_missing(merged, missing, output)
 
 
 @click.command()
 @click.argument("id_path", type=click.Path(exists=True, path_type=Path))
-@click.argument("demographic_path", type=click.Path(exists=True, path_type=Path))
 @click.argument("output", type=click.Path(path_type=Path))
-def cli(id_path: Path, demographic_path: Path, output: Path):
+def cli(id_path: Path, output: Path):
     logging.basicConfig(
         format="[%(asctime)s - %(name)s - %(lineno)3d][%(levelname)s] %(message)s",
         level=logging.INFO,
     )
-    main(id_path, demographic_path, output)
+    main(id_path, output)
 
 
 if __name__ == "__main__":

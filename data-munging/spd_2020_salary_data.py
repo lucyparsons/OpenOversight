@@ -3,20 +3,21 @@ import logging
 from pathlib import Path
 
 import click
+import common
 import numpy as np
 import pandas as pd
 
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
-def main(id_path: Path, data: Path, output: Path):
-    log.info("Starting import")
-    df = pd.read_csv(data, usecols=["Name", "Base Pay", "Overtime"])
-    ids = pd.read_csv(
-        id_path,
-        usecols=["id", "first name", "last name"],
-    )
+def match_salary_data(
+    ids: pd.DataFrame, df: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Match salary data based on name from the provided data.
+    Returns the salary dataframe as well as officers that were not matched.
+    """
     ids.columns = ["id", "last", "first"]
     # Remove Jr, IV, II, III, etc.
     df.loc[:, "Name"] = df.Name.replace(r" ?((Jr)|(II)|(III)|(IV))\.?", "", regex=True)
@@ -34,9 +35,6 @@ def main(id_path: Path, data: Path, output: Path):
     # Split off the links that don't have an OpenOversight badge associated with them
     _has_id = merged["id"].notna()
     missing = merged[~_has_id]
-    missing_output = output.parent / f"{output.stem}__missing.csv"
-    log.info(f"Writing {len(missing)} missing records to {missing_output}")
-    missing.to_csv(missing_output, index=False)
     merged = merged[_has_id]
     # Reduce columns even more
     merged = merged[["Base Pay", "Overtime", "id"]]
@@ -60,9 +58,18 @@ def main(id_path: Path, data: Path, output: Path):
         .replace("", np.nan)
         .astype(float)
     )
-    log.info(f"Writing {len(merged)} output records to {output}")
-    merged.to_csv(output, index=False)
-    log.info("Finished")
+    return merged, missing
+
+
+def main(id_path: Path, data: Path, output: Path):
+    log.info("Starting import")
+    df = pd.read_csv(data, usecols=["Name", "Base Pay", "Overtime"])
+    ids = pd.read_csv(
+        id_path,
+        usecols=["id", "first name", "last name"],
+    )
+    merged, missing = match_salary_data(ids, df)
+    common.write_files_with_missing(merged, missing, output)
 
 
 @click.command()
