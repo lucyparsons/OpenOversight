@@ -7,6 +7,7 @@ import threading
 import time
 import uuid
 from io import BytesIO
+from pathlib import Path
 from typing import List
 
 import pytest
@@ -486,7 +487,9 @@ def add_mockdata(session):
         models.Incident(
             date=datetime.datetime(2019, 1, 15),
             report_number="39",
-            description="A test description that has over 300 chars. The purpose is to see how to display a larger descrption. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Lengthy lengthy lengthy.",
+            description=(
+                Path(__file__).parent / "description_overflow.txt"
+            ).read_text(),
             department_id=2,
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],

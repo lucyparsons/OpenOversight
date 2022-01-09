@@ -514,8 +514,8 @@ class IncidentForm(DateFieldForm):
     report_number = StringField(
         validators=[
             Regexp(
-                r"^[a-zA-Z0-9-]*$",
-                message="Report numbers can contain letters, numbers, and dashes",
+                r"^[a-zA-Z0-9- ]*$",
+                message="Report cannot contain special characters (dashes permitted)",
             )
         ],
         description="Incident number for the organization tracking incidents",

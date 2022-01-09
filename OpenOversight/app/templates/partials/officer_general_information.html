@@ -18,10 +18,12 @@
                     <td><b>OpenOversight ID</b></td>
                     <td>{{ officer.id }}</td>
                 </tr>
+                {% if officer.unique_internal_identifier %}
                 <tr>
                     <td><b>Unique Internal Identifier</b></td>
                     <td>{{ officer.unique_internal_identifier }}</td>
                 </tr>
+                {% endif %}
                 <tr>
                     <td><b>Department</b></td>
                     <td>{{ officer.department.name }}</td>
@@ -41,6 +43,10 @@
                 <tr>
                     <td><b>First Employment Date</b></td>
                     <td>{{ officer.employment_date }}</td>
+                </tr>
+                <tr>
+                    <td><b>Number of known incidents</b></td>
+                    <td>{{ officer.incidents | length }}</td>
                 </tr>
                 <tr>
                     <td><b>Currently on the force</b></td>
