@@ -160,6 +160,8 @@
                       <dd>{{ officer.unit_descrip()|default('Unknown') }}</dd>
                       <dt>Currently on the Force</dt>
                       <dd>{{ officer.currently_on_force() }}</dd>
+                      <dt>Known incidents</dt>
+                      <dd>{{ officer.incidents | length }}</dd>
                     </dl>
                   </div>
                   <div class="col-md-6 col-xs-6">
