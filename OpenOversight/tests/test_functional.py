@@ -14,7 +14,7 @@ from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
 
-DESCRIPTION_CUTOFF = 500
+DESCRIPTION_CUTOFF = 700
 
 
 @contextmanager
