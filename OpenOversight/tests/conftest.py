@@ -16,7 +16,7 @@ import sys
 import os
 from PIL import Image as Pimage
 
-from OpenOversight.app import create_app, models
+from OpenOversight.app import create_app, models, utils
 from OpenOversight.app.utils import merge_dicts
 from OpenOversight.app.models import db as _db, Unit, Job, Officer
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
@@ -291,8 +291,13 @@ def add_mockdata(session):
     session.add_all(test_units)
     session.commit()
 
-    test_images = [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=1) for x in range(5)] + \
-        [models.Image(filepath='/static/images/test_cop{}.png'.format(x + 1), department_id=2) for x in range(5)]
+    test_images = [
+        models.Image(
+            filepath=utils.get_presigned_image_url('/images/test_cop{}.png'.format(x + 1)),
+            department_id=1) for x in range(5)] + \
+        [models.Image(
+            filepath=utils.get_presigned_image_url('/images/test_cop{}.png'.format(x + 1)),
+            department_id=2) for x in range(5)]
 
     test_officer_links = [
         models.Link(
@@ -307,7 +312,7 @@ def add_mockdata(session):
             author='the internet'),
     ]
 
-    officers = [generate_officer() for o in range(NUM_OFFICERS)]
+    officers = [generate_officer() for _ in range(NUM_OFFICERS)]
     officers[0].links = test_officer_links
     session.add_all(officers)
     session.add_all(test_images)

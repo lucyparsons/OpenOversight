@@ -6,6 +6,7 @@ from urllib.request import urlopen
 from io import BytesIO
 
 import boto3
+from botocore.client import Config
 from botocore.exceptions import ClientError
 import botocore
 import datetime
@@ -31,6 +32,13 @@ from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+
+def get_s3_connection(config=None):
+    if current_app.config['S3_ENDPOINT']:
+        return boto3.client('s3', config=config, endpoint_url=current_app.config['S3_ENDPOINT'])
+    else:
+        return boto3.client('s3', config=config)
 
 
 def set_dynamic_default(form_field, value):
@@ -226,8 +234,22 @@ def compute_hash(data_to_hash):
     return hashlib.sha256(data_to_hash).hexdigest()
 
 
+def get_presigned_image_url(s3_path: str):
+    unsigned = Config(signature_version=botocore.UNSIGNED)
+    s3_client_unsigned = get_s3_connection(unsigned)
+
+    url = s3_client_unsigned.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': current_app.config['S3_BUCKET_NAME'], 'Key': s3_path}
+    )
+    return url
+
+
 def upload_obj_to_s3(file_obj, dest_filename):
-    s3_client = boto3.client('s3')
+    if current_app.config['S3_ENDPOINT']:
+        s3_client = get_s3_connection(Config(signature_version='s3v4'))
+    else:
+        s3_client = get_s3_connection()
 
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
@@ -240,16 +262,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
                              current_app.config['S3_BUCKET_NAME'],
                              s3_path,
                              ExtraArgs={'ContentType': s3_content_type, 'ACL': 'public-read'})
-
-    config = s3_client._client_config
-    config.signature_version = botocore.UNSIGNED
-    url = boto3.resource(
-        's3', config=config).meta.client.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': current_app.config['S3_BUCKET_NAME'],
-                'Key': s3_path})
-
-    return url
+    return get_presigned_image_url(s3_path)
 
 
 def filter_by_form(form_data, officer_query, department_id=None):

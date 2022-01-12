@@ -96,4 +96,5 @@ vagrant/puppet/.tmp
 node_modules/
 OpenOverSight/app/static/dist/
 
-
+/OpenOversight/tests/resources/.minio.sys/
+OpenOversight/tests/resources/openoversight-test/

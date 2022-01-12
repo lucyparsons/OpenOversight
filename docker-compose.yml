@@ -5,41 +5,60 @@ volumes:
     driver: local
 
 services:
- postgres:
-   restart: always
-   image: postgres:latest
-   environment:
-     POSTGRES_USER: openoversight
-     POSTGRES_PASSWORD: terriblepassword
-     POSTGRES_DB: openoversight-dev
-   volumes:
-     - postgres:/var/lib/postgresql/data
-   ports:
-     - "5432:5432"
+  postgres:
+    restart: always
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: openoversight
+      POSTGRES_PASSWORD: terriblepassword
+      POSTGRES_DB: openoversight-dev
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
- web:
-   restart: always
-   build:
+  web:
+    restart: always
+    build:
       context: .
       args:
-      - DOCKER_BUILD_ENV
-      - TRAVIS_PYTHON_VERSION
+        - DOCKER_BUILD_ENV
+        - TRAVIS_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
-   environment:
-     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-     AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-     AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-     S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
-     APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
-     FLASK_APP: app
-     FLASK_ENV: "${FLASK_ENV:-development}"
-   volumes:
-     - ./OpenOversight/:/usr/src/app/OpenOversight/:z
-   user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
-   links:
-     - postgres:postgres
-   expose:
-     - "3000"
-   command: scripts/entrypoint.sh
-   ports:
-     - "3000:3000"
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-minio123}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-minio123}"
+      S3_ENDPOINT: "${S3_ENDPOINT:-http://localhost:9000}"
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION:-us-east-1}"
+      S3_BUCKET_NAME: "${S3_BUCKET_NAME:-openoversight-test}"
+      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
+      FLASK_APP: app
+      FLASK_ENV: "${FLASK_ENV:-development}"
+    volumes:
+      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+    user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
+    command: scripts/entrypoint.sh
+    ports:
+      - "3000:3000"
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: "${AWS_ACCESS_KEY_ID:-minio123}"
+      MINIO_SECRET_KEY: "${AWS_SECRET_ACCESS_KEY:-minio123}"
+    command: server /data
+    volumes:
+      - ./OpenOversight/tests/resources/:/data:rw
+    ports:
+      - "9000:9000"
+
+  mc:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc config host add minio http://minio:9000 ${AWS_ACCESS_KEY_ID:-minio123} ${AWS_SECRET_ACCESS_KEY:-minio123};
+      /usr/bin/mc policy set public minio/${S3_BUCKET_NAME:-openoversight-test};
+      "

@@ -54,6 +54,7 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     NUM_OFFICERS = 15000
     SITEMAP_URL_SCHEME = 'http'
+    S3_ENDPOINT = os.getenv('S3_ENDPOINT')
 
 
 class TestingConfig(BaseConfig):
@@ -63,6 +64,7 @@ class TestingConfig(BaseConfig):
     NUM_OFFICERS = 120
     APPROVE_REGISTRATIONS = False
     SITEMAP_URL_SCHEME = 'http'
+    S3_ENDPOINT = os.getenv('S3_ENDPOINT')
 
 
 class ProductionConfig(BaseConfig):

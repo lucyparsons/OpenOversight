@@ -11,7 +11,7 @@ ENV DISPLAY=:1
 
 # install apt dependencies
 RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev ncat && \
     apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
 
 # install node
