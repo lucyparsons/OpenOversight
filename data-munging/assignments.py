@@ -70,13 +70,18 @@ def make_assignments(df: pd.DataFrame, end_dates: pd.Series) -> pd.DataFrame:
     across all records in known history to only the changes (in unit or title) that
     occur for an officer.
     """
-    # Drop any duplicate assignment records, keep the first record that's encountered.
-    # This makes sure the earliest record of their position change is maintained.
-    df = df.drop_duplicates(subset=["badge", "unit_description", "title"], keep="first")
+    # Sort the dataframe by date ascending
+    df = df.sort_values("date")
+    # These are the columns we will use for determining changes. Officers may have
+    # multiple duplicates across time, but we're interested in removing *consecutive*
+    # duplicates. If an officer changes units, then goes back to a previous unit,
+    # we want to be able to see that.
+    cols = ["badge", "unit_description", "title"]
+    # This shifts the dataframe by one row, and then uses that to compare to the previous
+    # row. If there are any changes across the relevant fields, we keep that record
+    df = df.loc[(df[cols].shift() != df[cols]).any(axis="columns")]
     # Get the badge for this officer
     badge = df.reset_index().iloc[0].badge
-    # Sort by date ascending
-    df = df.sort_values("date")
     # Get most recent name
     fn, first, middle, last = df.iloc[-1][
         ["full_name", "first_name", "middle_name", "last_name"]
