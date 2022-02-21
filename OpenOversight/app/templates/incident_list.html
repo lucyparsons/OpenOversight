@@ -14,19 +14,30 @@
 	{% endif %}
 	<ul class="list-group">
 		{% if objects.items %}
+		<table class='table table-hover table-responsive'>
+			<tbody>
 		  {% for incident in objects.items %}
-		  	<li class="list-group-item">
+		  {% if not loop.first %}
+		  <tr class="border:none"><td colspan="2">&nbsp;</td></tr>
+		  {% endif %}
+		  	<tr>
+				  <td colspan="2" style="border-top: 0; ">
 		  		<h3>
 		  				<a href="{{ url_for('main.incident_api', obj_id=incident.id)}}">
 		  				Incident
               {% if incident.report_number %}
                 {{ incident.report_number }}
+				{% else %}
+				{{ incident.id}}
               {% endif %}
 		  			</a>
 		  		</h3>
-		    	{% include 'partials/incident_fields.html' %}
-		    </li>
+			</td>
+		    </tr>
+		    {% include 'partials/incident_fields.html' %}
 		  {% endfor %}
+		  </tbody>
+		  </table>
 		{% else %}
 			<p>There are no incidents.</p>
 		{% endif %}
