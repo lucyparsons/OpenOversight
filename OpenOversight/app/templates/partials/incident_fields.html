@@ -4,10 +4,12 @@
     <td><strong>Date</strong></td>
     <td>{{ incident.date.strftime('%b %d, %Y') }}</td>
   </tr>
+  {% if incident.time %}
   <tr>
     <td><strong>Time</strong></td>
-    <td>{% if incident.time %}{{ incident.time.strftime('%l:%M %p') }}{% endif %}</td>
+    <td>{{ incident.time.strftime('%l:%M %p') }}</td>
   </tr>
+  {% endif %}
   {% if incident.report_number %}
     <tr>
       <td><strong>Report #</strong></td>
@@ -62,12 +64,15 @@
         <td><strong>Address</strong></td>
         <td>
           {% if address.street_name %}
-            {{ address.street_name }}<br/>
-          {% endif %}
-          {% if address.cross_street1 and address.cross_street2 %}
-            <em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
-          {% elif address.cross_street1 %}
-            <em>near</em> {{ address.cross_street1 }}
+            {{ address.street_name }}
+            {% if address.cross_street1%}
+              {% if address.cross_street2%}
+                <em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
+              {% else %}
+                <em>near</em> {{ address.cross_street1 }}
+              {% endif %}
+            {% endif %}
+            <br/>
           {% endif %}
           {{ address.city }}, {{ address.state }} {% if address.zipcode %} {{ address.zip_code }} {% endif %}
         </td>
