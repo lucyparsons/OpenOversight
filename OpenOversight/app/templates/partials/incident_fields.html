@@ -1,13 +1,15 @@
-<table class='table table-hover table-responsive'>
-	<tbody>
+
+
 		<tr>
 			<td><strong>Date</strong></td>
 			<td>{{ incident.date.strftime('%b %d, %Y') }}</td>
 		</tr>
+		{% if incident.time %}
 		<tr>
 			<td><strong>Time</strong></td>
-			<td>{% if incident.time %}{{ incident.time.strftime('%l:%M %p') }}{% endif %}</td>
+			<td>{{ incident.time.strftime('%l:%M %p') }}</td>
 		</tr>
+		{% endif %}
 		{% if incident.report_number %}
 		<tr>
 			<td><strong>Report #</strong></td>
@@ -42,7 +44,7 @@
 			<tr>
 				<td><strong>Description</strong></td>
 				<td class="incident-description" id="incident-description_{{incident.id}}" data-incident='{{incident.id | tojson}}'>
-					{{ incident.description }}
+					{{ incident.description | markdown}}
 				</td>
 			</tr>
 			<tr id="description-overflow-row_{{ incident.id }}" >
@@ -59,13 +61,17 @@
 				<tr>
 					<td><strong>Address</strong></td>
 						<td>
-							{{ address.street_name }}
-							{% if address.cross_street1 and address.cross_street2 %}
-								<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
-								{% else %}
-								 <em>near</em> {{ address.cross_street1 }}
+							{% if address.street_name %}
+								{{ address.street_name }}
+								{% if address.cross_street1%}
+									{% if address.cross_street2%}
+									<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
+									{% else %}
+									<em>near</em> {{ address.cross_street1 }}
+									{% endif %}
+								{% endif %}
+								<br/>
 							{% endif %}
-							<br/>
 							{{ address.city }}, {{ address.state }} {% if address.zipcode %} {{ address.zip_code }} {% endif %}
 						</td>
 				</tr>
@@ -85,8 +91,7 @@
 				</tr>
 			{% endif %}
 		{% endif %}
-	</tbody>
-</table>
+
 
 {% block js_footer %}
 	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>

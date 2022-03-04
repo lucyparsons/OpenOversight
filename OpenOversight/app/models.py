@@ -356,7 +356,7 @@ class Link(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), index=True)
-    url = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.Text(), nullable=False)
     link_type = db.Column(db.String(100), index=True)
     description = db.Column(db.Text(), nullable=True)
     author = db.Column(db.String(255), nullable=True)

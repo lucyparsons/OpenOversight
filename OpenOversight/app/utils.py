@@ -309,7 +309,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
     officer_query = (
         officer_query
-        .options(selectinload(Officer.assignments_lazy))
+        .options(selectinload(Officer.assignments_lazy)).distinct()
     )
 
     return officer_query
