@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "openoversight"
+version = "0.6.7"
+description = ""
+authors = ["Lucy Parsons Labs <info@lucyparsonslabs.com>"]
+license = "GPLv3"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+psycopg2 = "^2.9.3"
+Flask = "1.0.2"
+python-dotenv = "0.7.1"
+boto3 = "1.5.10"
+Werkzeug = "1.0.1"
+WTForms = "2.3.3"
+Flask-Bootstrap = "3.3.7.1"
+Flask-Limiter = "1.0.1"
+Flask-Login = "0.4.1"
+Flask-Mail = "0.9.1"
+Flask-Migrate = "2.1.1"
+Flask-SQLAlchemy = "2.4.4"
+Flask-WTF = "0.14.3"
+Flask-Sitemap = "0.3.0"
+python-dateutil = "2.8.1"
+SQLAlchemy = "1.3.0"
+gunicorn = "^20.1"
+Fabric3 = "1.14.post1"
+itsdangerous = "0.24"
+us = "1.0"
+future = "0.18.2"
+email-validator = "1.0.5"
+bleach = "3.3.1"
+bleach-allowlist = "1.0.3"
+Markdown = "3.2.2"
+Pillow = "^9.0.0"
+
+[tool.poetry.dev-dependencies]
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
