@@ -38,11 +38,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r dev-requirements.txt
+          pip install poetry
+          poetry install
 
       # Run flake8
       - name: Run flake8
-        run: flake8 --ignore=E501,E722,W504,W503
+        run: poetry run flake8 --ignore=E501,E722,W504,W503
       # Runs tests
       - name: Run tests
-        run: FLASK_ENV=testing pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/ OpenOversight/app;
+        run: FLASK_ENV=testing poetry run pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/ OpenOversight/app;
