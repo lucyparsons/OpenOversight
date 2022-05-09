@@ -9,7 +9,7 @@ license = "GPLv3"
 python = "^3.7.1"
 
 psycopg2 = "^2.9.3"
-Flask = "1.0.2"
+Flask = "1.1.4"
 python-dotenv = "0.7.1"
 boto3 = "1.5.10"
 Werkzeug = "1.0.1"
