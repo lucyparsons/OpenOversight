@@ -749,3 +749,31 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
         assert "successfully updated" in rv.data.decode("utf-8")
         assert "<script>" not in rv.data.decode()
         assert "&lt;script&gt;" in rv.data.decode()
+
+
+@pytest.mark.parametrize(
+    "params,included_report_nums,excluded_report_nums",
+    [
+        ({"department_id": "1"}, ["42"], ["38", "39"]),
+        ({"occurred_before": "2017-12-12"}, ["38", "42"], ["39"]),
+        (
+            {"occurred_after": "2017-12-10", "occurred_before": "2019-01-01"},
+            ["38"],
+            ["39", "42"],
+        ),
+        ({"report_number": "38"}, ["38"], ["42", "39"]),  # Base case
+        ({"report_number": "3"}, ["38", "39"], ["42"]),  # Test inclusive match
+        ({"report_number": "38 "}, ["38"], ["42", "39"]),  # Test trim
+    ],
+)
+def test_users_can_search_incidents(
+    params, included_report_nums, excluded_report_nums, mockdata, client, session
+):
+    with current_app.test_request_context():
+        rv = client.get(url_for("main.incident_api", **params))
+
+        for report_num in included_report_nums:
+            assert "<td>{}</td>".format(report_num) in rv.data.decode("utf-8")
+
+        for report_num in excluded_report_nums:
+            assert "<td>{}</td>".format(report_num) not in rv.data.decode("utf-8")

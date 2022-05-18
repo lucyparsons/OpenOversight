@@ -1,9 +1,9 @@
 import csv
+import datetime
 import io
 import os
 import re
 import sys
-from datetime import date
 from traceback import format_exc
 
 from flask import (
@@ -83,6 +83,7 @@ from .forms import (
     FindOfficerForm,
     FindOfficerIDForm,
     IncidentForm,
+    IncidentListForm,
     OfficerLinkForm,
     SalaryForm,
     TextForm,
@@ -1219,7 +1220,7 @@ def download_dept_officers_csv(department_id):
     for officer in officers:
         if officer.assignments_lazy:
             most_recent_assignment = max(
-                officer.assignments_lazy, key=lambda a: a.star_date or date.min
+                officer.assignments_lazy, key=lambda a: a.star_date or datetime.date.min
             )
             most_recent_title = most_recent_assignment.job and check_output(
                 most_recent_assignment.job.job_title
@@ -1440,26 +1441,76 @@ class IncidentApi(ModelView):
     department_check = True
 
     def get(self, obj_id):
+        if obj_id:
+            # Single-item view
+            return super(IncidentApi, self).get(obj_id)
+
+        # List view
         if request.args.get("page"):
             page = int(request.args.get("page"))
         else:
             page = 1
-        if request.args.get("department_id"):
-            department_id = request.args.get("department_id")
+
+        form = IncidentListForm()
+        incidents = self.model.query
+
+        dept = None
+        department_id = request.args.get("department_id")
+        if department_id:
             dept = Department.query.get_or_404(department_id)
-            obj = (
-                self.model.query.filter_by(department_id=department_id)
-                .order_by(getattr(self.model, self.order_by).desc())
-                .paginate(page, self.per_page, False)
+            form.department_id.data = department_id
+            incidents = incidents.filter_by(department_id=department_id)
+
+        report_number = request.args.get("report_number")
+        if report_number:
+            form.report_number.data = report_number
+            incidents = incidents.filter(
+                Incident.report_number.contains(report_number.strip())
             )
-            return render_template(
-                "{}_list.html".format(self.model_name),
-                objects=obj,
-                url="main.{}_api".format(self.model_name),
-                department=dept,
-            )
-        else:
-            return super(IncidentApi, self).get(obj_id)
+
+        occurred_before = request.args.get("occurred_before")
+        if occurred_before:
+            before_date = datetime.datetime.strptime(occurred_before, "%Y-%m-%d").date()
+            form.occurred_before.data = before_date
+            incidents = incidents.filter(self.model.date < before_date)
+
+        occurred_after = request.args.get("occurred_after")
+        if occurred_after:
+            after_date = datetime.datetime.strptime(occurred_after, "%Y-%m-%d").date()
+            form.occurred_after.data = after_date
+            incidents = incidents.filter(self.model.date > after_date)
+
+        incidents = incidents.order_by(
+            getattr(self.model, self.order_by).desc()
+        ).paginate(page, self.per_page, False)
+
+        url = "main.{}_api".format(self.model_name)
+        next_url = url_for(
+            url,
+            page=incidents.next_num,
+            department_id=department_id,
+            report_number=report_number,
+            occurred_after=occurred_after,
+            occurred_before=occurred_before,
+        )
+        prev_url = url_for(
+            url,
+            page=incidents.prev_num,
+            department_id=department_id,
+            report_number=report_number,
+            occurred_after=occurred_after,
+            occurred_before=occurred_before,
+        )
+
+        return render_template(
+            "{}_list.html".format(self.model_name),
+            form=form,
+            incidents=incidents,
+            url=url,
+            next_url=next_url,
+            prev_url=prev_url,
+            department=dept,
+        )
 
     def get_new_form(self):
         form = self.form()
