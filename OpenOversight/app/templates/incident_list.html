@@ -38,3 +38,6 @@
 	  </a>
 	{% endif %}
 {% endblock list %}
+{% block js_footer %}
+  <script src="{{ url_for('static', filename='js/incidentDescription.js') }}"></script>
+{% endblock %}
