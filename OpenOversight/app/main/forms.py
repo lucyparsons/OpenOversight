@@ -597,3 +597,11 @@ class BrowseForm(Form):
         validators=[AnyOf(allowed_values(AGE_CHOICES))],
     )
     submit = SubmitField(label="Submit")
+
+
+class IncidentListForm(Form):
+    department_id = HiddenField("Department Id")
+    report_number = StringField("Report Number")
+    occurred_before = DateField("Occurred Before")
+    occurred_after = DateField("Occurred After")
+    submit = SubmitField(label="Submit")
