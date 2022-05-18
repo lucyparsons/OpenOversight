@@ -18,14 +18,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"OpenOversight"
-copyright = u"2018, Lucy Parsons Labs"
-author = u"Lucy Parsons Labs"
+project = "OpenOversight"
+copyright = "2018, Lucy Parsons Labs"
+author = "Lucy Parsons Labs"
 
 # The short X.Y version
-version = u""
+version = ""
 # The full version, including alpha/beta/rc tags
-release = u""
+release = ""
 
 
 # -- General configuration ---------------------------------------------------
@@ -61,7 +61,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -126,8 +126,8 @@ latex_documents = [
     (
         master_doc,
         "OpenOversight.tex",
-        u"OpenOversight Documentation",
-        u"Lucy Parsons Labs",
+        "OpenOversight Documentation",
+        "Lucy Parsons Labs",
         "manual",
     ),
 ]
@@ -137,7 +137,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "openoversight", u"OpenOversight Documentation", [author], 1)]
+man_pages = [(master_doc, "openoversight", "OpenOversight Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -149,7 +149,7 @@ texinfo_documents = [
     (
         master_doc,
         "OpenOversight",
-        u"OpenOversight Documentation",
+        "OpenOversight Documentation",
         author,
         "OpenOversight",
         "One line description of project.",

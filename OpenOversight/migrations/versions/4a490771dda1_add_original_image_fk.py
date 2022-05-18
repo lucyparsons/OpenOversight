@@ -21,7 +21,7 @@ def upgrade():
     op.add_column(
         "faces", sa.Column("fk_face_original_image_id", sa.Integer(), nullable=True)
     )
-    op.drop_constraint(u"faces_img_id_fkey", "faces", type_="foreignkey")
+    op.drop_constraint("faces_img_id_fkey", "faces", type_="foreignkey")
     op.create_foreign_key(
         "fk_face_image_id",
         "faces",
@@ -50,7 +50,7 @@ def downgrade():
     op.drop_constraint(None, "faces", type_="foreignkey")
     op.drop_constraint("fk_face_image_id", "faces", type_="foreignkey")
     op.create_foreign_key(
-        u"faces_img_id_fkey", "faces", "raw_images", ["img_id"], ["id"]
+        "faces_img_id_fkey", "faces", "raw_images", ["img_id"], ["id"]
     )
     op.drop_column("faces", "fk_face_original_image_id")
     # ### end Alembic commands ###

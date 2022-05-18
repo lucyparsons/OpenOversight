@@ -460,7 +460,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
     # handles unicode errors that can occur when the file was made in Excel
     with open(filename, "r") as f:
-        if u"\ufeff" in f.readline():
+        if "\ufeff" in f.readline():
             encoding = "utf-8-sig"
 
     with open(filename, "r", encoding=encoding) as f:

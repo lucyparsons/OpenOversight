@@ -10,7 +10,7 @@ class BootstrapListWidget(ListWidget):
 
     def __call__(self, field, **kwargs):
         c = kwargs.pop("classes", "") or kwargs.pop("class_", "")
-        kwargs["class"] = u"%s %s" % (self.classes, c)
+        kwargs["class"] = "%s %s" % (self.classes, c)
         kwargs.setdefault("id", field.id)
         html = ["<%s %s>" % (self.html_tag, html_params(**kwargs))]
         for subfield in field:

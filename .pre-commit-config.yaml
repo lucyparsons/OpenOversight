@@ -80,8 +80,8 @@ repos:
             - --ignore=E203,E402,E501,E800,W503,W391,E261
             - --select=B,C,E,F,W,T4,B9
 
-  - repo: https://github.com/ambv/black
-    rev: 21.6b0
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
     hooks:
         - id: black
           args:

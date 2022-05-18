@@ -2,10 +2,10 @@ Authlib==0.15.5
 boto3==1.17.101
 email-validator==1.0.5
 Fabric3==1.14.post1
-Flask==2.0.1
+Flask==2.1.2
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==1.4
-Flask-Login==0.5.0
+Flask-Login==0.6.1
 Flask-Mail==0.9.1
 Flask-Migrate==3.0.1
 Flask-Sitemap==0.3.0

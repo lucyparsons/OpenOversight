@@ -24,7 +24,7 @@ def upgrade():
     op.add_column(
         "incidents", sa.Column("last_updated_id", sa.Integer(), nullable=True)
     )
-    op.drop_constraint(u"incidents_user_id_fkey", "incidents", type_="foreignkey")
+    op.drop_constraint("incidents_user_id_fkey", "incidents", type_="foreignkey")
     op.create_foreign_key(None, "incidents", "users", ["creator_id"], ["id"])
     op.create_foreign_key(None, "incidents", "users", ["last_updated_id"], ["id"])
     # ### end Alembic commands ###
@@ -38,7 +38,7 @@ def downgrade():
     op.drop_constraint(None, "incidents", type_="foreignkey")
     op.drop_constraint(None, "incidents", type_="foreignkey")
     op.create_foreign_key(
-        u"incidents_user_id_fkey", "incidents", "users", ["user_id"], ["id"]
+        "incidents_user_id_fkey", "incidents", "users", ["user_id"], ["id"]
     )
     op.drop_column("incidents", "last_updated_id")
     # ### end Alembic commands ###

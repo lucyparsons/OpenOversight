@@ -163,7 +163,7 @@ class AssignmentForm(Form):
         query_factory=unit_choices,
         get_label="descrip",
         allow_blank=True,
-        blank_text=u"None",
+        blank_text="None",
     )
     star_date = DateField("Assignment start date", validators=[Optional()])
     resign_date = DateField(
@@ -329,7 +329,7 @@ class AddOfficerForm(Form):
         query_factory=unit_choices,
         get_label="descrip",
         allow_blank=True,
-        blank_text=u"None",
+        blank_text="None",
     )
     employment_date = DateField("Employment Date", validators=[Optional()])
     birth_year = IntegerField("Birth Year", validators=[Optional()])

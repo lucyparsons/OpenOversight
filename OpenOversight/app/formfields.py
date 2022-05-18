@@ -20,7 +20,7 @@ class TimeField(StringField):
             return self.data and self.data.strftime(self.format) or ""
 
     def process_formdata(self, valuelist):
-        if valuelist and valuelist != [u""]:
+        if valuelist and valuelist != [""]:
             time_str = " ".join(valuelist)
             try:
                 components = time_str.split(":")
