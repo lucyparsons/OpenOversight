@@ -2,11 +2,7 @@
 {% set incident = obj %}
 {% block title %}{{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %} - OpenOversight{% endblock %}
 {% block meta %}
-  {% if incident.description != None %}
-    <meta name="description" content="{{ incident.description }}">
-  {% else %}
-    <meta name="description" content="View details for {{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %}.">
-  {% endif %}
+  <meta name="description" content="View details for {{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %}.">
   <!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
   <script type="application/ld+json">
 	{
