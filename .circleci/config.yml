@@ -5,10 +5,10 @@ steps:
     run:
       name: Install dependencies (required for fabric)
       command: |
-        pyenv global 3.5.2
         sudo apt-get update
-        sudo apt-get upgrade
-        sudo apt-get install libpq-dev
+        sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+          libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
+          libharfbuzz-dev libfribidi-dev libxcb1-dev
         virtualenv --python=python3 .venv
         source .venv/bin/activate
         pip3 install -r requirements.txt
@@ -46,9 +46,8 @@ steps:
 
 jobs:
   staging_backup_and_deploy:
-    machine:
-      enabled: true
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: cimg/python:3.9
     steps:
       - checkout
       - *setup_dependencies
@@ -69,9 +68,8 @@ jobs:
             fab staging migrate
 
   production_deploy:
-    machine:
-      enabled: true
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: cimg/python:3.9
     steps:
       - checkout
       - *setup_dependencies
@@ -84,9 +82,8 @@ jobs:
             fab production migrate
 
   production_backup_only:
-    machine:
-      enabled: true
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: cimg/python:3.9
     steps:
       - checkout
       - *setup_dependencies
