@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "repository": "https://github.com/lucyparsons/OpenOversight",
   "scripts": {
-    "build": "node-sass --build --recursive OpenOversight/app/static/scss/index.scss -o OpenOversight/app/static/dist",
-    "watch": "node-sass --watch --recursive OpenOversight/app/static/scss/index.scss -o OpenOversight/app/static/dist"
+    "build": "sass OpenOversight/app/static/scss/index.scss:OpenOversight/app/static/dist/index.css",
+    "watch": "sass --watch OpenOversight/app/static/scss/index.scss:OpenOversight/app/static/dist/index.css"
   },
   "devDependencies": {
-    "node-sass": "^4.13.1",
+    "sass": "^1.51.0",
     "jquery": "1.9.1 - 3",
     "popper.js": "^1.14.3"
   }

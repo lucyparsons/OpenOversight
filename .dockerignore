@@ -1,5 +1,7 @@
 backup/**
 container_data
 .cache
+.venv
+.env
 node_modules
 OpenOversight/app/static/dist/*

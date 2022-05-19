@@ -1,0 +1,21 @@
+FROM node:lts AS nodejs
+
+COPY package.json /usr/src/app/
+COPY yarn.lock /usr/src/app/
+WORKDIR /usr/src/app
+RUN yarn install
+COPY . /usr/src/app
+RUN yarn build
+
+
+FROM python:3.9
+EXPOSE 8000
+WORKDIR /usr/src/app
+RUN pip install poetry
+COPY pyproject.toml /usr/src/app
+COPY poetry.lock /usr/src/app
+RUN poetry install --no-dev
+COPY . /usr/src/app
+COPY --from=nodejs /usr/src/app/OpenOversight/app/static/dist /usr/src/app/OpenOversight/app/static/dist
+WORKDIR /usr/src/app/OpenOversight
+CMD poetry run gunicorn --bind 0.0.0.0 app:app
