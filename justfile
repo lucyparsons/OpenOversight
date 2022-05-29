@@ -76,6 +76,10 @@ import +args:
 lint:
     pre-commit run --all-files
 
+# Run Flask-Migrate tasks in the web container
+db +migrateargs:
+    just run --no-deps web flask db {{ migrateargs }}
+
 # Run unit tests in the web container
 test *pytestargs:
     just run --no-deps web pytest -n auto -m "not acceptance" {{ pytestargs }}

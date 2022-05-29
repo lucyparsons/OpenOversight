@@ -4,6 +4,7 @@ import operator
 import os
 import traceback
 import uuid
+from decimal import Decimal
 
 import pandas as pd
 import pytest
@@ -427,7 +428,9 @@ def test_csv_new_salary(csvfile):
     officer = Officer.query.filter_by(id=officer_id).one()
     assert len(list(officer.salaries)) == 2
     for salary in officer.salaries:
-        assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
+        assert salary.salary == Decimal("123456.78") or salary.salary == Decimal(
+            "150000.00"
+        )
 
 
 def test_bulk_add_officers__success(session, department_with_ranks, csv_path):

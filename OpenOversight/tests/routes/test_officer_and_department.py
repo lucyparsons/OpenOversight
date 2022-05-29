@@ -4,6 +4,7 @@ import csv
 import json
 import random
 from datetime import date, datetime
+from decimal import Decimal
 from io import BytesIO
 
 import pytest
@@ -1894,7 +1895,7 @@ def test_admin_can_add_salary(mockdata, client, session):
         login_admin(client)
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
 
         rv = client.post(
@@ -1906,7 +1907,9 @@ def test_admin_can_add_salary(mockdata, client, session):
         assert "Added new salary" in rv.data.decode("utf-8")
         assert "<td>$123,456.78</td>" in rv.data.decode("utf-8")
 
-        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        officer = Officer.query.filter(
+            Officer.salaries.any(salary=Decimal("123456.78"))
+        ).first()
         assert officer is not None
 
 
@@ -1915,7 +1918,7 @@ def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
         login_ac(client)
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
@@ -1928,7 +1931,9 @@ def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
         assert "Added new salary" in rv.data.decode("utf-8")
         assert "<td>$123,456.78</td>" in rv.data.decode("utf-8")
 
-        officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
+        officer = Officer.query.filter(
+            Officer.salaries.any(salary=Decimal("123456.78"))
+        ).first()
         assert officer is not None
 
 
@@ -1937,7 +1942,7 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
         login_ac(client)
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -1960,7 +1965,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
         Salary.query.filter_by(officer_id=1).delete()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
 
         rv = client.post(
@@ -1972,7 +1977,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
         assert "Added new salary" in rv.data.decode("utf-8")
         assert "<td>$123,456.78</td>" in rv.data.decode("utf-8")
 
-        form = SalaryForm(salary=150000)
+        form = SalaryForm(salary="150000")
         officer = Officer.query.filter_by(id=1).one()
 
         rv = client.post(
@@ -1990,7 +1995,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
         assert "<td>$150,000.00</td>" in rv.data.decode("utf-8")
 
         officer = Officer.query.filter_by(id=1).one()
-        assert officer.salaries[0].salary == 150000
+        assert officer.salaries[0].salary == Decimal(150000)
 
 
 def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
@@ -2003,7 +2008,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         Salary.query.filter_by(officer_id=officer_id).delete()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
 
         rv = client.post(
@@ -2015,7 +2020,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         assert "Added new salary" in rv.data.decode("utf-8")
         assert "<td>$123,456.78</td>" in rv.data.decode("utf-8")
 
-        form = SalaryForm(salary=150000)
+        form = SalaryForm(salary="150000")
         officer = Officer.query.filter_by(id=officer_id).one()
 
         rv = client.post(
@@ -2033,7 +2038,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         assert "<td>$150,000.00</td>" in rv.data.decode("utf-8")
 
         officer = Officer.query.filter_by(id=officer_id).one()
-        assert officer.salaries[0].salary == 150000
+        assert officer.salaries[0].salary == Decimal(150000)
 
 
 def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
@@ -2047,7 +2052,7 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
         Salary.query.filter_by(officer_id=officer_id).delete()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
         )
 
         login_admin(client)
@@ -2061,7 +2066,7 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
         assert "<td>$123,456.78</td>" in rv.data.decode("utf-8")
 
         login_ac(client)
-        form = SalaryForm(salary=150000)
+        form = SalaryForm(salary="150000")
         officer = Officer.query.filter_by(id=officer_id).one()
 
         rv = client.post(
@@ -2078,7 +2083,7 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
         assert rv.status_code == 403
 
         officer = Officer.query.filter_by(id=officer_id).one()
-        assert float(officer.salaries[0].salary) == 123456.78
+        assert officer.salaries[0].salary == Decimal("123456.78")
 
 
 def test_get_department_ranks_with_specific_department_id(mockdata, client, session):

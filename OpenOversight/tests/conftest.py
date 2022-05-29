@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 import uuid
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 from typing import List
@@ -111,7 +112,7 @@ def pick_uid():
 
 
 def pick_salary():
-    return random.randint(100, 100000000) / 100
+    return Decimal(random.randint(100, 100000000)) / 100
 
 
 def generate_officer():

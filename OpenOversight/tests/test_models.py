@@ -1,10 +1,13 @@
 import datetime
 import time
+from decimal import Decimal
 
-from pytest import raises
+import pytest
+from mock import MagicMock
 
 from OpenOversight.app.models import (
     Assignment,
+    Currency,
     Department,
     Face,
     Image,
@@ -86,7 +89,7 @@ def test_salary_repr(mockdata):
 
 def test_password_not_printed(mockdata):
     user = User(password="bacon")
-    with raises(AttributeError):
+    with pytest.raises(AttributeError):
         user.password
 
 
@@ -231,7 +234,7 @@ def test_area_coordinator_with_dept_is_valid(mockdata):
 
 
 def test_locations_must_have_valid_zip_codes(mockdata):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         Location(
             street_name="Brookford St",
             cross_street1="Mass Ave",
@@ -260,7 +263,7 @@ def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
 
 
 def test_locations_must_have_valid_states(mockdata):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         Location(
             street_name="Brookford St",
             cross_street1="Mass Ave",
@@ -290,7 +293,7 @@ def test_locations_can_be_saved_with_valid_states(mockdata):
 
 
 def test_license_plates_must_have_valid_states(mockdata):
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         LicensePlate(number="603EEE", state="JK")
 
 
@@ -310,7 +313,7 @@ def test_license_plates_can_be_saved_with_valid_states(mockdata):
 
 def test_links_must_have_valid_urls(mockdata):
     bad_url = "www.rachel.com"
-    with raises(ValueError):
+    with pytest.raises(ValueError):
         Link(link_type="video", url=bad_url)
 
 
@@ -381,3 +384,24 @@ def test_images_added_with_user_id(mockdata):
     db.session.commit()
     saved = Image.query.filter_by(user_id=user_id).first()
     assert saved is not None
+
+
+@pytest.mark.parametrize(
+    "dialect_name,original_value,intermediate_value",
+    [
+        ("sqlite", None, None),
+        ("sqlite", Decimal("123.45"), 12345),
+        ("postgresql", None, None),
+        ("postgresql", Decimal("123.45"), Decimal("123.45")),
+    ],
+)
+def test_currency_type_decorator(dialect_name, original_value, intermediate_value):
+    currency = Currency()
+    dialect = MagicMock()
+    dialect.name = dialect_name
+
+    value = currency.process_bind_param(original_value, dialect)
+    assert intermediate_value == value
+
+    value = currency.process_result_value(value, dialect)
+    assert original_value == value

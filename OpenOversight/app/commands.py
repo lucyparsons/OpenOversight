@@ -4,6 +4,7 @@ import csv
 import sys
 from builtins import input
 from datetime import date, datetime
+from decimal import Decimal
 from getpass import getpass
 from typing import Dict, List
 
@@ -396,21 +397,18 @@ def process_salary(row, officer, compare=False):
             # Get existing salaries for officer and compare to row data
             salaries = Salary.query.filter_by(officer_id=officer.id).all()
             for salary in salaries:
-                from decimal import Decimal
-
                 print(vars(salary))
                 print(row)
                 if (
-                    Decimal("%.2f" % salary.salary)
-                    == Decimal("%.2f" % float(row["salary"]))
+                    round(salary.salary, 2) == round(Decimal(row["salary"]), 2)
                     and salary.year == int(row["salary_year"])
                     and salary.is_fiscal_year == is_fiscal_year
                     and (
                         (
                             salary.overtime_pay
                             and "overtime_pay" in row
-                            and Decimal("%.2f" % salary.overtime_pay)
-                            == Decimal("%.2f" % float(row["overtime_pay"]))
+                            and round(salary.overtime_pay, 2)
+                            == round(Decimal(row["overtime_pay"]), 2)
                         )
                         or (
                             not salary.overtime_pay
@@ -425,12 +423,12 @@ def process_salary(row, officer, compare=False):
             # create new salary
             salary = Salary(
                 officer_id=officer.id,
-                salary=float(row["salary"]),
+                salary=round(Decimal(row["salary"]), 2),
                 year=int(row["salary_year"]),
                 is_fiscal_year=is_fiscal_year,
             )
             if "overtime_pay" in row and row["overtime_pay"]:
-                salary.overtime_pay = float(row["overtime_pay"])
+                salary.overtime_pay = round(Decimal(row["overtime_pay"]), 2)
             db.session.add(salary)
             db.session.flush()
 

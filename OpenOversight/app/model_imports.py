@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
@@ -50,9 +51,9 @@ def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
     return None
 
 
-def parse_float(value: Optional[Union[str, float]]) -> Optional[float]:
-    if value == 0.0 or value:
-        return float(value)
+def parse_decimal(value: Optional[Union[str, Decimal]]) -> Optional[Decimal]:
+    if value == Decimal(0) or value:
+        return Decimal(value)
     return None
 
 
@@ -162,8 +163,8 @@ def update_assignment_from_dict(
 def create_salary_from_dict(data: Dict[str, Any], force_id: bool = False) -> Salary:
     salary = Salary(
         officer_id=int(data["officer_id"]),
-        salary=float(data["salary"]),
-        overtime_pay=parse_float(data.get("overtime_pay")),
+        salary=Decimal(data["salary"]),
+        overtime_pay=parse_decimal(data.get("overtime_pay")),
         year=int(data["year"]),
         is_fiscal_year=parse_bool(data.get("is_fiscal_year")),
     )

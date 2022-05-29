@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import date
+from decimal import Decimal
 
 from authlib.jose import JoseError, JsonWebToken
 from flask import current_app
@@ -225,14 +226,39 @@ class Officer(BaseModel):
         )
 
 
+class Currency(db.TypeDecorator):
+    """
+    Store currency as an integer in sqlite to avoid float conversion
+    https://stackoverflow.com/questions/10355767/
+    """
+
+    impl = db.Numeric
+
+    def load_dialect_impl(self, dialect):
+        typ = db.Numeric()
+        if dialect.name == "sqlite":
+            typ = db.Integer()
+        return dialect.type_descriptor(typ)
+
+    def process_bind_param(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            value = int(Decimal(value) * 100)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            value = Decimal(value) / 100
+        return value
+
+
 class Salary(BaseModel):
     __tablename__ = "salaries"
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="salaries")
-    salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
-    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    salary = db.Column(Currency(), index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(Currency(), index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
