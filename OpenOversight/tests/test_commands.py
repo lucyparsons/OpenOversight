@@ -352,28 +352,32 @@ def test_csv_new_officer(csvfile):
     assert n_officers > 0
 
     new_uid = str(uuid.uuid4())
-    new_officer = {  # Must match fields in csvfile
-        "department_id": 1,
-        "unique_internal_identifier": new_uid,
-        "first_name": "FOO",
-        "last_name": "BAR",
-        "middle_initial": None,
-        "suffix": None,
-        "gender": "F",
-        "race": "BLACK",
-        "employment_date": None,
-        "birth_year": None,
-        "star_no": 666,
-        "job_title": "CAPTAIN",
-        "unit": None,
-        "star_date": None,
-        "resign_date": None,
-        "salary": 1.23,
-        "salary_year": 2019,
-        "salary_is_fiscal_year": True,
-        "overtime_pay": 4.56,
-    }
-    df = df.append([new_officer])
+    new_officer = pd.DataFrame.from_dict(
+        [
+            {  # Must match fields in csvfile
+                "department_id": 1,
+                "unique_internal_identifier": new_uid,
+                "first_name": "FOO",
+                "last_name": "BAR",
+                "middle_initial": None,
+                "suffix": None,
+                "gender": "F",
+                "race": "BLACK",
+                "employment_date": None,
+                "birth_year": None,
+                "star_no": 666,
+                "job_title": "CAPTAIN",
+                "unit": None,
+                "star_date": None,
+                "resign_date": None,
+                "salary": 1.23,
+                "salary_year": 2019,
+                "salary_is_fiscal_year": True,
+                "overtime_pay": 4.56,
+            }
+        ]
+    )
+    df = pd.concat([df, new_officer])
     df.to_csv(csvfile)
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
