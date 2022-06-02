@@ -272,7 +272,7 @@ def edit_user(user_id):
                     flash('You cannot edit your own account!')
                     form = EditUserForm(obj=user)
                     return render_template('auth/user.html', user=user, form=form)
-                if form.approved.data and not user.approved and not user.confirmed:
+                if current_app.config['APPROVE_REGISTRATIONS'] and form.approved.data and not user.approved and not user.confirmed:
                     admin_resend_confirmation(user)
                 form.populate_obj(user)
                 db.session.add(user)
