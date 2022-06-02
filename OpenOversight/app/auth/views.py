@@ -334,7 +334,12 @@ def edit_user(user_id):
                 db.session.commit()
 
                 # automatically send a confirmation email when approving an unconfirmed user
-                if not already_approved and user.approved and not user.confirmed:
+                if (
+                    current_app.config["APPROVE_REGISTRATIONS"]
+                    and not already_approved
+                    and user.approved
+                    and not user.confirmed
+                ):
                     admin_resend_confirmation(user)
 
                 flash("{} has been updated!".format(user.username))
