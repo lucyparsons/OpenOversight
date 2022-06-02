@@ -337,6 +337,8 @@ def test_admin_approval_sends_confirmation_email(
     session,
 ):
     with current_app.test_request_context():
+        current_app.config["APPROVE_REGISTRATIONS"] = True
+
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
@@ -352,6 +354,7 @@ def test_admin_approval_sends_confirmation_email(
         form = EditUserForm(
             approved=True,
             submit=True,
+            confirmed=currently_confirmed,
         )
 
         rv = client.post(

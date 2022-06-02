@@ -129,6 +129,7 @@ class EditUserForm(Form):
     )
     is_disabled = BooleanField("Disabled?", false_values={"False", "false", ""})
     approved = BooleanField("Approved?", false_values={"False", "false", ""})
+    confirmed = BooleanField("Confirmed?", false_values={"False", "false", ""})
     submit = SubmitField(label="Update", false_values={"False", "false", ""})
     resend = SubmitField(label="Resend", false_values={"False", "false", ""})
     delete = SubmitField(label="Delete", false_values={"False", "false", ""})
