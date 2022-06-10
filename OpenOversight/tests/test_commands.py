@@ -184,7 +184,8 @@ def test_add_job_title__different_departments(session, department):
     assert job.order == order
 
 
-def test_csv_import_new(csvfile):
+def test_csv_import_new(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -197,7 +198,8 @@ def test_csv_import_new(csvfile):
     assert n_updated == 0
 
 
-def test_csv_import_update(csvfile):
+def test_csv_import_update(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     n_existing = Officer.query.count()
 
     assert n_existing > 0
@@ -209,7 +211,8 @@ def test_csv_import_update(csvfile):
     assert Officer.query.count() == n_existing
 
 
-def test_csv_import_idempotence(csvfile):
+def test_csv_import_idempotence(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -279,7 +282,8 @@ def test_csv_changed_static_field(csvfile):
     assert "has differing birth_year field" in str(exc.value)
 
 
-def test_csv_new_assignment(csvfile):
+def test_csv_new_assignment(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers and assignments
     Assignment.query.delete()
     Officer.query.delete()
@@ -319,7 +323,8 @@ def test_csv_new_assignment(csvfile):
         )
 
 
-def test_csv_new_name(csvfile):
+def test_csv_new_name(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     df = pd.read_csv(csvfile)
     officer_uid = df.loc[0, "unique_internal_identifier"]
     assert officer_uid
@@ -336,7 +341,8 @@ def test_csv_new_name(csvfile):
     assert officer.first_name == "FOO"
 
 
-def test_csv_new_officer(csvfile):
+def test_csv_new_officer(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     df = pd.read_csv(csvfile)
 
     n_rows = len(df.index)
@@ -380,7 +386,8 @@ def test_csv_new_officer(csvfile):
     assert Officer.query.count() == n_officers + 1
 
 
-def test_csv_new_salary(csvfile):
+def test_csv_new_salary(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers and salaries
     Salary.query.delete()
     Officer.query.delete()
@@ -420,7 +427,8 @@ def test_csv_new_salary(csvfile):
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
-def test_bulk_add_officers__success(session, department_with_ranks, csv_path):
+def test_bulk_add_officers__success(session, department_with_ranks, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # generate two officers with different names
     first_officer = generate_officer()
     first_officer.department = department_with_ranks
@@ -561,7 +569,8 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     assert isinstance(result.exception, MultipleResultsFound)
 
 
-def test_bulk_add_officers__write_static_null_field(session, department, csv_path):
+def test_bulk_add_officers__write_static_null_field(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # start with an officer whose birth_year is missing
     officer = generate_officer()
     officer.birth_year = None
@@ -652,7 +661,8 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
     assert officer.birth_year == old_birth_year
 
 
-def test_bulk_add_officers__write_static_field__flag_set(session, department, csv_path):
+def test_bulk_add_officers__write_static_field__flag_set(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # officer with birth year set
     officer = generate_officer()
     officer.birth_year = 1979
@@ -699,7 +709,8 @@ def test_bulk_add_officers__write_static_field__flag_set(session, department, cs
     assert officer.birth_year == new_birth_year
 
 
-def test_bulk_add_officers__no_create_flag(session, department, csv_path):
+def test_bulk_add_officers__no_create_flag(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # department with one officer
     department_id = department.id
     officer = generate_officer()
