@@ -628,6 +628,8 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
 ):
+    jsloads = ["js/select2.min.js", "js/list_officer.js"]
+
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -760,6 +762,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
+        jsloads=jsloads,
     )
 
 

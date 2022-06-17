@@ -2,6 +2,7 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Browse {{ department.name|title }} officers - OpenOversight{% endblock %}
 {% block meta %}<meta name="description" content="Browse or search for officers in the {{ department.name|title }}.">{% endblock %}
+{% block head %}<link href="{{ url_for('static', filename='css/select2.min.css') }}" rel="stylesheet">{% endblock %}
 {% block content %}
 <div class="container" role="main">
   <h1>{{ department.name|title }} Officers</h1>
@@ -71,13 +72,11 @@
           </div>
           <div class="collapse {{ form_data | field_in_query("rank") }}" id="filter-rank">
             <div class="panel-body panel-body-long">
-              <div class="form-group checkbox">
+              <select name="rank" class="select2-multi-search" multiple="multiple">
                 {% for choice in choices['rank'] %}
-                  <label class="form-check">
-                    <input type="checkbox" class="form-check-input" id="rank-{{ choice[0] }}" name="rank" value="{{ choice[0] }}" {% if choice[0] in form_data['rank'] %}checked="checked" {% endif %}/>{{ choice[1] }}
-                  </label>
+                <option value="{{ choice[0] }}"{% if choice[0] in form_data['rank'] %} selected="selected" {% endif %}>{{ choice[1] }}</option>
                 {% endfor %}
-              </div>
+              </select>
             </div>
           </div>
         </div>
@@ -87,15 +86,11 @@
           </div>
           <div class="collapse {{ form_data | field_in_query("unit") }}" id="filter-unit">
             <div class="panel-body panel-body-long">
-              <div class="form-group">
-                <div class="form-group checkbox">
-                    {% for choice in choices['unit'] %}
-                        <label class="form-check">
-                            <input type="checkbox" class="form-check-input" id="unit-{{ choice[0] }}" name="unit" value="{{ choice[0] }}" {% if choice[0] in form_data['unit'] %}checked="checked" {% endif %}/>{{choice[1]}}
-                        </label>
-                    {% endfor %}
-                </div>
-              </div>
+              <select name="unit" class="select2-multi-search" multiple="multiple">
+                {% for choice in choices['unit'] %}
+                <option value="{{ choice[0] }}"{% if choice[0] in form_data['unit'] %} selected="selected" {% endif %}>{{choice[1]}}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
         </div>
