@@ -6,8 +6,12 @@ from flask_login import current_user
 from mock import MagicMock, Mock, patch
 
 import OpenOversight
-from OpenOversight.app.models import Image
-from OpenOversight.app.utils import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.models import Department, Image, Officer, Unit
+from OpenOversight.app.utils import (
+    crop_image,
+    filter_by_form,
+    upload_image_to_s3_and_store_in_db,
+)
 from OpenOversight.tests.routes.route_helpers import login_user
 
 
@@ -305,3 +309,29 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
             assert (
                 current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
             )
+
+
+@pytest.mark.parametrize(
+    "units, has_officers_with_unit, has_officers_with_no_unit",
+    [
+        (["Not Sure"], False, True),
+        (["Donut Devourers"], True, False),
+        (["Not Sure", "Donut Devourers"], True, True),
+    ],
+)
+def test_filter_by_form_filter_unit(
+    mockdata, units, has_officers_with_unit, has_officers_with_no_unit
+):
+    form_data = dict(unit=units)
+    unit_id = Unit.query.filter_by(descrip="Donut Devourers").one().id
+    department_id = Department.query.first().id
+
+    officers = filter_by_form(form_data, Officer.query, department_id).all()
+
+    for officer in officers:
+        found = False
+        if has_officers_with_unit:
+            found = found or any([a.unit_id == unit_id for a in officer.assignments])
+        if has_officers_with_no_unit:
+            found = found or any([a.unit_id is None for a in officer.assignments])
+        assert found
