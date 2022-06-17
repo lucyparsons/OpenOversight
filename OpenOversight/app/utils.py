@@ -347,6 +347,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
             form_data["rank"].append(None)
 
     unit_ids = []
+    include_null_unit = False
     if form_data.get("unit"):
         unit_ids = [
             unit.id
@@ -356,17 +357,24 @@ def filter_by_form(form_data, officer_query, department_id=None):
         ]
 
         if "Not Sure" in form_data["unit"]:
-            # Convert "Not Sure" to None, so the resulting SQL query allows NULL values
-            form_data["unit"].append(None)
+            include_null_unit = True
 
-    if form_data.get("badge") or unit_ids or job_ids:
+    if form_data.get("badge") or unit_ids or include_null_unit or job_ids:
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
                 Assignment.star_no.like("%%{}%%".format(form_data["badge"]))
             )
-        if unit_ids:
-            officer_query = officer_query.filter(Assignment.unit_id.in_(unit_ids))
+
+        if unit_ids or include_null_unit:
+            # Split into 2 expressions because the SQL IN keyword does not match NULLs
+            unit_filters = []
+            if unit_ids:
+                unit_filters.append(Assignment.unit_id.in_(unit_ids))
+            if include_null_unit:
+                unit_filters.append(Assignment.unit_id.is_(None))
+            officer_query = officer_query.filter(or_(*unit_filters))
+
         if job_ids:
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
     officer_query = officer_query.options(
