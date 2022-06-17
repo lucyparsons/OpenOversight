@@ -9,7 +9,7 @@ import uuid
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pytest
 from faker import Faker
@@ -131,12 +131,14 @@ def generate_officer():
     )
 
 
-def build_assignment(officer: Officer, units: List[Unit], jobs: Job):
+def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
+    unit = random.choice(units)
+    unit_id = unit.id if unit else None
     return models.Assignment(
         star_no=pick_star(),
         job_id=random.choice(jobs).id,
         officer=officer,
-        unit_id=random.choice(units).id,
+        unit_id=unit_id,
         star_date=pick_date(officer.full_name().encode("utf-8")),
         resign_date=pick_date(officer.full_name().encode("utf-8")),
     )
@@ -308,6 +310,7 @@ def add_mockdata(session):
     ]
     session.add_all(test_units)
     session.commit()
+    test_units.append(None)
 
     test_images = [
         models.Image(

@@ -31,6 +31,7 @@ from OpenOversight.app.main.forms import (
 from OpenOversight.app.models import (
     Assignment,
     Department,
+    Face,
     Image,
     Incident,
     Job,
@@ -1728,8 +1729,14 @@ def test_admin_can_upload_photos_of_dept_officers(
         officer = department.officers[3]
         officer_face_count = len(officer.face)
 
-        crop_mock = MagicMock(return_value=Image.query.first())
-        upload_mock = MagicMock(return_value=Image.query.first())
+        # Filter out images that the officer is already tagged in
+        officer_faces = Face.query.filter_by(officer_id=officer.id).all()
+        image = Image.query.filter(
+            Image.id.not_in([face.img_id for face in officer_faces])
+        ).first()
+
+        crop_mock = MagicMock(return_value=image)
+        upload_mock = MagicMock(return_value=image)
         with patch(
             "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
             upload_mock,
@@ -1830,8 +1837,14 @@ def test_ac_can_upload_photos_of_dept_officers(
         officer = department.officers[4]
         officer_face_count = len(officer.face)
 
-        crop_mock = MagicMock(return_value=Image.query.first())
-        upload_mock = MagicMock(return_value=Image.query.first())
+        # Filter out images that the officer is already tagged in
+        officer_faces = Face.query.filter_by(officer_id=officer.id).all()
+        image = Image.query.filter(
+            Image.id.not_in([face.img_id for face in officer_faces])
+        ).first()
+
+        crop_mock = MagicMock(return_value=image)
+        upload_mock = MagicMock(return_value=image)
         with patch(
             "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
             upload_mock,

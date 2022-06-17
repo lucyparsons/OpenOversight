@@ -233,6 +233,7 @@ class Currency(db.TypeDecorator):
     """
 
     impl = db.Numeric
+    cache_ok = True
 
     def load_dialect_impl(self, dialect):
         typ = db.Numeric()

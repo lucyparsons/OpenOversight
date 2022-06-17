@@ -675,7 +675,7 @@ def list_officer(
     ):
         form_data["gender"] = genders
 
-    unit_choices = [
+    unit_choices = ["Not Sure"] + [
         uc[0]
         for uc in db.session.query(Unit.descrip)
         .filter_by(department_id=department_id)
@@ -717,7 +717,7 @@ def list_officer(
         "race": RACE_CHOICES,
         "gender": GENDER_CHOICES,
         "rank": [(rc, rc) for rc in rank_choices],
-        "unit": [("Not Sure", "Not Sure")] + [(uc, uc) for uc in unit_choices],
+        "unit": [(uc, uc) for uc in unit_choices],
     }
 
     next_url = url_for(
