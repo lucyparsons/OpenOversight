@@ -10,9 +10,12 @@ This repository represents the **Seattle fork** of the original project. For mor
 
 To run the project locally:
 1. [Install `just`](https://github.com/casey/just)
-1. Copy the sample data to the data folder mounted by the project `cp database/sample_init_data.csv data/init_data.csv`.
-1. Run `just fresh-start` to spin up the database and insert the initial data. **This will prompt you for information to create a local super-admin user.**
-1. Run `just up` and visit http://localhost:3000!
+2. Run `just fresh-start` to spin up the database and insert the initial data. **This will prompt you for information to create a local super-admin user.** Enter this information for the following fields:
+   1. `Username`: `admin`
+   2. `Email`: `admin@admin.com`
+   3. `Password`: `admin`
+   4. `Commit changes?`: `y`
+3. Run `just up` and visit http://localhost:3000!
 
 
 ## Deployment
