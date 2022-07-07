@@ -620,7 +620,8 @@ def list_officer(
     rank=None,
     min_age="16",
     max_age="100",
-    name=None,
+    last_name=None,
+    first_name=None,
     badge=None,
     unique_internal_identifier=None,
     unit=None,
@@ -639,7 +640,8 @@ def list_officer(
     form_data["rank"] = rank or []
     form_data["min_age"] = min_age
     form_data["max_age"] = max_age
-    form_data["name"] = name
+    form_data["last_name"] = last_name
+    form_data["first_name"] = first_name
     form_data["badge"] = badge
     form_data["unit"] = unit or []
     form_data["unique_internal_identifier"] = unique_internal_identifier
@@ -658,8 +660,10 @@ def list_officer(
         form_data["max_age"] = max_age_arg
     if page_arg := request.args.get("page"):
         page = int(page_arg)
-    if name_arg := request.args.get("name"):
-        form_data["name"] = name_arg
+    if last_name_arg := request.args.get("last_name"):
+        form_data["last_name"] = last_name_arg
+    if first_name_arg := request.args.get("first_name"):
+        form_data["first_name"] = first_name_arg
     if badge_arg := request.args.get("badge"):
         form_data["badge"] = badge_arg
     if uid := request.args.get("unique_internal_identifier"):
@@ -729,7 +733,8 @@ def list_officer(
         rank=form_data["rank"],
         min_age=form_data["min_age"],
         max_age=form_data["max_age"],
-        name=form_data["name"],
+        last_name=form_data["last_name"],
+        first_name=form_data["first_name"],
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
@@ -743,7 +748,8 @@ def list_officer(
         rank=form_data["rank"],
         min_age=form_data["min_age"],
         max_age=form_data["max_age"],
-        name=form_data["name"],
+        last_name=form_data["last_name"],
+        first_name=form_data["first_name"],
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],

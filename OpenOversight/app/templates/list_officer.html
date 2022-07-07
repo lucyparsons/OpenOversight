@@ -11,19 +11,31 @@
       <h3 class="sidebar-title">Filter officers</h3>
       <form class="form" method="get" role="form">
         <div class="panel">
-          <div class="panel-heading{% if not form_data['name'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-name">
-            <h3 class="panel-title accordion-toggle">Last name</h3>
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-name">
+            <h3 class="panel-title accordion-toggle">Name</h3>
           </div>
           <div class="collapse in" id="filter-name">
             <div class="panel-body">
-              <div class="form-group">
-                <input type="text" class="form-control" id="name" name="name" value="{{ form_data['name'] or '' }}" />
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="last_name">Last name</label>
+                  <input type="text" class="form-control" id="last_name" name="last_name" value="{{ form_data['last_name'] or '' }}" />
+                </div>
+              </div>
+
+              <br />
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="first_name">First name</label>
+                  <input type="text" class="form-control" id="first_name" name="first_name" value="{{ form_data['first_name'] or '' }}" />
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-badge">
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-badge">
             <h3 class="panel-title accordion-toggle">Badge</h3>
           </div>
           <div class="collapse in" id="filter-badge">
