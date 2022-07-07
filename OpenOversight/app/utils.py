@@ -290,9 +290,13 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 
 def filter_by_form(form_data, officer_query, department_id=None):
-    if form_data.get("name"):
+    if form_data.get("last_name"):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike("%%{}%%".format(form_data["name"]))
+            Officer.last_name.ilike("%%{}%%".format(form_data["last_name"]))
+        )
+    if form_data.get("first_name"):
+        officer_query = officer_query.filter(
+            Officer.first_name.ilike("%%{}%%".format(form_data["first_name"]))
         )
     if not department_id and form_data.get("dept"):
         department_id = form_data["dept"].id

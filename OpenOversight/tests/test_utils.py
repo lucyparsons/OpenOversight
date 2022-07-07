@@ -100,7 +100,9 @@ def test_rank_filter_select_all_police_officers(mockdata):
 
 def test_filter_by_name(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.utils.grab_officers({"name": "J", "dept": department})
+    results = OpenOversight.app.utils.grab_officers(
+        {"last_name": "J", "dept": department}
+    )
     for element in results.all():
         assert "J" in element.last_name
 
