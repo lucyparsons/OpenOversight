@@ -1,6 +1,6 @@
 Authlib==0.15.5
 boto3==1.24.21
-email-validator==1.0.5
+email-validator==1.2.1
 Fabric3==1.14.post1
 Flask==2.1.2
 Flask-Bootstrap==3.3.7.1
