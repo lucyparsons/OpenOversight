@@ -47,12 +47,13 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Geckodriver components
-ENV GECKODRIVER_VERSION="v0.26.0"
-ENV GECKODRIVER_SHA=d59ca434d8e41ec1e30dd7707b0c95171dd6d16056fb6db9c978449ad8b93cc0
+ENV GECKODRIVER_VERSION="v0.31.0"
+ENV GECKODRIVER_BINARY="geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz"
+ENV GECKODRIVER_SHA=7fdd8007d22a6f44caa6929a3d74bbd6a00984d88be50255153671bd201e5493
 ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
-RUN wget ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz && \
-    echo "${GECKODRIVER_SHA}  geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" | sha256sum --check - && \
-    tar -xzf geckodriver-v0.26.0-linux64.tar.gz -C /usr/bin
+RUN wget ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/${GECKODRIVER_BINARY} && \
+    echo "${GECKODRIVER_SHA}  ${GECKODRIVER_BINARY}" | sha256sum --check - && \
+    tar -xzf ${GECKODRIVER_BINARY} -C /usr/bin
 
 # Install additional development requirements
 COPY requirements-dev.txt /usr/src/app/
