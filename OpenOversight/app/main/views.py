@@ -625,6 +625,7 @@ def list_officer(
     badge=None,
     unique_internal_identifier=None,
     unit=None,
+    current_job=None,
 ):
     jsloads = ["js/select2.min.js", "js/list_officer.js"]
 
@@ -644,6 +645,7 @@ def list_officer(
     form_data["first_name"] = first_name
     form_data["badge"] = badge
     form_data["unit"] = unit or []
+    form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
@@ -701,6 +703,8 @@ def list_officer(
         rank in rank_choices for rank in ranks
     ):
         form_data["rank"] = ranks
+    if current_job_arg := request.args.get("current_job"):
+        form_data["current_job"] = current_job_arg
 
     officers = filter_by_form(form_data, Officer.query, department_id).filter(
         Officer.department_id == department_id
@@ -738,6 +742,7 @@ def list_officer(
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
+        current_job=form_data["current_job"],
     )
     prev_url = url_for(
         "main.list_officer",
@@ -753,6 +758,7 @@ def list_officer(
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
+        current_job=form_data["current_job"],
     )
 
     return render_template(
