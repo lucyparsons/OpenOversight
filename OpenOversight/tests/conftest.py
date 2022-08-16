@@ -13,7 +13,7 @@ from typing import List, Optional
 
 import pytest
 from faker import Faker
-from flask import current_app
+from flask import current_app, g
 from PIL import Image as Pimage
 from selenium import webdriver
 from xvfbwrapper import Xvfb
@@ -235,6 +235,12 @@ def session(db, request):
         transaction.rollback()
         connection.close()
         session.remove()
+
+        # Since Flask-Login now records the logged in user on the Flask `g` object and we persist the app context
+        # (in the app fixture) for the entire testing session, we need to reset this value manually.
+        #
+        # Relevant PR: https://github.com/maxcountryman/flask-login/pull/691
+        g.pop("_login_user", None)
 
     request.addfinalizer(teardown)
     return session
