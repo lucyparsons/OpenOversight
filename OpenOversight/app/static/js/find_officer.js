@@ -1,3 +1,22 @@
+function buildSelect(name, data_url, dept_id) {
+    return $.ajax({
+        url: data_url,
+        data: {department_id: dept_id}
+    }).done(function(data) {
+        $('input#' + name).replaceWith('<select class="form-control" id="' + name + '" name="' + name + '">');
+        const dropdown = $('select#' + name);
+        // Add the null case first
+        dropdown.append(
+            $('<option value="Not Sure">Not Sure</option>')
+        );
+        for (i = 0; i < data.length; i++) {
+            dropdown.append(
+                $('<option></option>').attr("value", data[i][1]).text(data[i][1])
+            );
+        }
+    });
+}
+
 $(document).ready(function() {
 
     var navListItems = $('ul.setup-panel li a'),
@@ -32,22 +51,9 @@ $(document).ready(function() {
         var dept_id = $('#dept').val();
         // fetch ranks for dept_id and modify #rank <select>
         var ranks_url = $(this).data('ranks-url');
-        var ranks = $.ajax({
-            url: ranks_url,
-            data: {department_id: dept_id}
-        }).done(function(ranks) {
-            $('input#rank').replaceWith('<select class="form-control" id="rank" name="rank">');
-            const rank_box = $('select#rank')
-            // Add the null case first
-            rank_box.append(
-                $('<option value="Not Sure">Not Sure</option>')
-            );
-            for (i = 0; i < ranks.length; i++) {
-                rank_box.append(
-                    $('<option></option>').attr("value", ranks[i][1]).text(ranks[i][1])
-                );
-            }
-        });
+        var units_url = $(this).data('units-url');
+        buildSelect('rank', ranks_url, dept_id);
+        buildSelect('unit', units_url, dept_id);
 
         $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#step-2"]').trigger('click');

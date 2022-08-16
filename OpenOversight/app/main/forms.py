@@ -80,8 +80,13 @@ class HumintContribution(Form):
 
 class FindOfficerForm(Form):
     # Any fields added to this form should generally also be added to BrowseForm
-    name = StringField(
-        "name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
+    first_name = StringField(
+        "first_name",
+        default="",
+        validators=[Regexp(r"\w*"), Length(max=50), Optional()],
+    )
+    last_name = StringField(
+        "last_name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
     )
     badge = StringField(
         "badge", default="", validators=[Regexp(r"\w*"), Length(max=10)]
@@ -98,7 +103,7 @@ class FindOfficerForm(Form):
         get_label="name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
-    current_job = BooleanField("current_job", default=False, validators=[Optional()])
+    current_job = BooleanField("current_job", default=None, validators=[Optional()])
     rank = StringField(
         "rank", default="Not Sure", validators=[Optional()]
     )  # Gets rewritten by Javascript
@@ -119,12 +124,6 @@ class FindOfficerForm(Form):
     )
     max_age = IntegerField(
         "max_age", default=85, validators=[NumberRange(min=16, max=100)]
-    )
-    latitude = DecimalField(
-        "latitude", default=False, validators=[NumberRange(min=-90, max=90)]
-    )
-    longitude = DecimalField(
-        "longitude", default=False, validators=[NumberRange(min=-180, max=180)]
     )
 
 
@@ -572,7 +571,7 @@ class BrowseForm(Form):
         get_label="descrip",
         get_pk=lambda unit: unit.descrip,
     )  # query set in view function
-    current_job = BooleanField("current_job", default=False, validators=[Optional()])
+    current_job = BooleanField("current_job", default=None, validators=[Optional()])
     name = StringField("Last name")
     badge = StringField("Badge number")
     unique_internal_identifier = StringField("Unique ID")

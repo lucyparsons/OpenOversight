@@ -21,6 +21,7 @@ from OpenOversight.app.main.forms import (
     DepartmentForm,
     EditDepartmentForm,
     EditOfficerForm,
+    FindOfficerForm,
     IncidentForm,
     LicensePlateForm,
     LinkForm,
@@ -1714,6 +1715,53 @@ def test_browse_filtering_allows_good(client, mockdata, session):
 
         filter_list = rv.data.decode("utf-8").split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
+def test_find_officer_redirect(client, mockdata, session):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rank = "Officer"
+        unit_id = 1234
+        min_age = datetime.now().year - 1991
+        max_age = datetime.now().year - 1989
+
+        # Check that added officer appears when filtering for this race, gender, rank and age
+        form = FindOfficerForm(
+            dept=department_id,
+            first_name="A",
+            last_name="B",
+            race="WHITE",
+            gender="M",
+            rank=rank,
+            unit=unit_id,
+            current_job=True,
+            min_age=min_age,
+            max_age=max_age,
+        )
+
+        data = process_form_data(form.data)
+
+        rv = client.post(
+            url_for("main.get_officer"),
+            data=data,
+            follow_redirects=True,
+        )
+
+        # Check that the parameters are added correctly to the response url
+        assert "department/{}".format(department_id) in rv.request.full_path
+        parameters = [
+            ("first_name", "A"),
+            ("last_name", "B"),
+            ("race", "WHITE"),
+            ("gender", "M"),
+            ("rank", rank),
+            ("unit", unit_id),
+            ("current_job", True),
+            ("min_age", min_age),
+            ("max_age", max_age),
+        ]
+        for name, value in parameters:
+            assert "{}={}".format(name, value) in rv.request.full_path
 
 
 def test_admin_can_upload_photos_of_dept_officers(

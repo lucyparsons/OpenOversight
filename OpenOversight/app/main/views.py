@@ -145,9 +145,11 @@ def get_officer():
                 else None,
                 rank=form.data["rank"] if form.data["rank"] != "Not Sure" else None,
                 unit=form.data["unit"] if form.data["unit"] != "Not Sure" else None,
+                current_job=form.data["current_job"] or None,  # set to None if False
                 min_age=form.data["min_age"],
                 max_age=form.data["max_age"],
-                name=form.data["name"],
+                first_name=form.data["first_name"],
+                last_name=form.data["last_name"],
                 badge=form.data["badge"],
                 unique_internal_identifier=form.data["unique_internal_identifier"],
             ),
@@ -797,6 +799,27 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         )
 
     return jsonify(rank_list)
+
+
+@main.route("/department/<int:department_id>/units")
+@main.route("/units")
+def get_dept_units(department_id=None):
+    if not department_id:
+        department_id = request.args.get("department_id")
+
+    if department_id:
+        units = Unit.query.filter_by(department_id=department_id)
+        units = units.order_by(Unit.descrip).all()
+        unit_list = [(unit.id, unit.descrip) for unit in units]
+    else:
+        units = Unit.query.all()
+        # Prevent duplicate units
+        unit_list = sorted(
+            set((unit.id, unit.descrip) for unit in units),
+            key=lambda x: x[1],
+        )
+
+    return jsonify(unit_list)
 
 
 @main.route("/officer/new", methods=["GET", "POST"])
