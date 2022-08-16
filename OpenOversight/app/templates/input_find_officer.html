@@ -21,7 +21,7 @@
     </div>
   <form action="{{ url_for('main.get_officer') }}" method="post" class="form">
   {{ form.hidden_tag() }}
-	  <div class="row form-group">
+      <div class="row form-group">
         <div class="col-xs-12">
             <ul class="nav nav-pills nav-justified thumbnail setup-panel">
                 <li class="active"><a href="#step-1">
@@ -42,7 +42,7 @@
                 </a></li>
             </ul>
         </div>
-	</div>
+    </div>
     <div class="row setup-content" id="step-1">
         <div class="col-xs-12">
             <div class="col-md-12 well text-center">
@@ -58,7 +58,7 @@
                 {% endfor %}
 
                 <br>
-                <button id="activate-step-2" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" class="btn btn-primary btn-lg">Next Step</button>
+                <button id="activate-step-2" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" data-units-url="{{ url_for('main.get_dept_units') }}" class="btn btn-primary btn-lg">Next Step</button>
             </div>
         </div>
     </div>
@@ -67,8 +67,16 @@
             <div class="col-md-12 well text-center">
                 <h2><small>Do you remember any part of the Officer's last name?</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.name(class="form-control") }}
-                  {% for error in form.name.errors %}
+                  {{ form.last_name(class="form-control") }}
+                  {% for error in form.last_name.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+                </div>
+
+                <h2><small>Do you remember any part of the Officer's first name?</small></h2>
+                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                  {{ form.first_name(class="form-control") }}
+                  {% for error in form.first_name.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
                 </div>
@@ -111,6 +119,23 @@
                 <div id="hidden_img" style="display:none;">
                   <p><a id="hide_img">Hide rank shoulder patches</a></p>
                   <img src="{{url_for('static', filename='images/OfficerRank.png')}}" width="50%" height="50%">
+                </div>
+
+                <h2><small>Officer Unit</small></h2>
+                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                {{ form.unit(class="form-control") }}
+                {% for error in form.unit.errors %}
+                    <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+                </div>
+
+                <h2><small>Currently Employed</small></h2>
+                <span class="text-muted" style="position: relative; top: -0.8em">(in this unit and/or rank, if specified)</span>
+                <div class="input-group input-group-sm col-md-4 col-md-offset-4">
+                {{ form.current_job(class="form-control") }}
+                {% for error in form.current_job.errors %}
+                    <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
                 </div>
 
                 <br>
