@@ -1689,6 +1689,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             rank=job.job_title,
             min_age=datetime.now().year - 1991,
             max_age=datetime.now().year - 1989,
+            current_job=True,
         )
 
         data = process_form_data(form.data)

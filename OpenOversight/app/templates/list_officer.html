@@ -79,30 +79,44 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-rank">
-            <h3 class="panel-title accordion-toggle">Rank</h3>
+          <div class="panel-heading" data-toggle="collapse" data-target="#filter-job">
+            <h3 class="panel-title accordion-toggle">Job</h3>
           </div>
-          <div class="collapse {{ form_data | field_in_query("rank") }}" id="filter-rank">
+          <div class="collapse {{ form_data | field_in_query("rank") }} {{ form_data | field_in_query("unit") }} {{ form_data | field_in_query("current_job") }}" id="filter-job">
             <div class="panel-body panel-body-long">
-              <select name="rank" class="select2-multi-search" multiple="multiple">
-                {% for choice in choices['rank'] %}
-                <option value="{{ choice[0] }}"{% if choice[0] in form_data['rank'] %} selected="selected" {% endif %}>{{ choice[1] }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-unit">
-            <h3 class="panel-title accordion-toggle">Unit</h3>
-          </div>
-          <div class="collapse {{ form_data | field_in_query("unit") }}" id="filter-unit">
-            <div class="panel-body panel-body-long">
-              <select name="unit" class="select2-multi-search" multiple="multiple">
-                {% for choice in choices['unit'] %}
-                <option value="{{ choice[0] }}"{% if choice[0] in form_data['unit'] %} selected="selected" {% endif %}>{{choice[1]}}</option>
-                {% endfor %}
-              </select>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="current_job">
+                    <input id="current_job" name="current_job" type="checkbox" {% if form_data.get("current_job") %}checked{% endif %}>
+                      Currently employed
+                  </label>
+                  <span>(in this rank and/or unit, if specified)</span>
+                </div>
+              </div>
+              <br />
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="rank">Rank</label>
+                  <select id="rank" name="rank" class="select2-multi-search" multiple="multiple">
+                    {% for choice in choices['rank'] %}
+                    <option value="{{ choice[0] }}"{% if choice[0] in form_data['rank'] %} selected="selected" {% endif %}>{{ choice[1] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <br />
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="unit">Unit</label>
+                  <select id="unit" name="unit" class="select2-multi-search" multiple="multiple">
+                    {% for choice in choices['unit'] %}
+                    <option value="{{ choice[0] }}"{% if choice[0] in form_data['unit'] %} selected="selected" {% endif %}>{{choice[1]}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
