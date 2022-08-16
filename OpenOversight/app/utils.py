@@ -381,6 +381,9 @@ def filter_by_form(form_data, officer_query, department_id=None):
 
         if job_ids:
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
+        if form_data.get("current_job"):
+            officer_query = officer_query.filter(Assignment.resign_date.is_(None))
+
     officer_query = officer_query.options(
         selectinload(Officer.assignments_lazy)
     ).distinct()

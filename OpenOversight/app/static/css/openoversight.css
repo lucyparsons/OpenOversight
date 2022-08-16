@@ -484,7 +484,7 @@ tr:hover .row-actions {
 }
 
 .filter-sidebar .panel-body-long {
-    max-height: 20vh;
+    max-height: 25vh;
     overflow-y: auto;
 }
 

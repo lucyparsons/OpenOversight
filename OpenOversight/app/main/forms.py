@@ -79,6 +79,7 @@ class HumintContribution(Form):
 
 
 class FindOfficerForm(Form):
+    # Any fields added to this form should generally also be added to BrowseForm
     name = StringField(
         "name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
     )
@@ -97,6 +98,7 @@ class FindOfficerForm(Form):
         get_label="name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
+    current_job = BooleanField("current_job", default=False, validators=[Optional()])
     rank = StringField(
         "rank", default="Not Sure", validators=[Optional()]
     )  # Gets rewritten by Javascript
@@ -557,6 +559,7 @@ class IncidentForm(DateFieldForm):
 
 
 class BrowseForm(Form):
+    # Any fields added to this form should generally also be added to FindOfficerForm
     rank = QuerySelectField(
         "rank",
         validators=[Optional()],
@@ -569,6 +572,7 @@ class BrowseForm(Form):
         get_label="descrip",
         get_pk=lambda unit: unit.descrip,
     )  # query set in view function
+    current_job = BooleanField("current_job", default=False, validators=[Optional()])
     name = StringField("Last name")
     badge = StringField("Badge number")
     unique_internal_identifier = StringField("Unique ID")
