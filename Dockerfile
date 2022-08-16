@@ -9,7 +9,7 @@ ENV PIP_NO_CACHE_DIR=1
 RUN apt-get update && \
     apt-get install -y wget && \
     echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list && \
-    wget -O - https://deb.nodesource.com/setup_12.x | bash - && \
+    wget -O - https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get update && \
     apt-get install -y \
         gcc \
