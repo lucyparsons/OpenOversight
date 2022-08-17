@@ -673,14 +673,17 @@ def client(app, request):
     return client
 
 
-@pytest.fixture
-def browser(app, request):
+@pytest.fixture(scope="session")
+def server(app, request):
     # start server without werkzeug auto-refresh
     # https://stackoverflow.com/questions/38087283/
     threading.Thread(target=app.run, daemon=True, kwargs={"debug": False}).start()
     # give the server a few seconds to ensure it is up
     time.sleep(10)
 
+
+@pytest.fixture
+def browser(app, request, server):
     # start headless webdriver
     vdisplay = Xvfb()
     vdisplay.start()
