@@ -102,7 +102,7 @@ def _handle_officers_csv(
     with _csv_reader(officers_csv) as csv_reader:
         _check_provided_fields(
             csv_reader,
-            required_fields=["id", "department_name"],
+            required_fields=["id", "department_name"] if not force_create else ["id"],
             optional_fields=[
                 "last_name",
                 "first_name",
@@ -113,8 +113,10 @@ def _handle_officers_csv(
                 "employment_date",
                 "birth_year",
                 "unique_internal_identifier",
+                "department_name",
                 # the following are unused, but allowed since they are included in the csv output
                 "badge_number",
+                "unique_identifier",
                 "job_title",
                 "most_recent_salary",
                 "last_employment_date",
@@ -125,7 +127,8 @@ def _handle_officers_csv(
 
         for row in csv_reader:
             # can only update department with given name
-            assert row["department_name"] == department_name
+            if not force_create:
+                assert row["department_name"] == department_name
             row["department_id"] = department_id
             connection_id = row["id"]
             if row["id"].startswith("#"):
@@ -171,6 +174,7 @@ def _handle_assignments_csv(
                 "unit_description",
                 "star_date",
                 "resign_date",
+                "officer_unique_identifier",
             ],
             csv_name="assignments",
         )
