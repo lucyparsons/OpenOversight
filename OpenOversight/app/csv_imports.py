@@ -165,7 +165,13 @@ def _handle_assignments_csv(
         _check_provided_fields(
             csv_reader,
             required_fields=["id", "officer_id", "job_title"],
-            optional_fields=["star_no", "unit_id", "star_date", "resign_date"],
+            optional_fields=[
+                "star_no",
+                "unit_id",
+                "unit_description",
+                "star_date",
+                "resign_date",
+            ],
             csv_name="assignments",
         )
         jobs_for_department = list(
@@ -173,6 +179,10 @@ def _handle_assignments_csv(
         )
         job_title_to_id = {
             job.job_title.strip().lower(): job.id for job in jobs_for_department
+        }
+        unit_descrip_to_id = {
+            unit.descrip.strip().lower(): unit.id
+            for unit in Unit.query.filter_by(department_id=department_id).all()
         }
         existing_assignments = (
             Assignment.query.join(Assignment.baseofficer)
@@ -183,17 +193,6 @@ def _handle_assignments_csv(
             assignment.id: assignment for assignment in existing_assignments
         }
         for row in csv_reader:
-            if row.get("unit_id"):
-                assert (
-                    Unit.query.filter_by(id=int(row.get("unit_id"))).one().department.id
-                    == department_id
-                )
-            job_id = job_title_to_id.get(row["job_title"].strip().lower())
-            if job_id is None:
-                raise Exception(
-                    "Job title {} not found for department.".format(row["job_title"])
-                )
-            row["job_id"] = job_id
             officer = all_officers.get(row["officer_id"])
             if not officer:
                 raise Exception(
@@ -201,6 +200,47 @@ def _handle_assignments_csv(
                         row["officer_id"]
                     )
                 )
+            if row.get("unit_id"):
+                assert (
+                    Unit.query.filter_by(id=int(row.get("unit_id"))).one().department.id
+                    == department_id
+                )
+            elif row.get("unit_description"):
+                descrip = row["unit_description"].strip().lower()
+                unit_id = unit_descrip_to_id.get(descrip)
+                if unit_id is None:
+                    unit = Unit(
+                        descrip=row["unit_description"],
+                        department_id=officer.department_id,
+                    )
+                    db.session.add(unit)
+                    db.session.flush()
+                    unit_id = unit.id
+                    unit_descrip_to_id[descrip] = unit_id
+                row["unit_id"] = unit_id
+            job_title = row["job_title"].strip().lower()
+            job_id = job_title_to_id.get(job_title)
+            if job_id is None:
+                num_existing_ranks = len(
+                    Job.query.filter_by(department_id=officer.department_id).all()
+                )
+                if num_existing_ranks > 0:
+                    auto_order = num_existing_ranks + 1
+                else:
+                    auto_order = 0
+                # create new job
+                job = Job(
+                    job_title=row["job_title"],
+                    is_sworn_officer=False,
+                    department_id=officer.department_id,
+                    order=auto_order,
+                )
+                db.session.add(job)
+                db.session.flush()
+                job_id = job.id
+                job_title_to_id[job_title] = job_id
+
+            row["job_id"] = job_id
             row["officer_id"] = officer.id
             _create_or_update_model(
                 row=row,
@@ -400,7 +440,9 @@ def import_csv_files(
 ):
     department = Department.query.filter_by(name=department_name).one_or_none()
     if department is None:
-        raise Exception("Department with name '{}' does not exist!".format(department_name))
+        raise Exception(
+            "Department with name '{}' does not exist!".format(department_name)
+        )
     department_id = department.id
 
     existing_officers = Officer.query.filter_by(department_id=department_id).all()

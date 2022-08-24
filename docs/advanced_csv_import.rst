@@ -107,14 +107,15 @@ Details:
 Assignments csv
 ^^^^^^^^^^^^^^^
 - Required: ``id, officer_id, job_title``
-- Optional: ``badge_number, unit_id, start_date, resign_date``
+- Optional: ``badge_number, unit_id, unit_description, start_date, resign_date``
 
 Details:
 ~~~~~~~~
 -  ``officer_id`` Number referring to ``id`` of existing officer or string starting with ``#`` referring to a newly created officer in the provided officers csv.
 -  ``badge_number`` Any string that represents the star or badge number of the officer. In some departments this number changes with the assignment.
--  ``job_title`` The job title, needs to be created for that department.
+-  ``job_title`` The job title, will be created if it does not exist.
 -  ``unit_id`` Id of existing unit within the department.
+-  ``unit_description`` Description of the unit, if an Id is not provided.
 -  ``start_date`` Start :ref:`date <ref-aci-formats>` of this assignment.
 -  ``resign_date`` End :ref:`date <ref-aci-formats>` of this assignment.
 
