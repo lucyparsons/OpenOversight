@@ -405,14 +405,13 @@ def import_csv_files(
 
     existing_officers = Officer.query.filter_by(department_id=department_id).all()
     id_to_officer = {officer.id: officer for officer in existing_officers}
+    all_officers = {str(k): v for k, v in id_to_officer.items()}
 
     if officers_csv is not None:
         new_officers = _handle_officers_csv(
             officers_csv, department_name, department_id, id_to_officer, force_create
         )
-
-    all_officers = {str(k): v for k, v in id_to_officer.items()}
-    all_officers.update(new_officers)
+        all_officers.update(new_officers)
 
     if assignments_csv is not None:
         _handle_assignments_csv(
