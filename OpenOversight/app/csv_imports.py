@@ -165,13 +165,15 @@ def _handle_assignments_csv(
             field_names[field_names.index("badge_number")] = "star_no"
         if "end_date" in field_names:
             field_names[field_names.index("end_date")] = "resign_date"
+        if "unit_description" in field_names:
+            field_names[field_names.index("unit_description")] = "unit_name"
         _check_provided_fields(
             csv_reader,
             required_fields=["id", "officer_id", "job_title"],
             optional_fields=[
                 "star_no",
                 "unit_id",
-                "unit_description",
+                "unit_name",
                 "star_date",
                 "resign_date",
                 "officer_unique_identifier",
@@ -209,12 +211,13 @@ def _handle_assignments_csv(
                     Unit.query.filter_by(id=int(row.get("unit_id"))).one().department.id
                     == department_id
                 )
-            elif row.get("unit_description"):
-                descrip = row["unit_description"].strip().lower()
+            elif row.get("unit_name"):
+                unit_name = row["unit_name"].strip()
+                descrip = unit_name.lower()
                 unit_id = unit_descrip_to_id.get(descrip)
                 if unit_id is None:
                     unit = Unit(
-                        descrip=row["unit_description"],
+                        descrip=unit_name,
                         department_id=officer.department_id,
                     )
                     db.session.add(unit)
@@ -234,7 +237,7 @@ def _handle_assignments_csv(
                     auto_order = 0
                 # create new job
                 job = Job(
-                    job_title=row["job_title"],
+                    job_title=row["job_title"].strip(),
                     is_sworn_officer=False,
                     department_id=officer.department_id,
                     order=auto_order,
