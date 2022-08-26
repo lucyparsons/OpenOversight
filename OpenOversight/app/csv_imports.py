@@ -38,8 +38,9 @@ def _create_or_update_model(
     update_method,
     force_create=False,
     model=None,
+    always_create=False,
 ):
-    if not row["id"]:
+    if (always_create and not force_create) or not row["id"]:
         return create_method(row)
     else:
         if not force_create:
@@ -151,13 +152,14 @@ def _handle_officers_csv(
 
 
 def _handle_assignments_csv(
-    incidents_csv: str,
+    assignments_csv: str,
     department_id: int,
     all_officers: Dict[str, Officer],
     force_create: bool,
+    overwrite_assignments: bool,
 ) -> None:
     counter = 0
-    with _csv_reader(incidents_csv) as csv_reader:
+    with _csv_reader(assignments_csv) as csv_reader:
         field_names = csv_reader.fieldnames
         if "start_date" in field_names:
             field_names[field_names.index("start_date")] = "star_date"
@@ -167,10 +169,15 @@ def _handle_assignments_csv(
             field_names[field_names.index("end_date")] = "resign_date"
         if "unit_description" in field_names:
             field_names[field_names.index("unit_description")] = "unit_name"
+        required_fields = ["officer_id", "job_title"]
+        if not overwrite_assignments:
+            required_fields.append("id")
+
         _check_provided_fields(
             csv_reader,
-            required_fields=["id", "officer_id", "job_title"],
+            required_fields=required_fields,
             optional_fields=[
+                "id",
                 "star_no",
                 "unit_id",
                 "unit_name",
@@ -190,14 +197,47 @@ def _handle_assignments_csv(
             unit.descrip.strip().lower(): unit.id
             for unit in Unit.query.filter_by(department_id=department_id).all()
         }
-        existing_assignments = (
-            Assignment.query.join(Assignment.baseofficer)
-            .filter(Officer.department_id == department_id)
-            .all()
-        )
-        id_to_assignment = {
-            assignment.id: assignment for assignment in existing_assignments
-        }
+        if overwrite_assignments:
+            id_to_assignment = {}
+            rows = []
+            all_rel_officers = set()
+            for row in csv_reader:
+                rows.append(row)
+                officer_id = row["officer_id"]
+                if officer_id != "" and officer_id[0] != "#":
+                    all_rel_officers.add(int(officer_id))
+            wrong_department = all_rel_officers - set(
+                [int(oid) for oid in all_officers.keys() if oid[0] != "#"]
+            )
+            if len(wrong_department) > 0:
+                raise Exception(
+                    "Referenced {} officers in assignment csv that belong to different department. Example ids: {}".format(
+                        len(wrong_department),
+                        ", ".join(map(str, list(wrong_department)[:3])),
+                    )
+                )
+            print(
+                "Deleting assignments from {} officers to overwrite.".format(
+                    len(all_rel_officers)
+                )
+            )
+            (
+                db.session.query(Assignment)
+                .filter(Assignment.officer_id.in_(all_rel_officers))
+                .delete(synchronize_session=False)
+            )
+            db.session.flush()
+            # assign rows to csv_reader since we already iterated over reader
+            csv_reader = rows
+        else:
+            existing_assignments = (
+                Assignment.query.join(Assignment.baseofficer)
+                .filter(Officer.department_id == department_id)
+                .all()
+            )
+            id_to_assignment = {
+                assignment.id: assignment for assignment in existing_assignments
+            }
         for row in csv_reader:
             officer = all_officers.get(row["officer_id"])
             if not officer:
@@ -256,6 +296,7 @@ def _handle_assignments_csv(
                 update_method=update_assignment_from_dict,
                 force_create=force_create,
                 model=Assignment,
+                always_create=overwrite_assignments,
             )
             counter += 1
             if counter % 1000 == 0:
@@ -444,6 +485,7 @@ def import_csv_files(
     links_csv: Optional[str],
     incidents_csv: Optional[str],
     force_create: bool = False,
+    overwrite_assignments: bool = False,
 ):
     department = Department.query.filter_by(name=department_name).one_or_none()
     if department is None:
@@ -464,7 +506,11 @@ def import_csv_files(
 
     if assignments_csv is not None:
         _handle_assignments_csv(
-            assignments_csv, department_id, all_officers, force_create
+            assignments_csv,
+            department_id,
+            all_officers,
+            force_create,
+            overwrite_assignments,
         )
 
     if salaries_csv is not None:
