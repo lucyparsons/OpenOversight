@@ -24,3 +24,5 @@ email-validator==1.0.5
 bleach==3.3.1
 bleach-allowlist==1.0.3
 Markdown==3.2.2
+Jinja2==2.11.3
+MarkupSafe==1.1.1
