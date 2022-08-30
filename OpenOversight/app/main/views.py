@@ -923,19 +923,16 @@ def delete_tag(tag_id):
         if current_user.ac_department_id != tag.officer.department_id:
             abort(403)
 
+    officer_id = tag.officer_id
     try:
         db.session.delete(tag)
         db.session.commit()
         flash("Deleted this tag")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error classifying image: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
-    return redirect(url_for("main.index"))
+        current_app.logger.exception("Unknown error occurred")
+
+    return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
 @main.route("/tag/set_featured/<int:tag_id>", methods=["POST"])
