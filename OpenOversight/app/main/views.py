@@ -1387,17 +1387,6 @@ def privacy_oo():
     return render_template("privacy.html")
 
 
-@main.route("/shutdown")  # pragma: no cover
-def server_shutdown():  # pragma: no cover
-    if not current_app.testing:
-        abort(404)
-    shutdown = request.environ.get("werkzeug.server.shutdown")
-    if not shutdown:
-        abort(500)
-    shutdown()
-    return "Shutting down..."
-
-
 class IncidentApi(ModelView):
     model = Incident
     model_name = "incident"

@@ -4,7 +4,6 @@ import os
 import random
 import sys
 import threading
-import time
 import uuid
 from decimal import Decimal
 from io import BytesIO
@@ -15,7 +14,8 @@ import pytest
 from faker import Faker
 from flask import current_app, g
 from PIL import Image as Pimage
-from selenium import webdriver
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
@@ -678,8 +678,6 @@ def server(app, request):
     # start server without werkzeug auto-refresh
     # https://stackoverflow.com/questions/38087283/
     threading.Thread(target=app.run, daemon=True, kwargs={"debug": False}).start()
-    # give the server a few seconds to ensure it is up
-    time.sleep(10)
 
 
 @pytest.fixture
@@ -687,14 +685,11 @@ def browser(app, request, server):
     # start headless webdriver
     vdisplay = Xvfb()
     vdisplay.start()
-    driver = webdriver.Firefox(log_path="/tmp/geckodriver.log")
-    # wait for browser to start up
-    time.sleep(3)
-    yield driver
 
-    # shutdown server
-    driver.get("http://localhost:5000/shutdown")
-    time.sleep(3)
+    service = FirefoxService(log_path="/tmp/geckodriver.log")
+    driver = Firefox(service=service)
+
+    yield driver
 
     # shutdown headless webdriver
     driver.quit()
