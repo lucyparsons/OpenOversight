@@ -368,7 +368,13 @@ def filter_by_form(form_data, officer_query, department_id=None):
         if "Not Sure" in form_data["unit"]:
             include_null_unit = True
 
-    if form_data.get("badge") or unit_ids or include_null_unit or job_ids:
+    if (
+        form_data.get("badge")
+        or unit_ids
+        or include_null_unit
+        or job_ids
+        or form_data.get("current_job")
+    ):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
