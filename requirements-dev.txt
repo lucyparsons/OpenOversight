@@ -13,6 +13,6 @@ pytest-pep8==1.0.6
 pytest-sugar==0.9.4
 pytest-xdist==2.5.0
 selenium==4.3.0
-sphinx==1.7.8
+sphinx==5.1.1
 sphinx-autobuild==0.7.1
 xvfbwrapper==0.2.9
