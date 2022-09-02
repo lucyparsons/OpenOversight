@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "sass": "^1.54.4"
+    "sass": "^1.54.8"
   },
   "name": "openoversight",
   "repository": "https://github.com/OrcaCollective/OpenOversight",
