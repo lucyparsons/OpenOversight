@@ -39,11 +39,11 @@ RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
 RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
-
-COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r dev-requirements.txt
+WORKDIR /usr/src/app
+RUN pip install poetry
+COPY pyproject.toml /usr/src/app
+COPY poetry.lock /usr/src/app
+RUN poetry install
 
 COPY package.json /usr/src/app/
 RUN yarn
