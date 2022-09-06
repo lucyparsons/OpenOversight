@@ -1082,6 +1082,104 @@ def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_p
     assert cop1.links[0] == link
 
 
+def test_advanced_csv_import__overwrite_assignments(
+    session, department_with_ranks, tmp_path
+):
+    tmp_path = str(tmp_path)
+
+    department_name = department_with_ranks.name
+
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+
+    officer = Officer(
+        id=99001,
+        department_id=department_with_ranks.id,
+        first_name="Already",
+        last_name="InDatabase",
+    )
+    officer2 = Officer(
+        id=99002,
+        department_id=department_with_ranks.id,
+        first_name="Also",
+        last_name="InDatabase",
+    )
+    assignment = Assignment(
+        id=123,
+        officer_id=officer.id,
+        job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+    )
+    assignment2 = Assignment(
+        id=124,
+        officer_id=officer2.id,
+        job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+    )
+    session.add(officer)
+    session.add(assignment)
+    session.add(officer2)
+    session.add(assignment2)
+    session.flush()
+
+    # create temporary csv files
+    officers_data = [
+        {
+            "id": "#1",
+            "department_name": department_name,
+            "last_name": "Test",
+            "first_name": "Second",
+        },
+    ]
+
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    assignments_data = [
+        {
+            "officer_id": 99001,
+            "job title": "Captain",
+            "badge number": "12345",
+            "start date": "2020-07-24",
+        },
+        {
+            "officer_id": "#1",
+            "job title": "Police Officer",
+            "badge number": "999",
+            "start date": "2020-07-21",
+        },
+    ]
+    assignments_csv = _create_csv(assignments_data, tmp_path, "assignments.csv")
+
+    # run command with --overwrite-assignments
+    result = run_command_print_output(
+        advanced_csv_import,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            officers_csv,
+            "--assignments-csv",
+            assignments_csv,
+            "--overwrite-assignments",
+        ],
+    )
+
+    # make sure command did not fail
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    # make sure all the data is imported as expected
+    cop1 = Officer.query.get(99001)
+    assert len(cop1.assignments.all()) == 1
+    assert cop1.assignments[0].star_no == "12345"
+
+    cop2 = Officer.query.get(99002)
+    assert len(cop2.assignments.all()) == 1
+    assert cop2.assignments[0] == Assignment.query.get(124)
+
+    cop3 = Officer.query.filter_by(first_name="Second").first()
+    assert len(cop3.assignments.all()) == 1
+    assert cop3.assignments[0].star_no == "999"
+    assert cop3.assignments[0].job.job_title == "Police Officer"
+
+
 def test_advanced_csv_import__extra_fields_officers(
     session, department_with_ranks, tmp_path
 ):
