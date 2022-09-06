@@ -26,31 +26,36 @@ Explanation of the command
   /usr/src/app/OpenOversight$ flask advanced-csv-import --help
   Usage: flask advanced-csv-import [OPTIONS] DEPARTMENT_NAME
 
-  Add or update officers, assignments, salaries, links and incidents from
-  csv files in the department DEPARTMENT_NAME.
+    Add or update officers, assignments, salaries, links and incidents from
+    csv files in the department DEPARTMENT_NAME.
 
-  The csv files are treated as the source of truth. Existing entries might
-  be overwritten as a result, backing up the database and running the
-  command locally first is highly recommended.
+    The csv files are treated as the source of truth. Existing entries might
+    be overwritten as a result, backing up the database and running the
+    command locally first is highly recommended.
 
-  See the documentation before running the command.
+    See the documentation before running the command.
 
   Options:
-  --officers-csv PATH
-  --assignments-csv PATH
-  --salaries-csv PATH
-  --links-csv PATH
-  --incidents-csv PATH
-  --force-create          Only for development/testing!
-  --help                  Show this message and exit.
+    --officers-csv PATH
+    --assignments-csv PATH
+    --salaries-csv PATH
+    --links-csv PATH
+    --incidents-csv PATH
+    --force-create           Only for development/testing!
+    --overwrite-assignments
+    --help                   Show this message and exit.
 
 
 The command expects one mandatory argument the department name.
 This is to reduce the chance of making changes to the wrong department by mixing up files.
 Then there are 5 options to include paths to officers, assignments, salaries, incidents and links csv files.
-Finally there is a ``--force-create`` flag that allows to delete and overwrite existing entries in the database.
+Then there is a ``--force-create`` flag that allows to delete and overwrite existing entries in the database.
 This is only supposed to be used in non-production environments and to allow replication of the data of another (in most cases production)
 instance to local environments to test the import command locally first. More details on that flag at the end of the document: :ref:`ref-aci-force-create`.
+Finally there is ``--overwrite-assignments`` which simplifies updating assignments. Instead of updating them,
+all assignments for the relevant officers are deleted and created new based on the provided data. This flag is only
+considered if an assignments-csv is provided and ignored otherwise. See the instructions in
+the section on assignment-csv for more details.
 
 General overview of the csv import:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,7 +91,7 @@ Officers csv
 ^^^^^^^^^^^^
 - Required: ``id, department_name``
 - Optional: ``last_name, first_name, middle_initial, suffix, race, gender, employment_date, birth_year, unique_internal_identifier``
-- Ignored: ``badge_number, job_title, most_recent_salary`` (Unused but command will not fail when field is present)
+- Ignored: ``badge_number, job_title, most_recent_salary, unique_identifier`` (Unused but command will not fail when field is present)
 
 Details:
 ~~~~~~~~
@@ -107,16 +112,26 @@ Details:
 Assignments csv
 ^^^^^^^^^^^^^^^
 - Required: ``id, officer_id, job_title``
-- Optional: ``badge_number, unit_id, start_date, resign_date``
+- Optional: ``badge_number, unit_id, unit_name, start_date, resign_date``
 
 Details:
 ~~~~~~~~
 -  ``officer_id`` Number referring to ``id`` of existing officer or string starting with ``#`` referring to a newly created officer in the provided officers csv.
 -  ``badge_number`` Any string that represents the star or badge number of the officer. In some departments this number changes with the assignment.
--  ``job_title`` The job title, needs to be created for that department.
+-  ``job_title`` The job title, will be created if it does not exist.
 -  ``unit_id`` Id of existing unit within the department.
+-  ``unit_name`` Name of the unit, only used if the ``unit_id`` column is not provided.
 -  ``start_date`` Start :ref:`date <ref-aci-formats>` of this assignment.
 -  ``resign_date`` End :ref:`date <ref-aci-formats>` of this assignment.
+
+Special Flag:
+~~~~~~~~~~~~~
+The ``--overwrite-assignments`` in the command can be used to not merge new with existing assignments.
+Instead all existing assignments belonging to officers named in the ``officer_id`` column are deleted first,
+before the new assignments contained in the provided csv are created in the database.
+
+This should only be used if the provided csv contains both the currently in the database and additional assignments,
+or is based on a better and more complete dataset, for example after receiving a dataset for historic assignment data.
 
 Salaries csv
 ^^^^^^^^^^^^
