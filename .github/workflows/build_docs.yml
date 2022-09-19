@@ -1,0 +1,35 @@
+name: Publish docs to github.io
+
+on:
+  push:
+    branches:
+      - main
+      - docs/*
+
+jobs:
+  publish-docs:
+    name: Publish developer docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup just
+        uses: extractions/setup-just@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Generate docs
+        run: |
+            just install
+            just make-docs
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@v3.7.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
+          force_orphan: true

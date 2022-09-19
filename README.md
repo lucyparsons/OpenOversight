@@ -1,6 +1,11 @@
 ![](docs/img/lpl-logo.png)
 
-# OpenOversight (Seattle Fork) [![Build Status](https://travis-ci.org/lucyparsons/OpenOversight.svg?branch=develop)](https://travis-ci.org/lucyparsons/OpenOversight) [![Coverage Status](https://coveralls.io/repos/github/lucyparsons/OpenOversight/badge.svg?branch=develop)](https://coveralls.io/github/lucyparsons/OpenOversight?branch=develop) [![Documentation Status](https://readthedocs.org/projects/openoversight/badge/?version=latest)](https://openoversight.readthedocs.io/en/latest/?badge=latest) [![Join the chat at https://gitter.im/OpenOversight/Lobby](https://badges.gitter.im/OpenOversight/Lobby.svg)](https://gitter.im/OpenOversight/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://github.com/OrcaCollective/OpenOversight/actions/workflows/publish.yml/badge.svg)](https://github.com/OrcaCollective/OpenOversight/actions/workflows/publish.yml)
+[![Documentation](https://img.shields.io/badge/docs-main-yellow)](https://orcacollective.github.io/OpenOversight/)
+[![Latest GHCR.io image version](https://ghcr-badge.herokuapp.com/orcacollective/openoversight/latest_tag?color=%230078D4)](https://ghcr.io/orcacollective/openoversight)
+[![Latest GHCR.io image size](https://ghcr-badge.herokuapp.com/orcacollective/openoversight/size?color=%230078D4)](https://ghcr.io/orcacollective/openoversight)
+
+# OpenOversight (Seattle Fork)
 
 OpenOversight is a Lucy Parsons Labs project to improve law enforcement accountability through public and crowdsourced data. We maintain a database of officer demographic information and provide digital galleries of photographs. This is done to help people identify law enforcement officers for filing complaints and in order for the public to see work-related information about law enforcement officers that interact with the public.
 

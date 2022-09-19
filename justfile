@@ -19,6 +19,11 @@ default:
 dotenv:
     @([ ! -f .env ] && cp .env.example .env) || true
 
+
+# Install dev dependencies into currently activated  python environment
+install:
+    pip3 install -r requirements-dev.txt
+
 # Build all containers
 build: dotenv
 	{{ DC }} build
@@ -95,3 +100,11 @@ backup location:
         -v {{ location }}:/backup \
         loomchild/volume-backup \
         backup openoversight-postgres-$(date '+%Y-%m-%d').tar.bz2
+
+# Build the docs using sphinx
+make-docs:
+    sphinx-build -b html docs/ docs/_build/html
+
+# Build & serve the docs using a live server
+serve-docs:
+    sphinx-autobuild docs/ docs/_build/html
