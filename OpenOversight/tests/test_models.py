@@ -1,9 +1,9 @@
 import datetime
 import time
 from decimal import Decimal
+from unittest.mock import MagicMock
 
 import pytest
-from mock import MagicMock
 
 from OpenOversight.app.models import (
     Assignment,

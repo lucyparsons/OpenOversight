@@ -6,10 +6,10 @@ import random
 from datetime import date, datetime
 from decimal import Decimal
 from io import BytesIO
+from unittest.mock import MagicMock, patch
 
 import pytest
 from flask import current_app, url_for
-from mock import MagicMock, patch
 from sqlalchemy.sql.operators import Operators
 
 from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES

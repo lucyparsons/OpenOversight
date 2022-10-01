@@ -1,9 +1,9 @@
 # Routing and view tests
 import os
+from unittest.mock import MagicMock, patch
 
 import pytest
 from flask import current_app, url_for
-from mock import MagicMock, patch
 
 
 try:

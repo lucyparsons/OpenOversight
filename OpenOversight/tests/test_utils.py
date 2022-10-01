@@ -1,9 +1,9 @@
 from io import BytesIO
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from flask import current_app
 from flask_login import current_user
-from mock import MagicMock, Mock, patch
 
 import OpenOversight
 from OpenOversight.app.models import Department, Image, Officer, Unit

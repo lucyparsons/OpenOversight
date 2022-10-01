@@ -46,15 +46,6 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Geckodriver components
-ENV GECKODRIVER_VERSION="v0.31.0"
-ENV GECKODRIVER_BINARY="geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz"
-ENV GECKODRIVER_SHA=7fdd8007d22a6f44caa6929a3d74bbd6a00984d88be50255153671bd201e5493
-ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
-RUN wget ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/${GECKODRIVER_BINARY} && \
-    echo "${GECKODRIVER_SHA}  ${GECKODRIVER_BINARY}" | sha256sum --check - && \
-    tar -xzf ${GECKODRIVER_BINARY} -C /usr/bin
-
 # Install additional development requirements
 COPY requirements-dev.txt /usr/src/app/
 RUN pip3 install -r /usr/src/app/requirements-dev.txt

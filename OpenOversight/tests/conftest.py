@@ -17,6 +17,7 @@ from PIL import Image as Pimage
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
+from webdriver_manager.firefox import GeckoDriverManager
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
@@ -710,7 +711,9 @@ def browser(app, request, server):
     options = FirefoxOptions()
     options.headless = True
 
-    service = FirefoxService(log_path="/tmp/geckodriver.log")
+    service = FirefoxService(
+        executable_path=GeckoDriverManager().install(), log_path="/tmp/geckodriver.log"
+    )
     driver = Firefox(options=options, service=service)
 
     yield driver
