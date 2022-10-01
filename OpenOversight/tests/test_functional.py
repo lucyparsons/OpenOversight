@@ -168,6 +168,26 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     assert result.is_displayed()
 
 
+def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
+    mockdata, browser
+):
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
+    incident_long_descrip = Incident.query.filter(
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
+    ).one_or_none()
+    incident_id = str(incident_long_descrip.id)
+
+    # Check that the text is truncated and contains more than just the ellipsis
+    truncated_text = browser.find_element(
+        "id", "incident-description_" + incident_id
+    ).text
+    assert "…" in truncated_text
+    # Include buffer for jinja rendered spaces
+    assert DESCRIPTION_CUTOFF + 20 > len(truncated_text) > 100
+
+
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
     mockdata, browser
 ):
