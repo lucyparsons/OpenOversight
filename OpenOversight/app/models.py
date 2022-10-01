@@ -602,6 +602,11 @@ class User(UserMixin, BaseModel):
         db.session.add(self)
         return True
 
+    @property
+    def is_active(self):
+        """Override UserMixin.is_active to prevent disabled users from logging in."""
+        return not self.is_disabled
+
     def __repr__(self):
         return "<User %r>" % self.username
 

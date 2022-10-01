@@ -412,6 +412,26 @@ def add_mockdata(session):
     session.add(test_unconfirmed_user)
     session.commit()
 
+    test_disabled_user = models.User(
+        email="may@example.org",
+        username="may",
+        password="yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_disabled_user)
+    session.commit()
+
+    test_modified_disabled_user = models.User(
+        email="sam@example.org",
+        username="sam",
+        password="the yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_modified_disabled_user)
+    session.commit()
+
     test_addresses = [
         models.Location(
             street_name="Test St",
