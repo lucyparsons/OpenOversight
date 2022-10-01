@@ -14,6 +14,25 @@ def login_user(client):
     return rv
 
 
+def login_unconfirmed_user(client):
+    form = LoginForm(email="freddy@example.org", password="dog", remember_me=True)
+    rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
+    assert b"Invalid username or password" not in rv.data
+    return rv
+
+
+def login_disabled_user(client):
+    form = LoginForm(email="may@example.org", password="yam", remember_me=True)
+    rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
+    return rv
+
+
+def login_modified_disabled_user(client):
+    form = LoginForm(email="sam@example.org", password="the yam", remember_me=True)
+    rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
+    return rv
+
+
 def login_admin(client):
 
     form = LoginForm(email=ADMIN_EMAIL, password=ADMIN_PASSWORD, remember_me=True)

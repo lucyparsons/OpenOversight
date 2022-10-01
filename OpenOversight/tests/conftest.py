@@ -14,6 +14,7 @@ import pytest
 from faker import Faker
 from flask import current_app, g
 from PIL import Image as Pimage
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
 from xvfbwrapper import Xvfb
@@ -415,6 +416,26 @@ def add_mockdata(session):
     session.add(test_unconfirmed_user)
     session.commit()
 
+    test_disabled_user = models.User(
+        email="may@example.org",
+        username="may",
+        password="yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_disabled_user)
+    session.commit()
+
+    test_modified_disabled_user = models.User(
+        email="sam@example.org",
+        username="sam",
+        password="the yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_modified_disabled_user)
+    session.commit()
+
     test_addresses = [
         models.Location(
             street_name="Test St",
@@ -686,8 +707,11 @@ def browser(app, request, server):
     vdisplay = Xvfb()
     vdisplay.start()
 
+    options = FirefoxOptions()
+    options.headless = True
+
     service = FirefoxService(log_path="/tmp/geckodriver.log")
-    driver = Firefox(service=service)
+    driver = Firefox(options=options, service=service)
 
     yield driver
 

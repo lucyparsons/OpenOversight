@@ -1,12 +1,8 @@
 # Routing and view tests
+from urllib.parse import urlparse
+
 import pytest
 from flask import current_app, url_for
-
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
@@ -19,7 +15,12 @@ from OpenOversight.app.auth.forms import (
 )
 from OpenOversight.app.models import User
 
-from .route_helpers import login_user
+from .route_helpers import (
+    login_disabled_user,
+    login_modified_disabled_user,
+    login_unconfirmed_user,
+    login_user,
+)
 
 
 @pytest.mark.parametrize(
@@ -372,13 +373,6 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         assert b"Your password has been updated." in rv.data
 
 
-def login_unconfirmed_user(client):
-    form = LoginForm(email="freddy@example.org", password="dog", remember_me=True)
-    rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    assert b"Invalid username or password" not in rv.data
-    return rv
-
-
 def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
@@ -386,6 +380,34 @@ def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, sessio
         rv = client.get(url_for("auth.unconfirmed"), follow_redirects=False)
 
         assert b"Please Confirm Your Account" in rv.data
+
+
+def test_disabled_user_cannot_login(mockdata, client, session):
+    with current_app.test_request_context():
+        rv = login_disabled_user(client)
+        assert b"User has been disabled" in rv.data
+
+
+def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, session):
+    # Don't use modified_disabled_user for anything else! Since we run tests
+    # concurrently and this test modifies the user, there's a chance that
+    # you'll get unexpected results if both tests run simultaneously.
+    with current_app.test_request_context():
+        # Temporarily enable account for login
+        user = User.query.filter_by(email="sam@example.org").one()
+        user.is_disabled = False
+        session.add(user)
+
+        rv = login_modified_disabled_user(client)
+        assert b"/user/sam" in rv.data
+
+        # Disable account again and check that login_required redirects user correctly
+        user.is_disabled = True
+        session.add(user)
+
+        # Logged in disabled user cannot access pages requiring auth
+        rv = client.get("/auth/logout")
+        assert rv.status_code == 302
 
 
 def test_user_cannot_change_password_if_they_dont_match(mockdata, client, session):
