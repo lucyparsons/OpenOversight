@@ -10,7 +10,7 @@ Flask-Mail==0.9.1
 Flask-Migrate==3.1.0
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==2.5.1
-Flask-WTF==0.15.1
+Flask-WTF==1.0.1
 future==0.18.2
 gunicorn==19.9
 Pillow==9.2.0
