@@ -47,6 +47,9 @@ from .models import (
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
 
+# Cropped officer face image size
+THUMBNAIL_SIZE = 1000, 1000
+
 
 # Call JPEG patch function
 add_jpeg_patch()
@@ -564,36 +567,37 @@ def create_description(self, form):
 
 
 def crop_image(image, crop_data=None, department_id=None):
+    """Crops an image to given dimensions and shrinks it to fit within a configured
+    bounding box if the cropped image is still too big.
+    """
     if "http" in image.filepath:
         with urlopen(image.filepath) as response:
             image_buf = BytesIO(response.read())
     else:
         image_buf = open(os.path.abspath(current_app.root_path) + image.filepath, "rb")
 
-    image_buf.seek(0)
-    image_type = imghdr.what(image_buf)
-    if not image_type:
-        image_type = os.path.splitext(image.filepath)[1].lower()[1:]
-        if image_type in ("jp2", "j2k", "jpf", "jpx", "jpm", "mj2"):
-            image_type = "jpeg2000"
-        elif image_type in ("jpg", "jpeg", "jpe", "jif", "jfif", "jfi"):
-            image_type = "jpeg"
-        elif image_type in ("tif", "tiff"):
-            image_type = "tiff"
     pimage = Pimage.open(image_buf)
 
-    SIZE = 300, 300
-    if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
+    if (
+        not crop_data
+        and pimage.size[0] < THUMBNAIL_SIZE[0]
+        and pimage.size[1] < THUMBNAIL_SIZE[1]
+    ):
         return image
 
+    # Crops image to face and resizes to bounding box if still too big
     if crop_data:
         pimage = pimage.crop(crop_data)
-    if pimage.size[0] > SIZE[0] or pimage.size[1] > SIZE[1]:
-        pimage = pimage.copy()
-        pimage.thumbnail(SIZE)
+    if pimage.size[0] > THUMBNAIL_SIZE[0] or pimage.size[1] > THUMBNAIL_SIZE[1]:
+        pimage.thumbnail(THUMBNAIL_SIZE)
 
+    # JPEG doesn't support alpha channel, convert to RGB
+    if pimage.mode in ("RGBA", "P"):
+        pimage = pimage.convert("RGB")
+
+    # Save preview image as JPEG to save bandwidth for mobile users
     cropped_image_buf = BytesIO()
-    pimage.save(cropped_image_buf, image_type)
+    pimage.save(cropped_image_buf, "jpeg", quality=95, optimize=True, progressive=True)
 
     return upload_image_to_s3_and_store_in_db(
         cropped_image_buf, current_user.get_id(), department_id
