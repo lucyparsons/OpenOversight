@@ -20,16 +20,27 @@
             </a>
         {% endif %}
        </h2>
-          <p>
+
+       <div>
+         <i class="dept-{{department.id}}">Officers Updated: {{department.latest_officer_update() | default("No data", true) }}</i>
+         <br>
+         <i class="dept-{{department.id}}">Assignments Updated: {{department.latest_assignment_update() | default("No data", true) }}</i>
+         {% if department.incidents %}
+           <br>
+           <i class="dept-{{department.id}}">Incidents Updated: {{department.latest_incident_update() | default("No data", true) }}</i>
+         {% endif %}
+       </div>
+
+        <p>
           <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
-             Officers
+            Officers
           </a>
           {% if department.incidents %}
             <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
-               Incidents
+              Incidents
             </a>
+          {% endif %}
         </p>
-        {% endif %}
       </div>
     </p>
   {% endfor %}

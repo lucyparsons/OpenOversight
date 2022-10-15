@@ -1,5 +1,6 @@
 Authlib==0.15.5
 boto3==1.24.21
+cachetools==5.2.0
 email-validator==1.2.1
 Fabric3==1.14.post1
 Flask==2.2.2

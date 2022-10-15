@@ -209,6 +209,7 @@ def test_csv_import_update(csvfile):
 
     assert n_existing > 0
 
+    # Load officers
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
 
     assert n_created == 0

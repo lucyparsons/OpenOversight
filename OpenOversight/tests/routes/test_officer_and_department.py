@@ -2486,3 +2486,24 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
         )
 
         assert rv.status_code == 403
+
+
+def test_browse_displays_last_updated_dates(mockdata, client, session):
+    dept = Department.query.first()
+
+    tag = f'<i class="dept-{dept.id}">'
+
+    with current_app.test_request_context():
+        session.execute(
+            Officer.__table__.update().values(date_updated=date(2022, 1, 1))
+        )
+        session.execute(Assignment.__table__.update().values(date_updated=None))
+        session.execute(
+            Incident.__table__.update().values(date_updated=date(2022, 1, 1))
+        )
+        session.commit()
+
+        rv = client.get(url_for("main.browse"))
+        assert tag + "Officers Updated: 2022-01-01" in rv.data.decode("utf-8")
+        assert tag + "Assignments Updated: No data" in rv.data.decode("utf-8")
+        assert tag + "Incidents Updated: 2022-01-01" in rv.data.decode("utf-8")
