@@ -64,7 +64,7 @@ def login():
         if user is not None and user.verify_password(form.password.data):
             if user.is_active:
                 login_user(user, form.remember_me.data)
-                return redirect(request.args.get("next") or url_for("main.index"))
+                return redirect(url_for("main.index"))
             else:
                 flash("User has been disabled.")
         else:
@@ -196,11 +196,8 @@ def password_reset_request():
                 "auth/email/reset_password",
                 user=user,
                 token=token,
-                next=request.args.get("next"),
             )
-        flash(
-            "An email with instructions to reset your password has been " "sent to you."
-        )
+        flash("An email with instructions to reset your password has been sent to you.")
         return redirect(url_for("auth.login"))
     else:
         current_app.logger.info(form.errors)
