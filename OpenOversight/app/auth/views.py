@@ -1,10 +1,18 @@
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from .. import sitemap
 from ..email import send_email
 from ..models import User, db
-from ..utils import set_dynamic_default
+from ..utils import set_dynamic_default, validate_redirect_url
 from . import auth
 from .forms import (
     ChangeDefaultDepartmentForm,
@@ -64,7 +72,8 @@ def login():
         if user is not None and user.verify_password(form.password.data):
             if user.is_active:
                 login_user(user, form.remember_me.data)
-                return redirect(url_for("main.index"))
+                next_url = validate_redirect_url(session.get("next"))
+                return redirect(next_url or url_for("main.index"))
             else:
                 flash("User has been disabled.")
         else:
