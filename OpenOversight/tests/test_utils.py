@@ -11,6 +11,7 @@ from OpenOversight.app.utils import (
     crop_image,
     filter_by_form,
     upload_image_to_s3_and_store_in_db,
+    validate_redirect_url,
 )
 from OpenOversight.tests.routes.route_helpers import login_user
 
@@ -337,3 +338,22 @@ def test_filter_by_form_filter_unit(
         if has_officers_with_no_unit:
             found = found or any([a.unit_id is None for a in officer.assignments])
         assert found
+
+
+@pytest.mark.parametrize(
+    "url,is_valid",
+    [
+        ("/images/1", True),
+        ("/officer/1?with_params=true", True),
+        ("//google.com", False),
+        ("http://google.com", False),
+        ("https://google.com/?q=oo", False),
+        ("http://localhost:3000", False),
+    ],
+)
+def test_validate_redirect_url(url, is_valid):
+    result = validate_redirect_url(url)
+    if is_valid:
+        assert result == url
+    else:
+        assert result is None

@@ -8,6 +8,7 @@ from distutils.util import strtobool
 from io import BytesIO
 from traceback import format_exc
 from typing import Optional
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 import boto3
@@ -740,3 +741,19 @@ def normalize_gender(input_gender):
     }
 
     return normalized_genders.get(input_gender.lower().strip())
+
+
+def validate_redirect_url(url: Optional[str]) -> Optional[str]:
+    """
+    Check that a url does not redirect to another domain.
+    :param url: the url to be checked
+    :return: the url if validated, otherwise `None`
+    """
+    if not url:
+        return None
+
+    parsed = urlparse(url)
+    if parsed.scheme or parsed.netloc:
+        return None
+
+    return url

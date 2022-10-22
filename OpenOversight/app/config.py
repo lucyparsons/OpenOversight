@@ -46,6 +46,10 @@ class BaseConfig(object):
     # User settings
     APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
 
+    # Use session cookie to store URL to redirect to after login
+    # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
+    USE_SESSION_FOR_NEXT = True
+
     SEED = 666
 
     @staticmethod

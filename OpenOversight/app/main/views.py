@@ -12,6 +12,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_login import current_user, login_required, login_user
@@ -63,6 +64,7 @@ from ..utils import (
     serve_image,
     set_dynamic_default,
     upload_image_to_s3_and_store_in_db,
+    validate_redirect_url,
 )
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
@@ -106,7 +108,11 @@ def static_routes():
 
 
 def redirect_url(default="index"):
-    return request.referrer or url_for(default)
+    return (
+        validate_redirect_url(session.get("next"))
+        or request.referrer
+        or url_for(default)
+    )
 
 
 @sitemap_include
@@ -180,7 +186,7 @@ def get_started_labeling():
         user = User.by_email(form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            return redirect(url_for("main.index"))
+            return redirect(url_for("main.get_started_labeling"))
         flash("Invalid username or password.")
     else:
         current_app.logger.info(form.errors)
