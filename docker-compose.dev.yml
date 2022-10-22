@@ -35,7 +35,7 @@ services:
       sleep 5;
       /usr/bin/mc config host add myminio http://minio:9000 minio ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/${S3_BUCKET_NAME};
-      /usr/bin/mc policy set public myminio/${S3_BUCKET_NAME};
+      /usr/bin/mc anonymous set public myminio/${S3_BUCKET_NAME};
       exit 0;
       "
 
