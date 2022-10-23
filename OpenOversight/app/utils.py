@@ -632,6 +632,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         return existing_image
     try:
         new_filename = "{}.{}".format(hash_img, image_type)
+        scrubbed_image_buf.seek(0)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(
             filepath=url,
