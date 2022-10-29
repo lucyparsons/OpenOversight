@@ -1,3 +1,5 @@
+-r requirements.txt
+
 Faker==15.0.0
 flake8==5.0.4
 ipython
