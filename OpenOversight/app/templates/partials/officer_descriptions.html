@@ -8,7 +8,9 @@
           {{ paragraph | safe }} <br/>
         {% endfor %}
         <br />
-        <em>{{ description.creator.username }} </em>
+        {% if current_user and not current_user.is_anonymous %}
+          <em>{{ description.creator.username }} </em>
+        {% endif %}
         {% if description.creator_id == current_user.get_id() or
             current_user.is_administrator %}
           <a
