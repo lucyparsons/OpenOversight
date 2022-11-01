@@ -451,14 +451,14 @@ def display_submission(image_id):
 
 
 @main.route("/tag/<int:tag_id>")
-@login_required
 def display_tag(tag_id):
+    jsloads = ["js/tag.js"]
     try:
         tag = Face.query.filter_by(id=tag_id).one()
-        proper_path = serve_image(tag.image.filepath)
+        proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(404)
-    return render_template("tag.html", face=tag, path=proper_path)
+    return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
 
 
 @main.route("/image/classify/<int:image_id>/<int:contains_cops>", methods=["POST"])

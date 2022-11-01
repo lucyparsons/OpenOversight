@@ -28,6 +28,7 @@ PROJECT_ROOT = os.path.abspath(os.curdir)
         ("/tagger_find"),
         ("/label"),
         ("/tutorial"),
+        ("/tag/1"),
     ],
 )
 def test_routes_ok(route, client, mockdata):
@@ -44,7 +45,6 @@ def test_routes_ok(route, client, mockdata):
         ("/cop_face/department/1"),
         ("/image/1"),
         ("/image/tagged/1"),
-        ("/tag/1"),
     ],
 )
 def test_route_login_required(route, client, mockdata):
@@ -123,6 +123,10 @@ def test_user_can_view_tag(mockdata, client, session):
 
         rv = client.get(url_for("main.display_tag", tag_id=1), follow_redirects=True)
         assert b"Tag" in rv.data
+
+        # Check that tag frame position is specified
+        for attribute in (b"data-top", b"data-left", b"data-width", b"data-height"):
+            assert attribute in rv.data
 
 
 def test_admin_can_delete_tag(mockdata, client, session):

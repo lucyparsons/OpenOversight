@@ -582,3 +582,15 @@ tr:hover .row-actions {
     min-width: 200px;
     min-height: 200px;
 }
+
+.face-wrap {
+    margin: auto;
+    position: relative;
+}
+
+#face-tag-frame {
+    position: absolute;
+    border: 2px solid crimson;
+    visibility: hidden;
+    width: auto
+}

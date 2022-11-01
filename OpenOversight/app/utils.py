@@ -256,8 +256,9 @@ def get_random_image(image_query):
 
 
 def serve_image(filepath):
-    # Custom change for development
-    if "minio" in filepath:
+    # Custom change for development. Do not replace minio with localhost in
+    # automated tests since these run inside the docker container.
+    if "minio" in filepath and not current_app.config.get("TESTING"):
         filepath = filepath.replace("minio", "localhost")
     if "http" in filepath:
         return filepath
