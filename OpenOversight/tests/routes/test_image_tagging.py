@@ -310,9 +310,9 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         assert department.name in rv.data.decode("utf-8")
 
 
-def test_admin_can_set_featured_tag(mockdata, client, session):
+def test_user_can_set_featured_tag(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        login_user(client)
 
         rv = client.post(
             url_for("main.set_featured_tag", tag_id=1), follow_redirects=True
@@ -320,49 +320,9 @@ def test_admin_can_set_featured_tag(mockdata, client, session):
         assert b"Successfully set this tag as featured" in rv.data
 
 
-def test_ac_can_set_featured_tag_in_their_dept(mockdata, client, session):
-    with current_app.test_request_context():
-        login_ac(client)
-
-        tag = Face.query.filter(Face.officer.has(department_id=AC_DEPT)).first()
-        tag_id = tag.id
-
-        rv = client.post(
-            url_for("main.set_featured_tag", tag_id=tag_id), follow_redirects=True
-        )
-        assert b"Successfully set this tag as featured" in rv.data
-
-        featured_tag = (
-            Face.query.filter(Face.officer_id == tag.officer_id)
-            .filter(Face.featured == True)  # noqa: E712
-            .one_or_none()
-        )
-        assert featured_tag is not None
-
-
-def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session):
-    with current_app.test_request_context():
-        login_ac(client)
-
-        tag = (
-            Face.query.join(Face.officer, aliased=True)
-            .except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT)))
-            .first()
-        )
-
-        tag_id = tag.id
-
-        rv = client.post(
-            url_for("main.set_featured_tag", tag_id=tag_id), follow_redirects=True
-        )
-        assert rv.status_code == 403
-
-        featured_tag = (
-            Face.query.filter(Face.officer_id == tag.officer_id)
-            .filter(Face.featured == True)  # noqa: E712
-            .one_or_none()
-        )
-        assert featured_tag is None
+def test_can_set_featured_tag_login_required(mockdata, client, session):
+    rv = client.post("/tag/set_featured/1", follow_redirects=False)
+    assert rv.status_code == 302
 
 
 @patch(
@@ -371,7 +331,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
 )
 def test_featured_tag_replaces_others(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        login_user(client)
 
         tag1 = Face.query.first()
         officer = Officer.query.filter_by(id=tag1.officer_id).one()
