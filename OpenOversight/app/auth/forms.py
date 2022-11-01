@@ -114,15 +114,15 @@ class ChangeDefaultDepartmentForm(Form):
 
 
 class EditUserForm(Form):
-    is_area_coordinator = BooleanField(
-        "Is area coordinator?", false_values={"False", "false", ""}
-    )
     ac_department = QuerySelectField(
-        "Department",
+        "Assigned Department",
         validators=[Optional()],
         query_factory=dept_choices,
         get_label="name",
         allow_blank=True,
+    )
+    is_area_coordinator = BooleanField(
+        "Is area coordinator?", false_values={"False", "false", ""}
     )
     is_administrator = BooleanField(
         "Is administrator?", false_values={"False", "false", ""}
