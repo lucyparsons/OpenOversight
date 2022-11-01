@@ -9,15 +9,36 @@
 
 </div>
 
+
 <div class="container">
   <div class="row">
-    <div class="col-sm-6 col-md-4">
-      <img src="{{ face.image.filepath }}" />
-      <br>
+    <div class="col-sm-12">
+      You can download the full officer photo by clicking the image below:
+    </div>
+  </div>
+
+  <br>
+
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+      <a href="{{ path }}" rel="noopener noreferrer">
+        <div class="face-wrap">
+          <img id="face-img"
+            data-left="{{ face.face_position_x }}"
+            data-top="{{ face.face_position_y }}"
+            data-width="{{ face.face_width }}"
+            data-height="{{ face.face_height }}"
+            src="{{ path }}" />
+          <div id="face-tag-frame"></div>
+        </div>
+      </a>
     </div>
   </div>
 </div>
 
+<br>
+
+{% if current_user and current_user.is_authenticated %}
 <div class="container">
   <div class="row">
     <div class="col-sm-6 col-md-4">
@@ -27,9 +48,14 @@
           <table class="table table-hover">
             <tbody>
               <tr>
-                <td><b>Image ID</b></td>
+                <td><b>Cropped Image ID</b></td>
                 <td><a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">
                     {{ face.image.id }}</a></td>
+              </tr>
+              <tr>
+                <td><b>Original Image ID</b></td>
+                <td><a href="{{ url_for('main.display_submission', image_id=face.original_image.id) }}">
+                    {{ face.original_image.id }}</a></td>
               </tr>
               <tr>
                 <td><b>Department</b></td>
@@ -91,9 +117,7 @@
         </div>
       </div>
     </div>
-
   </div>
-
 </div>
-
+{% endif %}
 {% endblock %}
