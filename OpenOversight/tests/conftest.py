@@ -702,7 +702,7 @@ def server(app, request):
     threading.Thread(target=app.run, daemon=True, kwargs={"debug": False}).start()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def browser(app, request, server):
     # start headless webdriver
     vdisplay = Xvfb()

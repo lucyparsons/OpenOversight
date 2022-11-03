@@ -49,6 +49,16 @@ def wait_for_element(browser, locator, text, timeout=10):
         pytest.fail("Timed out while waiting for element to appear")
 
 
+def wait_for_element_to_be_visible(browser, locator, text, timeout=10):
+    try:
+        element_visible = expected_conditions.visibility_of_element_located(
+            (locator, text)
+        )
+        WebDriverWait(browser, timeout).until(element_visible)
+    except TimeoutException:
+        pytest.fail("Timed out while waiting for element to become visible")
+
+
 @pytest.mark.acceptance
 def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     browser.get("http://localhost:5000")
@@ -382,6 +392,7 @@ def test_image_classification_and_tagging(mockdata, browser):
     frame = browser.find_element(By.ID, "face-tag-frame")
 
     # 8. Check that the tag frame is fully contained within the image
+    wait_for_element_to_be_visible(browser, By.ID, "face-tag-frame")
     assert image.location["x"] <= frame.location["x"]
     assert image.location["y"] <= frame.location["y"]
     assert (
