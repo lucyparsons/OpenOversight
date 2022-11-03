@@ -23,12 +23,19 @@
     <div class="col-sm-12 col-md-12">
       <a href="{{ path }}" rel="noopener noreferrer">
         <div class="face-wrap">
+          {% if face.face_position_x is defined
+                and face.face_position_y is defined
+                and face.face_width is defined
+                and face.face_height is defined %}
           <img id="face-img"
             data-left="{{ face.face_position_x }}"
             data-top="{{ face.face_position_y }}"
             data-width="{{ face.face_width }}"
             data-height="{{ face.face_height }}"
             src="{{ path }}" />
+          {% else %}
+          <img id="face-img" src="{{ path }}" />
+          {% endif %}
           <div id="face-tag-frame"></div>
         </div>
       </a>
