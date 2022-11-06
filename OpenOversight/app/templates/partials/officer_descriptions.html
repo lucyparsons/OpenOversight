@@ -4,7 +4,7 @@
         {% for description in officer.descriptions %}
         <li class="list-group-item">
             <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br />
-            {{ description.text_contents }} <br />
+            {{ description.text_contents | markdown }}
             <em>{{ description.creator.username }} </em>
             {% if description.creator_id == current_user.get_id() or
             current_user.is_administrator %}

@@ -5,8 +5,7 @@
         <li class="list-group-item">
             <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em>
             <br />
-            {{ note.text_contents }}
-            <br />
+            {{ note.text_contents | markdown }}
             <em>{{ note.creator.username }}</em>
             {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
                 <a href="{{ url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit' }}">
