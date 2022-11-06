@@ -330,9 +330,9 @@ def filter_by_form(form_data, officer_query, department_id=None):
                     Officer.birth_year <= min_birth_year,
                     Officer.birth_year >= max_birth_year,
                 ),
-                Officer.birth_year == None,
+                Officer.birth_year == None,  # noqa: E711
             )
-        )  # noqa
+        )
 
     job_ids = []
     if form_data.get("rank"):

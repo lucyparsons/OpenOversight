@@ -9,7 +9,7 @@ import os
 import PIL
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
-from PIL import Image, ImageDraw
+from PIL import Image
 
 
 # Copyright 2015 Google, Inc
@@ -74,31 +74,6 @@ def detect_face(face_file, max_results=4):
     response = request.execute()
 
     return response["responses"][0]["faceAnnotations"]
-
-
-def highlight_faces(image, faces, output_filename):
-    """Draws a polygon around the faces, then saves to output_filename.
-
-    Args:
-      image: a file containing the image with the faces.
-      faces: a list of faces found in the file. This should be in the format
-          returned by the Vision API.
-      output_filename: the name of the image file to be created, where the
-          faces have polygons drawn around them.
-    """
-    im = Image.open(image)
-    draw = ImageDraw.Draw(im)  # noqa
-
-    for face in faces:
-        box = [
-            (v.get("x", 0.0), v.get("y", 0.0))  # noqa
-            for v in face["fdBoundingPoly"]["vertices"]
-        ]
-        # draw.line(box + [box[0]], width=5, fill='#00ff00')
-
-
-# removed the boxes, maybe they're useful later - josh
-# im.save(output_filename)
 
 
 def main(input_filename, output_filename, max_results):
