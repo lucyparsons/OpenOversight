@@ -442,9 +442,12 @@ def add_unit_query(form, current_user):
 
 
 def replace_list(items, obj, attr, model, db):
-    """Takes a list of items, and object, the attribute of that object that needs to be replaced, the model corresponding the items, and the db
+    """Set the objects attribute to the list of items received.
 
-    Sets the objects attribute to the list of items received. DOES NOT SAVE TO DB.
+    This function take a list of items, an object, the attribute of that
+    object that needs to be replaced, the model corresponding the items, and the db.
+
+    DOES NOT SAVE TO DB.
     """
     new_list = []
     if not hasattr(obj, attr):
@@ -630,7 +633,7 @@ def find_date_taken(pimage):
 
 def get_officer(department_id, star_no, first_name, last_name):
     """
-    Returns first officer with the given name and badge combo in the department, if they exist
+    Return the first officer with the given name and badge combo in the department, if one exists.
 
     If star_no is None, just return the first officer with the given first and last name.
     """
