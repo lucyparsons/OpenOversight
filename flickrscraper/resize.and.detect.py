@@ -44,7 +44,7 @@ def get_vision_service():
 
 
 def detect_face(face_file, max_results=4):
-    """Uses the Vision API to detect faces in the given file.
+    """Use the Vision API to detect faces in the given file.
 
     Args:
         face_file: A file-like object containing an image with faces.
