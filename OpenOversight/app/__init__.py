@@ -39,7 +39,7 @@ def create_app(config_name="default"):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
-    from .models import db  # noqa
+    from .models import db
 
     bootstrap.init_app(app)
     mail.init_app(app)
@@ -49,11 +49,11 @@ def create_app(config_name="default"):
     sitemap.init_app(app)
     csrf.init_app(app)
 
-    from .main import main as main_blueprint  # noqa
+    from .main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint  # noqa
+    from .auth import auth as auth_blueprint
 
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 

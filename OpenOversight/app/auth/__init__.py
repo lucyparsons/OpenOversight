@@ -1,6 +1,6 @@
 from flask import Blueprint
 
 
-auth = Blueprint("auth", __name__)  # noqa
+auth = Blueprint("auth", __name__)
 
-from . import views  # noqa
+from . import views  # noqa: F401

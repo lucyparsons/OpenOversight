@@ -233,7 +233,7 @@ def officer_profile(officer_id):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(404)
-    except:  # noqa
+    except:  # noqa: E722
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
             "Error finding officer: {}".format(
@@ -256,7 +256,7 @@ def officer_profile(officer_id):
         face_paths = []
         for face in faces:
             face_paths.append(serve_image(face.image.filepath))
-    except:  # noqa
+    except:  # noqa: E722
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
             "Error loading officer profile: {}".format(
@@ -464,7 +464,7 @@ def classify_submission(image_id, contains_cops):
             image.contains_cops = False
         db.session.commit()
         flash("Updated image classification")
-    except:  # noqa
+    except:  # noqa: E722
         flash("Unknown error occurred")
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
@@ -876,7 +876,7 @@ def delete_tag(tag_id):
         db.session.delete(tag)
         db.session.commit()
         flash("Deleted this tag")
-    except:  # noqa
+    except:  # noqa: E722
         flash("Unknown error occurred")
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
@@ -910,7 +910,7 @@ def set_featured_tag(tag_id):
     try:
         db.session.commit()
         flash("Successfully set this tag as featured")
-    except:  # noqa
+    except:  # noqa: E722
         flash("Unknown error occurred")
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
