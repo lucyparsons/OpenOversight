@@ -18,7 +18,7 @@ from .validators import state_validator, url_validator
 
 
 if TYPE_CHECKING:
-    import datetime  # noqa
+    import datetime
 
 
 def validate_choice(

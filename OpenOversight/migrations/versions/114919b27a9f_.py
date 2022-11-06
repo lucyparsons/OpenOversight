@@ -46,5 +46,5 @@ def downgrade():
         sa.Column("repository_path", sa.TEXT(), autoincrement=False, nullable=True),
         sa.Column("version", sa.INTEGER(), autoincrement=False, nullable=True),
         sa.PrimaryKeyConstraint("repository_id", name="migrate_version_pkey"),
-    )  # noqa
+    )
     # ### end Alembic commands ###
