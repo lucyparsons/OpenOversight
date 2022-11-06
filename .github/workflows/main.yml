@@ -17,7 +17,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -39,10 +38,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r dev-requirements.txt
-
-      # Run flake8
-      - name: Run flake8
-        run: flake8 --ignore=E501,E722,W504,W503
-      # Runs tests
       - name: Run tests
         run: FLASK_ENV=testing pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/ OpenOversight/app;
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install Dependencies
+        run: pip install pre-commit
+      - name: Run pre-commits
+        run: pre-commit run --all-files
