@@ -12,3 +12,4 @@ mypy==0.782
 sphinx==1.7.8
 sphinx-autobuild==0.7.1
 pandas>=0.23.4
+pre-commit<=2.15.0
