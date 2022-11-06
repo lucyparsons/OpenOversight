@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
+import base64
+import glob
+import os
+
+import PIL
+from googleapiclient import discovery
+from oauth2client.client import GoogleCredentials
+from PIL import Image, ImageDraw
+
+
 # Copyright 2015 Google, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,23 +31,15 @@ from __future__ import print_function
 # Needs google auth .json file env var
 
 
-import os
-import base64
-
-from googleapiclient import discovery
-from oauth2client.client import GoogleCredentials
-from PIL import Image
-from PIL import ImageDraw
-import glob
-import PIL
-
 target = "/path/to/target/folder/"
 
 
 # [START get_vision_service]
 def get_vision_service():
     credentials = GoogleCredentials.get_application_default()
-    return discovery.build('vision', 'v1', credentials=credentials)
+    return discovery.build("vision", "v1", credentials=credentials)
+
+
 # [END get_vision_service]
 
 
@@ -50,23 +53,27 @@ def detect_face(face_file, max_results=4):
         An array of dicts with information about the faces in the picture.
     """
     image_content = face_file.read()
-    batch_request = [{
-        'image': {
-            'content': base64.b64encode(image_content).decode('utf-8')
-        },
-        'features': [{
-            'type': 'FACE_DETECTION',
-            'maxResults': max_results,
-        }]
-    }]
+    batch_request = [
+        {
+            "image": {"content": base64.b64encode(image_content).decode("utf-8")},
+            "features": [
+                {
+                    "type": "FACE_DETECTION",
+                    "maxResults": max_results,
+                }
+            ],
+        }
+    ]
 
     service = get_vision_service()
-    request = service.images().annotate(body={
-        'requests': batch_request,
-    })
+    request = service.images().annotate(
+        body={
+            "requests": batch_request,
+        }
+    )
     response = request.execute()
 
-    return response['responses'][0]['faceAnnotations']
+    return response["responses"][0]["faceAnnotations"]
 
 
 def highlight_faces(image, faces, output_filename):
@@ -83,26 +90,29 @@ def highlight_faces(image, faces, output_filename):
     draw = ImageDraw.Draw(im)  # noqa
 
     for face in faces:
-        box = [(v.get('x', 0.0), v.get('y', 0.0))  # noqa
-               for v in face['fdBoundingPoly']['vertices']]
+        box = [
+            (v.get("x", 0.0), v.get("y", 0.0))  # noqa
+            for v in face["fdBoundingPoly"]["vertices"]
+        ]
         # draw.line(box + [box[0]], width=5, fill='#00ff00')
+
+
 # removed the boxes, maybe they're useful later - josh
-    # im.save(output_filename)
+# im.save(output_filename)
 
 
 def main(input_filename, output_filename, max_results):
-    with open(input_filename, 'rb') as image:
+    with open(input_filename, "rb") as image:
         faces = detect_face(image, max_results)
-        print('Found {} face{}'.format(
-            len(faces), '' if len(faces) == 1 else 's'))
+        print("Found {} face{}".format(len(faces), "" if len(faces) == 1 else "s"))
 
-        print('Writing to file {}'.format(output_filename))
+        print("Writing to file {}".format(output_filename))
         # Reset the file pointer, so we can read the file again
         image.seek(0)
         # highlight_faces(image, faces, output_filename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     os.chdir(target)
     for file in glob.glob("*.jpg"):
         statinfo = os.stat(file)
@@ -112,7 +122,7 @@ if __name__ == '__main__':
             print(statinfo.st_size)
             print(file)
             img = Image.open(file)
-            wpercent = (basewidth / float(img.size[0]))
+            wpercent = basewidth / float(img.size[0])
             hsize = int((float(img.size[1]) * float(wpercent)))
             img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
             img.save(file)
@@ -121,12 +131,12 @@ if __name__ == '__main__':
             print(statinfo.st_size)
             print(file)
             img = Image.open(file)
-            wpercent = (basewidth / float(img.size[0]))
+            wpercent = basewidth / float(img.size[0])
             hsize = int((float(img.size[1]) * float(wpercent)))
             img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
             img.save(file)
         output = file
-        max_results = '4'
+        max_results = "4"
         try:
             main(file, output, max_results)
         except:  # noqa
