@@ -20,7 +20,7 @@ logger = logging.getLogger("alembic.env")
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from flask import current_app
+from flask import current_app  # noqa: E402
 
 
 config.set_main_option(
