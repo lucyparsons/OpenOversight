@@ -4,6 +4,11 @@
 <div class="container" role="main">
 
   <div class="page-header">
+    <ol class="breadcrumb">
+      <li><a href="{{url_for('main.list_officer',department_id=face.officer.department.id)}}">{{ face.officer.department.name|title }}</a></li>
+      <li><a href="{{url_for('main.officer_profile',officer_id=face.officer.id)}}">{{ face.officer.full_name()|title }}</a></li>
+      <li class="active">Tag {{ face.id }}</li>
+    </ol>
     <h1>Tag {{ face.id }} Detail</h1>
   </div>
 
