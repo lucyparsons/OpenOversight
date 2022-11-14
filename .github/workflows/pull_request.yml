@@ -25,7 +25,5 @@ jobs:
       - name: Run tests
         run: |
           just build
-          just test
           just up
-          just test-acceptance
-          just down
+          just test

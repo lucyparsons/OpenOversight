@@ -59,7 +59,7 @@ def wait_for_element_to_be_visible(browser, locator, text, timeout=10):
         pytest.fail("Timed out while waiting for element to become visible")
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     browser.get("http://localhost:5000")
 
@@ -72,7 +72,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     assert "Find an Officer" in page_text
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_user_can_use_form_to_get_to_browse(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
@@ -96,7 +96,7 @@ def test_user_can_use_form_to_get_to_browse(mockdata, browser):
     assert browser.find_element("id", "officer-profile-1")
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_user_can_get_to_complaint(mockdata, browser):
     browser.get(
         "http://localhost:5000/complaint?officer_star=6265&officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png"
@@ -110,7 +110,7 @@ def test_user_can_get_to_complaint(mockdata, browser):
     assert "File a Complaint" in title_text
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_officer_browse_pagination(mockdata, browser):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
@@ -136,7 +136,7 @@ def test_officer_browse_pagination(mockdata, browser):
     assert expected in page_text
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
@@ -153,7 +153,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
     assert "Do you know any part of the Officer's" in page_text
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
     browser.get("http://localhost:5000/find")
 
@@ -170,7 +170,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     assert len(results) == 0
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     mockdata, browser
 ):
@@ -186,7 +186,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     assert result.is_displayed()
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
     mockdata, browser
 ):
@@ -207,7 +207,7 @@ def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
     assert DESCRIPTION_CUTOFF + 20 > len(truncated_text) > 100
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
     mockdata, browser
 ):
@@ -219,7 +219,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     assert not result.is_displayed()
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_click_to_read_more_displays_full_description(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
@@ -240,7 +240,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
     assert description_text == orig_descrip
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
@@ -257,7 +257,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     assert not buttonRow.is_displayed()
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_officer_form_has_units_alpha_sorted(mockdata, browser):
     login_admin(browser)
 
@@ -284,7 +284,7 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser):
     assert db_units_sorted == select_units_sorted
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
     # Set NULL race and gender for officer 1
     db.session.execute(
@@ -310,7 +310,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
     assert selected_text == "Not Sure"
 
 
-@pytest.mark.acceptance
+@pytest.mark.xdist_group
 def test_image_classification_and_tagging(mockdata, browser):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
