@@ -72,7 +72,7 @@ repos:
         exclude: bin|cli|manage.py|app.py|setup.py|docs|create_db.py|test_data.py
         files: \.py$
 
-  - repo: https://gitlab.com/pycqa/flake8
+  - repo: https://github.com/PyCQA/flake8
     rev: 3.9.2
     hooks:
         - id: flake8
