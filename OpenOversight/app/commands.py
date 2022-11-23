@@ -531,7 +531,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                 create_officer_from_row(row, department_id)
 
         ImportLog.print_logs()
-        if current_app.config["ENV"] == "testing" or prompt_yes_no(
+        if current_app.config["ENVIRONMENT"] == "testing" or prompt_yes_no(
             "Do you want to commit the above changes?"
         ):
             print("Commiting changes.")
@@ -572,7 +572,7 @@ def advanced_csv_import(
 
     See the documentation before running the command.
     """
-    if force_create and current_app.config["ENV"] == "production":
+    if force_create and current_app.config["ENVIRONMENT"] == "production":
         raise Exception("--force-create cannot be used in production!")
 
     import_csv_files(

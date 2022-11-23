@@ -45,12 +45,12 @@ testlocal:
 test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
 	    if [ "$$(uname)" == "Darwin" ]; then \
-			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/ app; \
+			ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/ app; \
 		else \
-			FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n $$(nproc --all) --dist=loadfile -v tests/ app; \
+			ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -n $$(nproc --all) --dist=loadfile -v tests/ app; \
 		fi; \
 	else \
-	    FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -v tests/ app -k $(name); \
+	    ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -v tests/ app -k $(name); \
 	fi
 
 .PHONY: lint

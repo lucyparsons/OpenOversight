@@ -9,6 +9,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BaseConfig(object):
+    ENVIRONMENT = os.environ.get("ENVIRONMENT", "")
     # DB SETUP
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -90,4 +91,4 @@ config = {
     "testing": TestingConfig,
     "production": ProductionConfig,
 }
-config["default"] = config.get(os.environ.get("FLASK_ENV", ""), DevelopmentConfig)
+config["default"] = config.get(os.environ.get("ENVIRONMENT", ""), DevelopmentConfig)

@@ -6,7 +6,7 @@ services:
       context: .
       target: production
     environment:
-      FLASK_ENV: production
+      ENVIRONMENT: production
     volumes:
       - static_files:/usr/src/app/OpenOversight/static
     ports:

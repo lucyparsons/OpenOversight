@@ -47,7 +47,7 @@ services:
       - postgres
       - minio
     environment:
-      FLASK_ENV: development
+      ENVIRONMENT: development
       FLASK_DEBUG: 1
     volumes:
       - ./OpenOversight:/usr/src/app/OpenOversight
