@@ -60,7 +60,6 @@ from ..utils import (
     get_or_create,
     get_random_image,
     replace_list,
-    roster_lookup,
     serve_image,
     set_dynamic_default,
     upload_image_to_s3_and_store_in_db,
@@ -80,7 +79,6 @@ from .forms import (
     EditTextForm,
     FaceTag,
     FindOfficerForm,
-    FindOfficerIDForm,
     IncidentForm,
     IncidentListForm,
     OfficerLinkForm,
@@ -166,16 +164,6 @@ def get_officer():
     return render_template(
         "input_find_officer.html", form=form, depts_dict=depts_dict, jsloads=jsloads
     )
-
-
-@main.route("/tagger_find", methods=["GET", "POST"])
-def get_ooid():
-    form = FindOfficerIDForm()
-    if form.validate_on_submit():
-        return redirect(url_for("main.get_tagger_gallery"), code=307)
-    else:
-        current_app.logger.info(form.errors)
-    return render_template("input_find_ooid.html", form=form)
 
 
 @sitemap_include
@@ -1089,22 +1077,6 @@ def complete_tagging(image_id):
         return redirect(url_for("main.label_data", department_id=department_id))
     else:
         return redirect(url_for("main.label_data"))
-
-
-@main.route("/tagger_gallery/<int:page>", methods=["GET", "POST"])
-@main.route("/tagger_gallery", methods=["GET", "POST"])
-def get_tagger_gallery(page=1):
-    form = FindOfficerIDForm()
-    if form.validate_on_submit():
-        OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
-        form_data = form.data
-        officers = roster_lookup(form_data).paginate(page, OFFICERS_PER_PAGE, False)
-        return render_template(
-            "tagger_gallery.html", officers=officers, form=form, form_data=form_data
-        )
-    else:
-        current_app.logger.info(form.errors)
-        return redirect(url_for("main.get_ooid"), code=307)
 
 
 @main.route("/complaint", methods=["GET", "POST"])

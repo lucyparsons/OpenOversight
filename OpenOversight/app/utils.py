@@ -427,10 +427,6 @@ def filter_roster(form, officer_query):
     return officer_query
 
 
-def roster_lookup(form):
-    return filter_roster(form, Officer.query)
-
-
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
 

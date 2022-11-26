@@ -127,18 +127,6 @@ class FindOfficerForm(Form):
     )
 
 
-class FindOfficerIDForm(Form):
-    name = StringField(
-        "name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
-    )
-    badge = StringField(
-        "badge", default="", validators=[Regexp(r"\w*"), Length(max=10)]
-    )
-    dept = QuerySelectField(
-        "dept", validators=[Optional()], query_factory=dept_choices, get_label="name"
-    )
-
-
 class FaceTag(Form):
     officer_id = IntegerField("officer_id", validators=[DataRequired()])
     image_id = IntegerField("image_id", validators=[DataRequired()])
