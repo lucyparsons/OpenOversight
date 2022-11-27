@@ -1,99 +1,106 @@
 function buildSelect(name, data_url, dept_id) {
-    return $.ajax({
+    return $.get({
         url: data_url,
         data: {department_id: dept_id}
     }).done(function(data) {
-        $('input#' + name).replaceWith('<select class="form-control" id="' + name + '" name="' + name + '">');
-        const dropdown = $('select#' + name);
-        // Add the null case first
-        dropdown.append(
-            $('<option value="Not Sure">Not Sure</option>')
+        const dropdown = $(
+            '<select class="form-control" id="' + name + '" name="' + name + '">'
         );
-        for (i = 0; i < data.length; i++) {
+        // Add the null case first
+        dropdown.append($('<option value="Not Sure">Not Sure</option>'));
+        for (let i = 0; i < data.length; i++) {
             dropdown.append(
-                $('<option></option>').attr("value", data[i][1]).text(data[i][1])
+                $('<option></option>').attr('value', data[i][1]).text(data[i][1])
             );
         }
+        $('#' + name).replaceWith(dropdown);
     });
 }
 
 $(document).ready(function() {
+    const navListItems = $('ul.setup-panel li a');
+    const navButtons = $('.setup-content a');
+    const allWells = $('.setup-content');
 
-    var navListItems = $('ul.setup-panel li a'),
-        allWells = $('.setup-content');
-
-    allWells.hide();
-
-    navListItems.click(function(e)
-    {
-        e.preventDefault();
-        var $target = $($(this).attr('href')),
-            $item = $(this).closest('li');
+    // If a navigation bar item is clicked and is not disabled, activate the selected panel
+    navListItems.click(function(e) {
+        const $target = $($(this).attr('href'));
+        const $item = $(this).parent();
 
         if (!$item.hasClass('disabled')) {
-            navListItems.closest('li').removeClass('active');
+            navListItems.parent().removeClass('active');
             $item.addClass('active');
-            allWells.hide();
-            $target.show();
+            allWells.addClass("hidden");
+            $target.removeClass("hidden");
         }
+
+        return false;
     });
 
-    let $deptSelectionId = $('#dept').val()
+    // When next or previous button is clicked, simulate clicking on navigation bar item
+    navButtons.click(function(e) {
+        const stepId = $(this).attr('href');
+        // Locate the nav bar item for this step
+        const $navItem = $('ul.setup-panel li a[href="' + stepId + '"]');
 
-    $('ul.setup-panel li.active a').trigger('click');
+        $navItem.parent().removeClass('disabled');
+        $navItem.trigger('click');
 
-    $('#dept').on('click', function(e) {
-        e.preventDefault();
-        $deptSelectionId = $('#dept').val();
+        return false;
     })
 
-    $('#activate-step-2').on('click', function(e) {
-        var dept_id = $('#dept').val();
-        // fetch ranks for dept_id and modify #rank <select>
-        var ranks_url = $(this).data('ranks-url');
-        var units_url = $(this).data('units-url');
-        buildSelect('rank', ranks_url, dept_id);
-        buildSelect('unit', units_url, dept_id);
+    // Load the department's units and ranks when a new dept is selected
+    $('#dept').on('change', function(e) {
+        const deptId = $('#dept').val();
+        const ranksUrl = $('#step-1').data('ranks-url');
+        const unitsUrl = $('#step-1').data('units-url');
+        buildSelect('rank', ranksUrl, deptId);
+        buildSelect('unit', unitsUrl, deptId);
 
-        $('ul.setup-panel li:eq(1)').removeClass('disabled');
-        $('ul.setup-panel li a[href="#step-2"]').trigger('click');
-        const depts_with_uii = $('#current-uii').data('departments');
-        let targetDept = depts_with_uii.find(function(element) {
-            return element.id == $deptSelectionId
+        const deptsWithUii = $('#current-uii').data('departments');
+        const targetDept = deptsWithUii.find(function(element) {
+            return element.id == deptId
         });
-        let targetDeptUii = targetDept.unique_internal_identifier_label
-        if (targetDeptUii) {
-            $('#current-uii').text(targetDeptUii);
+
+        const deptUiidLabel = targetDept.unique_internal_identifier_label
+        if (deptUiidLabel) {
+            $('#current-uii').text(deptUiidLabel);
         } else {
             $('#uii-question').hide();
         }
-        $(this).remove();
-    })
 
-    $('#activate-step-3').on('click', function(e) {
-        $('ul.setup-panel li:eq(2)').removeClass('disabled');
-        $('ul.setup-panel li a[href="#step-3"]').trigger('click');
-        $(this).remove();
-    })
-    $('#activate-step-4').on('click', function(e) {
-        $('ul.setup-panel li:eq(3)').removeClass('disabled');
-        $('ul.setup-panel li a[href="#step-4"]').trigger('click');
-        $(this).remove();
-    })
+        // Disable later steps if dept changed in case ranks/units have changed
+        $('ul.setup-panel li:not(.active)').addClass('disabled');
+    });
 
     // Generate loading notification
-    $("#user-notification").on("click", function(){
-       $("#loader").show();
+    $('#user-notification').on('click', function(){
+       $('#loader').show();
     });
 
     // Show/hide rank shoulder patches
-    $("#show_img").on("click", function(){
-       $("#hidden_img").show();
-       $("#show_img_div").hide();
+    $('#show-img').on('click', function(){
+       $('#hidden-img').show();
+       $('#show-img-div').hide();
     });
 
-    $("#hide_img").click(function(){
-       $("#hidden_img").hide();
-       $("#show_img_div").show();
+    $('#hide-img').click(function(){
+       $('#hidden-img').hide();
+       $('#show-img-div').show();
     });
+
+    // Advance to the next screen on "Enter" keypress. Implementing this
+    // manually because the default Enter behavior varies across browsers
+    // https://stackoverflow.com/a/925387
+    $("form input").on("keypress", function (e) {
+        if (e.keyCode == 13) {
+            $(".setup-content:not(.hidden) .next").trigger("click");
+            return false;
+        }
+    });
+
+    // Initialize controls
+    allWells.addClass("hidden");
+    $('#dept').trigger('change');
+    $('ul.setup-panel li.active a').trigger('click');
 });
