@@ -117,6 +117,7 @@ def create_app(config_name="default"):
 
     @app.template_filter("markdown")
     def markdown(text):
+        text = text.replace("\n", "  \n")  # make markdown not ignore new lines.
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
         return Markup(html)
 
