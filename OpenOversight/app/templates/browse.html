@@ -24,6 +24,9 @@
           <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
              Officers
           </a>
+          <a class="btn btn-lg btn-primary" href="{{ url_for('main.dept_org_chart', department_id=department.id) }}">
+             View Organization
+          </a>
           {% if department.incidents %}
             <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
                Incidents

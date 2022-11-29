@@ -591,6 +591,50 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
     return jsonify(rank_list)
 
 
+@main.route('/department/<int:department_id>/chart')
+def dept_org_chart(department_id):
+    department = Department.query.filter_by(id=department_id).first()
+    if not department:
+        abort(404)
+
+    officers = Officer.query.filter(Officer.department_id == department_id).all()
+    # map each officer to their most recent assignment
+    assign_dict = {}
+    assign_records = Assignment.query.all()
+    for record in assign_records:
+        if record.officer_id not in assign_dict:
+            assign_dict[record.officer_id] = record
+        else:
+            if record.star_date > assign_dict[record.officer_id].star_date:
+                assign_dict[record.officer_id] = record
+
+    officer_nodes = {}
+    rank_types = ["NOT SURE"]
+
+    for officer in officers:
+        try:
+            rec = assign_dict[officer.id]
+        except KeyError:
+            continue
+        if len(rec.rank) <= 1:
+            rec.rank = "NOT SURE"
+        safe_rank = rec.rank.upper()
+        if safe_rank not in rank_types:
+            # keep NOT SURE at the end so it will display last on page
+            rank_types.insert(0, safe_rank)
+        if safe_rank not in officer_nodes.keys():
+            officer_nodes[safe_rank] = []
+
+        officer_nodes[safe_rank].append({'id': officer.id,
+                                         'last': officer.last_name,
+                                         'star': rec.star_no,
+                                         'unit': rec.unit,
+                                         'rank': rec.rank})
+
+    return render_template('dept_org_chart.html', department=department,
+                           data=officer_nodes, rank_types=rank_types)
+
+
 @main.route('/officer/new', methods=['GET', 'POST'])
 @login_required
 @ac_or_admin_required

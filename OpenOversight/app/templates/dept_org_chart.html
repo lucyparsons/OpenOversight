@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <link href="{{ url_for('static', filename='css/dept_org_chart.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/milligram.min.css') }}" rel="stylesheet">
+{% endblock head %}
+
+{% block content %}
+
+<div class="container" role="main">
+    <h1>
+      {{ department.name|title }}
+    </h1>
+
+    {% for rank in rank_types %}
+      {% set randcolor = ['darkblue','lightblue','cornflowerblue','darkblue','darkcyan','darkorchid','darkslateblue','dodgerblue','indigo','navy','rebeccapurple','royalblue','slateblue']|random %}
+      <div class="anyrank" style="background-color:{{randcolor}}">
+          <div class="row">
+            <div class="column">
+              <center><h2>{{rank}}</h2></center>
+            </div>
+          </div>
+
+          <div class="row">
+          {% for x in data[rank] %}
+              <div class="column">
+                  <a href="{{ url_for('main.officer_profile', officer_id=x.id)}}">
+                   {{x.last}} #{{x.star}}
+                  </a>
+              </div>
+
+              {% if loop.index % 6 == 0 %}
+          </div>
+          <div class="row">
+              {% endif %}
+          {% endfor %}
+          </div>
+
+      </div>
+    {% endfor %}
+
+</div>
+{% endblock content %}
