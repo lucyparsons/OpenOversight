@@ -8,7 +8,7 @@ pandas>=0.23.4
 pre-commit==2.20.0
 pytest==7.2.0
 pytest-cov==4.0.0
-pytest-env==0.6.2
+pytest-env==0.8.1
 pytest-flake8==1.1.1
 pytest-sugar==0.9.6
 pytest-xdist==3.0.2
