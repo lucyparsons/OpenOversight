@@ -11,7 +11,7 @@ pytest-cov==4.0.0
 pytest-env==0.6.2
 pytest-flake8==1.1.1
 pytest-sugar==0.9.6
-pytest-xdist==2.5.0
+pytest-xdist==3.0.2
 selenium==4.5.0
 sphinx==5.2.2
 sphinx-autobuild==2021.3.14
