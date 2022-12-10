@@ -76,11 +76,23 @@
                 <p><span style="color: red;">[{{ error }}]</span></p>
               {% endfor %}
 
-              <div class="input-group input-group-sm id-input">
-                <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
-                <input type="text" class="form-control" name="officer_id" id="officer_id" placeholder="officer ID">
+              <div class="input-group input-group-sm dept-input">
+                {% if department %}
+                <input type="hidden" class="form-control" name="department_id" id="department_id" value="{{ department.id }}">
+                {% else %}
+                <label class="input-group-addon" for="department_id">Department id</label>
+                <input type="text" class="form-control" name="department_id" id="department_id" placeholder="department id">
+                {% endif %}
               </div>
-              {% for error in form.officer_id.errors %}
+              {% for error in form.department_id.errors %}
+                <p><span style="color: red;">[{{ error }}]</span></p>
+              {% endfor %}
+
+              <div class="input-group input-group-sm id-input">
+                <label class="input-group-addon" for="star_no">Officer serial number</label>
+                <input type="text" class="form-control" name="star_no" id="star_no" placeholder="officer serial number">
+              </div>
+              {% for error in form.star_no.errors %}
                 <p><span style="color: red;">[{{ error }}]</span></p>
               {% endfor %}
 
@@ -95,16 +107,15 @@
                 </div>
               </p>
 
-
-	      <div class="text-center input-explanation">
-		<div class="text addface-button-explanation"><b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.</div>
-		<div class="text id-explanation"><b>Explanation</b>: after matching the officer's name, badge number, or face to the roster, enter the officer's OpenOversight ID here.</div>
-	      </div>
-
-
+              <div class="text-center input-explanation">
+                <div class="text addface-button-explanation"><b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.</div>
+                <div class="text dept-explanation"><b>Explanation</b>: enter the ID for the department the officer belongs to here.</div>
+                <div class="text id-explanation"><b>Explanation</b>: enter the officer's serial number here.</div>
+              </div>
+            </form>
           </div>
-
         </div>
+
         <div class="col-sm-2 text-center skip-button">
           {% if department %}
           <a href="{{ url_for('main.label_data', department_id=department.id)}}" class="btn btn-lg btn-primary" role="button">
@@ -119,19 +130,18 @@
             All officers have been identified!
           </a>
         </div>
-	<hr>
 
-  <div class="row">
-    <div class="col-sm-12">
-      <div class="text-center button-explanation">
-        <div class="text done-button-explanation"><b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.</div>
-        <div class="text skip-button-explanation"><b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.</div>
-        <div class="text launchroster-button-explanation"><b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.</div>
-      </div>
-    </div>
-  </div>
+        <hr>
 
-
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="text-center button-explanation">
+              <div class="text done-button-explanation"><b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.</div>
+              <div class="text skip-button-explanation"><b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.</div>
+              <div class="text launchroster-button-explanation"><b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
 

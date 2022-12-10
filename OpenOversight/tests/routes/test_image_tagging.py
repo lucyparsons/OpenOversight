@@ -7,7 +7,7 @@ from flask import current_app, url_for
 
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
-from OpenOversight.app.models import Department, Face, Image, Officer
+from OpenOversight.app.models import Assignment, Department, Face, Image, Job, Officer
 
 from ..conftest import AC_DEPT
 from .route_helpers import login_ac, login_admin, login_user
@@ -151,7 +151,8 @@ def test_user_can_add_tag(mockdata, client, session):
             image = Image.query.filter_by(department_id=1).first()
             login_user(client)
             form = FaceTag(
-                officer_id=officer.id,
+                department_id=officer.department_id,
+                star_no=officer.assignments[0].star_no,
                 image_id=image.id,
                 dataX=34,
                 dataY=32,
@@ -167,12 +168,83 @@ def test_user_can_add_tag(mockdata, client, session):
             assert b"Tag added to database" in rv.data
 
 
+def test_user_must_disambiguate_serial_number_with_multiple_officers(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_user(client)
+
+        department = Department.query.first()
+        star_no = "1312"
+
+        # Create 2 officers with the same star_no
+        job = Job.query.first()
+        assignment1 = Assignment(star_no=star_no, job_id=job.id)
+        assignment2 = Assignment(star_no=star_no, job_id=job.id)
+        officer1 = Officer(department_id=department.id, assignments=[assignment1])
+        officer2 = Officer(department_id=department.id, assignments=[assignment2])
+        session.add(assignment1)
+        session.add(assignment2)
+        session.add(officer1)
+        session.add(officer2)
+
+        image = Image.query.first()
+
+        # Ensure disambiguation page is shown
+        form = FaceTag(
+            department_id=department.id,
+            star_no=star_no,
+            image_id=image.id,
+            dataX=34,
+            dataY=32,
+            dataWidth=3,
+            dataHeight=33,
+        )
+        rv = client.post(
+            url_for("main.label_data", image_id=image.id),
+            data=form.data,
+            follow_redirects=True,
+        )
+        assert b"Multiple officers found" in rv.data
+
+        # Resolve conflict by providing officer_id
+        officer = (
+            Officer.query.join(Assignment, Officer.id == Assignment.officer_id)
+            .filter(Assignment.star_no == star_no)
+            .first()
+        )
+        form.officer_id.data = officer.id
+        rv = client.post(
+            url_for("main.label_data", image_id=image.id),
+            data=form.data,
+            follow_redirects=True,
+        )
+        assert b"Tag added to database" in rv.data
+
+
+def test_user_cannot_open_image_in_tagger_if_has_already_been_tagged(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_user(client)
+
+        session.add(Image(is_tagged=True))
+        image = Image.query.filter_by(is_tagged=True).first()
+
+        rv = client.get(
+            url_for("main.label_data", image_id=image.id),
+            follow_redirects=False,
+        )
+        assert rv.status_code == 302
+
+
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         tag = Face.query.first()
         form = FaceTag(
-            officer_id=tag.officer_id,
+            department_id=tag.officer.department_id,
+            star_no=tag.officer.assignments[0].star_no,
             image_id=tag.original_image_id,
             dataX=34,
             dataY=32,
@@ -196,7 +268,8 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
         login_user(client)
         tag = Face.query.first()
         form = FaceTag(
-            officer_id=999999999999999999,
+            department_id=Department.query.first().id,
+            star_no=999999999999999999,
             image_id=tag.img_id,
             dataX=34,
             dataY=32,
@@ -209,31 +282,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             data=form.data,
             follow_redirects=True,
         )
-        assert b"Invalid officer ID" in rv.data
-
-
-def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, session):
-    with current_app.test_request_context():
-        login_user(client)
-        tag = Face.query.first()
-        form = FaceTag(
-            officer_id=tag.officer_id,
-            image_id=tag.original_image_id,
-            dataX=34,
-            dataY=32,
-            dataWidth=3,
-            dataHeight=33,
-        )
-
-        rv = client.post(
-            url_for("main.label_data", department_id=2, image_id=tag.original_image_id),
-            data=form.data,
-            follow_redirects=True,
-        )
-        assert (
-            b"The officer is not in Chicago Police Department. Are you sure that is the correct OpenOversight ID?"
-            in rv.data
-        )
+        assert b"Invalid officer serial number" in rv.data
 
 
 def test_user_can_finish_tagging(mockdata, client, session):
@@ -309,7 +358,8 @@ def test_featured_tag_replaces_others(mockdata, client, session):
         mock = MagicMock(return_value=second_image)
         with patch("OpenOversight.app.main.views.crop_image", mock):
             form = FaceTag(
-                officer_id=officer.id,
+                department_id=officer.department_id,
+                star_no=officer.assignments[0].star_no,
                 image_id=second_image.id,
                 dataX=34,
                 dataY=32,

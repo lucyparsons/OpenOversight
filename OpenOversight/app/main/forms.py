@@ -128,12 +128,14 @@ class FindOfficerForm(Form):
 
 
 class FaceTag(Form):
-    officer_id = IntegerField("officer_id", validators=[DataRequired()])
-    image_id = IntegerField("image_id", validators=[DataRequired()])
+    department_id = IntegerField("department_id", validators=[InputRequired()])
+    star_no = IntegerField("star_no", validators=[InputRequired()])
+    image_id = IntegerField("image_id", validators=[InputRequired()])
     dataX = IntegerField("dataX", validators=[InputRequired()])
     dataY = IntegerField("dataY", validators=[InputRequired()])
     dataWidth = IntegerField("dataWidth", validators=[InputRequired()])
     dataHeight = IntegerField("dataHeight", validators=[InputRequired()])
+    officer_id = IntegerField("officer_id")
 
 
 class AssignmentForm(Form):

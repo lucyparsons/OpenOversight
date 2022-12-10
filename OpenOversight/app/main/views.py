@@ -967,6 +967,7 @@ def leaderboard():
 @login_required
 def label_data(department_id=None, image_id=None):
     jsloads = ["js/cropper.js", "js/tagger.js"]
+
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -1002,20 +1003,45 @@ def label_data(department_id=None, image_id=None):
 
     form = FaceTag()
     if form.validate_on_submit():
-        officer_exists = Officer.query.filter_by(id=form.officer_id.data).first()
-        existing_tag = (
-            db.session.query(Face)
-            .filter(Face.officer_id == form.officer_id.data)
-            .filter(Face.original_image_id == form.image_id.data)
-            .first()
+        if form.department_id.data and not department_id:
+            department_id = form.department_id.data
+            department = Department.query.filter_by(id=department_id).one()
+
+        officer_query = (
+            Officer.query.filter_by(department_id=department_id)
+            .join(Assignment, Officer.id == Assignment.officer_id)
+            .filter(Assignment.star_no == str(form.star_no.data))
         )
+        if form.officer_id.data:
+            officer_query = officer_query.filter_by(officer_id=form.officer_id.data)
+
+        officers_with_star_no = officer_query.all()
+
+        # Check for rare edge case where there are multiple officers with the same serial
+        if len(officers_with_star_no) > 1:
+            return render_template(
+                "cop_face_disambiguate.html",
+                form=form,
+                image_id=image_id,
+                path=proper_path,
+                department=department,
+                officers=officers_with_star_no,
+                jsloads=jsloads,
+            )
+
+        officer_exists = officers_with_star_no[0] if officers_with_star_no else None
+
+        existing_tag = None
+        if officer_exists:
+            existing_tag = (
+                Face.query.filter_by(officer_id=officer_exists.id)
+                .filter(Face.original_image_id == form.image_id.data)
+                .first()
+            )
+
         if not officer_exists:
-            flash("Invalid officer ID. Please select a valid OpenOversight ID!")
-        elif department and officer_exists.department_id != department_id:
             flash(
-                "The officer is not in {}. Are you sure that is the correct OpenOversight ID?".format(
-                    department.name
-                )
+                "Invalid officer serial number. Please provide a valid serial number!"
             )
         elif not existing_tag:
             left = form.dataX.data
@@ -1033,7 +1059,7 @@ def label_data(department_id=None, image_id=None):
 
             if cropped_image:
                 new_tag = Face(
-                    officer_id=form.officer_id.data,
+                    officer_id=officer_exists.id,
                     img_id=cropped_image.id,
                     original_image_id=image.id,
                     face_position_x=left,

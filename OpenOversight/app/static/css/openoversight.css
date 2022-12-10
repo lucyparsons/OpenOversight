@@ -566,6 +566,10 @@ tr:hover .row-actions {
     display:block;
 }
 
+.docs-data .dept-input:hover ~ .input-explanation .dept-explanation{
+    display:block;
+}
+
 .docs-data .id-input:hover ~ .input-explanation .id-explanation{
     display:block;
 }

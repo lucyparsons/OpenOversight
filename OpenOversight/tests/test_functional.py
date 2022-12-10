@@ -314,6 +314,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
 def test_image_classification_and_tagging(mockdata, browser):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
+    star_no = 1312
 
     login_admin(browser)
 
@@ -335,6 +336,7 @@ def test_image_classification_and_tagging(mockdata, browser):
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")
     browser.find_element(By.ID, "last_name").send_keys("Friendly")
+    browser.find_element(By.ID, "star_no").send_keys(star_no)
     browser.find_element(By.ID, "submit").click()
 
     wait_for_page_load(browser)
@@ -371,7 +373,7 @@ def test_image_classification_and_tagging(mockdata, browser):
     # 5. Identify the new officer in the uploaded image
     browser.get(f"http://localhost:5000/cop_face/department/{dept_id}")
     wait_for_page_load(browser)
-    browser.find_element(By.ID, "officer_id").send_keys(officer_id)
+    browser.find_element(By.ID, "star_no").send_keys(star_no)
     browser.find_element(By.CSS_SELECTOR, "input[value='Add identified face']").click()
 
     wait_for_page_load(browser)

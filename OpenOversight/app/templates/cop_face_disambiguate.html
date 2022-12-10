@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+.officer-select {
+    border: 1px solid transparent;
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+.officer-select, .officer-select img {
+    cursor: pointer;
+}
+.officer-select:hover {
+    border: 1px solid #d2d2d2;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container theme-showcase" role="main">
+  {% if current_user and current_user.is_authenticated %}
+    {% if image_id and not current_user.is_disabled %}
+    <div class="row form-group">
+      <div class="col-sm-12">
+        <h2>Multiple officers found</h2>
+        <p>There are multiple officers in the {{ department.name }} with the serial number {{ form.star_no.data }}. Which one did you mean?
+
+        <div>
+          {% if department %}
+          <form action="{{ url_for('main.label_data', image_id=image_id, department_id=department.id) }}" method="post">
+          {% else %}
+          <form action="{{ url_for('main.label_data', image_id=image_id) }}" method="post">
+          {% endif %}
+            {{ form.hidden_tag() }}
+
+            {{ form.dataX(type="hidden") }}
+            {% for error in form.dataX.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.dataY(type="hidden") }}
+            {% for error in form.dataY.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.dataWidth(type="hidden") }}
+            {% for error in form.dataWidth.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.dataHeight(type="hidden") }}
+            {% for error in form.dataHeight.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.department_id(type="hidden") }}
+            {% for error in form.department_id.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.star_no(type="hidden") }}
+            {% for error in form.star_no.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            {{ form.image_id(type="hidden") }}
+            {% for error in form.image_id.errors %}
+              <p><span style="color: red;">[{{ error }}]</span></p>
+            {% endfor %}
+
+            <div class="row text-center well">
+              <fieldset>
+              {% for officer in officers %}
+                  <label class="col-sm-3 officer-select" for="officer-{{officer.id}}">
+                  <div>
+                      <img class="officer-face" src="{{ officer.image | default('/static/images/placeholder.png') }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
+                  </div>
+                  <div>
+                    <h2>
+                      <input id="officer-{{officer.id}}" name="officer_id" type="radio" value="{{officer.id}}">
+                      <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}" target="_blank">
+                          {{ officer.first_name}} {{ officer.last_name }}
+                      </a>
+                    </h2>
+                  </div>
+                </label>
+              {% endfor %}
+              </fieldset>
+
+              <br>
+
+              <input class="btn btn-primary btn-lg" type="submit" value="Submit!">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="width: {{ form.dataWidth.data | int }}px; height: {{ form.dataHeight.data | int }}px; overflow: hidden; margin: auto">
+        <img style="position: relative; left: -{{ form.dataX.data | int }}px; top: -{{ form.dataY.data | int }}px; max-width: none" src="{{ path }}" alt="Picture">
+      </div>
+    </div>
+    {% elif current_user.is_disabled == True %}
+    <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+    <p><a href="mailto:techblocsea@protonmail.com" class="btn btn-lg btn-primary" role="button">Mail us to get it enabled again</a></p>
+    {% else %}
+    <h3>All images have been tagged!</h3>
+    <h4><small class="muted">{{ department.name }}</small></h4>
+    <p><a href="{{ url_for('main.submit_data')}}" class="btn btn-lg btn-primary" role="button">Submit officer pictures to us</a></p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block footer_class %}bottom-10{% endblock %}
