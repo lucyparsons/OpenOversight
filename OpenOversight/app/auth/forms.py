@@ -6,8 +6,8 @@ from wtforms import (
     SubmitField,
     ValidationError,
 )
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 from ..models import User
 from ..utils import dept_choices

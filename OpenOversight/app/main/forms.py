@@ -15,8 +15,7 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms.fields.html5 import DateField
+from wtforms.fields import DateField
 from wtforms.validators import (
     URL,
     AnyOf,
@@ -28,6 +27,7 @@ from wtforms.validators import (
     Regexp,
     ValidationError,
 )
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 from ..formfields import TimeField
 from ..models import Officer
