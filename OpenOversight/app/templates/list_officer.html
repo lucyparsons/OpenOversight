@@ -152,6 +152,7 @@
           </div>
         </div>
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+        <a class="btn btn-primary" href="{{ url_for(request.endpoint, department_id=department.id) }}">Clear Filters</a>
       </form>
     </div>
     <div class="search-results col-sm-9">
