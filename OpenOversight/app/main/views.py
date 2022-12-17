@@ -19,7 +19,7 @@ from ..utils import (serve_image, compute_leaderboard_stats, get_random_image,
                      replace_list, create_note, set_dynamic_default, roster_lookup,
                      create_description, filter_by_form,
                      crop_image, create_incident, get_or_create, dept_choices,
-                     upload_image_to_s3_and_store_in_db)
+                     unit_choices, upload_image_to_s3_and_store_in_db)
 
 from .forms import (FindOfficerForm, FindOfficerIDForm, AddUnitForm,
                     FaceTag, AssignmentForm, DepartmentForm, AddOfficerForm,
@@ -259,6 +259,7 @@ def edit_assignment(officer_id, assignment_id):
                               .order_by(Job.order.asc())\
                               .all()
     form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
+    form.unit.query = unit_choices(officer.department_id)
     if form.unit.data and type(form.unit.data) == int:
         form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
     if form.validate_on_submit():
