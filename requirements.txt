@@ -13,7 +13,7 @@ Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.0.1
 future==0.18.2
-gunicorn==19.9
+gunicorn==20.1.0
 Pillow==9.3.0
 psycopg2-binary==2.9.5
 python-dateutil==2.8.2
