@@ -1,4 +1,4 @@
-Authlib==0.15.5
+Authlib==1.2.0
 boto3==1.26.20
 cachetools==5.2.0
 email-validator==1.3.0
