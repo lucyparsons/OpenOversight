@@ -120,14 +120,14 @@ One way to avoid hitting version incompatibility errors when running `flask` com
 python3 -m virtualenv env
 ```
 
-Confirm you're in the virtualenv by running 
+Confirm you're in the virtualenv by running
 
 ```bash
-which python  
+which python
 ```
 
-The response should point to your `env` directory.  
-If you want to exit the virtualenv, run 
+The response should point to your `env` directory.
+If you want to exit the virtualenv, run
 
 ```bash
 deactivate
@@ -139,7 +139,7 @@ To reactivate the virtualenv, run
 source env/bin/activate
 ```
 
-While in the virtualenv, you can install project dependencies by running 
+While in the virtualenv, you can install project dependencies by running
 
 ```bash
 pip install -r requirements.txt
@@ -200,14 +200,14 @@ Administrator redshiftzero successfully added
 In `docker-compose.yml`, below the line specifying the port number, add the following lines to the `web` service:
 ```yml
    stdin_open: true
-   tty: true    
+   tty: true
 ```
 Also in `docker-compose.yml`, below the line specifying the `FLASK_ENV`, add the following to the `environment` portion of the `web` service:
 ```yml
   FLASK_DEBUG: 0
 ```
 The above line disables the werkzeug reloader, which can otherwise cause a bug when you place a breakpoint in code that loads at import time, such as classes.  The werkzeug reloader will start one pdb process at import time and one when you navigate to the class.  This makes it impossible to interact with the pdb prompt, but we can fix it by disabling the reloader.
-    
+
 To set a breakpoint in OpenOversight, first import the pdb module by adding `import pdb` to the file you want to debug.  Call `pdb.set_trace()` on its own line wherever you want to break for debugging.
 Next, in your terminal run `docker ps` to find the container id of the `openoversight_web` image, then run `docker attach ${container_id}` to connect to the debugger in your terminal.  You can now use pdb prompts to step through the app.
 
@@ -222,10 +222,10 @@ where `<test_name_here>` is the name of a single test function, such as `test_ac
 Similarly, you can run all the tests in a file by specifying the file path:
 
 ```bash
-docker-compose run --rm web pytest --pdb -v path/to/test/file 
+docker-compose run --rm web pytest --pdb -v path/to/test/file
 ```
 
-where `path/to/test/file` is the relative file path, minus the initial `OpenOversight`, such as 
+where `path/to/test/file` is the relative file path, minus the initial `OpenOversight`, such as
 `tests/routes/test_officer_and_department.py`.
 
 Again, add `import pdb` to the file you want to debug, then write `pdb.set_trace()` wherever you want to drop a breakpoint.  Once the test is up and running in your terminal, you can debug it using pdb prompts.
