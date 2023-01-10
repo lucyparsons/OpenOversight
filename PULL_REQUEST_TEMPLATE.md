@@ -33,4 +33,4 @@ Changes proposed in this pull request:
 
  - [ ] pytests pass in the development environment on my local machine
 
- - [ ] `flake8` checks pass
+ - [ ] `pre-commit` checks pass
