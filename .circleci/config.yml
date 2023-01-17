@@ -46,8 +46,8 @@ steps:
 
 jobs:
   staging_backup_and_deploy:
-    docker:
-      - image: cimg/python:3.9
+    machine:
+      image: ubuntu-2204:2022.10.2
     steps:
       - checkout
       - *setup_dependencies
@@ -68,8 +68,8 @@ jobs:
             fab staging migrate
 
   production_deploy:
-    docker:
-      - image: cimg/python:3.9
+    machine:
+      image: ubuntu-2204:2022.10.2
     steps:
       - checkout
       - *setup_dependencies
