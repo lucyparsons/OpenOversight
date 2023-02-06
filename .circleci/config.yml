@@ -11,8 +11,7 @@ steps:
           libharfbuzz-dev libfribidi-dev libxcb1-dev
         virtualenv --python=python3 .venv
         source .venv/bin/activate
-        pip3 install -r requirements.txt
-        pip3 install -r dev-requirements.txt
+        pip3 install Fabric3==1.14.post1
 
   - &add_ssh_keys
     add_ssh_keys:
@@ -47,7 +46,7 @@ steps:
 jobs:
   staging_backup_and_deploy:
     machine:
-      image: ubuntu-2204:2022.10.2
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - *setup_dependencies
@@ -69,7 +68,7 @@ jobs:
 
   production_deploy:
     machine:
-      image: ubuntu-2204:2022.10.2
+      image: ubuntu-2004:202010-01
     steps:
       - checkout
       - *setup_dependencies
@@ -97,7 +96,8 @@ workflows:
       - staging_backup_and_deploy:
           filters:
             branches:
-              only: develop
+              only:
+               - develop
   production_cd:
     jobs:
       - production_deploy:
