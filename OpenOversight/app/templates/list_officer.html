@@ -13,7 +13,7 @@
           <div class="panel-heading{% if not form_data['name'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-name">
             <h3 class="panel-title accordion-toggle">Last name</h3>
           </div>
-          <div class="collapse{% if form_data['name'] %} in{% endif %}" id="filter-name">
+          <div class="collapse in" id="filter-name">
             <div class="panel-body">
               <div class="form-group">
                 <input type="text" class="form-control" id="name" name="name" value="{{ form_data['name'] or '' }}" />
@@ -25,7 +25,7 @@
           <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-badge">
             <h3 class="panel-title accordion-toggle">Badge</h3>
           </div>
-          <div class="collapse{% if form_data['badge'] %} in{% endif %}" id="filter-badge">
+          <div class="collapse in" id="filter-badge">
             <div class="panel-body">
               <div class="form-group">
                 <input type="text" class="form-control" id="badge" name="badge" value="{{ form_data['badge'] or '' }}" />
@@ -49,7 +49,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-race">
             <h3 class="panel-title accordion-toggle">Race</h3>
           </div>
-          <div class="collapse in" id="filter-race">
+          <div class="collapse" id="filter-race">
             <div class="panel-body">
               <div class="form-group checkbox">
                 {% for choice in choices['race'] %}
@@ -65,7 +65,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-gender">
             <h3 class="panel-title accordion-toggle">Gender</h3>
           </div>
-          <div class="collapse in" id="filter-gender">
+          <div class="collapse" id="filter-gender">
             <div class="panel-body">
               <div class="form-group radio">
                 {% for choice in choices['gender'] %}
@@ -81,7 +81,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-rank">
             <h3 class="panel-title accordion-toggle">Rank</h3>
           </div>
-          <div class="collapse in" id="filter-rank">
+          <div class="collapse" id="filter-rank">
             <div class="panel-body">
               <div class="form-group checkbox">
                 {% for choice in choices['rank'] %}
@@ -97,7 +97,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-unit">
             <h3 class="panel-title accordion-toggle">Unit</h3>
           </div>
-          <div class="collapse in" id="filter-unit">
+          <div class="collapse" id="filter-unit">
             <div class="panel-body">
               <div class="form-group">
                 <select class="form-control" name="unit">
@@ -113,7 +113,7 @@
           <div class="panel-heading" data-toggle="collapse" data-target="#filter-age">
             <h3 class="panel-title accordion-toggle">Age range</h3>
           </div>
-          <div class="collapse in" id="filter-age">
+          <div class="collapse" id="filter-age">
             <div class="panel-body">
               <div class="form-row">
                 <div class="form-group col-md-6">
@@ -141,7 +141,7 @@
             <div class="row">
               <div class="col-md-6 col-xs-12">
                 <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
-                  <img src="{{ officer.image | default('/static/images/placeholder.png') }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
+                  <img class="officer-face" src="{{ officer.image | default('/static/images/placeholder.png') }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
                 </a>
               </div>
               <div class="col-md-6 col-xs-12">

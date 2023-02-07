@@ -99,6 +99,13 @@ def create_app(config_name='default'):
         if birth_year:
             return int(datetime.datetime.now().year - birth_year)
 
+    @app.template_filter('currently_on_force')
+    def officer_currently_on_force(assignments):
+        if not assignments:
+            return "Uncertain"
+        most_recent = max(assignments, key=lambda x: x.star_date or datetime.date.min)
+        return "Yes" if most_recent.resign_date is None else "No"
+
     @app.template_filter('markdown')
     def markdown(text):
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)

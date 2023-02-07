@@ -2,21 +2,25 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 
-<div class="container theme-showcase" role="main">
+    <div class="container theme-showcase" role="main">
 
-  <!--div class="text-center frontpage-leads"-->
-  {% for dept in departments %}
-    <p>
-       {{ dept.name }}
-       <a href={{ url_for('main.download_dept_officers_csv',department_id=dept.id) }}>officers.csv</a> 
-       <a href={{ url_for('main.download_dept_assignments_csv',department_id=dept.id) }}>assignments.csv</a> 
-       {% if dept.incidents %}
-           <a href={{ url_for('main.download_incidents_csv',department_id=dept.id) }}>incidents.csv</a>
-       {% endif %}
-
-    </p>
-  {% endfor %}
-  <!--/div-->
-</div>
+        <div class="text-center frontpage-leads">
+            {% for dept in departments %}
+                <p>
+                <h2>{{ dept.name }}</h2>
+                <ul class="list-group">
+                    <a href={{ url_for('main.download_dept_officers_csv',department_id=dept.id) }}><li class="list-group-item">officers.csv</li></a>
+                    <a href={{ url_for('main.download_dept_assignments_csv',department_id=dept.id) }}><li class="list-group-item">assignments.csv</li></a>
+                    <a href={{ url_for('main.download_dept_salaries_csv',department_id=dept.id) }}><li class="list-group-item">salaries.csv</li></a>
+                    <a href={{ url_for('main.download_dept_links_csv',department_id=dept.id) }}><li class="list-group-item">links.csv</li></a>
+                    <a href={{ url_for('main.download_dept_descriptions_csv',department_id=dept.id) }}><li class="list-group-item">descriptions.csv</li></a>
+                    {% if dept.incidents %}
+                        <a href={{ url_for('main.download_incidents_csv',department_id=dept.id) }}><li class="list-group-item">incidents.csv</li></a>
+                    {% endif %}
+                </ul>
+                </p>
+            {% endfor %}
+        </div>
+    </div>
 
 {% endblock %}

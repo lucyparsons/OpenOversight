@@ -25,12 +25,17 @@ from flask_login import current_user
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
 
+from .custom import add_jpeg_patch
 from .models import (db, Officer, Assignment, Job, Image, Face, User, Unit, Department,
                      Incident, Location, LicensePlate, Link, Note, Description, Salary)
 from .main.choices import RACE_CHOICES, GENDER_CHOICES
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+
+# Call JPEG patch function
+add_jpeg_patch()
 
 
 def set_dynamic_default(form_field, value):
@@ -502,26 +507,33 @@ def crop_image(image, crop_data=None, department_id=None):
 
 
 def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
+    """
+    Just a quick explaination of the order of operations here...
+    we have to scrub the image before we do anything else like hash it
+    but we also have to get the date for the image before we scrub it.
+    """
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
-    image_data = image_buf.read()
+    if image_type not in current_app.config['ALLOWED_EXTENSIONS']:
+        raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     image_buf.seek(0)
+    pimage = Pimage.open(image_buf)
+    date_taken = find_date_taken(pimage)
+    if date_taken:
+        date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
+    pimage.getexif().clear()
+    scrubbed_image_buf = BytesIO()
+    pimage.save(scrubbed_image_buf, image_type)
+    pimage.close()
+    scrubbed_image_buf.seek(0)
+    image_data = scrubbed_image_buf.read()
     hash_img = compute_hash(image_data)
     existing_image = Image.query.filter_by(hash_img=hash_img).first()
     if existing_image:
         return existing_image
-    date_taken = None
-    if image_type in current_app.config['ALLOWED_EXTENSIONS']:
-        image_buf.seek(0)
-        pimage = Pimage.open(image_buf)
-        date_taken = find_date_taken(pimage)
-        if date_taken:
-            date_taken = datetime.datetime.strptime(date_taken, '%Y:%m:%d %H:%M:%S')
-    else:
-        raise ValueError('Attempted to pass invalid data type: {}'.format(image_type))
     try:
         new_filename = '{}.{}'.format(hash_img, image_type)
-        url = upload_obj_to_s3(image_buf, new_filename)
+        url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(filepath=url, hash_img=hash_img,
                           date_image_inserted=datetime.datetime.now(),
                           department_id=department_id,
@@ -544,10 +556,11 @@ def find_date_taken(pimage):
     if isinstance(pimage, PngImageFile):
         return None
 
-    if pimage._getexif():
+    exif = hasattr(pimage, '_getexif') and pimage._getexif()
+    if exif:
         # 36867 in the exif tags holds the date and the original image was taken https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
-        if 36867 in pimage._getexif():
-            return pimage._getexif()[36867]
+        if 36867 in exif:
+            return exif[36867]
     else:
         return None
 

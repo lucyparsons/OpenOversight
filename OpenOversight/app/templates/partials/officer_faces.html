@@ -1,0 +1,13 @@
+{% for path in paths %}
+        
+{% if is_admin_or_coordinator %}
+  <a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">
+{% endif %}
+
+<img class="officer-face" src="{{ path }}" alt="Submission">
+
+{% if is_admin_or_coordinator %}
+  </a>
+{% endif %}
+
+{% endfor %}
