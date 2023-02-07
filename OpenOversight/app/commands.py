@@ -493,6 +493,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @click.option("--links-csv", type=click.Path(exists=True))
 @click.option("--incidents-csv", type=click.Path(exists=True))
 @click.option("--force-create", is_flag=True, help="Only for development/testing!")
+@click.option("--overwrite-assignments", is_flag=True)
 @with_appcontext
 def advanced_csv_import(
     department_name,
@@ -502,6 +503,7 @@ def advanced_csv_import(
     links_csv,
     incidents_csv,
     force_create,
+    overwrite_assignments,
 ):
     """
     Add or update officers, assignments, salaries, links and incidents from csv
@@ -524,6 +526,7 @@ def advanced_csv_import(
         links_csv,
         incidents_csv,
         force_create,
+        overwrite_assignments
     )
 
 

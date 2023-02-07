@@ -184,7 +184,8 @@ def test_add_job_title__different_departments(session, department):
     assert job.order == order
 
 
-def test_csv_import_new(csvfile):
+def test_csv_import_new(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -197,7 +198,8 @@ def test_csv_import_new(csvfile):
     assert n_updated == 0
 
 
-def test_csv_import_update(csvfile):
+def test_csv_import_update(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     n_existing = Officer.query.count()
 
     assert n_existing > 0
@@ -209,7 +211,8 @@ def test_csv_import_update(csvfile):
     assert Officer.query.count() == n_existing
 
 
-def test_csv_import_idempotence(csvfile):
+def test_csv_import_idempotence(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -279,7 +282,8 @@ def test_csv_changed_static_field(csvfile):
     assert "has differing birth_year field" in str(exc.value)
 
 
-def test_csv_new_assignment(csvfile):
+def test_csv_new_assignment(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers and assignments
     Assignment.query.delete()
     Officer.query.delete()
@@ -319,7 +323,8 @@ def test_csv_new_assignment(csvfile):
         )
 
 
-def test_csv_new_name(csvfile):
+def test_csv_new_name(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     df = pd.read_csv(csvfile)
     officer_uid = df.loc[0, "unique_internal_identifier"]
     assert officer_uid
@@ -336,7 +341,8 @@ def test_csv_new_name(csvfile):
     assert officer.first_name == "FOO"
 
 
-def test_csv_new_officer(csvfile):
+def test_csv_new_officer(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     df = pd.read_csv(csvfile)
 
     n_rows = len(df.index)
@@ -380,7 +386,8 @@ def test_csv_new_officer(csvfile):
     assert Officer.query.count() == n_officers + 1
 
 
-def test_csv_new_salary(csvfile):
+def test_csv_new_salary(csvfile, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # Delete all current officers and salaries
     Salary.query.delete()
     Officer.query.delete()
@@ -420,7 +427,8 @@ def test_csv_new_salary(csvfile):
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
-def test_bulk_add_officers__success(session, department_with_ranks, csv_path):
+def test_bulk_add_officers__success(session, department_with_ranks, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # generate two officers with different names
     first_officer = generate_officer()
     first_officer.department = department_with_ranks
@@ -561,7 +569,8 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     assert isinstance(result.exception, MultipleResultsFound)
 
 
-def test_bulk_add_officers__write_static_null_field(session, department, csv_path):
+def test_bulk_add_officers__write_static_null_field(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # start with an officer whose birth_year is missing
     officer = generate_officer()
     officer.birth_year = None
@@ -652,7 +661,8 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
     assert officer.birth_year == old_birth_year
 
 
-def test_bulk_add_officers__write_static_field__flag_set(session, department, csv_path):
+def test_bulk_add_officers__write_static_field__flag_set(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # officer with birth year set
     officer = generate_officer()
     officer.birth_year = 1979
@@ -699,7 +709,8 @@ def test_bulk_add_officers__write_static_field__flag_set(session, department, cs
     assert officer.birth_year == new_birth_year
 
 
-def test_bulk_add_officers__no_create_flag(session, department, csv_path):
+def test_bulk_add_officers__no_create_flag(session, department, csv_path, monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda: "y")
     # department with one officer
     department_id = department.id
     officer = generate_officer()
@@ -1062,6 +1073,104 @@ def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_p
     link = Link.query.get(55001)
     assert link.url == "https://www.example.org/3629"
     assert cop1.links[0] == link
+
+
+def test_advanced_csv_import__overwrite_assignments(
+    session, department_with_ranks, tmp_path
+):
+    tmp_path = str(tmp_path)
+
+    department_name = department_with_ranks.name
+
+    other_department = Department(name="Other department", short_name="OPD")
+    session.add(other_department)
+
+    officer = Officer(
+        id=99001,
+        department_id=department_with_ranks.id,
+        first_name="Already",
+        last_name="InDatabase",
+    )
+    officer2 = Officer(
+        id=99002,
+        department_id=department_with_ranks.id,
+        first_name="Also",
+        last_name="InDatabase",
+    )
+    assignment = Assignment(
+        id=123,
+        officer_id=officer.id,
+        job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+    )
+    assignment2 = Assignment(
+        id=124,
+        officer_id=officer2.id,
+        job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+    )
+    session.add(officer)
+    session.add(assignment)
+    session.add(officer2)
+    session.add(assignment2)
+    session.flush()
+
+    # create temporary csv files
+    officers_data = [
+        {
+            "id": "#1",
+            "department_name": department_name,
+            "last_name": "Test",
+            "first_name": "Second",
+        },
+    ]
+
+    officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
+
+    assignments_data = [
+        {
+            "officer_id": 99001,
+            "job title": "Captain",
+            "badge number": "12345",
+            "start date": "2020-07-24",
+        },
+        {
+            "officer_id": "#1",
+            "job title": "Police Officer",
+            "badge number": "999",
+            "start date": "2020-07-21",
+        },
+    ]
+    assignments_csv = _create_csv(assignments_data, tmp_path, "assignments.csv")
+
+    # run command with --overwrite-assignments
+    result = run_command_print_output(
+        advanced_csv_import,
+        [
+            str(department_with_ranks.name),
+            "--officers-csv",
+            officers_csv,
+            "--assignments-csv",
+            assignments_csv,
+            "--overwrite-assignments",
+        ],
+    )
+
+    # make sure command did not fail
+    assert result.exception is None
+    assert result.exit_code == 0
+
+    # make sure all the data is imported as expected
+    cop1 = Officer.query.get(99001)
+    assert len(cop1.assignments.all()) == 1
+    assert cop1.assignments[0].star_no == "12345"
+
+    cop2 = Officer.query.get(99002)
+    assert len(cop2.assignments.all()) == 1
+    assert cop2.assignments[0] == Assignment.query.get(124)
+
+    cop3 = Officer.query.filter_by(first_name="Second").first()
+    assert len(cop3.assignments.all()) == 1
+    assert cop3.assignments[0].star_no == "999"
+    assert cop3.assignments[0].job.job_title == "Police Officer"
 
 
 def test_advanced_csv_import__extra_fields_officers(
