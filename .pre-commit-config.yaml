@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
       - id: check-docstring-first
@@ -23,7 +23,7 @@ repos:
       - id: requirements-txt-fixer
 
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.7.0
+    rev: v1.10.0
     hooks:
       - id: python-check-blanket-noqa
       - id: python-check-mock-methods
@@ -40,15 +40,10 @@ repos:
         exclude: ^build/.*$|^.tox/.*$|^venv/.*$
         args:
           - --lines-after-imports=2
-          - --multi-line=3
-          - --trailing-comma
-          - --force-grid-wrap=0
-          - --use-parentheses
-          - --ensure-newline-before-comments
-          - --line-length=88
+          - --profile=black
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 5.1.1
+    rev: 6.3.0
     hooks:
       - id: pydocstyle
         name: Run pydocstyle
@@ -73,7 +68,7 @@ repos:
         files: \.py$
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.2
+    rev: 5.0.4
     hooks:
         - id: flake8
           args:
