@@ -6,6 +6,14 @@ default: build start create_db populate test stop clean
 build:  ## Build containers
 	docker-compose build
 
+.PHONY: build_with_version
+build_with_version:
+	docker-compose build --build-arg TRAVIS_PYTHON_VERSION=$(PYTHON_VERSION)
+
+.PHONY: test_with_version
+test_with_version: build_with_version assets
+	FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n 4 --dist=loadfile -v tests/ app;
+
 .PHONY: start
 start: build  ## Run containers
 	docker-compose up -d
@@ -51,7 +59,7 @@ test: start  ## Run tests
 
 .PHONY: lint
 lint:
-	docker-compose run --no-deps --rm web /bin/bash -c 'flake8; mypy app --config="../mypy.ini"'
+	pre-commit run --all-files
 
 .PHONY: cleanassets
 cleanassets:

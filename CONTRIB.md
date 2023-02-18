@@ -22,9 +22,9 @@ This will make sure that all commits you make locally are associated with your g
 
 ### Linting / Style Checks
 
- `flake8` is a tool for automated linting and style checks. Be sure to run `flake8` and fix any errors before submitting a PR.
+ We use [pre-commit](https://pre-commit.com/) for automated linting and style checks. Be sure to [install pre-commit](https://pre-commit.com/#installation) and run `pre-commit install` in your local version of the repository to install our pre-commit checks. This will make sure your commits are always formatted correctly.
 
- You can run it with `make lint` to execute flake8 from the docker containers.
+ You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
 
 ## Development Environment
 
