@@ -133,7 +133,7 @@
                         <form class="form" method="post" role="form">
                             {{ form.hidden_tag() }}
                             {{ wtf.form_errors(form, hiddens="only") }}
-    
+
                             {{ wtf.form_field(form.email) }}
                             {{ wtf.form_field(form.password) }}
                             <div class="text-center">

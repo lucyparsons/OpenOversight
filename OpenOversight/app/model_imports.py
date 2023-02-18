@@ -16,8 +16,9 @@ from .models import (
 from .utils import get_or_create, str_is_true
 from .validators import state_validator, url_validator
 
+
 if TYPE_CHECKING:
-    import datetime  # noqa
+    import datetime
 
 
 def validate_choice(
@@ -238,7 +239,12 @@ def get_or_create_license_plate_from_dict(
     number = data["number"]
     state = parse_str(data.get("state"), None)
     state_validator(state)
-    return get_or_create(db.session, LicensePlate, number=number, state=state,)
+    return get_or_create(
+        db.session,
+        LicensePlate,
+        number=number,
+        state=state,
+    )
 
 
 def get_or_create_location_from_dict(

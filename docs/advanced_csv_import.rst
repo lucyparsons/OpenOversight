@@ -166,13 +166,13 @@ Details:
 - ``city``, ``state``, ``zip_code`` State needs to be in 2 letter abbreviated notation.
 - ``creator_id``, ``last_updated_id`` Id of existing user shown as responsible for adding this entry.
 - ``officer_ids`` Ids of officers involved in the incident, separated by ``|``.
-  
+
   - Each individual id can either be an integer referring to an existing officer or a string starting with ``#`` referring to a newly created officer.
   - Example: ``123|#C1|1627`` for three officers, one with id 123, one with 1627 and one whose record was created in the officers csv
     and whose id-field was the string ``#C1``.
 
 - ``license_plates`` all license plates involved in the incident. If there is more than one, they can be separated with a ``|``.
-  
+
   - Each license plate consists of the license plate number and optionally a state in abbreviated form separated by an underscore ``_``.
   - Example: ``ABC123_IL|B991`` for one license plate with number ``ABC123`` from Illinois and one with number ``B991`` and no associated state.
 

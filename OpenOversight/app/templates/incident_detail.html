@@ -54,7 +54,7 @@
 				<h1>Incident Description</h1>
 				{{ incident.description | markdown}}
 			</div>
-		
+
 		{% include 'partials/links_and_videos_row.html' %}
 		{% if current_user.is_administrator
               or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
