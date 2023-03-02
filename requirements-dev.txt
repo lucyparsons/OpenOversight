@@ -1,7 +1,7 @@
 -r requirements.txt
 
 Faker==15.0.0
-flake8==5.0.4
+flake8==6.0.0
 ipython
 mypy==0.982
 pandas>=0.23.4
