@@ -1,0 +1,74 @@
+name: Publish Docker image and deploy it
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+env:
+  image_name: lucyparsons/openoversight
+  # env_mapping: {"develop": "staging", "main": "prod"}
+  env_name: ${{ fromJson(vars.env_mapping)[github.ref_name] }}
+  # docker_mapping: {"develop": "latest", "main": "stable"}
+  docker_name: ${{ fromJson(vars.docker_mapping)[github.ref_name] }}
+  python_version: "3.8"
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v4
+        with:
+          file: dockerfiles/web/Dockerfile-prod
+          push: true
+          build-args: PYTHON_VERSION=${{ env.python_version }}
+          # Build the slimmer production target
+          target: production
+          tags: |
+            ghcr.io/${{ env.image_name }}:${{ github.sha }}
+            ghcr.io/${{ env.image_name }}:${{ env.docker_name }}
+            ghcr.io/${{ env.image_name }}:${{ env.docker_name }}-py${{ env.python_version }}
+  deploy:
+    name: Deploy code to respective server
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: install fabric
+        run: pip install fabric2
+      - name: setup ssh connection
+        run: install -m 600 -D /dev/null ~/.ssh/id_ed25519
+      # choose SSH key depending on which environment we want to deploy to
+      - name: ssh key staging
+        if: ${{ env.env_name == 'staging' }}
+        run: echo "${{secrets.SSH_STAGING_PRIVATE_KEY}}" > ~/.ssh/id_ed25519
+      - name: ssh key prod
+        if: ${{ env.env_name == 'prod' }}
+        run: echo "${{secrets.SSH_PROD_PRIVATE_KEY}}" > ~/.ssh/id_ed25519
+      # Next three steps use fabric2's "invoke" command which runs tasks defined in tasks.py
+      - name: backup db
+        run: invoke backup ${{ env.env_name }}
+      - name: deploy
+        run: invoke deploy ${{ env.env_name }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+      - name: cleanup
+        run: invoke cleanup ${{ env.env_name }}
