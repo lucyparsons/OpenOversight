@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify, render_template, request
@@ -91,11 +92,11 @@ def create_app(config_name="default"):
         return _handler_method
 
     error_handlers = [
-        (403, "Forbidden", "403.html"),
-        (404, "Not found", "404.html"),
-        (413, "File too large", "413.html"),
-        (429, "Too many requests", "429.html"),
-        (500, "Internal Server Error", "500.html"),
+        (HTTPStatus.FORBIDDEN, "Forbidden", "403.html"),
+        (HTTPStatus.NOT_FOUND, "Not found", "404.html"),
+        (HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "File too large", "413.html"),
+        (HTTPStatus.TOO_MANY_REQUESTS, "Too many requests", "429.html"),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500.html"),
     ]
     for code, error, template in error_handlers:
         # Pass generated errorhandler function to @app.errorhandler decorator
