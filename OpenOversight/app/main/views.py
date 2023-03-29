@@ -254,9 +254,7 @@ def officer_profile(officer_id):
             face_paths.append(serve_image(face.image.filepath))
         if not face_paths:
             # Add in the placeholder image if no faces are found
-            face_paths = [
-                url_for("static", filename="images/placeholder.png", _external=True)
-            ]
+            face_paths = [url_for("static", filename="images/placeholder.png")]
     except:  # noqa: E722
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
@@ -270,7 +268,6 @@ def officer_profile(officer_id):
             officer.image_url = url_for(
                 "static",
                 filename=faces[0].image.filepath.replace("/static/", ""),
-                _external=True,
             )
         if faces[0].face_width and faces[0].face_height:
             officer.image_width = faces[0].face_width
