@@ -176,10 +176,10 @@ class SalaryForm(Form):
     )
     is_fiscal_year = BooleanField("Is fiscal year?", default=False)
 
-    def validate(form, extra_validators=()):
+    def validate(form, extra_validators=None):
         if not form.data.get("salary") and not form.data.get("overtime_pay"):
             return True
-        return super(SalaryForm, form).validate()
+        return super(SalaryForm, form).validate(extra_validators=extra_validators)
 
     # def process(self, *args, **kwargs):
     # raise Exception(args[0])
@@ -230,8 +230,8 @@ class LinkForm(Form):
     )
     creator_id = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
 
-    def validate(self):
-        success = super(LinkForm, self).validate()
+    def validate(self, extra_validators=None):
+        success = super(LinkForm, self).validate(extra_validators=extra_validators)
         if self.url.data and not self.link_type.data:
             self.url.errors = list(self.url.errors)
             self.url.errors.append("Links must have a link type.")
