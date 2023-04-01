@@ -5,7 +5,7 @@ flake8==6.0.0
 ipython
 mypy==0.982
 pandas>=0.23.4
-pre-commit==3.1.1
+pre-commit==3.2.1
 pytest==7.2.0
 pytest-cov==4.0.0
 pytest-env==0.8.1
