@@ -8,6 +8,7 @@ from distutils.util import strtobool
 from io import BytesIO
 from traceback import format_exc
 from typing import Optional
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 import boto3
@@ -46,6 +47,9 @@ from .models import (
 
 # Ensure the file is read/write by the creator only
 SAVED_UMASK = os.umask(0o077)
+
+# Cropped officer face image size
+THUMBNAIL_SIZE = 1000, 1000
 
 
 # Call JPEG patch function
@@ -290,9 +294,13 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 
 def filter_by_form(form_data, officer_query, department_id=None):
-    if form_data.get("name"):
+    if form_data.get("last_name"):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike("%%{}%%".format(form_data["name"]))
+            Officer.last_name.ilike("%%{}%%".format(form_data["last_name"]))
+        )
+    if form_data.get("first_name"):
+        officer_query = officer_query.filter(
+            Officer.first_name.ilike("%%{}%%".format(form_data["first_name"]))
         )
     if not department_id and form_data.get("dept"):
         department_id = form_data["dept"].id
@@ -343,22 +351,49 @@ def filter_by_form(form_data, officer_query, department_id=None):
             .all()
         ]
 
-        print(form_data)
         if "Not Sure" in form_data["rank"]:
             form_data["rank"].append(None)
 
-    if form_data.get("badge") or form_data.get("unit") or job_ids:
+    unit_ids = []
+    include_null_unit = False
+    if form_data.get("unit"):
+        unit_ids = [
+            unit.id
+            for unit in Unit.query.filter_by(department_id=department_id)
+            .filter(Unit.descrip.in_(form_data.get("unit")))
+            .all()
+        ]
+
+        if "Not Sure" in form_data["unit"]:
+            include_null_unit = True
+
+    if (
+        form_data.get("badge")
+        or unit_ids
+        or include_null_unit
+        or job_ids
+        or form_data.get("current_job")
+    ):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
                 Assignment.star_no.like("%%{}%%".format(form_data["badge"]))
             )
-        if form_data.get("unit"):
-            officer_query = officer_query.filter(
-                Assignment.unit_id == form_data["unit"]
-            )
+
+        if unit_ids or include_null_unit:
+            # Split into 2 expressions because the SQL IN keyword does not match NULLs
+            unit_filters = []
+            if unit_ids:
+                unit_filters.append(Assignment.unit_id.in_(unit_ids))
+            if include_null_unit:
+                unit_filters.append(Assignment.unit_id.is_(None))
+            officer_query = officer_query.filter(or_(*unit_filters))
+
         if job_ids:
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
+
+        if form_data.get("current_job"):
+            officer_query = officer_query.filter(Assignment.resign_date.is_(None))
     officer_query = officer_query.options(
         selectinload(Officer.assignments_lazy)
     ).distinct()
@@ -386,10 +421,6 @@ def filter_roster(form, officer_query):
         .order_by(Officer.id.desc())
     )
     return officer_query
-
-
-def roster_lookup(form):
-    return filter_roster(form, Officer.query)
 
 
 def grab_officers(form):
@@ -533,36 +564,37 @@ def create_description(self, form):
 
 
 def crop_image(image, crop_data=None, department_id=None):
+    """Crops an image to given dimensions and shrinks it to fit within a configured
+    bounding box if the cropped image is still too big.
+    """
     if "http" in image.filepath:
         with urlopen(image.filepath) as response:
             image_buf = BytesIO(response.read())
     else:
         image_buf = open(os.path.abspath(current_app.root_path) + image.filepath, "rb")
 
-    image_buf.seek(0)
-    image_type = imghdr.what(image_buf)
-    if not image_type:
-        image_type = os.path.splitext(image.filepath)[1].lower()[1:]
-        if image_type in ("jp2", "j2k", "jpf", "jpx", "jpm", "mj2"):
-            image_type = "jpeg2000"
-        elif image_type in ("jpg", "jpeg", "jpe", "jif", "jfif", "jfi"):
-            image_type = "jpeg"
-        elif image_type in ("tif", "tiff"):
-            image_type = "tiff"
     pimage = Pimage.open(image_buf)
 
-    SIZE = 300, 300
-    if not crop_data and pimage.size[0] < SIZE[0] and pimage.size[1] < SIZE[1]:
+    if (
+        not crop_data
+        and pimage.size[0] < THUMBNAIL_SIZE[0]
+        and pimage.size[1] < THUMBNAIL_SIZE[1]
+    ):
         return image
 
+    # Crops image to face and resizes to bounding box if still too big
     if crop_data:
         pimage = pimage.crop(crop_data)
-    if pimage.size[0] > SIZE[0] or pimage.size[1] > SIZE[1]:
-        pimage = pimage.copy()
-        pimage.thumbnail(SIZE)
+    if pimage.size[0] > THUMBNAIL_SIZE[0] or pimage.size[1] > THUMBNAIL_SIZE[1]:
+        pimage.thumbnail(THUMBNAIL_SIZE)
 
+    # JPEG doesn't support alpha channel, convert to RGB
+    if pimage.mode in ("RGBA", "P"):
+        pimage = pimage.convert("RGB")
+
+    # Save preview image as JPEG to save bandwidth for mobile users
     cropped_image_buf = BytesIO()
-    pimage.save(cropped_image_buf, image_type)
+    pimage.save(cropped_image_buf, "jpeg", quality=95, optimize=True, progressive=True)
 
     return upload_image_to_s3_and_store_in_db(
         cropped_image_buf, current_user.get_id(), department_id
@@ -596,6 +628,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         return existing_image
     try:
         new_filename = "{}.{}".format(hash_img, image_type)
+        scrubbed_image_buf.seek(0)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(
             filepath=url,
@@ -704,3 +737,19 @@ def normalize_gender(input_gender):
     }
 
     return normalized_genders.get(input_gender.lower().strip())
+
+
+def validate_redirect_url(url: Optional[str]) -> Optional[str]:
+    """
+    Check that a url does not redirect to another domain.
+    :param url: the url to be checked
+    :return: the url if validated, otherwise `None`
+    """
+    if not url:
+        return None
+
+    parsed = urlparse(url)
+    if parsed.scheme or parsed.netloc:
+        return None
+
+    return url

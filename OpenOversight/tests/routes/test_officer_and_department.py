@@ -9,6 +9,7 @@ from io import BytesIO
 import pytest
 from flask import current_app, url_for
 from mock import MagicMock, patch
+from sqlalchemy.sql.operators import Operators
 
 from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.main.forms import (
@@ -19,6 +20,7 @@ from OpenOversight.app.main.forms import (
     DepartmentForm,
     EditDepartmentForm,
     EditOfficerForm,
+    FindOfficerForm,
     IncidentForm,
     LicensePlateForm,
     LinkForm,
@@ -29,6 +31,7 @@ from OpenOversight.app.main.forms import (
 from OpenOversight.app.models import (
     Assignment,
     Department,
+    Face,
     Image,
     Incident,
     Job,
@@ -101,6 +104,32 @@ def test_user_can_access_officer_list(mockdata, client, session):
         rv = client.get(url_for("main.list_officer", department_id=2))
 
         assert "Officers" in rv.data.decode("utf-8")
+
+
+@pytest.mark.parametrize(
+    "filter_func, has_placeholder",
+    [
+        # Officer without faces should have placeholder
+        (Operators.__invert__, True),
+        # Officer with faces should not have placeholder
+        (lambda x: x, False),
+    ],
+)
+def test_officer_appropriately_shows_placeholder(
+    filter_func, has_placeholder, mockdata, client, session
+):
+    with current_app.test_request_context():
+        officer = Officer.query.filter(filter_func(Officer.face.any())).first()
+        placeholder = url_for(
+            "static", filename="images/placeholder.png", _external=True
+        )
+
+        rv = client.get(
+            url_for("main.officer_profile", officer_id=officer.id),
+            follow_redirects=True,
+        )
+
+        assert (placeholder in rv.data.decode("utf-8")) == has_placeholder
 
 
 def test_ac_can_access_admin_on_dept_officer_profile(mockdata, client, session):
@@ -1627,6 +1656,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         ]
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id).first()
+        unit = Unit.query.filter_by(department_id=officer.department_id).first()
         form = AddOfficerForm(
             first_name="A",
             last_name="A",
@@ -1635,6 +1665,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             gender="M",
             star_no=666,
             job_id=job.id,
+            unit=unit.id,
             department=department_id,
             birth_year=1990,
             links=links,
@@ -1659,6 +1690,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             rank=job.job_title,
             min_age=datetime.now().year - 1991,
             max_age=datetime.now().year - 1989,
+            current_job=True,
         )
 
         data = process_form_data(form.data)
@@ -1668,16 +1700,71 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             data=data,
             follow_redirects=True,
         )
-        filter_list = rv.data.decode("utf-8").split("<dt>Race</dt>")[1:]
-        assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = rv.data.decode("utf-8").split("<dt>Job Title</dt>")[1:]
+        filter_list = rv.data.decode("utf-8").split("<dt>Rank</dt>")[1:]
         assert any(
             "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
         )
 
+        filter_list = rv.data.decode("utf-8").split("<dt>Unit</dt>")[1:]
+        assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
+
+        filter_list = rv.data.decode("utf-8").split("<dt>Race</dt>")[1:]
+        assert any("<dd>White</dd>" in token for token in filter_list)
+
         filter_list = rv.data.decode("utf-8").split("<dt>Gender</dt>")[1:]
         assert any("<dd>Male</dd>" in token for token in filter_list)
+
+
+def test_find_officer_redirect(client, mockdata, session):
+    with current_app.test_request_context():
+        department_id = Department.query.first().id
+        rank = "Officer"
+        unit_id = 1234
+        min_age = datetime.now().year - 1991
+        max_age = datetime.now().year - 1989
+
+        # Check that added officer appears when filtering for this race, gender, rank and age
+        form = FindOfficerForm(
+            dept=department_id,
+            first_name="A",
+            last_name="B",
+            race="WHITE",
+            gender="M",
+            rank=rank,
+            unit=unit_id,
+            current_job=True,
+            min_age=min_age,
+            max_age=max_age,
+        )
+
+        data = process_form_data(form.data)
+
+        # TODO starting with Flask 2.0 we can set
+        # follow_redirects to true and assert on
+        # rv.request.full_path (instead of rv.location)
+        rv = client.post(
+            url_for("main.get_officer"),
+            data=data,
+            follow_redirects=False,
+        )
+
+        # Check that the parameters are added correctly to the response url
+        assert rv.status_code == 302, "Expected redirect."
+        assert "department/{}".format(department_id) in rv.location
+        parameters = [
+            ("first_name", "A"),
+            ("last_name", "B"),
+            ("race", "WHITE"),
+            ("gender", "M"),
+            ("rank", rank),
+            ("unit", unit_id),
+            ("current_job", True),
+            ("min_age", min_age),
+            ("max_age", max_age),
+        ]
+        for name, value in parameters:
+            assert "{}={}".format(name, value) in rv.location
 
 
 def test_admin_can_upload_photos_of_dept_officers(
@@ -1694,8 +1781,14 @@ def test_admin_can_upload_photos_of_dept_officers(
         officer = department.officers[3]
         officer_face_count = len(officer.face)
 
-        crop_mock = MagicMock(return_value=Image.query.first())
-        upload_mock = MagicMock(return_value=Image.query.first())
+        # Filter out images that the officer is already tagged in
+        officer_faces = Face.query.filter_by(officer_id=officer.id).all()
+        image = Image.query.filter(
+            Image.id.notin_([face.img_id for face in officer_faces])
+        ).first()
+
+        crop_mock = MagicMock(return_value=image)
+        upload_mock = MagicMock(return_value=image)
         with patch(
             "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
             upload_mock,
@@ -1796,8 +1889,14 @@ def test_ac_can_upload_photos_of_dept_officers(
         officer = department.officers[4]
         officer_face_count = len(officer.face)
 
-        crop_mock = MagicMock(return_value=Image.query.first())
-        upload_mock = MagicMock(return_value=Image.query.first())
+        # Filter out images that the officer is already tagged in
+        officer_faces = Face.query.filter_by(officer_id=officer.id).all()
+        image = Image.query.filter(
+            Image.id.notin_([face.img_id for face in officer_faces])
+        ).first()
+
+        crop_mock = MagicMock(return_value=image)
+        upload_mock = MagicMock(return_value=image)
         with patch(
             "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
             upload_mock,

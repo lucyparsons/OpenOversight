@@ -1,5 +1,6 @@
 from __future__ import division
 
+import os
 from contextlib import contextmanager
 
 import pytest
@@ -12,6 +13,9 @@ from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
+
+
+DESCRIPTION_CUTOFF = 700
 
 
 @contextmanager
@@ -43,6 +47,16 @@ def wait_for_element(browser, locator, text, timeout=10):
         WebDriverWait(browser, timeout).until(element_present)
     except TimeoutException:
         pytest.fail("Timed out while waiting for element to appear")
+
+
+def wait_for_element_to_be_visible(browser, locator, text, timeout=10):
+    try:
+        element_visible = expected_conditions.visibility_of_element_located(
+            (locator, text)
+        )
+        WebDriverWait(browser, timeout).until(element_visible)
+    except TimeoutException:
+        pytest.fail("Timed out while waiting for element to become visible")
 
 
 def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
@@ -150,14 +164,14 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
     assert len(results) == 0
 
 
-def test_incident_detail_display_read_more_button_for_descriptions_over_300_chars(
+def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     mockdata, browser
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
     incident_id = str(incident_long_descrip.id)
 
@@ -165,13 +179,33 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_300_char
     assert result.is_displayed()
 
 
-def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_300_chars(
+def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
     mockdata, browser
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get("http://localhost:5000/officer/1")
 
-    # Select incident for officer that has description under 300 chars
+    incident_long_descrip = Incident.query.filter(
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
+    ).one_or_none()
+    incident_id = str(incident_long_descrip.id)
+
+    # Check that the text is truncated and contains more than just the ellipsis
+    truncated_text = browser.find_element(
+        "id", "incident-description_" + incident_id
+    ).text
+    assert "…" in truncated_text
+    # Include buffer for jinja rendered spaces
+    assert DESCRIPTION_CUTOFF + 20 > len(truncated_text) > 100
+
+
+def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
+    mockdata, browser
+):
+    # Navigate to profile page for officer with short and long incident descriptions
+    browser.get("http://localhost:5000/officer/1")
+
+    # Select incident for officer that has description under cuttoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
     assert not result.is_displayed()
 
@@ -181,9 +215,9 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    orig_descrip = incident_long_descrip.description
+    orig_descrip = incident_long_descrip.description.strip()
     incident_id = str(incident_long_descrip.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
@@ -191,7 +225,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
 
     description_text = browser.find_element_by_id(
         "incident-description_" + incident_id
-    ).text
+    ).text.strip()
     assert len(description_text) == len(orig_descrip)
     assert description_text == orig_descrip
 
@@ -201,7 +235,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     browser.get("http://localhost:5000/officer/1")
 
     incident_long_descrip = Incident.query.filter(
-        func.length(Incident.description) > 300
+        func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
     incident_id = str(incident_long_descrip.id)
 
@@ -261,3 +295,99 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
     selected_option = select.first_selected_option
     selected_text = selected_option.text
     assert selected_text == "Not Sure"
+
+
+@pytest.mark.skip("Enable once real file upload in tests is supported.")
+def test_image_classification_and_tagging(mockdata, browser):
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    img_path = os.path.join(test_dir, "images/200Cat.jpeg")
+
+    login_admin(browser)
+
+    # 1. Create new department (to avoid mockdata)
+    browser.get("http://localhost:5000/department/new")
+    wait_for_page_load(browser)
+    browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
+    browser.find_element(By.ID, "short_name").send_keys("APD")
+    browser.find_element(By.ID, "submit").click()
+    wait_for_page_load(browser)
+
+    # 2. Add a new officer
+    browser.get("http://localhost:5000/officer/new")
+    wait_for_page_load(browser)
+
+    dept_select = Select(browser.find_element("id", "department"))
+    dept_select.select_by_visible_text("Auburn Police Department")
+    dept_id = dept_select.first_selected_option.get_attribute("value")
+
+    browser.find_element(By.ID, "first_name").send_keys("Officer")
+    browser.find_element(By.ID, "last_name").send_keys("Friendly")
+    browser.find_element(By.ID, "submit").click()
+
+    wait_for_page_load(browser)
+    # expected url: http://localhost:5000/submit_officer_images/officer/<id>
+    officer_id = browser.current_url.split("/")[-1]
+
+    # 3. Submit an image
+    browser.get("http://localhost:5000/submit")
+    wait_for_page_load(browser)
+
+    Select(browser.find_element("id", "department")).select_by_value(dept_id)
+
+    # Submit files in selenium: https://stackoverflow.com/a/61566075
+    wait_for_element(browser, By.CLASS_NAME, "dz-hidden-input")
+    upload = browser.find_element(By.CLASS_NAME, "dz-hidden-input")
+    upload.send_keys(img_path)
+    wait_for_element(browser, By.CLASS_NAME, "dz-success")
+
+    # 4. Classify the uploaded image
+    browser.get(f"http://localhost:5000/sort/department/{dept_id}")
+
+    # Check that image loaded correctly: https://stackoverflow.com/a/36296478
+    wait_for_element(browser, By.TAG_NAME, "img")
+    image = browser.find_element(By.TAG_NAME, "img")
+    assert image.get_attribute("complete") == "true"
+    assert int(image.get_attribute("naturalHeight")) > 0
+
+    browser.find_element(By.ID, "answer-yes").click()
+
+    wait_for_page_load(browser)
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "All images have been classfied!" in page_text
+
+    # 5. Identify the new officer in the uploaded image
+    browser.get(f"http://localhost:5000/cop_face/department/{dept_id}")
+    wait_for_page_load(browser)
+    browser.find_element(By.ID, "officer_id").send_keys(officer_id)
+    browser.find_element(By.CSS_SELECTOR, "input[value='Add identified face']").click()
+
+    wait_for_page_load(browser)
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "Tag added to database" in page_text
+
+    # 6. Log out as admin
+    browser.get("http://localhost:5000/auth/logout")
+    wait_for_page_load(browser)
+
+    # 7. Check that the tag appears on the officer page
+    browser.get(f"http://localhost:5000/officer/{officer_id}")
+    wait_for_page_load(browser)
+    browser.find_element(By.CSS_SELECTOR, "a > img.officer-face").click()
+
+    wait_for_page_load(browser)
+    image = browser.find_element(By.TAG_NAME, "img")
+    frame = browser.find_element(By.ID, "face-tag-frame")
+
+    # 8. Check that the tag frame is fully contained within the image
+    wait_for_element_to_be_visible(browser, By.ID, "face-tag-frame")
+    assert image.location["x"] <= frame.location["x"]
+    assert image.location["y"] <= frame.location["y"]
+    assert (
+        image.location["x"] + image.size["width"]
+        >= frame.location["x"] + frame.size["width"]
+    )
+    assert (
+        image.location["y"] + image.size["height"]
+        >= frame.location["y"] + frame.size["height"]
+    )
+    assert image.location["y"] <= frame.location["y"]

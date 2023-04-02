@@ -5,14 +5,8 @@ import pytest
 from flask import current_app, url_for
 from mock import MagicMock, patch
 
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-
 from OpenOversight.app.main import views
-from OpenOversight.app.main.forms import FaceTag, FindOfficerIDForm
+from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models import Department, Face, Image, Officer
 
 from ..conftest import AC_DEPT
@@ -25,9 +19,9 @@ PROJECT_ROOT = os.path.abspath(os.curdir)
 @pytest.mark.parametrize(
     "route",
     [
-        ("/tagger_find"),
         ("/label"),
         ("/tutorial"),
+        ("/tag/1"),
     ],
 )
 def test_routes_ok(route, client, mockdata):
@@ -44,7 +38,6 @@ def test_routes_ok(route, client, mockdata):
         ("/cop_face/department/1"),
         ("/image/1"),
         ("/image/tagged/1"),
-        ("/tag/1"),
     ],
 )
 def test_route_login_required(route, client, mockdata):
@@ -65,36 +58,6 @@ def test_route_login_required(route, client, mockdata):
 def test_route_post_only(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == 405
-
-
-def test_tagger_lookup(client, session):
-    with current_app.test_request_context():
-        form = FindOfficerIDForm(dept="")
-        assert form.validate() is True
-        rv = client.post(
-            url_for("main.get_ooid"), data=form.data, follow_redirects=False
-        )
-        assert rv.status_code == 307
-        assert urlparse(rv.location).path == "/tagger_gallery"
-
-
-def test_tagger_gallery(client, session):
-    with current_app.test_request_context():
-        form = FindOfficerIDForm(dept="")
-        assert form.validate() is True
-        rv = client.post(url_for("main.get_tagger_gallery"), data=form.data)
-        assert rv.status_code == 200
-
-
-def test_tagger_gallery_bad_form(client, session):
-    with current_app.test_request_context():
-        form = FindOfficerIDForm(badge="THIS IS NOT VALID")
-        assert form.validate() is False
-        rv = client.post(
-            url_for("main.get_tagger_gallery"), data=form.data, follow_redirects=False
-        )
-        assert rv.status_code == 307
-        assert urlparse(rv.location).path == "/tagger_find"
 
 
 def test_logged_in_user_can_access_sort_form(mockdata, client, session):
@@ -123,6 +86,10 @@ def test_user_can_view_tag(mockdata, client, session):
 
         rv = client.get(url_for("main.display_tag", tag_id=1), follow_redirects=True)
         assert b"Tag" in rv.data
+
+        # Check that tag frame position is specified
+        for attribute in (b"data-top", b"data-left", b"data-width", b"data-height"):
+            assert attribute in rv.data
 
 
 def test_admin_can_delete_tag(mockdata, client, session):

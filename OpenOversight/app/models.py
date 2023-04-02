@@ -1,13 +1,13 @@
 import re
+import time
 from datetime import date
 
+from authlib.jose import JoseError, JsonWebToken
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import DefaultMeta
-from itsdangerous import BadData, BadSignature
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy import CheckConstraint, UniqueConstraint
+from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -16,6 +16,7 @@ from .validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
+jwt = JsonWebToken("HS512")
 
 BaseModel = db.Model  # type: DefaultMeta
 
@@ -39,6 +40,8 @@ class Department(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
+
+    # See https://github.com/lucyparsons/OpenOversight/issues/462
     unique_internal_identifier_label = db.Column(
         db.String(100), unique=False, nullable=True
     )
@@ -185,11 +188,26 @@ class Officer(BaseModel):
                 self.assignments_lazy, key=lambda x: x.star_date or date.min
             ).job.job_title
 
+    def unit_descrip(self):
+        if self.assignments_lazy:
+            unit = max(
+                self.assignments_lazy, key=lambda x: x.star_date or date.min
+            ).unit
+            return unit.descrip if unit else None
+
     def badge_number(self):
         if self.assignments_lazy:
             return max(
                 self.assignments_lazy, key=lambda x: x.star_date or date.min
             ).star_no
+
+    def currently_on_force(self):
+        if self.assignments_lazy:
+            most_recent = max(
+                self.assignments_lazy, key=lambda x: x.star_date or date.min
+            )
+            return "Yes" if most_recent.resign_date is None else "No"
+        return "Uncertain"
 
     def __repr__(self):
         if self.unique_internal_identifier:
@@ -492,6 +510,22 @@ class User(UserMixin, BaseModel):
     classifications = db.relationship("Image", backref="users")
     tags = db.relationship("Face", backref="users")
 
+    def _jwt_encode(self, payload, expiration):
+        secret = current_app.config["SECRET_KEY"]
+        header = {"alg": "HS512"}
+
+        now = int(time.time())
+        payload["iat"] = now
+        payload["exp"] = now + expiration
+
+        return jwt.encode(header, payload, secret)
+
+    def _jwt_decode(self, token):
+        secret = current_app.config["SECRET_KEY"]
+        token = jwt.decode(token, secret)
+        token.validate()
+        return token
+
     @property
     def password(self):
         raise AttributeError("password is not a readable attribute")
@@ -500,18 +534,29 @@ class User(UserMixin, BaseModel):
     def password(self, password):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
 
+    @staticmethod
+    def _case_insensitive_equality(field, value):
+        return User.query.filter(func.lower(field) == func.lower(value))
+
+    @staticmethod
+    def by_email(email):
+        return User._case_insensitive_equality(User.email, email)
+
+    @staticmethod
+    def by_username(username):
+        return User._case_insensitive_equality(User.username, username)
+
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"confirm": self.id}).decode("utf-8")
+        payload = {"confirm": self.id}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def confirm(self, token):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData) as e:
+            data = self._jwt_decode(token)
+        except JoseError as e:
             current_app.logger.warning("failed to decrypt token: %s", e)
             return False
         if data.get("confirm") != self.id:
@@ -525,32 +570,29 @@ class User(UserMixin, BaseModel):
         return True
 
     def generate_reset_token(self, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"reset": self.id}).decode("utf-8")
+        payload = {"reset": self.id}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def reset_password(self, token, new_password):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData):
+            data = self._jwt_decode(token)
+        except JoseError:
             return False
         if data.get("reset") != self.id:
             return False
         self.password = new_password
         db.session.add(self)
+        db.session.commit()
         return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
-        s = Serializer(current_app.config["SECRET_KEY"], expiration)
-        return s.dumps({"change_email": self.id, "new_email": new_email}).decode(
-            "utf-8"
-        )
+        payload = {"change_email": self.id, "new_email": new_email}
+        return self._jwt_encode(payload, expiration).decode("utf-8")
 
     def change_email(self, token):
-        s = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except (BadSignature, BadData):
+            data = self._jwt_decode(token)
+        except JoseError:
             return False
         if data.get("change_email") != self.id:
             return False
@@ -561,7 +603,13 @@ class User(UserMixin, BaseModel):
             return False
         self.email = new_email
         db.session.add(self)
+        db.session.commit()
         return True
+
+    @property
+    def is_active(self):
+        """Override UserMixin.is_active to prevent disabled users from logging in."""
+        return not self.is_disabled
 
     def __repr__(self):
         return "<User %r>" % self.username

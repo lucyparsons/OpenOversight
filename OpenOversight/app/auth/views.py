@@ -1,10 +1,18 @@
-from flask import current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from .. import sitemap
 from ..email import send_email
 from ..models import User, db
-from ..utils import set_dynamic_default
+from ..utils import set_dynamic_default, validate_redirect_url
 from . import auth
 from .forms import (
     ChangeDefaultDepartmentForm,
@@ -60,11 +68,16 @@ def unconfirmed():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.by_email(form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.remember_me.data)
-            return redirect(request.args.get("next") or url_for("main.index"))
-        flash("Invalid username or password.")
+            if user.is_active:
+                login_user(user, form.remember_me.data)
+                next_url = validate_redirect_url(session.get("next"))
+                return redirect(next_url or url_for("main.index"))
+            else:
+                flash("User has been disabled.")
+        else:
+            flash("Invalid username or password.")
     else:
         current_app.logger.info(form.errors)
     return render_template("auth/login.html", form=form)
@@ -183,7 +196,7 @@ def password_reset_request():
         return redirect(url_for("main.index"))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.by_email(form.email.data).first()
         if user:
             token = user.generate_reset_token()
             send_email(
@@ -192,11 +205,8 @@ def password_reset_request():
                 "auth/email/reset_password",
                 user=user,
                 token=token,
-                next=request.args.get("next"),
             )
-        flash(
-            "An email with instructions to reset your password has been " "sent to you."
-        )
+        flash("An email with instructions to reset your password has been sent to you.")
         return redirect(url_for("auth.login"))
     else:
         current_app.logger.info(form.errors)
@@ -209,7 +219,7 @@ def password_reset(token):
         return redirect(url_for("main.index"))
     form = PasswordResetForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.by_email(form.email.data).first()
         if user is None:
             return redirect(url_for("main.index"))
         if user.reset_password(token, form.password.data):
@@ -316,17 +326,22 @@ def edit_user(user_id):
                     flash("You cannot edit your own account!")
                     form = EditUserForm(obj=user)
                     return render_template("auth/user.html", user=user, form=form)
-                if (
-                    current_app.config["APPROVE_REGISTRATIONS"]
-                    and form.approved.data
-                    and not user.approved
-                    and not user.confirmed
-                ):
-                    admin_resend_confirmation(user)
+                already_approved = user.approved
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
+
+                # automatically send a confirmation email when approving an unconfirmed user
+                if (
+                    current_app.config["APPROVE_REGISTRATIONS"]
+                    and not already_approved
+                    and user.approved
+                    and not user.confirmed
+                ):
+                    admin_resend_confirmation(user)
+
                 flash("{} has been updated!".format(user.username))
+
                 return redirect(url_for("auth.edit_user", user_id=user.id))
             else:
                 flash("Invalid entry")

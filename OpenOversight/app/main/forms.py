@@ -79,8 +79,14 @@ class HumintContribution(Form):
 
 
 class FindOfficerForm(Form):
-    name = StringField(
-        "name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
+    # Any fields added to this form should generally also be added to BrowseForm
+    first_name = StringField(
+        "first_name",
+        default="",
+        validators=[Regexp(r"\w*"), Length(max=50), Optional()],
+    )
+    last_name = StringField(
+        "last_name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
     )
     badge = StringField(
         "badge", default="", validators=[Regexp(r"\w*"), Length(max=10)]
@@ -97,6 +103,7 @@ class FindOfficerForm(Form):
         get_label="name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
+    current_job = BooleanField("current_job", default=None, validators=[Optional()])
     rank = StringField(
         "rank", default="Not Sure", validators=[Optional()]
     )  # Gets rewritten by Javascript
@@ -117,24 +124,6 @@ class FindOfficerForm(Form):
     )
     max_age = IntegerField(
         "max_age", default=85, validators=[NumberRange(min=16, max=100)]
-    )
-    latitude = DecimalField(
-        "latitude", default=False, validators=[NumberRange(min=-90, max=90)]
-    )
-    longitude = DecimalField(
-        "longitude", default=False, validators=[NumberRange(min=-180, max=180)]
-    )
-
-
-class FindOfficerIDForm(Form):
-    name = StringField(
-        "name", default="", validators=[Regexp(r"\w*"), Length(max=50), Optional()]
-    )
-    badge = StringField(
-        "badge", default="", validators=[Regexp(r"\w*"), Length(max=10)]
-    )
-    dept = QuerySelectField(
-        "dept", validators=[Optional()], query_factory=dept_choices, get_label="name"
     )
 
 
@@ -514,8 +503,8 @@ class IncidentForm(DateFieldForm):
     report_number = StringField(
         validators=[
             Regexp(
-                r"^[a-zA-Z0-9-]*$",
-                message="Report numbers can contain letters, numbers, and dashes",
+                r"^[a-zA-Z0-9- ]*$",
+                message="Report cannot contain special characters (dashes permitted)",
             )
         ],
         description="Incident number for the organization tracking incidents",
@@ -557,12 +546,20 @@ class IncidentForm(DateFieldForm):
 
 
 class BrowseForm(Form):
+    # Any fields added to this form should generally also be added to FindOfficerForm
     rank = QuerySelectField(
         "rank",
         validators=[Optional()],
         get_label="job_title",
         get_pk=lambda job: job.job_title,
     )  # query set in view function
+    unit = QuerySelectField(
+        "unit",
+        validators=[Optional()],
+        get_label="descrip",
+        get_pk=lambda unit: unit.descrip,
+    )  # query set in view function
+    current_job = BooleanField("current_job", default=None, validators=[Optional()])
     name = StringField("Last name")
     badge = StringField("Badge number")
     unique_internal_identifier = StringField("Unique ID")
@@ -590,4 +587,12 @@ class BrowseForm(Form):
         choices=AGE_CHOICES,
         validators=[AnyOf(allowed_values(AGE_CHOICES))],
     )
+    submit = SubmitField(label="Submit")
+
+
+class IncidentListForm(Form):
+    department_id = HiddenField("Department Id")
+    report_number = StringField("Report Number")
+    occurred_before = DateField("Occurred Before")
+    occurred_after = DateField("Occurred After")
     submit = SubmitField(label="Submit")

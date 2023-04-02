@@ -6,8 +6,13 @@ from flask_login import current_user
 from mock import MagicMock, Mock, patch
 
 import OpenOversight
-from OpenOversight.app.models import Image
-from OpenOversight.app.utils import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.models import Department, Image, Officer, Unit
+from OpenOversight.app.utils import (
+    crop_image,
+    filter_by_form,
+    upload_image_to_s3_and_store_in_db,
+    validate_redirect_url,
+)
 from OpenOversight.tests.routes.route_helpers import login_user
 
 
@@ -96,7 +101,9 @@ def test_rank_filter_select_all_police_officers(mockdata):
 
 def test_filter_by_name(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.utils.grab_officers({"name": "J", "dept": department})
+    results = OpenOversight.app.utils.grab_officers(
+        {"last_name": "J", "dept": department}
+    )
     for element in results.all():
         assert "J" in element.last_name
 
@@ -305,3 +312,48 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
             assert (
                 current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
             )
+
+
+@pytest.mark.parametrize(
+    "units, has_officers_with_unit, has_officers_with_no_unit",
+    [
+        (["Not Sure"], False, True),
+        (["Donut Devourers"], True, False),
+        (["Not Sure", "Donut Devourers"], True, True),
+    ],
+)
+def test_filter_by_form_filter_unit(
+    mockdata, units, has_officers_with_unit, has_officers_with_no_unit
+):
+    form_data = dict(unit=units)
+    unit_id = Unit.query.filter_by(descrip="Donut Devourers").one().id
+    department_id = Department.query.first().id
+
+    officers = filter_by_form(form_data, Officer.query, department_id).all()
+
+    for officer in officers:
+        found = False
+        if has_officers_with_unit:
+            found = found or any([a.unit_id == unit_id for a in officer.assignments])
+        if has_officers_with_no_unit:
+            found = found or any([a.unit_id is None for a in officer.assignments])
+        assert found
+
+
+@pytest.mark.parametrize(
+    "url,is_valid",
+    [
+        ("/images/1", True),
+        ("/officer/1?with_params=true", True),
+        ("//google.com", False),
+        ("http://google.com", False),
+        ("https://google.com/?q=oo", False),
+        ("http://localhost:3000", False),
+    ],
+)
+def test_validate_redirect_url(url, is_valid):
+    result = validate_redirect_url(url)
+    if is_valid:
+        assert result == url
+    else:
+        assert result is None

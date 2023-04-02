@@ -1,100 +1,94 @@
-
-
-		<tr>
-			<td><strong>Date</strong></td>
-			<td>{{ incident.date.strftime('%b %d, %Y') }}</td>
-		</tr>
-		{% if incident.time %}
-		<tr>
-			<td><strong>Time</strong></td>
-			<td>{{ incident.time.strftime('%l:%M %p') }}</td>
-		</tr>
+<tr>
+	<td><strong>Date</strong></td>
+	<td>{{ incident.date.strftime('%b %d, %Y') }}</td>
+</tr>
+{% if incident.time %}
+<tr>
+	<td><strong>Time</strong></td>
+	<td>{{ incident.time.strftime('%l:%M %p') }}</td>
+</tr>
+{% endif %}
+{% if incident.report_number %}
+<tr>
+	<td><strong>Report #</strong></td>
+	<td>{{ incident.report_number }}</td>
+</tr>
+{% endif %}
+<tr>
+	<td><strong>Department</strong></td>
+	<td>{{ incident.department.name }}</td>
+</tr>
+{% if incident.officers %}
+<tr>
+	<td><strong>Officers</strong></td>
+	<td>
+		{% for officer in incident.officers %}
+		<a href="{{url_for('main.officer_profile', officer_id=officer.id)}}">{{ officer.full_name()|title }}</a>{% if
+		not loop.last %}, {% endif %}
+		{% endfor %}
+	</td>
+</tr>
+{% endif %}
+{% if detail and incident.license_plates %}
+<tr>
+	<td><strong>License Plates</strong></td>
+	<td>
+		{% for plate in incident.license_plates %}
+		{{ plate.state }} {{ plate.number }}{% if not loop.last %}<br /> {% endif %}
+		{% endfor %}
+	</td>
+</tr>
+{% endif %}
+{% if not detail %}
+<tr>
+	<td><strong>Description</strong></td>
+	<td class="incident-description" id="incident-description_{{incident.id}}" data-incident='{{incident.id | tojson}}'>
+		{{ incident.description | markdown}}
+	</td>
+</tr>
+<tr id="description-overflow-row_{{ incident.id }}">
+	<td style="border-top: none"></td>
+	<td style="border-top: none" id="description-overflow-cell_{{ incident.id }}">
+		<button id="description-overflow-button_{{ incident.id }}">
+			Click to read more
+		</button>
+	</td>
+</tr>
+{% endif %}
+{% with address=incident.address %}
+{% if address %}
+<tr>
+	<td><strong>Address</strong></td>
+	<td>
+		{% if address.street_name %}
+		{{ address.street_name }}
+		{% if address.cross_street1%}
+		{% if address.cross_street2%}
+		<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
+		{% else %}
+		<em>near</em> {{ address.cross_street1 }}
 		{% endif %}
-		{% if incident.report_number %}
-		<tr>
-			<td><strong>Report #</strong></td>
-			<td>{{ incident.report_number }}</td>
-		</tr>
 		{% endif %}
-		<tr>
-			<td><strong>Department</strong></td>
-			<td>{{ incident.department.name }}</td>
-		</tr>
-		{% if incident.officers %}
-		<tr>
-			<td><strong>Officers</strong></td>
-			<td>
-				{% for officer in incident.officers %}
-					<a href="{{url_for('main.officer_profile', officer_id=officer.id)}}">{{ officer.full_name()|title }}</a>{% if not loop.last %}, {% endif %}
-				{% endfor %}
-			</td>
-		</tr>
+		<br />
 		{% endif %}
-		{% if detail and incident.license_plates %}
-			<tr>
-				<td><strong>License Plates</strong></td>
-				<td>
-					{% for plate in incident.license_plates %}
-						{{ plate.state }} {{ plate.number }}{% if not loop.last %}<br/> {% endif %}
-					{% endfor %}
-				</td>
-			</tr>
-		{% endif %}
-		{% if not detail %}
-			<tr>
-				<td><strong>Description</strong></td>
-				<td class="incident-description" id="incident-description_{{incident.id}}" data-incident='{{incident.id | tojson}}'>
-					{{ incident.description | markdown}}
-				</td>
-			</tr>
-			<tr id="description-overflow-row_{{ incident.id }}" >
-				<td style="border-top: none"></td>
-				<td style="border-top: none" id="description-overflow-cell_{{ incident.id }}">
-					<button id="description-overflow-button_{{ incident.id }}">
-						Click to read more
-					</button>
-				</td>
-			</tr>
-		{% endif %}
-		{% with address=incident.address %}
-			{% if address %}
-				<tr>
-					<td><strong>Address</strong></td>
-						<td>
-							{% if address.street_name %}
-								{{ address.street_name }}
-								{% if address.cross_street1%}
-									{% if address.cross_street2%}
-									<em>between</em> {{ address.cross_street1 }} <em>and</em> {{ address.cross_street2 }}
-									{% else %}
-									<em>near</em> {{ address.cross_street1 }}
-									{% endif %}
-								{% endif %}
-								<br/>
-							{% endif %}
-							{{ address.city }}, {{ address.state }} {% if address.zipcode %} {{ address.zip_code }} {% endif %}
-						</td>
-				</tr>
-			{% endif %}
-		{% endwith %}
-		{% if detail and current_user.is_administrator %}
-			{% if incident.creator %}
-				<tr>
-					<td><strong>Creator</strong></td>
-					<td><a href="{{ url_for('main.profile', username=incident.creator.username)}}">{{ incident.creator.username }}</a></td>
-				</tr>
-			{% endif %}
-			{% if incident.last_updated_by %}
-				<tr>
-					<td><strong>Last Edited By</strong></td>
-					<td><a href="{{ url_for('main.profile', username=incident.last_updated_by.username)}}">{{ incident.last_updated_by.username }}</a></td>
-				</tr>
-			{% endif %}
-		{% endif %}
-
-
-{% block js_footer %}
-	<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/incidentDescription.js') }}"></script>
-{% endblock %}
+		{{ address.city }}, {{ address.state }} {% if address.zipcode %} {{ address.zip_code }} {% endif %}
+	</td>
+</tr>
+{% endif %}
+{% endwith %}
+{% if detail and current_user.is_administrator %}
+{% if incident.creator %}
+<tr>
+	<td><strong>Creator</strong></td>
+	<td><a href="{{ url_for('main.profile', username=incident.creator.username)}}">{{ incident.creator.username }}</a>
+	</td>
+</tr>
+{% endif %}
+{% if incident.last_updated_by %}
+<tr>
+	<td><strong>Last Edited By</strong></td>
+	<td><a href="{{ url_for('main.profile', username=incident.last_updated_by.username)}}">{{
+			incident.last_updated_by.username }}</a></td>
+</tr>
+{% endif %}
+{% endif %}

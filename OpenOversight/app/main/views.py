@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import sys
@@ -11,6 +12,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_login import current_user, login_required, login_user
@@ -58,10 +60,10 @@ from ..utils import (
     get_or_create,
     get_random_image,
     replace_list,
-    roster_lookup,
     serve_image,
     set_dynamic_default,
     upload_image_to_s3_and_store_in_db,
+    validate_redirect_url,
 )
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
@@ -77,8 +79,8 @@ from .forms import (
     EditTextForm,
     FaceTag,
     FindOfficerForm,
-    FindOfficerIDForm,
     IncidentForm,
+    IncidentListForm,
     OfficerLinkForm,
     SalaryForm,
     TextForm,
@@ -104,7 +106,11 @@ def static_routes():
 
 
 def redirect_url(default="index"):
-    return request.args.get("next") or request.referrer or url_for(default)
+    return (
+        validate_redirect_url(session.get("next"))
+        or request.referrer
+        or url_for(default)
+    )
 
 
 @sitemap_include
@@ -143,9 +149,11 @@ def get_officer():
                 else None,
                 rank=form.data["rank"] if form.data["rank"] != "Not Sure" else None,
                 unit=form.data["unit"] if form.data["unit"] != "Not Sure" else None,
+                current_job=form.data["current_job"] or None,  # set to None if False
                 min_age=form.data["min_age"],
                 max_age=form.data["max_age"],
-                name=form.data["name"],
+                first_name=form.data["first_name"],
+                last_name=form.data["last_name"],
                 badge=form.data["badge"],
                 unique_internal_identifier=form.data["unique_internal_identifier"],
             ),
@@ -158,25 +166,15 @@ def get_officer():
     )
 
 
-@main.route("/tagger_find", methods=["GET", "POST"])
-def get_ooid():
-    form = FindOfficerIDForm()
-    if form.validate_on_submit():
-        return redirect(url_for("main.get_tagger_gallery"), code=307)
-    else:
-        current_app.logger.info(form.errors)
-    return render_template("input_find_ooid.html", form=form)
-
-
 @sitemap_include
 @main.route("/label", methods=["GET", "POST"])
 def get_started_labeling():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.by_email(form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            return redirect(request.args.get("next") or url_for("main.index"))
+            return redirect(url_for("main.get_started_labeling"))
         flash("Invalid username or password.")
     else:
         current_app.logger.info(form.errors)
@@ -209,9 +207,10 @@ def get_tutorial():
 
 
 @main.route("/user/<username>")
+@login_required
 def profile(username):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
-        user = User.query.filter_by(username=username).one()
+        user = User.by_username(username).one()
     else:
         abort(404)
     try:
@@ -252,6 +251,11 @@ def officer_profile(officer_id):
         face_paths = []
         for face in faces:
             face_paths.append(serve_image(face.image.filepath))
+        if not face_paths:
+            # Add in the placeholder image if no faces are found
+            face_paths = [
+                url_for("static", filename="images/placeholder.png", _external=True)
+            ]
     except:  # noqa: E722
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
@@ -435,14 +439,14 @@ def display_submission(image_id):
 
 
 @main.route("/tag/<int:tag_id>")
-@login_required
 def display_tag(tag_id):
+    jsloads = ["js/tag.js"]
     try:
         tag = Face.query.filter_by(id=tag_id).one()
-        proper_path = serve_image(tag.image.filepath)
+        proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(404)
-    return render_template("tag.html", face=tag, path=proper_path)
+    return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
 
 
 @main.route("/image/classify/<int:image_id>/<int:contains_cops>", methods=["POST"])
@@ -607,16 +611,20 @@ def edit_department(department_id):
 def list_officer(
     department_id,
     page=1,
-    race=[],
-    gender=[],
-    rank=[],
+    race=None,
+    gender=None,
+    rank=None,
     min_age="16",
     max_age="100",
-    name=None,
+    last_name=None,
+    first_name=None,
     badge=None,
     unique_internal_identifier=None,
     unit=None,
+    current_job=None,
 ):
+    jsloads = ["js/select2.min.js", "js/list_officer.js"]
+
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -624,14 +632,16 @@ def list_officer(
         .all()
     )
     form_data = form.data
-    form_data["race"] = race
-    form_data["gender"] = gender
-    form_data["rank"] = rank
+    form_data["race"] = race or []
+    form_data["gender"] = gender or []
+    form_data["rank"] = rank or []
     form_data["min_age"] = min_age
     form_data["max_age"] = max_age
-    form_data["name"] = name
+    form_data["last_name"] = last_name
+    form_data["first_name"] = first_name
     form_data["badge"] = badge
-    form_data["unit"] = unit
+    form_data["unit"] = unit or []
+    form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
     OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
@@ -639,40 +649,38 @@ def list_officer(
     if not department:
         abort(404)
 
-    # Set form data based on URL
-    if request.args.get("min_age") and request.args.get("min_age") in [
-        ac[0] for ac in AGE_CHOICES
-    ]:
-        form_data["min_age"] = request.args.get("min_age")
-    if request.args.get("max_age") and request.args.get("max_age") in [
-        ac[0] for ac in AGE_CHOICES
-    ]:
-        form_data["max_age"] = request.args.get("max_age")
-    if request.args.get("page"):
-        page = int(request.args.get("page"))
-    if request.args.get("name"):
-        form_data["name"] = request.args.get("name")
-    if request.args.get("badge"):
-        form_data["badge"] = request.args.get("badge")
-    if request.args.get("unit") and request.args.get("unit") != "Not Sure":
-        form_data["unit"] = int(request.args.get("unit"))
-    if request.args.get("unique_internal_identifier"):
-        form_data["unique_internal_identifier"] = request.args.get(
-            "unique_internal_identifier"
-        )
-    if request.args.get("race") and all(
-        race in [rc[0] for rc in RACE_CHOICES] for race in request.args.getlist("race")
-    ):
-        form_data["race"] = request.args.getlist("race")
-    if request.args.get("gender") and all(
-        gender in [gc[0] for gc in GENDER_CHOICES]
-        for gender in request.args.getlist("gender")
-    ):
-        form_data["gender"] = request.args.getlist("gender")
+    age_range = {ac[0] for ac in AGE_CHOICES}
 
-    unit_choices = [
-        (unit.id, unit.descrip)
-        for unit in Unit.query.filter_by(department_id=department_id)
+    # Set form data based on URL
+    if (min_age_arg := request.args.get("min_age")) and min_age_arg in age_range:
+        form_data["min_age"] = min_age_arg
+    if (max_age_arg := request.args.get("max_age")) and max_age_arg in age_range:
+        form_data["max_age"] = max_age_arg
+    if page_arg := request.args.get("page"):
+        page = int(page_arg)
+    if last_name_arg := request.args.get("last_name"):
+        form_data["last_name"] = last_name_arg
+    if first_name_arg := request.args.get("first_name"):
+        form_data["first_name"] = first_name_arg
+    if badge_arg := request.args.get("badge"):
+        form_data["badge"] = badge_arg
+    if uid := request.args.get("unique_internal_identifier"):
+        form_data["unique_internal_identifier"] = uid
+    if (races := request.args.getlist("race")) and all(
+        race in [rc[0] for rc in RACE_CHOICES] for race in races
+    ):
+        form_data["race"] = races
+    if (genders := request.args.getlist("gender")) and all(
+        # Every time you complain we add a new gender
+        gender in [gc[0] for gc in GENDER_CHOICES]
+        for gender in genders
+    ):
+        form_data["gender"] = genders
+
+    unit_choices = ["Not Sure"] + [
+        uc[0]
+        for uc in db.session.query(Unit.descrip)
+        .filter_by(department_id=department_id)
         .order_by(Unit.descrip.asc())
         .all()
     ]
@@ -680,13 +688,19 @@ def list_officer(
         jc[0]
         for jc in db.session.query(Job.job_title, Job.order)
         .filter_by(department_id=department_id)
-        .order_by(Job.order)
+        .order_by(Job.job_title)
         .all()
     ]
-    if request.args.get("rank") and all(
-        rank in rank_choices for rank in request.args.getlist("rank")
+    if (units := request.args.getlist("unit")) and all(
+        unit in unit_choices for unit in units
     ):
-        form_data["rank"] = request.args.getlist("rank")
+        form_data["unit"] = units
+    if (ranks := request.args.getlist("rank")) and all(
+        rank in rank_choices for rank in ranks
+    ):
+        form_data["rank"] = ranks
+    if current_job_arg := request.args.get("current_job"):
+        form_data["current_job"] = current_job_arg
 
     officers = filter_by_form(form_data, Officer.query, department_id).filter(
         Officer.department_id == department_id
@@ -706,7 +720,7 @@ def list_officer(
         "race": RACE_CHOICES,
         "gender": GENDER_CHOICES,
         "rank": [(rc, rc) for rc in rank_choices],
-        "unit": [("Not Sure", "Not Sure")] + unit_choices,
+        "unit": [(uc, uc) for uc in unit_choices],
     }
 
     next_url = url_for(
@@ -718,10 +732,12 @@ def list_officer(
         rank=form_data["rank"],
         min_age=form_data["min_age"],
         max_age=form_data["max_age"],
-        name=form_data["name"],
+        last_name=form_data["last_name"],
+        first_name=form_data["first_name"],
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
+        current_job=form_data["current_job"],
     )
     prev_url = url_for(
         "main.list_officer",
@@ -732,10 +748,12 @@ def list_officer(
         rank=form_data["rank"],
         min_age=form_data["min_age"],
         max_age=form_data["max_age"],
-        name=form_data["name"],
+        last_name=form_data["last_name"],
+        first_name=form_data["first_name"],
         badge=form_data["badge"],
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
+        current_job=form_data["current_job"],
     )
 
     return render_template(
@@ -747,6 +765,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
+        jsloads=jsloads,
     )
 
 
@@ -762,15 +781,38 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         ranks = Job.query.filter_by(department_id=department_id)
         if is_sworn_officer:
             ranks = ranks.filter_by(is_sworn_officer=True)
-        ranks = ranks.order_by(Job.order.asc()).all()
+        ranks = ranks.order_by(Job.job_title).all()
         rank_list = [(rank.id, rank.job_title) for rank in ranks]
     else:
         ranks = Job.query.all()  # Not filtering by is_sworn_officer
-        rank_list = list(
-            set([(rank.id, rank.job_title) for rank in ranks])
-        )  # Prevent duplicate ranks
+        # Prevent duplicate ranks
+        rank_list = sorted(
+            set((rank.id, rank.job_title) for rank in ranks),
+            key=lambda x: x[1],
+        )
 
     return jsonify(rank_list)
+
+
+@main.route("/department/<int:department_id>/units")
+@main.route("/units")
+def get_dept_units(department_id=None):
+    if not department_id:
+        department_id = request.args.get("department_id")
+
+    if department_id:
+        units = Unit.query.filter_by(department_id=department_id)
+        units = units.order_by(Unit.descrip).all()
+        unit_list = [(unit.id, unit.descrip) for unit in units]
+    else:
+        units = Unit.query.all()
+        # Prevent duplicate units
+        unit_list = sorted(
+            set((unit.id, unit.descrip) for unit in units),
+            key=lambda x: x[1],
+        )
+
+    return jsonify(unit_list)
 
 
 @main.route("/officer/new", methods=["GET", "POST"])
@@ -868,19 +910,16 @@ def delete_tag(tag_id):
         if current_user.ac_department_id != tag.officer.department_id:
             abort(403)
 
+    officer_id = tag.officer_id
     try:
         db.session.delete(tag)
         db.session.commit()
         flash("Deleted this tag")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error classifying image: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
-    return redirect(url_for("main.index"))
+        current_app.logger.exception("Unknown error occurred")
+
+    return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
 @main.route("/tag/set_featured/<int:tag_id>", methods=["POST"])
@@ -1046,22 +1085,6 @@ def complete_tagging(image_id):
         return redirect(url_for("main.label_data", department_id=department_id))
     else:
         return redirect(url_for("main.label_data"))
-
-
-@main.route("/tagger_gallery/<int:page>", methods=["GET", "POST"])
-@main.route("/tagger_gallery", methods=["GET", "POST"])
-def get_tagger_gallery(page=1):
-    form = FindOfficerIDForm()
-    if form.validate_on_submit():
-        OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
-        form_data = form.data
-        officers = roster_lookup(form_data).paginate(page, OFFICERS_PER_PAGE, False)
-        return render_template(
-            "tagger_gallery.html", officers=officers, form=form, form_data=form_data
-        )
-    else:
-        current_app.logger.info(form.errors)
-        return redirect(url_for("main.get_ooid"), code=307)
 
 
 @main.route("/complaint", methods=["GET", "POST"])
@@ -1302,9 +1325,14 @@ def upload(department_id, officer_id=None):
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
         return jsonify(error="File type not allowed!"), 415
-    image = upload_image_to_s3_and_store_in_db(
-        file_to_upload, current_user.get_id(), department_id=department_id
-    )
+
+    try:
+        image = upload_image_to_s3_and_store_in_db(
+            file_to_upload, current_user.get_id(), department_id=department_id
+        )
+    except ValueError:
+        # Raised if MIME type not allowed
+        return jsonify(error="Invalid data type!"), 415
 
     if image:
         db.session.add(image)
@@ -1358,26 +1386,72 @@ class IncidentApi(ModelView):
     department_check = True
 
     def get(self, obj_id):
+        if obj_id:
+            # Single-item view
+            return super(IncidentApi, self).get(obj_id)
+
+        # List view
         if request.args.get("page"):
             page = int(request.args.get("page"))
         else:
             page = 1
-        if request.args.get("department_id"):
-            department_id = request.args.get("department_id")
+
+        form = IncidentListForm()
+        incidents = self.model.query
+
+        dept = None
+        if department_id := request.args.get("department_id"):
             dept = Department.query.get_or_404(department_id)
-            obj = (
-                self.model.query.filter_by(department_id=department_id)
-                .order_by(getattr(self.model, self.order_by).desc())
-                .paginate(page, self.per_page, False)
+            form.department_id.data = department_id
+            incidents = incidents.filter_by(department_id=department_id)
+
+        if report_number := request.args.get("report_number"):
+            form.report_number.data = report_number
+            incidents = incidents.filter(
+                Incident.report_number.contains(report_number.strip())
             )
-            return render_template(
-                "{}_list.html".format(self.model_name),
-                objects=obj,
-                url="main.{}_api".format(self.model_name),
-                department=dept,
-            )
-        else:
-            return super(IncidentApi, self).get(obj_id)
+
+        if occurred_before := request.args.get("occurred_before"):
+            before_date = datetime.datetime.strptime(occurred_before, "%Y-%m-%d").date()
+            form.occurred_before.data = before_date
+            incidents = incidents.filter(self.model.date < before_date)
+
+        if occurred_after := request.args.get("occurred_after"):
+            after_date = datetime.datetime.strptime(occurred_after, "%Y-%m-%d").date()
+            form.occurred_after.data = after_date
+            incidents = incidents.filter(self.model.date > after_date)
+
+        incidents = incidents.order_by(
+            getattr(self.model, self.order_by).desc()
+        ).paginate(page, self.per_page, False)
+
+        url = "main.{}_api".format(self.model_name)
+        next_url = url_for(
+            url,
+            page=incidents.next_num,
+            department_id=department_id,
+            report_number=report_number,
+            occurred_after=occurred_after,
+            occurred_before=occurred_before,
+        )
+        prev_url = url_for(
+            url,
+            page=incidents.prev_num,
+            department_id=department_id,
+            report_number=report_number,
+            occurred_after=occurred_after,
+            occurred_before=occurred_before,
+        )
+
+        return render_template(
+            "{}_list.html".format(self.model_name),
+            form=form,
+            incidents=incidents,
+            url=url,
+            next_url=next_url,
+            prev_url=prev_url,
+            department=dept,
+        )
 
     def get_new_form(self):
         form = self.form()

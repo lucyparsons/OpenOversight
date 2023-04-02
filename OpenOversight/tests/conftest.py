@@ -7,7 +7,8 @@ import threading
 import time
 import uuid
 from io import BytesIO
-from typing import List
+from pathlib import Path
+from typing import List, Optional
 
 import pytest
 from faker import Faker
@@ -129,12 +130,14 @@ def generate_officer():
     )
 
 
-def build_assignment(officer: Officer, units: List[Unit], jobs: Job):
+def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
+    unit = random.choice(units)
+    unit_id = unit.id if unit else None
     return models.Assignment(
         star_no=pick_star(),
         job_id=random.choice(jobs).id,
         officer=officer,
-        unit_id=random.choice(units).id,
+        unit_id=unit_id,
         star_date=pick_date(officer.full_name().encode("utf-8")),
         resign_date=pick_date(officer.full_name().encode("utf-8")),
     )
@@ -310,6 +313,7 @@ def add_mockdata(session):
     ]
     session.add_all(test_units)
     session.commit()
+    test_units.append(None)
 
     test_images = [
         models.Image(
@@ -408,6 +412,26 @@ def add_mockdata(session):
     session.add(test_unconfirmed_user)
     session.commit()
 
+    test_disabled_user = models.User(
+        email="may@example.org",
+        username="may",
+        password="yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_disabled_user)
+    session.commit()
+
+    test_modified_disabled_user = models.User(
+        email="sam@example.org",
+        username="sam",
+        password="the yam",
+        confirmed=True,
+        is_disabled=True,
+    )
+    session.add(test_modified_disabled_user)
+    session.commit()
+
     test_addresses = [
         models.Location(
             street_name="Test St",
@@ -486,7 +510,9 @@ def add_mockdata(session):
         models.Incident(
             date=datetime.datetime(2019, 1, 15),
             report_number="39",
-            description="A test description that has over 300 chars. The purpose is to see how to display a larger descrption. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Descriptions can get lengthy. So lengthy. It is a description with a lot to say. Lengthy lengthy lengthy.",
+            description=(
+                Path(__file__).parent / "description_overflow.txt"
+            ).read_text(),
             department_id=2,
             address=test_addresses[1],
             license_plates=[test_license_plates[0]],

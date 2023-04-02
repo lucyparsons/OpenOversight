@@ -498,11 +498,13 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
+        login_ac(client)
+        creator = User.query.get(1)
         text_contents = "Hello it me"
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            creator_id=1,
+            creator_id=creator.id,
             date_created=datetime.now(),
             date_updated=datetime.now(),
         )
@@ -513,6 +515,32 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
             follow_redirects=True,
         )
         # ensures we're looking for a description that exists
+        response_text = rv.data.decode("utf-8")
         assert description in officer.descriptions
         assert rv.status_code == 200
-        assert text_contents in rv.data.decode("utf-8")
+        assert text_contents in response_text
+        assert creator.username in response_text
+
+
+def test_anonymous_users_cannot_see_description_creators(mockdata, client, session):
+    with current_app.test_request_context():
+        officer = Officer.query.first()
+        ac = User.query.filter_by(email="raq929@example.org").first()
+        text_contents = "All we have is each other"
+        description = Description(
+            text_contents=text_contents,
+            officer_id=officer.id,
+            creator_id=ac.id,
+            date_created=datetime.now(),
+            date_updated=datetime.now(),
+        )
+        db.session.add(description)
+        db.session.commit()
+
+        rv = client.get(
+            url_for("main.officer_profile", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert description in officer.descriptions
+        assert rv.status_code == 200
+        assert ac.username not in rv.data.decode("utf-8")

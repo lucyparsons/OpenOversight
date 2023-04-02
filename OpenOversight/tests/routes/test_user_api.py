@@ -315,3 +315,56 @@ def test_admin_can_approve_user(mockdata, client, session):
 
         user = User.query.get(user_id)
         assert user.approved
+
+
+@pytest.mark.parametrize(
+    "currently_approved, currently_confirmed, approve_registration_config, should_send_email",
+    [
+        # Approving unconfirmed user sends email
+        (False, False, True, True),
+        # Approving unconfirmed user does not send email if approve_registration config is not set
+        (False, False, False, False),
+        # Updating approved user does not send email
+        (True, False, True, False),
+        # Approving confirmed user does not send email
+        (False, True, True, False),
+    ],
+)
+def test_admin_approval_sends_confirmation_email(
+    currently_approved,
+    currently_confirmed,
+    should_send_email,
+    approve_registration_config,
+    mockdata,
+    client,
+    session,
+):
+    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    with current_app.test_request_context():
+        login_admin(client)
+
+        user = User.query.filter_by(is_administrator=False).first()
+        user_id = user.id
+        user.approved = currently_approved
+        user.confirmed = currently_confirmed
+        db.session.commit()
+
+        user = User.query.get(user_id)
+        assert user.approved == currently_approved
+        assert user.confirmed == currently_confirmed
+
+        form = EditUserForm(approved=True, submit=True, confirmed=currently_confirmed)
+
+        rv = client.post(
+            url_for("auth.edit_user", user_id=user_id),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            "new confirmation email" in rv.data.decode("utf-8")
+        ) == should_send_email
+        assert "updated!" in rv.data.decode("utf-8")
+
+        user = User.query.get(user_id)
+        assert user.approved
