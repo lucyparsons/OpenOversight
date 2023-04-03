@@ -5,16 +5,16 @@ import os
 import traceback
 import uuid
 
+import pandas as pd
+import pytest
 from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-import pandas as pd
-import pytest
 from OpenOversight.app.commands import (
     add_department,
     add_job_title,
-    bulk_add_officers,
     advanced_csv_import,
+    bulk_add_officers,
     create_officer_from_row,
 )
 from OpenOversight.app.models import (
@@ -185,7 +185,7 @@ def test_add_job_title__different_departments(session, department):
 
 
 def test_csv_import_new(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -199,7 +199,7 @@ def test_csv_import_new(csvfile, monkeypatch):
 
 
 def test_csv_import_update(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     n_existing = Officer.query.count()
 
     assert n_existing > 0
@@ -212,7 +212,7 @@ def test_csv_import_update(csvfile, monkeypatch):
 
 
 def test_csv_import_idempotence(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers
     Officer.query.delete()
 
@@ -283,7 +283,7 @@ def test_csv_changed_static_field(csvfile):
 
 
 def test_csv_new_assignment(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers and assignments
     Assignment.query.delete()
     Officer.query.delete()
@@ -324,7 +324,7 @@ def test_csv_new_assignment(csvfile, monkeypatch):
 
 
 def test_csv_new_name(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     df = pd.read_csv(csvfile)
     officer_uid = df.loc[0, "unique_internal_identifier"]
     assert officer_uid
@@ -342,7 +342,7 @@ def test_csv_new_name(csvfile, monkeypatch):
 
 
 def test_csv_new_officer(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     df = pd.read_csv(csvfile)
 
     n_rows = len(df.index)
@@ -352,28 +352,32 @@ def test_csv_new_officer(csvfile, monkeypatch):
     assert n_officers > 0
 
     new_uid = str(uuid.uuid4())
-    new_officer = {  # Must match fields in csvfile
-        "department_id": 1,
-        "unique_internal_identifier": new_uid,
-        "first_name": "FOO",
-        "last_name": "BAR",
-        "middle_initial": None,
-        "suffix": None,
-        "gender": "F",
-        "race": "BLACK",
-        "employment_date": None,
-        "birth_year": None,
-        "star_no": 666,
-        "job_title": "CAPTAIN",
-        "unit": None,
-        "star_date": None,
-        "resign_date": None,
-        "salary": 1.23,
-        "salary_year": 2019,
-        "salary_is_fiscal_year": True,
-        "overtime_pay": 4.56,
-    }
-    df = df.append([new_officer])
+    new_officer = pd.DataFrame.from_dict(
+        [
+            {  # Must match fields in csvfile
+                "department_id": 1,
+                "unique_internal_identifier": new_uid,
+                "first_name": "FOO",
+                "last_name": "BAR",
+                "middle_initial": None,
+                "suffix": None,
+                "gender": "F",
+                "race": "BLACK",
+                "employment_date": None,
+                "birth_year": None,
+                "star_no": 666,
+                "job_title": "CAPTAIN",
+                "unit": None,
+                "star_date": None,
+                "resign_date": None,
+                "salary": 1.23,
+                "salary_year": 2019,
+                "salary_is_fiscal_year": True,
+                "overtime_pay": 4.56,
+            }
+        ]
+    )
+    df = pd.concat([df, new_officer])
     df.to_csv(csvfile)
 
     n_created, n_updated = bulk_add_officers([csvfile], standalone_mode=False)
@@ -387,7 +391,7 @@ def test_csv_new_officer(csvfile, monkeypatch):
 
 
 def test_csv_new_salary(csvfile, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers and salaries
     Salary.query.delete()
     Officer.query.delete()
@@ -427,8 +431,10 @@ def test_csv_new_salary(csvfile, monkeypatch):
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
-def test_bulk_add_officers__success(session, department_with_ranks, csv_path, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+def test_bulk_add_officers__success(
+    session, department_with_ranks, csv_path, monkeypatch
+):
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # generate two officers with different names
     first_officer = generate_officer()
     first_officer.department = department_with_ranks
@@ -569,8 +575,10 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     assert isinstance(result.exception, MultipleResultsFound)
 
 
-def test_bulk_add_officers__write_static_null_field(session, department, csv_path, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+def test_bulk_add_officers__write_static_null_field(
+    session, department, csv_path, monkeypatch
+):
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # start with an officer whose birth_year is missing
     officer = generate_officer()
     officer.birth_year = None
@@ -661,8 +669,10 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
     assert officer.birth_year == old_birth_year
 
 
-def test_bulk_add_officers__write_static_field__flag_set(session, department, csv_path, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+def test_bulk_add_officers__write_static_field__flag_set(
+    session, department, csv_path, monkeypatch
+):
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # officer with birth year set
     officer = generate_officer()
     officer.birth_year = 1979
@@ -710,7 +720,7 @@ def test_bulk_add_officers__write_static_field__flag_set(session, department, cs
 
 
 def test_bulk_add_officers__no_create_flag(session, department, csv_path, monkeypatch):
-    monkeypatch.setattr('builtins.input', lambda: "y")
+    monkeypatch.setattr("builtins.input", lambda: "y")
     # department with one officer
     department_id = department.id
     officer = generate_officer()
@@ -791,7 +801,11 @@ def test_advanced_csv_import__success(session, department_with_ranks, test_csv_d
     session.add(assignment)
 
     salary = Salary(
-        id=33001, salary=30000, officer_id=officer.id, year=2018, is_fiscal_year=False,
+        id=33001,
+        salary=30000,
+        officer_id=officer.id,
+        year=2018,
+        is_fiscal_year=False,
     )
     session.add(salary)
 
@@ -1241,7 +1255,8 @@ def test_advanced_csv_import__wrong_department(
 
     # run command with wrong department name
     result = run_command_print_output(
-        advanced_csv_import, [other_department.name, "--officers-csv", officers_csv],
+        advanced_csv_import,
+        [other_department.name, "--officers-csv", officers_csv],
     )
 
     # expect command to fail because the department name provided to the
@@ -1329,7 +1344,8 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
         session.add(department)
         session.commit()
         lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow").one_or_none()
+            first_name="NewOfficerFromRow"
+        ).one_or_none()
         assert lookup_officer is None
 
         row = {
@@ -1342,7 +1358,8 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
         create_officer_from_row(row, department.id)
 
         lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow").one_or_none()
+            first_name="NewOfficerFromRow"
+        ).one_or_none()
 
         # Was an officer created in the database?
         assert lookup_officer is not None

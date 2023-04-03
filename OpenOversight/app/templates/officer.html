@@ -109,35 +109,27 @@
   <div class="row">
     <div class="col-sm-12 col-md-6">
       {% include "partials/officer_assignment_history.html" %}
+      {% if officer.descriptions or is_admin_or_coordinator %}
+        {% include "partials/officer_descriptions.html" %}
+      {% endif %}
+      {# Notes are for internal use #}
+      {% if is_admin_or_coordinator %}
+        {% include "partials/officer_notes.html" %}
+      {% endif %}
     </div> {# end col #}
 
-    {% if officer.salaries or is_admin_or_coordinator %}
-      <div class='col-sm-12 col-md-6'>
-        {% include "partials/officer_salary.html" %}
-      </div>{# end col #}
-    {% endif %}
-
-    {% if officer.incidents or is_admin_or_coordinator %}
-      <div class='col-sm-12 col-md-6'>
-        {% include "partials/officer_incidents.html" %}
-    	</div>{# end col #}
-    {% endif %}
-
-    {% if officer.descriptions or is_admin_or_coordinator %}
-      <div class='col-sm-12 col-md-6'>
-        {% include "partials/officer_descriptions.html" %}
-      </div>{# end col #}
-    {% endif %}
-
-    {# Notes are for internal use #}
-    {% if is_admin_or_coordinator %}
     <div class='col-sm-12 col-md-6'>
-      {% include "partials/officer_notes.html" %}
+      {% if officer.salaries or is_admin_or_coordinator %}
+        {% include "partials/officer_salary.html" %}
+      {% endif %}
+      {% if officer.incidents or is_admin_or_coordinator %}
+        {% include "partials/officer_incidents.html" %}
+      {% endif %}
+      {% with obj=officer %}
+        {% include "partials/links_and_videos_row.html" %}
+      {% endwith %}
     </div>{# end col #}
-    {% endif %}
+
   </div> {# end row #}
-  {% with obj=officer %}
-    {% include "partials/links_and_videos_row.html" %}
-  {% endwith %}
 </div> {# end container #}
 {% endblock %}

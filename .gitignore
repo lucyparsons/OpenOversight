@@ -95,5 +95,4 @@ vagrant/puppet/.tmp
 
 node_modules/
 OpenOverSight/app/static/dist/
-
-
+static/

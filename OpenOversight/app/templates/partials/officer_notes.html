@@ -2,28 +2,25 @@
 
 <ul class="list-group">
     {% for note in officer.notes %}
-        <li class="list-group-item">
-            <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em>
-            <br />
-            {{ note.text_contents | markdown }}
-            <em>{{ note.creator.username }}</em>
-            {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
-                <a href="{{ url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit' }}">
-                    <span class="sr-only">Edit</span>
-                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-                </a>
-                <a href="{{ url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/delete' }}">
-                    <span class="sr-only">Delete</span>
-                    <i class="fa fa-trash-o" aria-hidden="true"></i>
-                </a>
-            {% endif %}
-        </li>
+    <li class="list-group-item">
+        <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em>
+        <br />
+        {{ note.text_contents | markdown }}
+        <em>{{ note.creator.username }}</em>
+        {% if note.creator_id == current_user.get_id() or current_user.is_administrator %}
+        <a href="{{ url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/edit' }}">
+            <span class="sr-only">Edit</span>
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+        </a>
+        <a href="{{ url_for('main.note_api', officer_id=officer.id, obj_id=note.id) + '/delete' }}">
+            <span class="sr-only">Delete</span>
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 
-<a
-    href="{{ url_for('main.note_api', officer_id=officer.id) }}"
-    class="btn btn-primary"
->
+<a href="{{ url_for('main.note_api', officer_id=officer.id) }}" class="btn btn-primary">
     New Note
 </a>

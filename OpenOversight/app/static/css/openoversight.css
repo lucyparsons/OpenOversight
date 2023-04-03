@@ -16,6 +16,10 @@ body {
   height: 100px;
 }
 
+div[role=main] {
+    padding-bottom: 30px;
+}
+
 .social:hover {
     color: #000000;
      -webkit-transform: scale(1.1);
@@ -479,6 +483,11 @@ tr:hover .row-actions {
     padding: 5px 0;
 }
 
+.filter-sidebar .panel-body-long {
+    max-height: 25vh;
+    overflow-y: auto;
+}
+
 .filter-sidebar .panel-heading .accordion-toggle:after {
     font-family: 'Glyphicons Halflings';
     content: "\e252";
@@ -527,10 +536,10 @@ tr:hover .row-actions {
     .console .button-explanation {
     height:70px;
     }
-    
+
 }
 
-    
+
 .console .button-explanation .text {
     display:none;
 }
@@ -571,4 +580,16 @@ tr:hover .row-actions {
 .officer-face {
     min-width: 200px;
     min-height: 200px;
+}
+
+.face-wrap {
+    margin: auto;
+    position: relative;
+}
+
+#face-tag-frame {
+    position: absolute;
+    border: 2px solid crimson;
+    visibility: hidden;
+    width: auto
 }

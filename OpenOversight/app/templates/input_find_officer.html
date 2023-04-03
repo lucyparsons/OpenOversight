@@ -21,7 +21,7 @@
     </div>
   <form action="{{ url_for('main.get_officer') }}" method="post" class="form">
   {{ form.hidden_tag() }}
-	  <div class="row form-group">
+      <div class="row form-group">
         <div class="col-xs-12">
             <ul class="nav nav-pills nav-justified thumbnail setup-panel">
                 <li class="active"><a href="#step-1">
@@ -42,8 +42,8 @@
                 </a></li>
             </ul>
         </div>
-	</div>
-    <div class="row setup-content" id="step-1">
+    </div>
+    <div class="row setup-content" id="step-1" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" data-units-url="{{ url_for('main.get_dept_units') }}">
         <div class="col-xs-12">
             <div class="col-md-12 well text-center">
                 <h2><small>Select Department</small></h2>
@@ -57,8 +57,12 @@
                 </p>
                 {% endfor %}
 
-                <br>
-                <button id="activate-step-2" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" class="btn btn-primary btn-lg">Next Step</button>
+                <br><br>
+                <div>
+                    <a id="activate-step-2" class="next" href="#step-2">
+                        <button class="btn btn-primary btn-lg">Next Step</button>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -67,8 +71,16 @@
             <div class="col-md-12 well text-center">
                 <h2><small>Do you remember any part of the Officer's last name?</small></h2>
                 <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.name(class="form-control") }}
-                  {% for error in form.name.errors %}
+                  {{ form.last_name(class="form-control") }}
+                  {% for error in form.last_name.errors %}
+                      <p><span style="color: red;">[{{ error }}]</span></p>
+                  {% endfor %}
+                </div>
+
+                <h2><small>Do you remember any part of the Officer's first name?</small></h2>
+                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                  {{ form.first_name(class="form-control") }}
+                  {% for error in form.first_name.errors %}
                       <p><span style="color: red;">[{{ error }}]</span></p>
                   {% endfor %}
                 </div>
@@ -88,9 +100,18 @@
                         <p><span style="color: red;">[{{ error }}]</span></p>
                     {% endfor %}
                     </div>
-                </div>    
-                <br>
-                <button id="activate-step-3" class="btn btn-primary btn-lg">Next Step</button>
+                </div>
+
+                <br><br>
+                <div>
+                    <a class="btn btn-default btn-lg" href="#step-1">
+                        Previous Step
+                    </a>
+                    &nbsp;
+                    <a id="activate-step-3" class="next" href="#step-3">
+                        <button class="btn btn-primary btn-lg">Next Step</button>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -105,16 +126,41 @@
                 {% endfor %}
                 </div>
 
-                <div id="show_img_div">
-                <p><a id="show_img">Show rank shoulder patches as reference</a></p>
+                <div id="show-img-div">
+                <p><a id="show-img">Show rank shoulder patches as reference</a></p>
                 </div>
-                <div id="hidden_img" style="display:none;">
-                  <p><a id="hide_img">Hide rank shoulder patches</a></p>
+                <div id="hidden-img" style="display:none;">
+                  <p><a id="hide-img">Hide rank shoulder patches</a></p>
                   <img src="{{url_for('static', filename='images/OfficerRank.png')}}" width="50%" height="50%">
                 </div>
 
-                <br>
-                <button id="activate-step-4" class="btn btn-primary btn-lg">Next Step</button>
+                <h2><small>Officer Unit</small></h2>
+                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                {{ form.unit(class="form-control") }}
+                {% for error in form.unit.errors %}
+                    <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+                </div>
+
+                <h2><small>Currently Employed</small></h2>
+                <span class="text-muted" style="position: relative; top: -0.8em">(in this unit and/or rank, if specified)</span>
+                <div class="input-group input-group-sm col-md-4 col-md-offset-4">
+                {{ form.current_job(class="form-control", style="box-shadow: none") }}
+                {% for error in form.current_job.errors %}
+                    <p><span style="color: red;">[{{ error }}]</span></p>
+                {% endfor %}
+                </div>
+
+                <br><br>
+                <div>
+                    <a class="btn btn-default btn-lg" href="#step-2">
+                        Previous Step
+                    </a>
+                    &nbsp;
+                    <a id="activate-step-4" class="next" href="#step-4">
+                        <button class="btn btn-primary btn-lg">Next Step</button>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -148,8 +194,14 @@
                 {% endfor %}
                 </div>
 
-                <br>
-                <input class="btn btn-primary btn-lg" type="submit" value="Generate officer gallery" id="user-notification" name="submit-officer-search-form" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
+                <br><br>
+                <div>
+                    <a class="btn btn-default btn-lg" href="#step-3">
+                        Previous Step
+                    </a>
+                    &nbsp;
+                    <input class="btn btn-primary btn-lg next" type="submit" value="Generate officer gallery" id="user-notification" name="submit-officer-search-form" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
+                </div>
             </div>
         </div>
     </div>
