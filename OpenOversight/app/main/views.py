@@ -62,6 +62,7 @@ from ..utils import (
     replace_list,
     serve_image,
     set_dynamic_default,
+    unit_choices,
     upload_image_to_s3_and_store_in_db,
     validate_redirect_url,
 )
@@ -349,6 +350,7 @@ def edit_assignment(officer_id, assignment_id):
         .all()
     )
     form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
+    form.unit.query = unit_choices(officer.department_id)
     if form.unit.data and type(form.unit.data) == int:
         form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
     if form.validate_on_submit():
