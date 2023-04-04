@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import (
     current_app,
     flash,
@@ -307,7 +309,7 @@ def get_users():
 def edit_user(user_id):
     user = User.query.get(user_id)
     if not user:
-        return render_template("404.html"), 404
+        return render_template("404.html"), HTTPStatus.NOT_FOUND
 
     if request.method == "GET":
         form = EditUserForm(obj=user)
@@ -353,7 +355,7 @@ def edit_user(user_id):
 def delete_user(user_id):
     user = User.query.get(user_id)
     if not user or user.is_administrator:
-        return render_template("403.html"), 403
+        return render_template("403.html"), HTTPStatus.FORBIDDEN
     if request.method == "POST":
         username = user.username
         db.session.delete(user)
