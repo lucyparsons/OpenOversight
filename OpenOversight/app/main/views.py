@@ -1,4 +1,5 @@
 import datetime
+from http import HTTPStatus
 import os
 import re
 import sys
@@ -158,7 +159,7 @@ def get_officer():
                 badge=form.data["badge"],
                 unique_internal_identifier=form.data["unique_internal_identifier"],
             ),
-            code=302,
+            code=HTTPStatus.FOUND,
         )
     else:
         current_app.logger.info(form.errors)
@@ -213,7 +214,7 @@ def profile(username):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
         user = User.by_username(username).one()
     else:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     try:
         pref = User.query.filter_by(id=current_user.get_id()).one().dept_pref
         department = Department.query.filter_by(id=pref).one().name
@@ -228,7 +229,7 @@ def officer_profile(officer_id):
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
         exception_type, value, full_tback = sys.exc_info()
         current_app.logger.error(
@@ -300,7 +301,7 @@ def add_assignment(officer_id):
     )
     if not officer:
         flash("Officer not found")
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     if form.validate_on_submit():
         if current_user.is_administrator or (
@@ -313,13 +314,13 @@ def add_assignment(officer_id):
             except IntegrityError:
                 flash("Assignment already exists")
             return redirect(
-                url_for("main.officer_profile", officer_id=officer_id), code=302
+                url_for("main.officer_profile", officer_id=officer_id), code=HTTPStatus.FOUND
             )
         elif (
             current_user.is_area_coordinator
             and not officer.department_id == current_user.ac_department_id
         ):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
     else:
         current_app.logger.info(form.errors)
         flash("Error: " + str(form.errors))
@@ -337,7 +338,7 @@ def edit_assignment(officer_id, assignment_id):
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
     assignment = Assignment.query.filter_by(id=assignment_id).one()
     form = AssignmentForm(obj=assignment)
@@ -369,7 +370,7 @@ def add_salary(officer_id):
     officer = Officer.query.filter_by(id=officer_id).first()
     if not officer:
         flash("Officer not found")
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     if form.validate_on_submit() and (
         current_user.is_administrator
@@ -393,13 +394,13 @@ def add_salary(officer_id):
             db.session.rollback()
             flash("Error adding new salary: {}".format(e))
         return redirect(
-            url_for("main.officer_profile", officer_id=officer_id), code=302
+            url_for("main.officer_profile", officer_id=officer_id), code=HTTPStatus.FOUND
         )
     elif (
         current_user.is_area_coordinator
         and not officer.department_id == current_user.ac_department_id
     ):
-        abort(403)
+        abort(HTTPStatus.FORBIDDEN)
     else:
         return render_template("add_edit_salary.html", form=form)
 
@@ -411,7 +412,7 @@ def edit_salary(officer_id, salary_id):
     if current_user.is_area_coordinator and not current_user.is_administrator:
         officer = Officer.query.filter_by(id=officer_id).one()
         if not ac_can_edit_officer(officer, current_user):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
     salary = Salary.query.filter_by(id=salary_id).one()
     form = SalaryForm(obj=salary)
@@ -433,7 +434,7 @@ def display_submission(image_id):
         image = Image.query.filter_by(id=image_id).one()
         proper_path = serve_image(image.filepath)
     except NoResultFound:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     return render_template("image.html", image=image, path=proper_path)
 
 
@@ -444,7 +445,7 @@ def display_tag(tag_id):
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
 
 
@@ -646,7 +647,7 @@ def list_officer(
     OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
     department = Department.query.filter_by(id=department_id).first()
     if not department:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     age_range = {ac[0] for ac in AGE_CHOICES}
 
@@ -831,7 +832,7 @@ def add_officer():
         and not current_user.is_administrator
         and form.department.data.id != current_user.ac_department_id
     ):
-        abort(403)
+        abort(HTTPStatus.FORBIDDEN)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
         new_formdata = request.form.copy()
@@ -863,7 +864,7 @@ def edit_officer(officer_id):
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
     add_department_query(form, current_user)
 
@@ -903,11 +904,11 @@ def delete_tag(tag_id):
 
     if not tag:
         flash("Tag not found")
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     if not current_user.is_administrator and current_user.is_area_coordinator:
         if current_user.ac_department_id != tag.officer.department_id:
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
     officer_id = tag.officer_id
     try:
@@ -929,11 +930,11 @@ def set_featured_tag(tag_id):
 
     if not tag:
         flash("Tag not found")
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     if not current_user.is_administrator and current_user.is_area_coordinator:
         if current_user.ac_department_id != tag.officer.department_id:
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
     # Set featured=False on all other tags for the same officer
     for face in Face.query.filter_by(officer_id=tag.officer_id).all():
@@ -1075,7 +1076,7 @@ def complete_tagging(image_id):
     # Select a random untagged image from the database
     image = Image.query.filter_by(id=image_id).first()
     if not image:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     image.is_tagged = True
     db.session.commit()
     flash("Marked image as completed.")
@@ -1307,7 +1308,7 @@ def upload(department_id, officer_id=None):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
-            return jsonify(error="This officer does not exist."), 404
+            return jsonify(error="This officer does not exist."), HTTPStatus.NOT_FOUND
         if not (
             current_user.is_administrator
             or (
@@ -1319,11 +1320,11 @@ def upload(department_id, officer_id=None):
                 jsonify(
                     error="You are not authorized to upload photos of this officer."
                 ),
-                403,
+                HTTPStatus.FORBIDDEN,
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
-        return jsonify(error="File type not allowed!"), 415
+        return jsonify(error="File type not allowed!"), HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
     try:
         image = upload_image_to_s3_and_store_in_db(
@@ -1331,7 +1332,7 @@ def upload(department_id, officer_id=None):
         )
     except ValueError:
         # Raised if MIME type not allowed
-        return jsonify(error="Invalid data type!"), 415
+        return jsonify(error="Invalid data type!"), HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
     if image:
         db.session.add(image)
@@ -1347,9 +1348,9 @@ def upload(department_id, officer_id=None):
             )
             db.session.add(face)
             db.session.commit()
-        return jsonify(success="Success!"), 200
+        return jsonify(success="Success!"), HTTPStatus.OK
     else:
-        return jsonify(error="Server error encountered. Try again later."), 500
+        return jsonify(error="Server error encountered. Try again later."), HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @sitemap_include
@@ -1367,10 +1368,10 @@ def privacy_oo():
 @main.route("/shutdown")  # pragma: no cover
 def server_shutdown():  # pragma: no cover
     if not current_app.testing:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
     shutdown = request.environ.get("werkzeug.server.shutdown")
     if not shutdown:
-        abort(500)
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR)
     shutdown()
     return "Shutting down..."
 
@@ -1665,7 +1666,7 @@ class OfficerLinkApi(ModelView):
             not current_user.is_administrator
             and current_user.ac_department_id != self.officer.department_id
         ):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
         if not form:
             form = self.get_new_form()
             if hasattr(form, "creator_id") and not form.creator_id.data:
@@ -1696,7 +1697,7 @@ class OfficerLinkApi(ModelView):
             not current_user.is_administrator
             and current_user.ac_department_id != self.get_department_id(obj)
         ):
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
         if request.method == "POST":
             db.session.delete(obj)
