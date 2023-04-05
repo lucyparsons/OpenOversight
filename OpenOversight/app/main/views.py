@@ -1,8 +1,8 @@
 import datetime
-from http import HTTPStatus
 import os
 import re
 import sys
+from http import HTTPStatus
 from traceback import format_exc
 
 from flask import (
@@ -186,7 +186,9 @@ def get_started_labeling():
     return render_template("label_data.html", departments=departments, form=form)
 
 
-@main.route("/sort/department/<int:department_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/sort/department/<int:department_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+)
 @login_required
 def sort_images(department_id):
     # Select a random unsorted image from the database
@@ -316,7 +318,8 @@ def add_assignment(officer_id):
             except IntegrityError:
                 flash("Assignment already exists")
             return redirect(
-                url_for("main.officer_profile", officer_id=officer_id), code=HTTPStatus.FOUND
+                url_for("main.officer_profile", officer_id=officer_id),
+                code=HTTPStatus.FOUND,
             )
         elif (
             current_user.is_area_coordinator
@@ -331,7 +334,8 @@ def add_assignment(officer_id):
 
 
 @main.route(
-    "/officer/<int:officer_id>/assignment/<int:assignment_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/officer/<int:officer_id>/assignment/<int:assignment_id>",
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
 )
 @login_required
 @ac_or_admin_required
@@ -365,7 +369,9 @@ def edit_assignment(officer_id, assignment_id):
     return render_template("edit_assignment.html", form=form)
 
 
-@main.route("/officer/<int:officer_id>/salary/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/officer/<int:officer_id>/salary/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+)
 @ac_or_admin_required
 def add_salary(officer_id):
     form = SalaryForm()
@@ -396,7 +402,8 @@ def add_salary(officer_id):
             db.session.rollback()
             flash("Error adding new salary: {}".format(e))
         return redirect(
-            url_for("main.officer_profile", officer_id=officer_id), code=HTTPStatus.FOUND
+            url_for("main.officer_profile", officer_id=officer_id),
+            code=HTTPStatus.FOUND,
         )
     elif (
         current_user.is_area_coordinator
@@ -407,7 +414,10 @@ def add_salary(officer_id):
         return render_template("add_edit_salary.html", form=form)
 
 
-@main.route("/officer/<int:officer_id>/salary/<int:salary_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/officer/<int:officer_id>/salary/<int:salary_id>",
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+)
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id, salary_id):
@@ -451,7 +461,9 @@ def display_tag(tag_id):
     return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
 
 
-@main.route("/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTP_METHOD_POST])
+@main.route(
+    "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTP_METHOD_POST]
+)
 @login_required
 def classify_submission(image_id, contains_cops):
     try:
@@ -520,7 +532,9 @@ def add_department():
         return render_template("add_edit_department.html", form=form, jsloads=jsloads)
 
 
-@main.route("/department/<int:department_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/department/<int:department_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+)
 @login_required
 @admin_required
 def edit_department(department_id):
@@ -850,7 +864,9 @@ def add_officer():
         return render_template("add_officer.html", form=form, jsloads=jsloads)
 
 
-@main.route("/officer/<int:officer_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/officer/<int:officer_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+)
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
@@ -971,8 +987,13 @@ def leaderboard():
     "/cop_face/department/<int:department_id>/image/<int:image_id>",
     methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
 )
-@main.route("/cop_face/image/<int:image_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
-@main.route("/cop_face/department/<int:department_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/cop_face/image/<int:image_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+)
+@main.route(
+    "/cop_face/department/<int:department_id>",
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+)
 @main.route("/cop_face/", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @login_required
 def label_data(department_id=None, image_id=None):
@@ -1127,7 +1148,9 @@ def submit_data():
         )
 
 
-@main.route("/download/department/<int:department_id>/officers", methods=[HTTP_METHOD_GET])
+@main.route(
+    "/download/department/<int:department_id>/officers", methods=[HTTP_METHOD_GET]
+)
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id):
     officers = (
@@ -1157,7 +1180,9 @@ def download_dept_officers_csv(department_id):
     )
 
 
-@main.route("/download/department/<int:department_id>/assignments", methods=[HTTP_METHOD_GET])
+@main.route(
+    "/download/department/<int:department_id>/assignments", methods=[HTTP_METHOD_GET]
+)
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id):
     assignments = (
@@ -1189,7 +1214,9 @@ def download_dept_assignments_csv(department_id):
     )
 
 
-@main.route("/download/department/<int:department_id>/incidents", methods=[HTTP_METHOD_GET])
+@main.route(
+    "/download/department/<int:department_id>/incidents", methods=[HTTP_METHOD_GET]
+)
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id):
     incidents = Incident.query.filter_by(department_id=department_id).all()
@@ -1213,7 +1240,9 @@ def download_incidents_csv(department_id):
     )
 
 
-@main.route("/download/department/<int:department_id>/salaries", methods=[HTTP_METHOD_GET])
+@main.route(
+    "/download/department/<int:department_id>/salaries", methods=[HTTP_METHOD_GET]
+)
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id):
     salaries = (
@@ -1263,7 +1292,9 @@ def download_dept_links_csv(department_id):
     )
 
 
-@main.route("/download/department/<int:department_id>/descriptions", methods=[HTTP_METHOD_GET])
+@main.route(
+    "/download/department/<int:department_id>/descriptions", methods=[HTTP_METHOD_GET]
+)
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id):
     notes = (
@@ -1293,7 +1324,10 @@ def all_data():
     return render_template("all_depts.html", departments=departments)
 
 
-@main.route("/submit_officer_images/officer/<int:officer_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route(
+    "/submit_officer_images/officer/<int:officer_id>",
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+)
 @login_required
 @ac_or_admin_required
 def submit_officer_images(officer_id):
@@ -1303,7 +1337,8 @@ def submit_officer_images(officer_id):
 
 @main.route("/upload/department/<int:department_id>", methods=[HTTP_METHOD_POST])
 @main.route(
-    "/upload/department/<int:department_id>/officer/<int:officer_id>", methods=[HTTP_METHOD_POST]
+    "/upload/department/<int:department_id>/officer/<int:officer_id>",
+    methods=[HTTP_METHOD_POST],
 )
 @limiter.limit("250/minute")
 def upload(department_id, officer_id=None):
@@ -1326,7 +1361,10 @@ def upload(department_id, officer_id=None):
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
-        return jsonify(error="File type not allowed!"), HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+        return (
+            jsonify(error="File type not allowed!"),
+            HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+        )
 
     try:
         image = upload_image_to_s3_and_store_in_db(
@@ -1352,7 +1390,10 @@ def upload(department_id, officer_id=None):
             db.session.commit()
         return jsonify(success="Success!"), HTTPStatus.OK
     else:
-        return jsonify(error="Server error encountered. Try again later."), HTTPStatus.INTERNAL_SERVER_ERROR
+        return (
+            jsonify(error="Server error encountered. Try again later."),
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
 
 
 @sitemap_include
@@ -1534,15 +1575,28 @@ class IncidentApi(ModelView):
 
 incident_view = IncidentApi.as_view("incident_api")
 main.add_url_rule(
-    "/incidents/", defaults={"obj_id": None}, view_func=incident_view, methods=[HTTP_METHOD_GET]
-)
-main.add_url_rule("/incidents/new", view_func=incident_view, methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
-main.add_url_rule("/incidents/<int:obj_id>", view_func=incident_view, methods=[HTTP_METHOD_GET])
-main.add_url_rule(
-    "/incidents/<int:obj_id>/edit", view_func=incident_view, methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/incidents/",
+    defaults={"obj_id": None},
+    view_func=incident_view,
+    methods=[HTTP_METHOD_GET],
 )
 main.add_url_rule(
-    "/incidents/<int:obj_id>/delete", view_func=incident_view, methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/incidents/new",
+    view_func=incident_view,
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+)
+main.add_url_rule(
+    "/incidents/<int:obj_id>", view_func=incident_view, methods=[HTTP_METHOD_GET]
+)
+main.add_url_rule(
+    "/incidents/<int:obj_id>/edit",
+    view_func=incident_view,
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+)
+main.add_url_rule(
+    "/incidents/<int:obj_id>/delete",
+    view_func=incident_view,
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
 )
 
 
@@ -1606,10 +1660,14 @@ class DescriptionApi(TextApi):
 
 note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
-    "/officer/<int:officer_id>/note/new", view_func=note_view, methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/officer/<int:officer_id>/note/new",
+    view_func=note_view,
+    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
 )
 main.add_url_rule(
-    "/officer/<int:officer_id>/note/<int:obj_id>", view_func=note_view, methods=[HTTP_METHOD_GET]
+    "/officer/<int:officer_id>/note/<int:obj_id>",
+    view_func=note_view,
+    methods=[HTTP_METHOD_GET],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/edit",

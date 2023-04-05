@@ -13,7 +13,7 @@ from ..utils import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
     add_department_query,
-    set_dynamic_default
+    set_dynamic_default,
 )
 
 

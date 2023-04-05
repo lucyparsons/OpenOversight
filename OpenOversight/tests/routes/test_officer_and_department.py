@@ -1,10 +1,10 @@
 # Routing and view tests
 import copy
 import csv
-from http import HTTPStatus
 import json
 import random
 from datetime import date, datetime
+from http import HTTPStatus
 from io import BytesIO
 
 import pytest

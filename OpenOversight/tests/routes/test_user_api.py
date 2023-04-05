@@ -4,11 +4,7 @@ from http import HTTPStatus
 import pytest
 from flask import current_app, url_for
 
-from OpenOversight.app.auth.forms import (
-    EditUserForm,
-    LoginForm,
-    RegistrationForm
-)
+from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils import HTTP_METHOD_GET, HTTP_METHOD_POST
 

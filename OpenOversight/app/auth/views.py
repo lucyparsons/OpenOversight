@@ -18,7 +18,7 @@ from ..utils import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
     set_dynamic_default,
-    validate_redirect_url
+    validate_redirect_url,
 )
 from . import auth
 from .forms import (
