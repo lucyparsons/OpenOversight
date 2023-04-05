@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from datetime import datetime
 
 import pytest
@@ -42,7 +43,7 @@ def test_officer_descriptions_markdown(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         rv = client.get(url_for("main.officer_profile", officer_id=1))
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         html = rv.data.decode()
         print(html)
         assert "<h3>A markdown description</h3>" in html
@@ -65,7 +66,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode("utf-8")
         assert "<script>" not in rv.data.decode()
         assert "&lt;script&gt;" in rv.data.decode()
@@ -87,7 +88,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode("utf-8")
 
         created_description = Description.query.filter_by(
@@ -113,7 +114,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode("utf-8")
 
         created_description = Description.query.filter_by(
@@ -152,7 +153,7 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
             data=form.data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "updated" in rv.data.decode("utf-8")
 
         assert description.text_contents == new_description
@@ -189,7 +190,7 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
             data=form.data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "updated" in rv.data.decode("utf-8")
 
         assert description.text_contents == new_description
@@ -226,7 +227,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
             data=form.data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "updated" in rv.data.decode("utf-8")
 
         assert description.text_contents == new_description
@@ -283,7 +284,7 @@ def test_admins_can_delete_descriptions(mockdata, client, session):
             + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Description.query.get(description_id)
         assert deleted is None
 
@@ -312,7 +313,7 @@ def test_acs_can_delete_their_descriptions_in_their_department(
             + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Description.query.get(description_id)
         assert deleted is None
 
@@ -369,7 +370,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Update" in rv.data.decode("utf-8")
 
 
@@ -394,7 +395,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
             + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Update" in rv.data.decode("utf-8")
 
 
@@ -442,7 +443,7 @@ def test_users_can_see_descriptions(mockdata, client, session):
         )
         # ensures we're looking for a description that exists
         assert description in officer.descriptions
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert text_contents in rv.data.decode("utf-8")
 
 
@@ -465,7 +466,7 @@ def test_admins_can_see_descriptions(mockdata, client, session):
             follow_redirects=True,
         )
         assert description in officer.descriptions
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert text_contents in rv.data.decode("utf-8")
 
 
@@ -489,7 +490,7 @@ def test_acs_can_see_descriptions_in_their_department(mockdata, client, session)
         )
         # ensures we're looking for a description that exists
         assert description in officer.descriptions
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert text_contents in rv.data.decode("utf-8")
 
 
@@ -517,7 +518,7 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         # ensures we're looking for a description that exists
         response_text = rv.data.decode("utf-8")
         assert description in officer.descriptions
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert text_contents in response_text
         assert creator.username in response_text
 
@@ -542,5 +543,5 @@ def test_anonymous_users_cannot_see_description_creators(mockdata, client, sessi
             follow_redirects=True,
         )
         assert description in officer.descriptions
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert ac.username not in rv.data.decode("utf-8")

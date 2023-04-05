@@ -1,4 +1,5 @@
 # Routing and view tests
+from http import HTTPStatus
 import os
 
 import pytest
@@ -26,7 +27,7 @@ PROJECT_ROOT = os.path.abspath(os.curdir)
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 # All login_required views should redirect if there is no user logged in
@@ -269,7 +270,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         )
         department = Department.query.get(department_id)
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert department.name in rv.data.decode("utf-8")
 
 

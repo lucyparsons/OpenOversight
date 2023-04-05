@@ -1,4 +1,5 @@
 # Routing and view tests
+from http import HTTPStatus
 from datetime import date, datetime, time
 
 import pytest
@@ -23,7 +24,7 @@ from .route_helpers import login_ac, login_admin, login_user, process_form_data
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(
@@ -84,7 +85,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode("utf-8")
 
         inc = Incident.query.filter_by(date=date.date()).first()
@@ -126,7 +127,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Report cannot contain special characters" in rv.data.decode("utf-8")
 
 
@@ -176,7 +177,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode("utf-8")
         updated = Incident.query.get(inc_id)
         assert updated.date == new_date
@@ -230,7 +231,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode("utf-8")
         # old links are still there
         for link in old_links:
@@ -277,7 +278,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Incidents prior to 1900 not allowed." in rv.data.decode("utf-8")
 
 
@@ -311,7 +312,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Must select a state." in rv.data.decode("utf-8")
         assert incident_count_before == Incident.query.count()
 
@@ -356,7 +357,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Must also select a state." in rv.data.decode("utf-8")
         assert "Zip codes must have 5 digits." in rv.data.decode("utf-8")
         assert rv.data.decode("utf-8").count("This field is required.") >= 3
@@ -415,7 +416,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode("utf-8")
         for officer in old_officers:
             assert officer in inc.officers
@@ -471,7 +472,7 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Not a valid officer id" in rv.data.decode("utf-8")
         for officer in old_officers:
             assert officer in inc.officers
@@ -517,7 +518,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode("utf-8")
         assert inc.date == new_date.date()
         assert inc.time == new_date.time()
@@ -579,7 +580,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
             url_for("main.incident_api", obj_id=inc_id) + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Incident.query.get(inc_id)
         assert deleted is None
 
@@ -593,7 +594,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
             url_for("main.incident_api", obj_id=inc_id) + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Incident.query.get(inc_id)
         assert deleted is None
 
@@ -622,7 +623,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             url_for("main.incident_api", obj_id=incident.id) + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "Update" in rv.data.decode("utf-8")
 
 
@@ -745,7 +746,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode("utf-8")
         assert "<script>" not in rv.data.decode()
         assert "&lt;script&gt;" in rv.data.decode()

@@ -1,4 +1,5 @@
 # Routing and view tests
+from http import HTTPStatus
 import pytest
 from flask import current_app, url_for
 
@@ -21,7 +22,7 @@ from .route_helpers import login_user
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 def test_user_can_access_profile(mockdata, client, session):

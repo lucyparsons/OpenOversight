@@ -1,4 +1,5 @@
 # Routing and view tests
+from http import HTTPStatus
 from urllib.parse import urlparse
 
 import pytest
@@ -33,7 +34,7 @@ from .route_helpers import (
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 # All login_required views should redirect if there is no user logged in
@@ -99,7 +100,7 @@ def test_user_cannot_register_with_existing_email(mockdata, client, session):
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Email already registered" in rv.data
 
 
@@ -118,7 +119,7 @@ def test_user_cannot_register_with_existing_email_differently_cased(
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Email already registered" in rv.data
 
 
@@ -135,7 +136,7 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Passwords must match" in rv.data
 
 

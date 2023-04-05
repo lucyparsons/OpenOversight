@@ -1,6 +1,7 @@
 # Routing and view tests
 import copy
 import csv
+from http import HTTPStatus
 import json
 import random
 from datetime import date, datetime
@@ -60,7 +61,7 @@ from .route_helpers import login_ac, login_admin, login_user, process_form_data
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 # All login_required views should redirect if there is no user logged in
@@ -713,7 +714,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert (
             len(
                 Department.query.filter_by(name="Springfield Police Department")
@@ -743,7 +744,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert (
             len(
                 Department.query.filter_by(name="Springfield Police Department")
@@ -775,7 +776,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert (
             len(
                 Department.query.filter_by(name="Springfield Police Department")
@@ -805,7 +806,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert (
             len(
                 Department.query.filter_by(name="Springfield Police Department")
@@ -845,7 +846,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert (
             len(
                 Department.query.filter_by(name="Springfield Police Department")
@@ -1047,7 +1048,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
 
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "New Officer {} added".format(last_name) in rv.data.decode("utf-8")
 
         # Check the officer was added to the database
@@ -1091,7 +1092,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
 
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert "New Officer {} added".format(last_name) in rv.data.decode("utf-8")
 
         # Check the officer was added to the database
@@ -1226,7 +1227,7 @@ def test_ac_can_see_officer_not_in_their_dept(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         # Testing names doesn't work bc the way we display them varies
         assert str(officer.id) in rv.data.decode("utf-8")
 
@@ -1803,7 +1804,7 @@ def test_admin_can_upload_photos_of_dept_officers(
                     content_type="multipart/form-data",
                     data=data,
                 )
-                assert rv.status_code == 200
+                assert rv.status_code == HTTPStatus.OK
                 assert b"Success" in rv.data
                 # check that Face was added to database
                 assert len(officer.face) == officer_face_count + 1
@@ -1911,7 +1912,7 @@ def test_ac_can_upload_photos_of_dept_officers(
                     content_type="multipart/form-data",
                     data=data,
                 )
-                assert rv.status_code == 200
+                assert rv.status_code == HTTPStatus.OK
                 assert b"Success" in rv.data
                 # check that Face was added to database
                 assert len(officer.face) == officer_face_count + 1
