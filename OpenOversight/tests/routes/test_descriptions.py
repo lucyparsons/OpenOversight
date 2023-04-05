@@ -21,7 +21,7 @@ from .route_helpers import login_ac, login_admin, login_user
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.parametrize(
@@ -36,7 +36,7 @@ def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():
         login_user(client)
         rv = client.get(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_officer_descriptions_markdown(mockdata, client, session):
@@ -267,7 +267,7 @@ def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, s
             data=form.data,
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admins_can_delete_descriptions(mockdata, client, session):
@@ -344,7 +344,7 @@ def test_acs_cannot_delete_descriptions_not_in_their_department(
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         not_deleted = Description.query.get(description_id)
         assert not_deleted is not None
 
@@ -421,7 +421,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_users_can_see_descriptions(mockdata, client, session):

@@ -43,7 +43,7 @@ def test_routes_ok(route, client, mockdata):
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 # POST-only routes
@@ -133,7 +133,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
         rv = client.post(
             url_for("main.delete_tag", tag_id=tag_id), follow_redirects=True
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         # test tag was not deleted from database
         deleted_tag = Face.query.filter_by(id=tag_id).first()
@@ -319,7 +319,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
         rv = client.post(
             url_for("main.set_featured_tag", tag_id=tag_id), follow_redirects=True
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         featured_tag = (
             Face.query.filter(Face.officer_id == tag.officer_id)

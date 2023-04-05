@@ -26,10 +26,10 @@ routes_methods = [
 def test_user_api_login_required(route, methods, client, mockdata):
     if HTTP_METHOD_GET in methods:
         rv = client.get(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
     if HTTP_METHOD_POST in methods:
         rv = client.post(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
@@ -38,10 +38,10 @@ def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
         login_user(client)
         if HTTP_METHOD_GET in methods:
             rv = client.get(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
         if HTTP_METHOD_POST in methods:
             rv = client.post(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
@@ -50,10 +50,10 @@ def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
         login_ac(client)
         if HTTP_METHOD_GET in methods:
             rv = client.get(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
         if HTTP_METHOD_POST in methods:
             rv = client.post(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_update_users_to_ac(mockdata, client, session):
@@ -152,7 +152,7 @@ def test_admin_cannot_delete_other_admin(mockdata, client, session):
             url_for("auth.delete_user", user_id=user_id), follow_redirects=True
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         assert User.query.get(user_id) is not None
 
 

@@ -52,13 +52,13 @@ def test_routes_ok(route, client, mockdata):
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
         rv = login_user(client)
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
 
@@ -66,7 +66,7 @@ def test_valid_user_can_login_with_email_differently_cased(mockdata, client, ses
     with current_app.test_request_context():
         form = LoginForm(email="JEN@EXAMPLE.ORG", password="dog", remember_me=True)
         rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
 
@@ -408,7 +408,7 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, sessi
 
         # Logged in disabled user cannot access pages requiring auth
         rv = client.get("/auth/logout")
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
 
 
 def test_user_cannot_change_password_if_they_dont_match(mockdata, client, session):

@@ -17,7 +17,7 @@ from .route_helpers import login_ac, login_admin, login_user
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.parametrize(
@@ -28,7 +28,7 @@ def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():
         login_user(client)
         rv = client.get(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_officer_notes_markdown(mockdata, client, session):
@@ -240,7 +240,7 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
             data=form.data,
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admins_can_delete_notes(mockdata, client, session):
@@ -303,7 +303,7 @@ def test_acs_cannot_delete_notes_not_in_their_department(mockdata, client, sessi
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         not_deleted = Note.query.get(note_id)
         assert not_deleted is not None
 
@@ -371,7 +371,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             url_for("main.note_api", obj_id=note.id, officer_id=officer.id) + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_users_cannot_see_notes(mockdata, client, session):

@@ -77,7 +77,7 @@ def test_routes_ok(route, client, mockdata):
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 # POST-only routes
@@ -263,7 +263,7 @@ def test_ac_cannot_add_non_dept_assignment(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         assignments = Assignment.query.filter_by(star_no="1234", job_id=job.id).scalar()
         assert assignments is None
 
@@ -477,7 +477,7 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_add_police_department(mockdata, client, session):
@@ -507,7 +507,7 @@ def test_ac_cannot_add_police_department(mockdata, client, session):
             url_for("main.add_department"), data=form.data, follow_redirects=True
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_cannot_add_duplicate_police_department(mockdata, client, session):
@@ -616,7 +616,7 @@ def test_ac_cannot_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_edit_rank_order(mockdata, client, session):
@@ -1207,7 +1207,7 @@ def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         # Ensure changes were not made to database
         officer = Officer.query.filter_by(id=officer.id).one()
@@ -1456,7 +1456,7 @@ def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(
                 officer_id=department.officers[0].id,
             )
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_officer_csv(mockdata, client, session):
@@ -1751,7 +1751,7 @@ def test_find_officer_redirect(client, mockdata, session):
         )
 
         # Check that the parameters are added correctly to the response url
-        assert rv.status_code == 302, "Expected redirect."
+        assert rv.status_code == HTTPStatus.FOUND, "Expected redirect."
         assert "department/{}".format(department_id) in rv.location
         parameters = [
             ("first_name", "A"),
@@ -1874,7 +1874,7 @@ def test_user_cannot_upload_officer_photo(mockdata, client, session):
             content_type="multipart/form-data",
             data=data,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         assert b"not authorized" in rv.data
 
 
@@ -2016,7 +2016,7 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_edit_salary(mockdata, client, session):
@@ -2142,7 +2142,7 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         officer = Officer.query.filter_by(id=officer_id).one()
         assert float(officer.salaries[0].salary) == 123456.78
@@ -2252,7 +2252,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
@@ -2385,7 +2385,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
@@ -2485,4 +2485,4 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
             follow_redirects=True,
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
