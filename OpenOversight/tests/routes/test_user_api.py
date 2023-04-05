@@ -1,4 +1,6 @@
 # Routing and view tests
+from http import HTTPStatus
+
 import pytest
 from flask import current_app, url_for
 
