@@ -2,27 +2,32 @@
 import pytest
 from flask import current_app, url_for
 
-from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
+from OpenOversight.app.auth.forms import (
+    EditUserForm,
+    LoginForm,
+    RegistrationForm
+)
 from OpenOversight.app.models import User, db
+from OpenOversight.app.utils import HTTP_METHOD_GET, HTTP_METHOD_POST
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
 
 
 routes_methods = [
-    ("/auth/users/", ["GET"]),
-    ("/auth/users/1", ["GET", "POST"]),
-    ("/auth/users/1/delete", ["GET", "POST"]),
+    ("/auth/users/", [HTTP_METHOD_GET]),
+    ("/auth/users/1", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
+    ("/auth/users/1/delete", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
 ]
 
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_user_api_login_required(route, methods, client, mockdata):
-    if "GET" in methods:
+    if HTTP_METHOD_GET in methods:
         rv = client.get(route)
         assert rv.status_code == 403
-    if "POST" in methods:
+    if HTTP_METHOD_POST in methods:
         rv = client.post(route)
         assert rv.status_code == 403
 
@@ -31,10 +36,10 @@ def test_user_api_login_required(route, methods, client, mockdata):
 def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        if "GET" in methods:
+        if HTTP_METHOD_GET in methods:
             rv = client.get(route)
             assert rv.status_code == 403
-        if "POST" in methods:
+        if HTTP_METHOD_POST in methods:
             rv = client.post(route)
             assert rv.status_code == 403
 
@@ -43,10 +48,10 @@ def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
 def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        if "GET" in methods:
+        if HTTP_METHOD_GET in methods:
             rv = client.get(route)
             assert rv.status_code == 403
-        if "POST" in methods:
+        if HTTP_METHOD_POST in methods:
             rv = client.post(route)
             assert rv.status_code == 403
 
