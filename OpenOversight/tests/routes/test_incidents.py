@@ -20,7 +20,7 @@ from .route_helpers import login_ac, login_admin, login_user, process_form_data
 
 
 @pytest.mark.parametrize(
-    "route", [("/incidents/"), ("/incidents/1"), ("/incidents/?department_id=1")]
+    "route", ["/incidents/", "/incidents/1", "/incidents/?department_id=1"]
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
@@ -28,7 +28,7 @@ def test_routes_ok(route, client, mockdata):
 
 
 @pytest.mark.parametrize(
-    "route", [("incidents/1/edit"), ("incidents/new"), ("incidents/1/delete")]
+    "route", ["incidents/1/edit", "incidents/new", "incidents/1/delete"]
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
@@ -36,7 +36,7 @@ def test_route_login_required(route, client, mockdata):
 
 
 @pytest.mark.parametrize(
-    "route", [("incidents/1/edit"), ("incidents/new"), ("incidents/1/delete")]
+    "route", ["incidents/1/edit", "incidents/new", "incidents/1/delete"]
 )
 def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():

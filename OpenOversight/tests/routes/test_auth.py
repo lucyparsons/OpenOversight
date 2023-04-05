@@ -27,9 +27,9 @@ from .route_helpers import (
 @pytest.mark.parametrize(
     "route",
     [
-        ("/auth/login"),
-        ("/auth/register"),
-        ("/auth/reset"),
+        "/auth/login",
+        "/auth/register",
+        "/auth/reset",
     ],
 )
 def test_routes_ok(route, client, mockdata):
@@ -41,13 +41,13 @@ def test_routes_ok(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        ("/auth/unconfirmed"),
-        ("/auth/logout"),
-        ("/auth/confirm/abcd1234"),
-        ("/auth/confirm"),
-        ("/auth/change-password"),
-        ("/auth/change-email"),
-        ("/auth/change-email/abcd1234"),
+        "/auth/unconfirmed",
+        "/auth/logout",
+        "/auth/confirm/abcd1234",
+        "/auth/confirm",
+        "/auth/change-password",
+        "/auth/change-email",
+        "/auth/change-email/abcd1234",
     ],
 )
 def test_route_login_required(route, client, mockdata):

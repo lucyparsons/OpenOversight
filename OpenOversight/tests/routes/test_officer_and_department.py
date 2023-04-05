@@ -50,10 +50,10 @@ from .route_helpers import login_ac, login_admin, login_user, process_form_data
 @pytest.mark.parametrize(
     "route",
     [
-        ("/submit"),
-        ("/label"),
-        ("/department/1"),
-        ("/officer/3"),
+        "/submit",
+        "/label",
+        "/department/1",
+        "/officer/3",
         (
             "/complaint?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png"
         ),
@@ -68,11 +68,11 @@ def test_routes_ok(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        ("/sort/department/1"),
-        ("/cop_face/department/1"),
-        ("/department/new"),
-        ("/officer/new"),
-        ("/unit/new"),
+        "/sort/department/1",
+        "/cop_face/department/1",
+        "/department/new",
+        "/officer/new",
+        "/unit/new",
     ],
 )
 def test_route_login_required(route, client, mockdata):
@@ -84,7 +84,7 @@ def test_route_login_required(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        ("/officer/3/assignment/new"),
+        "/officer/3/assignment/new",
     ],
 )
 def test_route_post_only(route, client, mockdata):

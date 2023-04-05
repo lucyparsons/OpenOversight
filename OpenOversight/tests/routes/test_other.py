@@ -9,15 +9,15 @@ from .route_helpers import login_user
 @pytest.mark.parametrize(
     "route",
     [
-        ("/"),
-        ("/index"),
-        ("/browse"),
-        ("/find"),
-        ("/about"),
-        ("/privacy"),
-        ("/submit"),
-        ("/label"),
-        ("/tutorial"),
+        "/",
+        "/index",
+        "/browse",
+        "/find",
+        "/about",
+        "/privacy",
+        "/submit",
+        "/label",
+        "/tutorial",
     ],
 )
 def test_routes_ok(route, client, mockdata):
