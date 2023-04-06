@@ -10,7 +10,7 @@ If your git history is not so clean, please do rewrite before you submit your PR
 
 To submit your changes for review you have to fork the repository, push your new branch there and then create a Pull Request with `OpenOversight:develop` as the target.
 
-Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
+Use [PULL_REQUEST_TEMPLATE.md](/.github/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
 
 ### Recommended privacy settings
 Whenever you make a commit with `git` the name and email saved locally is stored with that commit and will become part of the public history of the project. This can be an unwanted, for example when using a work computer. We recommond changing the email-settings in the github account at https://github.com/settings/emails and selecting "Keep my email addresses private" as well as "Block command line pushes that expose my email". Also find your github-email address of the form `<id>+<username>@users.noreply.github.com` in that section. Then you can change the email and username stored with your commits by running the following commands
