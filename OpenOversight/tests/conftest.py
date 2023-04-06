@@ -20,7 +20,7 @@ from xvfbwrapper import Xvfb
 from OpenOversight.app import create_app, models
 from OpenOversight.app.models import Job, Officer, Unit
 from OpenOversight.app.models import db as _db
-from OpenOversight.app.utils import merge_dicts
+from OpenOversight.app.utils import ENCODING_UTF_8, merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
@@ -64,7 +64,7 @@ def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
         return float(unpack("L", sha256(b).digest()[:8])[0]) / 2**64
 
     if seed is None:
-        seed = str(uuid.uuid4()).encode("utf-8")
+        seed = str(uuid.uuid4()).encode(ENCODING_UTF_8)
 
     return datetime.datetime(start_year, 1, 1, 00, 00, 00) + datetime.timedelta(
         days=365 * (end_year - start_year) * bytes_to_float(seed)
@@ -138,8 +138,8 @@ def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
         job_id=random.choice(jobs).id,
         officer=officer,
         unit_id=unit_id,
-        star_date=pick_date(officer.full_name().encode("utf-8")),
-        resign_date=pick_date(officer.full_name().encode("utf-8")),
+        star_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
+        resign_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
     )
 
 

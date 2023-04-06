@@ -9,6 +9,7 @@ from mock import MagicMock, patch
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models import Department, Face, Image, Officer
+from OpenOversight.app.utils import ENCODING_UTF_8
 
 from ..conftest import AC_DEPT
 from .route_helpers import login_ac, login_admin, login_user
@@ -58,7 +59,7 @@ def test_route_login_required(route, client, mockdata):
 )
 def test_route_post_only(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 405
+    assert rv.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
 def test_logged_in_user_can_access_sort_form(mockdata, client, session):
@@ -271,7 +272,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         department = Department.query.get(department_id)
 
         assert rv.status_code == HTTPStatus.OK
-        assert department.name in rv.data.decode("utf-8")
+        assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_admin_can_set_featured_tag(mockdata, client, session):
