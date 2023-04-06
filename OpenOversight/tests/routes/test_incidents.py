@@ -129,7 +129,9 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
         )
 
         assert rv.status_code == HTTPStatus.OK
-        assert "Report cannot contain special characters" in rv.data.decode(ENCODING_UTF_8)
+        assert "Report cannot contain special characters" in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
 
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
@@ -778,4 +780,6 @@ def test_users_can_search_incidents(
             assert "<td>{}</td>".format(report_num) in rv.data.decode(ENCODING_UTF_8)
 
         for report_num in excluded_report_nums:
-            assert "<td>{}</td>".format(report_num) not in rv.data.decode(ENCODING_UTF_8)
+            assert "<td>{}</td>".format(report_num) not in rv.data.decode(
+                ENCODING_UTF_8
+            )

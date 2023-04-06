@@ -46,7 +46,7 @@ from .models import (
 
 
 # Encoding constants
-ENCODING_UTF_8 = HTTPStatus.FORBIDDEN
+ENCODING_UTF_8 = "utf-8"
 
 # HTTP Method constants
 HTTP_METHOD_GET = "GET"

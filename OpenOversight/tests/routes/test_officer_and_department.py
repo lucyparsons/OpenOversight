@@ -41,7 +41,12 @@ from OpenOversight.app.models import (
     Unit,
     User,
 )
-from OpenOversight.app.utils import ENCODING_UTF_8, add_new_assignment, dept_choices, unit_choices
+from OpenOversight.app.utils import (
+    ENCODING_UTF_8,
+    add_new_assignment,
+    dept_choices,
+    unit_choices,
+)
 
 from ..conftest import AC_DEPT, RANK_CHOICES_1
 from .route_helpers import login_ac, login_admin, login_user, process_form_data
@@ -1049,7 +1054,9 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(ENCODING_UTF_8)
+        assert "New Officer {} added".format(last_name) in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1093,7 +1100,9 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(ENCODING_UTF_8)
+        assert "New Officer {} added".format(last_name) in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1281,7 +1290,9 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "Officer {} edited".format(new_last_name) in rv.data.decode(ENCODING_UTF_8)
+        assert "Officer {} edited".format(new_last_name) in rv.data.decode(
+            ENCODING_UTF_8
+        )
         assert last_name not in rv.data.decode(ENCODING_UTF_8)
 
         # Check the changes were added to the database
@@ -1591,7 +1602,8 @@ def test_incidents_csv(mockdata, client, session):
         # get the csv entry with matching report number
         csv = list(
             filter(
-                lambda row: report_number in row, rv.data.decode(ENCODING_UTF_8).split("\n")
+                lambda row: report_number in row,
+                rv.data.decode(ENCODING_UTF_8).split("\n"),
             )
         )
         assert len(csv) == 1
@@ -1623,21 +1635,27 @@ def test_browse_filtering_filters_bad(client, mockdata, session):
 
                     # Test that the combinations that should be filtered
                     # do not appear in the data
-                    filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Race</dt>")[1:]
+                    filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Race</dt>")[
+                        1:
+                    ]
                     if race == "BLACK":
                         bad_substr = "<dd>White</dd>"
                     else:
                         bad_substr = "<dd>Black</dd>"
                     assert not any(bad_substr in token for token in filter_list)
 
-                    filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Gender</dt>")[1:]
+                    filter_list = rv.data.decode(ENCODING_UTF_8).split(
+                        "<dt>Gender</dt>"
+                    )[1:]
                     if gender == "M":
                         bad_substr = "<dd>F</dd>"
                     else:
                         bad_substr = "<dd>M</dd>"
                     assert not any(bad_substr in token for token in filter_list)
 
-                    filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Rank</dt>")[1:]
+                    filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Rank</dt>")[
+                        1:
+                    ]
                     if rank == "Commander":
                         bad_substr = "<dd>Police Officer</dd>"
                     else:
