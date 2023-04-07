@@ -9,7 +9,12 @@ from flask_wtf import FlaskForm as Form
 
 from ..auth.utils import ac_or_admin_required
 from ..models import db
-from ..utils import add_department_query, set_dynamic_default
+from ..utils import (
+    HTTP_METHOD_GET,
+    HTTP_METHOD_POST,
+    add_department_query,
+    set_dynamic_default,
+)
 
 
 class ModelView(MethodView):
@@ -128,7 +133,7 @@ class ModelView(MethodView):
             ):
                 abort(403)
 
-        if request.method == "POST":
+        if request.method == HTTP_METHOD_POST:
             db.session.delete(obj)
             db.session.commit()
             flash("{} successfully deleted!".format(self.model_name))
@@ -149,7 +154,7 @@ class ModelView(MethodView):
             url_for(
                 "main.{}_api".format(self.model_name),
                 obj_id=kwargs["obj_id"],
-                _method="GET",
+                _method=HTTP_METHOD_GET,
             )
         )
 
@@ -179,7 +184,7 @@ class ModelView(MethodView):
             if end_of_url == ending:
                 meth = getattr(self, ending, None)
         if not meth:
-            if request.method == "GET":
+            if request.method == HTTP_METHOD_GET:
                 meth = getattr(self, "get", None)
             else:
                 assert meth is not None, "Unimplemented method %r" % request.method

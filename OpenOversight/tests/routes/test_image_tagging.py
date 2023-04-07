@@ -1,5 +1,6 @@
 # Routing and view tests
 import os
+from http import HTTPStatus
 
 import pytest
 from flask import current_app, url_for
@@ -8,6 +9,7 @@ from mock import MagicMock, patch
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models import Department, Face, Image, Officer
+from OpenOversight.app.utils import ENCODING_UTF_8
 
 from ..conftest import AC_DEPT
 from .route_helpers import login_ac, login_admin, login_user
@@ -19,45 +21,45 @@ PROJECT_ROOT = os.path.abspath(os.curdir)
 @pytest.mark.parametrize(
     "route",
     [
-        ("/label"),
-        ("/tutorial"),
-        ("/tag/1"),
+        "/label",
+        "/tutorial",
+        "/tag/1",
     ],
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize(
     "route",
     [
-        ("/leaderboard"),
-        ("/sort/department/1"),
-        ("/cop_face/department/1"),
-        ("/image/1"),
-        ("/image/tagged/1"),
+        "/leaderboard",
+        "/sort/department/1",
+        "/cop_face/department/1",
+        "/image/1",
+        "/image/tagged/1",
     ],
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 # POST-only routes
 @pytest.mark.parametrize(
     "route",
     [
-        ("/officer/3/assignment/new"),
-        ("/tag/delete/1"),
-        ("/tag/set_featured/1"),
-        ("/image/classify/1/1"),
+        "/officer/3/assignment/new",
+        "/tag/delete/1",
+        "/tag/set_featured/1",
+        "/image/classify/1/1",
     ],
 )
 def test_route_post_only(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 405
+    assert rv.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
 def test_logged_in_user_can_access_sort_form(mockdata, client, session):
@@ -132,7 +134,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
         rv = client.post(
             url_for("main.delete_tag", tag_id=tag_id), follow_redirects=True
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         # test tag was not deleted from database
         deleted_tag = Face.query.filter_by(id=tag_id).first()
@@ -269,8 +271,8 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         )
         department = Department.query.get(department_id)
 
-        assert rv.status_code == 200
-        assert department.name in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_admin_can_set_featured_tag(mockdata, client, session):
@@ -318,7 +320,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
         rv = client.post(
             url_for("main.set_featured_tag", tag_id=tag_id), follow_redirects=True
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
         featured_tag = (
             Face.query.filter(Face.officer_id == tag.officer_id)
