@@ -1,54 +1,57 @@
 # Routing and view tests
+from http import HTTPStatus
+
 import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.models import User, db
+from OpenOversight.app.utils import ENCODING_UTF_8, HTTP_METHOD_GET, HTTP_METHOD_POST
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
 
 
 routes_methods = [
-    ("/auth/users/", ["GET"]),
-    ("/auth/users/1", ["GET", "POST"]),
-    ("/auth/users/1/delete", ["GET", "POST"]),
+    ("/auth/users/", [HTTP_METHOD_GET]),
+    ("/auth/users/1", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
+    ("/auth/users/1/delete", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
 ]
 
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_user_api_login_required(route, methods, client, mockdata):
-    if "GET" in methods:
+    if HTTP_METHOD_GET in methods:
         rv = client.get(route)
-        assert rv.status_code == 403
-    if "POST" in methods:
+        assert rv.status_code == HTTPStatus.FORBIDDEN
+    if HTTP_METHOD_POST in methods:
         rv = client.post(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        if "GET" in methods:
+        if HTTP_METHOD_GET in methods:
             rv = client.get(route)
-            assert rv.status_code == 403
-        if "POST" in methods:
+            assert rv.status_code == HTTPStatus.FORBIDDEN
+        if HTTP_METHOD_POST in methods:
             rv = client.post(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        if "GET" in methods:
+        if HTTP_METHOD_GET in methods:
             rv = client.get(route)
-            assert rv.status_code == 403
-        if "POST" in methods:
+            assert rv.status_code == HTTPStatus.FORBIDDEN
+        if HTTP_METHOD_POST in methods:
             rv = client.post(route)
-            assert rv.status_code == 403
+            assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_update_users_to_ac(mockdata, client, session):
@@ -68,7 +71,7 @@ def test_admin_can_update_users_to_ac(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
         assert user.is_area_coordinator is True
 
 
@@ -87,7 +90,7 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
             follow_redirects=True,
         )
 
-        assert "updated!" not in rv.data.decode("utf-8")
+        assert "updated!" not in rv.data.decode(ENCODING_UTF_8)
         assert user.is_area_coordinator is False
 
 
@@ -108,7 +111,7 @@ def test_admin_can_update_users_to_admin(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
         assert user.is_administrator is True
 
 
@@ -130,7 +133,9 @@ def test_admin_can_delete_user(mockdata, client, session):
             url_for("auth.delete_user", user_id=user_id), follow_redirects=True
         )
 
-        assert "User {} has been deleted!".format(username) in rv.data.decode("utf-8")
+        assert "User {} has been deleted!".format(username) in rv.data.decode(
+            ENCODING_UTF_8
+        )
         assert not User.query.get(user_id)
 
 
@@ -147,7 +152,7 @@ def test_admin_cannot_delete_other_admin(mockdata, client, session):
             url_for("auth.delete_user", user_id=user_id), follow_redirects=True
         )
 
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         assert User.query.get(user_id) is not None
 
 
@@ -172,7 +177,7 @@ def test_admin_can_disable_user(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = User.query.get(user_id)
         assert user.is_disabled
@@ -198,7 +203,7 @@ def test_admin_cannot_disable_self(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "You cannot edit your own account!" in rv.data.decode("utf-8")
+        assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
         user = User.query.get(user_id)
         assert not user.is_disabled
@@ -227,7 +232,7 @@ def test_admin_can_enable_user(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = User.query.get(user_id)
         assert not user.is_disabled
@@ -253,7 +258,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
         assert "A new confirmation email has been sent to {}.".format(
             email
-        ) in rv.data.decode("utf-8")
+        ) in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_register_user_approval_required(mockdata, client, session):
@@ -273,7 +278,7 @@ def test_register_user_approval_required(mockdata, client, session):
         assert (
             "Once an administrator approves your registration, you will "
             "receive a confirmation email to activate your account."
-            in rv.data.decode("utf-8")
+            in rv.data.decode(ENCODING_UTF_8)
         )
 
         form = LoginForm(
@@ -311,7 +316,7 @@ def test_admin_can_approve_user(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = User.query.get(user_id)
         assert user.approved
@@ -364,9 +369,9 @@ def test_admin_approval_sends_confirmation_email(
         )
 
         assert (
-            "new confirmation email" in rv.data.decode("utf-8")
+            "new confirmation email" in rv.data.decode(ENCODING_UTF_8)
         ) == should_send_email
-        assert "updated!" in rv.data.decode("utf-8")
+        assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = User.query.get(user_id)
         assert user.approved

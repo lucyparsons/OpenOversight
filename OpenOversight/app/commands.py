@@ -15,7 +15,13 @@ from flask.cli import with_appcontext
 
 from .csv_imports import import_csv_files
 from .models import Assignment, Department, Face, Job, Officer, Salary, User, db
-from .utils import get_officer, normalize_gender, prompt_yes_no, str_is_true
+from .utils import (
+    ENCODING_UTF_8,
+    get_officer,
+    normalize_gender,
+    prompt_yes_no,
+    str_is_true,
+)
 
 
 @click.command()
@@ -454,7 +460,7 @@ def process_salary(row, officer, compare=False):
 def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
     """Add or update officers from a CSV file."""
 
-    encoding = "utf-8"
+    encoding = ENCODING_UTF_8
 
     # handles unicode errors that can occur when the file was made in Excel
     with open(filename, "r") as f:

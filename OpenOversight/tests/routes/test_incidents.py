@@ -1,5 +1,6 @@
 # Routing and view tests
 from datetime import date, datetime, time
+from http import HTTPStatus
 
 import pytest
 from flask import current_app, url_for
@@ -13,35 +14,36 @@ from OpenOversight.app.main.forms import (
     OOIdForm,
 )
 from OpenOversight.app.models import Department, Incident, Officer
+from OpenOversight.app.utils import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 
 from .route_helpers import login_ac, login_admin, login_user, process_form_data
 
 
 @pytest.mark.parametrize(
-    "route", [("/incidents/"), ("/incidents/1"), ("/incidents/?department_id=1")]
+    "route", ["/incidents/", "/incidents/1", "/incidents/?department_id=1"]
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(
-    "route", [("incidents/1/edit"), ("incidents/new"), ("incidents/1/delete")]
+    "route", ["incidents/1/edit", "incidents/new", "incidents/1/delete"]
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 @pytest.mark.parametrize(
-    "route", [("incidents/1/edit"), ("incidents/new"), ("incidents/1/delete")]
+    "route", ["incidents/1/edit", "incidents/new", "incidents/1/delete"]
 )
 def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():
         login_user(client)
         rv = client.get(route)
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize(
@@ -84,8 +86,8 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
-        assert "created" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "created" in rv.data.decode(ENCODING_UTF_8)
 
         inc = Incident.query.filter_by(date=date.date()).first()
         assert inc is not None
@@ -126,8 +128,10 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
 
-        assert rv.status_code == 200
-        assert "Report cannot contain special characters" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "Report cannot contain special characters" in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
 
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
@@ -176,8 +180,8 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "successfully updated" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         updated = Incident.query.get(inc_id)
         assert updated.date == new_date
         assert updated.time == new_time
@@ -230,8 +234,8 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "successfully updated" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         # old links are still there
         for link in old_links:
             assert link in inc.links
@@ -277,8 +281,8 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "Incidents prior to 1900 not allowed." in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "Incidents prior to 1900 not allowed." in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
@@ -311,8 +315,8 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
-        assert "Must select a state." in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "Must select a state." in rv.data.decode(ENCODING_UTF_8)
         assert incident_count_before == Incident.query.count()
 
 
@@ -356,10 +360,10 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
-        assert rv.status_code == 200
-        assert "Must also select a state." in rv.data.decode("utf-8")
-        assert "Zip codes must have 5 digits." in rv.data.decode("utf-8")
-        assert rv.data.decode("utf-8").count("This field is required.") >= 3
+        assert rv.status_code == HTTPStatus.OK
+        assert "Must also select a state." in rv.data.decode(ENCODING_UTF_8)
+        assert "Zip codes must have 5 digits." in rv.data.decode(ENCODING_UTF_8)
+        assert rv.data.decode(ENCODING_UTF_8).count("This field is required.") >= 3
         assert incident_count_before == Incident.query.count()
 
 
@@ -415,8 +419,8 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "successfully updated" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         for officer in old_officers:
             assert officer in inc.officers
         assert new_officer.id in [off.id for off in inc.officers]
@@ -471,8 +475,8 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "Not a valid officer id" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "Not a valid officer id" in rv.data.decode(ENCODING_UTF_8)
         for officer in old_officers:
             assert officer in inc.officers
 
@@ -517,8 +521,8 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "successfully updated" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         assert inc.date == new_date.date()
         assert inc.time == new_date.time()
         assert inc.address.street_name == street_name
@@ -567,7 +571,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
             data=data,
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admins_can_delete_incidents(mockdata, client, session):
@@ -579,7 +583,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
             url_for("main.incident_api", obj_id=inc_id) + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Incident.query.get(inc_id)
         assert deleted is None
 
@@ -593,7 +597,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
             url_for("main.incident_api", obj_id=inc_id) + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         deleted = Incident.query.get(inc_id)
         assert deleted is None
 
@@ -609,7 +613,7 @@ def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, s
             url_for("main.incident_api", obj_id=inc_id) + "/delete",
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
         not_deleted = Incident.query.get(inc_id)
         assert not_deleted.id is inc_id
 
@@ -622,8 +626,8 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             url_for("main.incident_api", obj_id=incident.id) + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 200
-        assert "Update" in rv.data.decode("utf-8")
+        assert rv.status_code == HTTPStatus.OK
+        assert "Update" in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
@@ -636,7 +640,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             url_for("main.incident_api", obj_id=incident.id) + "/edit",
             follow_redirects=True,
         )
-        assert rv.status_code == 403
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_users_can_view_incidents_by_department(mockdata, client, session):
@@ -652,11 +656,11 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
         # Tests for report numbers in table formatting, because testing for the raw report number can get false positives due to html encoding
         for incident in department_incidents:
             assert "<td>{}</td>".format(incident.report_number) in rv.data.decode(
-                "utf-8"
+                ENCODING_UTF_8
             )
         for incident in non_department_incidents:
             assert "<td>{}</td>".format(incident.report_number) not in rv.data.decode(
-                "utf-8"
+                ENCODING_UTF_8
             )
 
 
@@ -664,21 +668,21 @@ def test_admins_can_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
-        assert "Creator" in rv.data.decode("utf-8")
+        assert "Creator" in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_acs_cannot_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
-        assert "Creator" not in rv.data.decode("utf-8")
+        assert "Creator" not in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_users_cannot_see_who_created_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
-        assert "Creator" not in rv.data.decode("utf-8")
+        assert "Creator" not in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_form_with_officer_id_prepopulates(mockdata, client, session):
@@ -688,7 +692,7 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
         rv = client.get(
             url_for("main.incident_api") + "new?officer_id={}".format(officer_id)
         )
-        assert officer_id in rv.data.decode("utf-8")
+        assert officer_id in rv.data.decode(ENCODING_UTF_8)
 
 
 @pytest.mark.parametrize(
@@ -713,7 +717,9 @@ def test_users_can_search_incidents(
         rv = client.get(url_for("main.incident_api", **params))
 
         for report_num in included_report_nums:
-            assert "<td>{}</td>".format(report_num) in rv.data.decode("utf-8")
+            assert "<td>{}</td>".format(report_num) in rv.data.decode(ENCODING_UTF_8)
 
         for report_num in excluded_report_nums:
-            assert "<td>{}</td>".format(report_num) not in rv.data.decode("utf-8")
+            assert "<td>{}</td>".format(report_num) not in rv.data.decode(
+                ENCODING_UTF_8
+            )

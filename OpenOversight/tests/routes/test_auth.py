@@ -1,4 +1,5 @@
 # Routing and view tests
+from http import HTTPStatus
 from urllib.parse import urlparse
 
 import pytest
@@ -26,38 +27,38 @@ from .route_helpers import (
 @pytest.mark.parametrize(
     "route",
     [
-        ("/auth/login"),
-        ("/auth/register"),
-        ("/auth/reset"),
+        "/auth/login",
+        "/auth/register",
+        "/auth/reset",
     ],
 )
 def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 200
+    assert rv.status_code == HTTPStatus.OK
 
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize(
     "route",
     [
-        ("/auth/unconfirmed"),
-        ("/auth/logout"),
-        ("/auth/confirm/abcd1234"),
-        ("/auth/confirm"),
-        ("/auth/change-password"),
-        ("/auth/change-email"),
-        ("/auth/change-email/abcd1234"),
+        "/auth/unconfirmed",
+        "/auth/logout",
+        "/auth/confirm/abcd1234",
+        "/auth/confirm",
+        "/auth/change-password",
+        "/auth/change-email",
+        "/auth/change-email/abcd1234",
     ],
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
-    assert rv.status_code == 302
+    assert rv.status_code == HTTPStatus.FOUND
 
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
         rv = login_user(client)
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
 
@@ -65,7 +66,7 @@ def test_valid_user_can_login_with_email_differently_cased(mockdata, client, ses
     with current_app.test_request_context():
         form = LoginForm(email="JEN@EXAMPLE.ORG", password="dog", remember_me=True)
         rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
 
@@ -99,7 +100,7 @@ def test_user_cannot_register_with_existing_email(mockdata, client, session):
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Email already registered" in rv.data
 
 
@@ -118,7 +119,7 @@ def test_user_cannot_register_with_existing_email_differently_cased(
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Email already registered" in rv.data
 
 
@@ -135,7 +136,7 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
         )
 
         # Form will return 200 only if the form does not validate
-        assert rv.status_code == 200
+        assert rv.status_code == HTTPStatus.OK
         assert b"Passwords must match" in rv.data
 
 
@@ -407,7 +408,7 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, sessi
 
         # Logged in disabled user cannot access pages requiring auth
         rv = client.get("/auth/logout")
-        assert rv.status_code == 302
+        assert rv.status_code == HTTPStatus.FOUND
 
 
 def test_user_cannot_change_password_if_they_dont_match(mockdata, client, session):
