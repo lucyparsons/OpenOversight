@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import (
     current_app,
     flash,
@@ -12,7 +14,12 @@ from flask_login import current_user, login_required, login_user, logout_user
 from .. import sitemap
 from ..email import send_email
 from ..models import User, db
-from ..utils import set_dynamic_default, validate_redirect_url
+from ..utils import (
+    HTTP_METHOD_GET,
+    HTTP_METHOD_POST,
+    set_dynamic_default,
+    validate_redirect_url,
+)
 from . import auth
 from .forms import (
     ChangeDefaultDepartmentForm,
@@ -64,7 +71,7 @@ def unconfirmed():
 
 
 @sitemap_include
-@auth.route("/login", methods=["GET", "POST"])
+@auth.route("/login", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -92,7 +99,7 @@ def logout():
 
 
 @sitemap_include
-@auth.route("/register", methods=["GET", "POST"])
+@auth.route("/register", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 def register():
     jsloads = ["js/zxcvbn.js", "js/password.js"]
     form = RegistrationForm()
@@ -135,7 +142,7 @@ def register():
     return render_template("auth/register.html", form=form, jsloads=jsloads)
 
 
-@auth.route("/confirm/<token>", methods=["GET"])
+@auth.route("/confirm/<token>", methods=[HTTP_METHOD_GET])
 @login_required
 def confirm(token):
     if current_user.confirmed:
@@ -171,7 +178,7 @@ def resend_confirmation():
     return redirect(url_for("main.index"))
 
 
-@auth.route("/change-password", methods=["GET", "POST"])
+@auth.route("/change-password", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @login_required
 def change_password():
     jsloads = ["js/zxcvbn.js", "js/password.js"]
@@ -190,7 +197,7 @@ def change_password():
     return render_template("auth/change_password.html", form=form, jsloads=jsloads)
 
 
-@auth.route("/reset", methods=["GET", "POST"])
+@auth.route("/reset", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 def password_reset_request():
     if not current_user.is_anonymous:
         return redirect(url_for("main.index"))
@@ -213,7 +220,7 @@ def password_reset_request():
     return render_template("auth/reset_password.html", form=form)
 
 
-@auth.route("/reset/<token>", methods=["GET", "POST"])
+@auth.route("/reset/<token>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 def password_reset(token):
     if not current_user.is_anonymous:
         return redirect(url_for("main.index"))
@@ -232,7 +239,7 @@ def password_reset(token):
     return render_template("auth/reset_password.html", form=form)
 
 
-@auth.route("/change-email", methods=["GET", "POST"])
+@auth.route("/change-email", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @login_required
 def change_email_request():
     form = ChangeEmailForm()
@@ -269,7 +276,7 @@ def change_email(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/change-dept/", methods=["GET", "POST"])
+@auth.route("/change-dept/", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @login_required
 def change_dept():
     form = ChangeDefaultDepartmentForm()
@@ -289,7 +296,7 @@ def change_dept():
     return render_template("auth/change_dept_pref.html", form=form)
 
 
-@auth.route("/users/", methods=["GET"])
+@auth.route("/users/", methods=[HTTP_METHOD_GET])
 @admin_required
 def get_users():
     if request.args.get("page"):
@@ -302,17 +309,17 @@ def get_users():
     return render_template("auth/users.html", objects=users)
 
 
-@auth.route("/users/<int:user_id>", methods=["GET", "POST"])
+@auth.route("/users/<int:user_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @admin_required
 def edit_user(user_id):
     user = User.query.get(user_id)
     if not user:
-        return render_template("404.html"), 404
+        return render_template("404.html"), HTTPStatus.NOT_FOUND
 
-    if request.method == "GET":
+    if request.method == HTTP_METHOD_GET:
         form = EditUserForm(obj=user)
         return render_template("auth/user.html", user=user, form=form)
-    elif request.method == "POST":
+    elif request.method == HTTP_METHOD_POST:
         form = EditUserForm()
         if form.delete.data:
             # forward to confirm delete
@@ -348,13 +355,13 @@ def edit_user(user_id):
                 return render_template("auth/user.html", user=user, form=form)
 
 
-@auth.route("/users/<int:user_id>/delete", methods=["GET", "POST"])
+@auth.route("/users/<int:user_id>/delete", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @admin_required
 def delete_user(user_id):
     user = User.query.get(user_id)
     if not user or user.is_administrator:
-        return render_template("403.html"), 403
-    if request.method == "POST":
+        return render_template("403.html"), HTTPStatus.FORBIDDEN
+    if request.method == HTTP_METHOD_POST:
         username = user.username
         db.session.delete(user)
         db.session.commit()
