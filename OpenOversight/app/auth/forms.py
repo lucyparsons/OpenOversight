@@ -6,8 +6,8 @@ from wtforms import (
     SubmitField,
     ValidationError,
 )
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 from ..models import User
 from ..utils.db import dept_choices
@@ -134,8 +134,8 @@ class EditUserForm(Form):
     resend = SubmitField(label="Resend", false_values={"False", "false", ""})
     delete = SubmitField(label="Delete", false_values={"False", "false", ""})
 
-    def validate(self):
-        success = super(EditUserForm, self).validate()
+    def validate(self, extra_validators=None):
+        success = super(EditUserForm, self).validate(extra_validators=None)
         if self.is_area_coordinator.data and not self.ac_department.data:
             self.is_area_coordinator.errors = list(self.is_area_coordinator.errors)
             self.is_area_coordinator.errors.append(

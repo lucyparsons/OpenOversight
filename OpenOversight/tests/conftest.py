@@ -15,6 +15,7 @@ from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
+from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
@@ -230,9 +231,7 @@ def session(db, request):
     connection = db.engine.connect()
     transaction = connection.begin()
 
-    options = dict(bind=connection, binds={})
-    session = db.create_scoped_session(options=options)
-
+    session = scoped_session(session_factory=sessionmaker(bind=connection))
     db.session = session
 
     def teardown():
