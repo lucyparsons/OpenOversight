@@ -1,6 +1,6 @@
 -r requirements.txt
 
-Faker==15.0.0
+Faker==18.4.0
 flake8==6.0.0
 ipython
 mypy==0.982
