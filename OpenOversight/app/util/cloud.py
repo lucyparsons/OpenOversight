@@ -1,15 +1,17 @@
 import datetime
+import hashlib
 import imghdr as imghdr
+import os
+import sys
 from io import BytesIO
 from traceback import format_exc
-import sys
+from urllib.request import urlopen
 
 import boto3
 import botocore
 from botocore.exceptions import ClientError
 from flask import current_app
 from flask_login import current_user
-import hashlib
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
 
@@ -26,7 +28,6 @@ def crop_image(image, crop_data=None, department_id=None):
     """
     # Cropped officer face image size
     THUMBNAIL_SIZE = 1000, 1000
-
 
     if "http" in image.filepath:
         with urlopen(image.filepath) as response:
@@ -95,8 +96,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
     config = s3_client._client_config
     config.signature_version = botocore.UNSIGNED
-    url = boto3.resource("s3",
-                         config=config).meta.client.generate_presigned_url(
+    url = boto3.resource("s3", config=config).meta.client.generate_presigned_url(
         "get_object",
         Params={"Bucket": current_app.config["S3_BUCKET_NAME"], "Key": s3_path},
     )
@@ -113,8 +113,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
     if image_type not in current_app.config["ALLOWED_EXTENSIONS"]:
-        raise ValueError(
-            "Attempted to pass invalid data type: {}".format(image_type))
+        raise ValueError("Attempted to pass invalid data type: {}".format(image_type))
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
     date_taken = find_date_taken(pimage)

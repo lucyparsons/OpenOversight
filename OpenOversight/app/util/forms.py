@@ -3,10 +3,25 @@ import datetime
 from future.utils import iteritems
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql.expression import cast
 
 from ...app.main.choices import GENDER_CHOICES, RACE_CHOICES
+from ..models import (
+    Assignment,
+    Description,
+    Face,
+    Incident,
+    Job,
+    LicensePlate,
+    Link,
+    Location,
+    Note,
+    Officer,
+    Salary,
+    Unit,
+    db,
+)
 from .general import get_or_create
-from ..models import Assignment, Description, Face, Incident, Job, LicensePlate, Link, Location, Note, Officer, Salary, Unit, db
 
 
 def add_new_assignment(officer_id, form):
@@ -220,8 +235,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
         )
     if not department_id and form_data.get("dept"):
         department_id = form_data["dept"].id
-        officer_query = officer_query.filter(
-            Officer.department_id == department_id)
+        officer_query = officer_query.filter(Officer.department_id == department_id)
 
     if form_data.get("unique_internal_identifier"):
         officer_query = officer_query.filter(
@@ -231,21 +245,18 @@ def filter_by_form(form_data, officer_query, department_id=None):
         )
 
     race_values = [x for x, _ in RACE_CHOICES]
-    if form_data.get("race") and all(
-            race in race_values for race in form_data["race"]):
+    if form_data.get("race") and all(race in race_values for race in form_data["race"]):
         if "Not Sure" in form_data["race"]:
             form_data["race"].append(None)
-        officer_query = officer_query.filter(
-            Officer.race.in_(form_data["race"]))
+        officer_query = officer_query.filter(Officer.race.in_(form_data["race"]))
 
     gender_values = [x for x, _ in GENDER_CHOICES]
     if form_data.get("gender") and all(
-            gender in gender_values for gender in form_data["gender"]
+        gender in gender_values for gender in form_data["gender"]
     ):
         if "Not Sure" not in form_data["gender"]:
             officer_query = officer_query.filter(
-                or_(Officer.gender.in_(form_data["gender"]),
-                    Officer.gender.is_(None))
+                or_(Officer.gender.in_(form_data["gender"]), Officer.gender.is_(None))
             )
 
     if form_data.get("min_age") and form_data.get("max_age"):
@@ -288,11 +299,11 @@ def filter_by_form(form_data, officer_query, department_id=None):
             include_null_unit = True
 
     if (
-            form_data.get("badge")
-            or unit_ids
-            or include_null_unit
-            or job_ids
-            or form_data.get("current_job")
+        form_data.get("badge")
+        or unit_ids
+        or include_null_unit
+        or job_ids
+        or form_data.get("current_job")
     ):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
@@ -313,8 +324,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
             officer_query = officer_query.filter(Assignment.job_id.in_(job_ids))
 
         if form_data.get("current_job"):
-            officer_query = officer_query.filter(
-                Assignment.resign_date.is_(None))
+            officer_query = officer_query.filter(Assignment.resign_date.is_(None))
     officer_query = officer_query.options(
         selectinload(Officer.assignments_lazy)
     ).distinct()
