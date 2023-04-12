@@ -9,9 +9,8 @@ from wtforms import (
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, Regexp
 
-from OpenOversight.app.util.db import dept_choices
-
 from ..models import User
+from ..util.db import dept_choices
 
 
 class LoginForm(Form):
