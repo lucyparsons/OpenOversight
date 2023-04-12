@@ -16,7 +16,7 @@ from OpenOversight.tests.routes.route_helpers import login_user
 # Utils tests
 
 upload_s3_patch = patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
+    "OpenOversight.app.util.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 
@@ -264,7 +264,7 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
 
 
 @patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
+    "OpenOversight.app.util.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
@@ -289,7 +289,7 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
 
 
 @patch(
-    "OpenOversight.app.utils.upload_obj_to_s3",
+    "OpenOversight.app.util.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(
@@ -310,7 +310,7 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
         image = OpenOversight.app.models.Image.query.first()
 
         with patch(
-            "OpenOversight.app.utils.upload_image_to_s3_and_store_in_db"
+            "OpenOversight.app.util.cloud.upload_image_to_s3_and_store_in_db"
         ) as upload_image_to_s3_and_store_in_db:
             crop_image(image, None, department.id)
 

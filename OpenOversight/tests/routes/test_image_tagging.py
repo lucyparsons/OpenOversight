@@ -142,7 +142,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
 
 
 @patch(
-    "OpenOversight.app.utils.serve_image",
+    "OpenOversight.app.util.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
 def test_user_can_add_tag(mockdata, client, session):
@@ -331,7 +331,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
 
 
 @patch(
-    "OpenOversight.app.utils.serve_image",
+    "OpenOversight.app.util.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
 def test_featured_tag_replaces_others(mockdata, client, session):
