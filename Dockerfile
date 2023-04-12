@@ -8,7 +8,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 RUN apt-get update && \
     apt-get install -y wget && \
-    echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list && \
     wget -O - https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get update && \
     apt-get install -y \
@@ -17,8 +16,8 @@ RUN apt-get update && \
         python3-dev \
         nodejs \
         libjpeg62-turbo-dev \
+        libsqlite3-0 \
         zlib1g-dev && \
-    apt-get install -y -t stretch-backports libsqlite3-0 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
