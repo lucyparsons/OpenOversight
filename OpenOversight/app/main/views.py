@@ -42,9 +42,8 @@ from ..models import (
     User,
     db,
 )
+from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.util.utils import (
-    HTTP_METHOD_GET,
-    HTTP_METHOD_POST,
     ac_can_edit_officer,
     add_department_query,
     add_new_assignment,
