@@ -42,7 +42,8 @@ from OpenOversight.app.models import (
     User,
 )
 from OpenOversight.app.util.constants import ENCODING_UTF_8
-from OpenOversight.app.util.utils import add_new_assignment, dept_choices, unit_choices
+from OpenOversight.app.util.db import dept_choices, unit_choices
+from OpenOversight.app.util.forms import add_new_assignment
 
 from ..conftest import AC_DEPT, RANK_CHOICES_1
 from .route_helpers import login_ac, login_admin, login_user, process_form_data

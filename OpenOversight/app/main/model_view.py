@@ -8,7 +8,8 @@ from flask_sqlalchemy.model import DefaultMeta
 from flask_wtf import FlaskForm as Form
 
 from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
-from OpenOversight.app.util.utils import add_department_query, set_dynamic_default
+from OpenOversight.app.util.db import add_department_query
+from OpenOversight.app.util.forms import set_dynamic_default
 
 from ..auth.utils import ac_or_admin_required
 from ..models import db

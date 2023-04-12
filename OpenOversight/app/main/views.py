@@ -21,30 +21,33 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
+from OpenOversight.app.util.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
-from OpenOversight.app.util.utils import (
-    ac_can_edit_officer,
+from OpenOversight.app.util.db import (
     add_department_query,
+    add_unit_query,
+    compute_leaderboard_stats,
+    dept_choices,
+    unit_choices,
+)
+from OpenOversight.app.util.forms import (
     add_new_assignment,
     add_officer_profile,
-    add_unit_query,
-    allowed_file,
-    compute_leaderboard_stats,
     create_description,
     create_incident,
     create_note,
-    crop_image,
-    dept_choices,
     edit_existing_assignment,
     edit_officer_profile,
     filter_by_form,
+    set_dynamic_default,
+)
+from OpenOversight.app.util.general import (
+    ac_can_edit_officer,
+    allowed_file,
     get_or_create,
     get_random_image,
     replace_list,
     serve_image,
-    set_dynamic_default,
-    unit_choices,
-    upload_image_to_s3_and_store_in_db,
     validate_redirect_url,
 )
 
@@ -153,7 +156,8 @@ def get_officer():
                 else None,
                 rank=form.data["rank"] if form.data["rank"] != "Not Sure" else None,
                 unit=form.data["unit"] if form.data["unit"] != "Not Sure" else None,
-                current_job=form.data["current_job"] or None,  # set to None if False
+                current_job=form.data["current_job"] or None,
+                # set to None if False
                 min_age=form.data["min_age"],
                 max_age=form.data["max_age"],
                 first_name=form.data["first_name"],

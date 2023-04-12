@@ -7,12 +7,9 @@ from mock import MagicMock, Mock, patch
 
 import OpenOversight
 from OpenOversight.app.models import Department, Image, Officer, Unit
-from OpenOversight.app.util.utils import (
-    crop_image,
-    filter_by_form,
-    upload_image_to_s3_and_store_in_db,
-    validate_redirect_url,
-)
+from OpenOversight.app.util.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.util.forms import filter_by_form
+from OpenOversight.app.util.general import validate_redirect_url
 from OpenOversight.tests.routes.route_helpers import login_user
 
 
