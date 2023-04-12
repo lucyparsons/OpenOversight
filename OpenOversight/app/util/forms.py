@@ -123,7 +123,7 @@ def add_officer_profile(form, current_user):
     return officer
 
 
-def create_description(form):
+def create_description(self, form):
     return Description(
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
@@ -133,7 +133,7 @@ def create_description(form):
     )
 
 
-def create_incident(form):
+def create_incident(self, form):
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -186,7 +186,7 @@ def create_incident(form):
     )
 
 
-def create_note(form):
+def create_note(self, form):
     return Note(
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
