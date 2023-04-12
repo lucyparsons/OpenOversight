@@ -41,7 +41,7 @@ from OpenOversight.app.models import (
     Unit,
     User,
 )
-from OpenOversight.app.utils import (
+from OpenOversight.app.util.utils import (
     ENCODING_UTF_8,
     add_new_assignment,
     dept_choices,

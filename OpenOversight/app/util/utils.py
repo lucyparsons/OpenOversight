@@ -23,9 +23,9 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
 
-from .custom import add_jpeg_patch
-from .main.choices import GENDER_CHOICES, RACE_CHOICES
-from .models import (
+from OpenOversight.app.custom import add_jpeg_patch
+from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
+from OpenOversight.app.models import (
     Assignment,
     Department,
     Description,

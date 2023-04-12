@@ -9,7 +9,7 @@ from mock import MagicMock, patch
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models import Department, Face, Image, Officer
-from OpenOversight.app.utils import ENCODING_UTF_8
+from OpenOversight.app.util.utils import ENCODING_UTF_8
 
 from ..conftest import AC_DEPT
 from .route_helpers import login_ac, login_admin, login_user

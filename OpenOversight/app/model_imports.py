@@ -13,7 +13,7 @@ from .models import (
     Salary,
     db,
 )
-from .utils import get_or_create, str_is_true
+from OpenOversight.app.util.utils import get_or_create, str_is_true
 from .validators import state_validator, url_validator
 
 

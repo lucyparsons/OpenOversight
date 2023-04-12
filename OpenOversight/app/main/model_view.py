@@ -9,7 +9,7 @@ from flask_wtf import FlaskForm as Form
 
 from ..auth.utils import ac_or_admin_required
 from ..models import db
-from ..utils import (
+from OpenOversight.app.util.utils import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
     add_department_query,

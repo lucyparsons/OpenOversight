@@ -14,7 +14,7 @@ from flask.cli import with_appcontext
 
 from .csv_imports import import_csv_files
 from .models import Assignment, Department, Job, Officer, Salary, User, db
-from .utils import (
+from OpenOversight.app.util.utils import (
     ENCODING_UTF_8,
     get_officer,
     normalize_gender,

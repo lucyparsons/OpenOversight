@@ -14,7 +14,7 @@ from OpenOversight.app.main.forms import (
     OOIdForm,
 )
 from OpenOversight.app.models import Department, Incident, Officer
-from OpenOversight.app.utils import ENCODING_UTF_8
+from OpenOversight.app.util.utils import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 
 from .route_helpers import login_ac, login_admin, login_user, process_form_data
