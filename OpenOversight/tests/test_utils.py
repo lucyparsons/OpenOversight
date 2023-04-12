@@ -113,13 +113,17 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     officer = OpenOversight.app.models.Officer(
         first_name="Rachel", last_name="S", department=department, birth_year=1992
     )
-    results = OpenOversight.app.util.utils.grab_officers({"name": "S", "dept": department})
+    results = OpenOversight.app.util.utils.grab_officers(
+        {"name": "S", "dept": department}
+    )
     assert officer in results.all()
 
 
 def test_filter_by_badge_no(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.utils.grab_officers({"badge": "12", "dept": department})
+    results = OpenOversight.app.util.utils.grab_officers(
+        {"badge": "12", "dept": department}
+    )
     for element in results.all():
         assignment = element.assignments.first()
         assert "12" in str(assignment.star_no)
@@ -183,7 +187,9 @@ def test_s3_upload_png(mockdata, test_png_BytesIO):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.util.utils.upload_obj_to_s3(test_png_BytesIO, "test_cop1.png")
+            OpenOversight.app.util.utils.upload_obj_to_s3(
+                test_png_BytesIO, "test_cop1.png"
+            )
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/png"
@@ -195,7 +201,9 @@ def test_s3_upload_jpeg(mockdata, test_jpg_BytesIO):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.util.utils.upload_obj_to_s3(test_jpg_BytesIO, "test_cop5.jpg")
+            OpenOversight.app.util.utils.upload_obj_to_s3(
+                test_jpg_BytesIO, "test_cop5.jpg"
+            )
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/jpeg"

@@ -21,27 +21,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
-from .. import limiter, sitemap
-from ..auth.forms import LoginForm
-from ..auth.utils import ac_or_admin_required, admin_required
-from ..models import (
-    Assignment,
-    Department,
-    Description,
-    Face,
-    Image,
-    Incident,
-    Job,
-    LicensePlate,
-    Link,
-    Location,
-    Note,
-    Officer,
-    Salary,
-    Unit,
-    User,
-    db,
-)
 from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.util.utils import (
     ac_can_edit_officer,
@@ -67,6 +46,28 @@ from OpenOversight.app.util.utils import (
     unit_choices,
     upload_image_to_s3_and_store_in_db,
     validate_redirect_url,
+)
+
+from .. import limiter, sitemap
+from ..auth.forms import LoginForm
+from ..auth.utils import ac_or_admin_required, admin_required
+from ..models import (
+    Assignment,
+    Department,
+    Description,
+    Face,
+    Image,
+    Incident,
+    Job,
+    LicensePlate,
+    Link,
+    Location,
+    Note,
+    Officer,
+    Salary,
+    Unit,
+    User,
+    db,
 )
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES

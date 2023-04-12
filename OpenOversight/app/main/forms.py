@@ -29,9 +29,10 @@ from wtforms.validators import (
     ValidationError,
 )
 
+from OpenOversight.app.util.utils import dept_choices, unit_choices
+
 from ..formfields import TimeField
 from ..models import Officer
-from OpenOversight.app.util.utils import dept_choices, unit_choices
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from .choices import (
     AGE_CHOICES,
