@@ -16,14 +16,14 @@ from OpenOversight.tests.routes.route_helpers import login_user
 # Utils tests
 
 upload_s3_patch = patch(
-    "OpenOversight.app.util.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 
 
 def test_department_filter(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {
             "race": ["Not Sure"],
             "gender": ["Not Sure"],
@@ -42,7 +42,7 @@ def test_department_filter(mockdata):
 
 def test_race_filter_select_all_black_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"race": ["BLACK"], "dept": department}
     )
     for element in results.all():
@@ -51,7 +51,7 @@ def test_race_filter_select_all_black_officers(mockdata):
 
 def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"gender": ["M"], "dept": department}
     )
 
@@ -64,7 +64,7 @@ def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
 
 def test_gender_filter_include_all_genders_if_not_sure(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"gender": ["Not Sure"], "dept": department}
     )
 
@@ -78,7 +78,7 @@ def test_gender_filter_include_all_genders_if_not_sure(mockdata):
 
 def test_rank_filter_select_all_commanders(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"rank": ["Commander"], "dept": department}
     )
     for element in results.all():
@@ -88,7 +88,7 @@ def test_rank_filter_select_all_commanders(mockdata):
 
 def test_rank_filter_select_all_police_officers(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"rank": ["Police Officer"], "dept": department}
     )
     for element in results.all():
@@ -98,7 +98,7 @@ def test_rank_filter_select_all_police_officers(mockdata):
 
 def test_filter_by_name(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"last_name": "J", "dept": department}
     )
     for element in results.all():
@@ -110,7 +110,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     officer = OpenOversight.app.models.Officer(
         first_name="Rachel", last_name="S", department=department, birth_year=1992
     )
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"name": "S", "dept": department}
     )
     assert officer in results.all()
@@ -118,7 +118,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
 
 def test_filter_by_badge_no(mockdata):
     department = OpenOversight.app.models.Department.query.first()
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {"badge": "12", "dept": department}
     )
     for element in results.all():
@@ -131,7 +131,7 @@ def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
     target_unique_internal_id = (
         OpenOversight.app.models.Officer.query.first().unique_internal_identifier
     )
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {
             "race": ["Not Sure"],
             "gender": ["Not Sure"],
@@ -155,7 +155,7 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
         OpenOversight.app.models.Officer.query.first().unique_internal_identifier
     )
     partial_identifier = identifier[: len(identifier) // 2]
-    results = OpenOversight.app.util.forms.grab_officers(
+    results = OpenOversight.app.utils.forms.grab_officers(
         {
             "race": ["Not Sure"],
             "gender": ["Not Sure"],
@@ -174,7 +174,7 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
 
 
 def test_compute_hash(mockdata):
-    hash_result = OpenOversight.app.util.cloud.compute_hash(b"bacon")
+    hash_result = OpenOversight.app.utils.cloud.compute_hash(b"bacon")
     expected_hash = "9cca0703342e24806a9f64e08c053dca7f2cd90f10529af8ea872afb0a0c77d4"
     assert hash_result == expected_hash
 
@@ -184,7 +184,7 @@ def test_s3_upload_png(mockdata, test_png_BytesIO):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.util.cloud.upload_obj_to_s3(
+            OpenOversight.app.utils.cloud.upload_obj_to_s3(
                 test_png_BytesIO, "test_cop1.png"
             )
 
@@ -198,7 +198,7 @@ def test_s3_upload_jpeg(mockdata, test_jpg_BytesIO):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.util.cloud.upload_obj_to_s3(
+            OpenOversight.app.utils.cloud.upload_obj_to_s3(
                 test_jpg_BytesIO, "test_cop5.jpg"
             )
 
@@ -215,21 +215,21 @@ def test_user_can_submit_allowed_file(mockdata):
         "valid_photo.PNG",
         "valid_photo.JPG",
     ]:
-        assert OpenOversight.app.util.general.allowed_file(file_to_submit) is True
+        assert OpenOversight.app.utils.general.allowed_file(file_to_submit) is True
 
 
 def test_user_cannot_submit_malicious_file(mockdata):
     file_to_submit = "passwd"
-    assert OpenOversight.app.util.general.allowed_file(file_to_submit) is False
+    assert OpenOversight.app.utils.general.allowed_file(file_to_submit) is False
 
 
 def test_user_cannot_submit_invalid_file_extension(mockdata):
     file_to_submit = "tests/test_models.py"
-    assert OpenOversight.app.util.general.allowed_file(file_to_submit) is False
+    assert OpenOversight.app.utils.general.allowed_file(file_to_submit) is False
 
 
 def test_unit_choices(mockdata):
-    unit_choices = [str(x) for x in OpenOversight.app.util.db.unit_choices()]
+    unit_choices = [str(x) for x in OpenOversight.app.utils.db.unit_choices()]
     assert "Unit: Bureau of Organized Crime" in unit_choices
 
 
@@ -264,7 +264,7 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
 
 
 @patch(
-    "OpenOversight.app.util.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
@@ -289,7 +289,7 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
 
 
 @patch(
-    "OpenOversight.app.util.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(
@@ -310,7 +310,7 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
         image = OpenOversight.app.models.Image.query.first()
 
         with patch(
-            "OpenOversight.app.util.cloud.upload_image_to_s3_and_store_in_db"
+            "OpenOversight.app.utils.cloud.upload_image_to_s3_and_store_in_db"
         ) as upload_image_to_s3_and_store_in_db:
             crop_image(image, None, department.id)
 

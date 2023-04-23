@@ -9,7 +9,6 @@ from future.utils import iteritems
 
 from ...app.custom import add_jpeg_patch
 
-
 # Call JPEG patch function
 add_jpeg_patch()
 
@@ -22,12 +21,15 @@ def ac_can_edit_officer(officer, ac):
 
 def allowed_file(filename):
     return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in current_app.config["ALLOWED_EXTENSIONS"]
+            "." in filename
+            and filename.rsplit(".", 1)[1].lower()
+            in current_app.config["ALLOWED_EXTENSIONS"]
     )
 
 
+# This function is also used in the `utils/forms.py` file, so there's potential
+# for a circular import scenario. Should a circular import scenario pop up,
+# this function can be moved to its own file.
 def get_or_create(session, model, defaults=None, **kwargs):
     if "csrf_token" in kwargs:
         kwargs.pop("csrf_token")
@@ -114,7 +116,8 @@ def prompt_yes_no(prompt, default="no"):
         try:
             ret = strtobool(choice)
         except ValueError:
-            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+            sys.stdout.write(
+                "Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
             continue
         return ret
 
@@ -129,7 +132,8 @@ def replace_list(items, obj, attr, model, db):
     """
     new_list = []
     if not hasattr(obj, attr):
-        raise LookupError("The object does not have the {} attribute".format(attr))
+        raise LookupError(
+            "The object does not have the {} attribute".format(attr))
 
     for item in items:
         new_item, _ = get_or_create(db.session, model, **item)
@@ -141,7 +145,8 @@ def serve_image(filepath):
     if "http" in filepath:
         return filepath
     if "static" in filepath:
-        return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
+        return url_for("static",
+                       filename=filepath.replace("static/", "").lstrip("/"))
 
 
 def str_is_true(str_):
