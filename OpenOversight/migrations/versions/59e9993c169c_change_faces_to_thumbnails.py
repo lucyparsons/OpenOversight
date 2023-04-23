@@ -15,7 +15,7 @@ from flask import current_app
 sys.path.insert(0, os.path.dirname(current_app.root_path))
 
 from app.models import Face, db  # noqa: E402
-from app.utils.cloud import crop_image  # noqa: E402
+from app.util.cloud import crop_image  # noqa: E402
 
 
 # revision identifiers, used by Alembic.
