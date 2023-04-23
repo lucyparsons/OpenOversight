@@ -31,7 +31,7 @@ services:
      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
-     FLASK_APP: app
+     FLASK_APP: OpenOversight.app
      FLASK_ENV: "${FLASK_ENV:-development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
@@ -40,6 +40,5 @@ services:
      - postgres:postgres
    expose:
      - "3000"
-   command: scripts/entrypoint.sh
    ports:
      - "3000:3000"
