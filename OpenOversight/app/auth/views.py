@@ -11,9 +11,9 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
-from OpenOversight.app.util.forms import set_dynamic_default
-from OpenOversight.app.util.general import validate_redirect_url
+from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
+from OpenOversight.app.utils.forms import set_dynamic_default
+from OpenOversight.app.utils.general import validate_redirect_url
 
 from .. import sitemap
 from ..email import send_email

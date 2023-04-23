@@ -20,8 +20,8 @@ from xvfbwrapper import Xvfb
 from OpenOversight.app import create_app, models
 from OpenOversight.app.models import Job, Officer, Unit
 from OpenOversight.app.models import db as _db
-from OpenOversight.app.util.constants import ENCODING_UTF_8
-from OpenOversight.app.util.general import merge_dicts
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 

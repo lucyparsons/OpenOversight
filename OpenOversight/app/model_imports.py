@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
-from OpenOversight.app.util.general import get_or_create, str_is_true
+from OpenOversight.app.utils.general import get_or_create, str_is_true
 
 from .main import choices
 from .models import (

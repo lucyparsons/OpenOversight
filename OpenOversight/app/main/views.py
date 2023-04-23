@@ -21,16 +21,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
-from OpenOversight.app.util.cloud import crop_image, upload_image_to_s3_and_store_in_db
-from OpenOversight.app.util.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
-from OpenOversight.app.util.db import (
+from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
+from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
     compute_leaderboard_stats,
     dept_choices,
     unit_choices,
 )
-from OpenOversight.app.util.forms import (
+from OpenOversight.app.utils.forms import (
     add_new_assignment,
     add_officer_profile,
     create_description,
@@ -41,7 +41,7 @@ from OpenOversight.app.util.forms import (
     filter_by_form,
     set_dynamic_default,
 )
-from OpenOversight.app.util.general import (
+from OpenOversight.app.utils.general import (
     ac_can_edit_officer,
     allowed_file,
     get_or_create,

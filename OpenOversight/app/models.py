@@ -12,7 +12,7 @@ from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import login_manager
-from .util.constants import ENCODING_UTF_8
+from .utils.constants import ENCODING_UTF_8
 from .validators import state_validator, url_validator
 
 
