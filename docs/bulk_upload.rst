@@ -80,10 +80,13 @@ Current Employment information:
 Salary information:
 ~~~~~~~~~~~~~~~~~~~
 
--  ``salary_year`` year of which the salary information is provided
--  ``salary_is_fiscal_year`` 'true' or 'false', salary information is on
+If adding salary data, the following fields are required: ``salary_year``,
+``salary_is_fiscal_year``, and ``salary``.
+
+-  ``salary_year`` *(required)* - year of which the salary information is provided
+-  ``salary_is_fiscal_year`` *(required)* - 'true' or 'false', salary information is on
    fiscal year basis vs. calendar year
--  ``salary`` salary in given year
+-  ``salary`` *(required)* - salary in given year
 -  ``overtime_pay`` overtime received in given year
 
 Required fields
