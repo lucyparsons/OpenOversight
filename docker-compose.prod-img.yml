@@ -7,7 +7,7 @@ services:
       - .env
     environment:
       ENVIRONMENT: production
-      FLASK_APP: app
+      FLASK_APP: OpenOversight.app
     volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/
      - ./static/:/usr/src/app/OpenOversight/static
