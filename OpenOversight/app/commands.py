@@ -13,15 +13,12 @@ from dateutil.parser import parse
 from flask import current_app
 from flask.cli import with_appcontext
 
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.db import get_officer
+from OpenOversight.app.utils.general import normalize_gender, prompt_yes_no, str_is_true
+
 from .csv_imports import import_csv_files
 from .models import Assignment, Department, Face, Job, Officer, Salary, User, db
-from .utils import (
-    ENCODING_UTF_8,
-    get_officer,
-    normalize_gender,
-    prompt_yes_no,
-    str_is_true,
-)
 
 
 @click.command()

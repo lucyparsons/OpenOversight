@@ -21,6 +21,36 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
+from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
+from OpenOversight.app.utils.db import (
+    add_department_query,
+    add_unit_query,
+    compute_leaderboard_stats,
+    dept_choices,
+    unit_choices,
+)
+from OpenOversight.app.utils.forms import (
+    add_new_assignment,
+    add_officer_profile,
+    create_description,
+    create_incident,
+    create_note,
+    edit_existing_assignment,
+    edit_officer_profile,
+    filter_by_form,
+    set_dynamic_default,
+)
+from OpenOversight.app.utils.general import (
+    ac_can_edit_officer,
+    allowed_file,
+    get_or_create,
+    get_random_image,
+    replace_list,
+    serve_image,
+    validate_redirect_url,
+)
+
 from .. import limiter, sitemap
 from ..auth.forms import LoginForm
 from ..auth.utils import ac_or_admin_required, admin_required
@@ -41,33 +71,6 @@ from ..models import (
     Unit,
     User,
     db,
-)
-from ..utils import (
-    HTTP_METHOD_GET,
-    HTTP_METHOD_POST,
-    ac_can_edit_officer,
-    add_department_query,
-    add_new_assignment,
-    add_officer_profile,
-    add_unit_query,
-    allowed_file,
-    compute_leaderboard_stats,
-    create_description,
-    create_incident,
-    create_note,
-    crop_image,
-    dept_choices,
-    edit_existing_assignment,
-    edit_officer_profile,
-    filter_by_form,
-    get_or_create,
-    get_random_image,
-    replace_list,
-    serve_image,
-    set_dynamic_default,
-    unit_choices,
-    upload_image_to_s3_and_store_in_db,
-    validate_redirect_url,
 )
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
@@ -153,7 +156,8 @@ def get_officer():
                 else None,
                 rank=form.data["rank"] if form.data["rank"] != "Not Sure" else None,
                 unit=form.data["unit"] if form.data["unit"] != "Not Sure" else None,
-                current_job=form.data["current_job"] or None,  # set to None if False
+                current_job=form.data["current_job"] or None,
+                # set to None if False
                 min_age=form.data["min_age"],
                 max_age=form.data["max_age"],
                 first_name=form.data["first_name"],

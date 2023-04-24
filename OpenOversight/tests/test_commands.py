@@ -28,7 +28,7 @@ from OpenOversight.app.models import (
     Salary,
     Unit,
 )
-from OpenOversight.app.utils import get_officer
+from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
 

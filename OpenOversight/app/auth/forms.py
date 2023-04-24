@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, R
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from ..models import User
-from ..utils import dept_choices
+from ..utils.db import dept_choices
 
 
 class LoginForm(Form):
