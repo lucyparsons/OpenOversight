@@ -1,6 +1,6 @@
 ARG TRAVIS_PYTHON_VERSION
 ARG DOCKER_BUILD_ENV
-FROM python:${TRAVIS_PYTHON_VERSION:-3.5}-buster
+FROM python:${TRAVIS_PYTHON_VERSION:-3.8}-buster
 
 WORKDIR /usr/src/app
 
@@ -57,6 +57,6 @@ ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
-WORKDIR /usr/src/app/OpenOversight
+WORKDIR /usr/src/app/
 
-CMD ["scripts/entrypoint.sh"]
+CMD ["OpenOversight/scripts/entrypoint_dev.sh"]

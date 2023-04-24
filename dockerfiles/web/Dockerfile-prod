@@ -46,9 +46,9 @@ RUN yarn
 # Copy python script to initialize database.
 COPY create_db.py /usr/src/app/
 
-WORKDIR /usr/src/app/OpenOversight
+WORKDIR /usr/src/app/
 
 FROM base as production
 # Copy source files.
-COPY OpenOversight .
-CMD ["scripts/entrypoint_prod.sh"]
+COPY OpenOversight OpenOversight
+CMD ["OpenOversight/scripts/entrypoint_prod.sh"]
