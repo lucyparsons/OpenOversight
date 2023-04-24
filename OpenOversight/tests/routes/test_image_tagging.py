@@ -9,7 +9,7 @@ from mock import MagicMock, patch
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models import Department, Face, Image, Officer
-from OpenOversight.app.utils import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
 
 from ..conftest import AC_DEPT
 from .route_helpers import login_ac, login_admin, login_user
@@ -142,7 +142,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
 
 
 @patch(
-    "OpenOversight.app.utils.serve_image",
+    "OpenOversight.app.utils.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
 def test_user_can_add_tag(mockdata, client, session):
@@ -331,7 +331,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
 
 
 @patch(
-    "OpenOversight.app.utils.serve_image",
+    "OpenOversight.app.utils.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
 def test_featured_tag_replaces_others(mockdata, client, session):

@@ -93,6 +93,9 @@ vagrant/puppet/.tmp
 .vscode/**
 *.code-workspace
 
+# Operating system files
+**/.DS_Store
+
 node_modules/
 OpenOverSight/app/static/dist/
 static/

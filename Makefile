@@ -85,5 +85,6 @@ help: ## Print this message and exit
 		| sort \
 		| column -s ':' -t
 
+.PHONY: attach
 attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev

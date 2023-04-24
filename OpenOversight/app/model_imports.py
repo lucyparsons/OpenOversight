@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
+from OpenOversight.app.utils.general import get_or_create, str_is_true
+
 from .main import choices
 from .models import (
     Assignment,
@@ -13,7 +15,6 @@ from .models import (
     Salary,
     db,
 )
-from .utils import get_or_create, str_is_true
 from .validators import state_validator, url_validator
 
 

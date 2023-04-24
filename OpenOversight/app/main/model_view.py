@@ -7,14 +7,12 @@ from flask_login import current_user, login_required
 from flask_sqlalchemy.model import DefaultMeta
 from flask_wtf import FlaskForm as Form
 
+from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
+from OpenOversight.app.utils.db import add_department_query
+from OpenOversight.app.utils.forms import set_dynamic_default
+
 from ..auth.utils import ac_or_admin_required
 from ..models import db
-from ..utils import (
-    HTTP_METHOD_GET,
-    HTTP_METHOD_POST,
-    add_department_query,
-    set_dynamic_default,
-)
 
 
 class ModelView(MethodView):

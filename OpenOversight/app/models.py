@@ -12,11 +12,11 @@ from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import login_manager
+from .utils.constants import ENCODING_UTF_8
 from .validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
-model_encoding = "utf-8"
 jwt = JsonWebToken("HS512")
 
 BaseModel = db.Model  # type: DefaultMeta
@@ -552,7 +552,7 @@ class User(UserMixin, BaseModel):
 
     def generate_confirmation_token(self, expiration=3600):
         payload = {"confirm": self.id}
-        return self._jwt_encode(payload, expiration).decode(model_encoding)
+        return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def confirm(self, token):
         try:
@@ -572,7 +572,7 @@ class User(UserMixin, BaseModel):
 
     def generate_reset_token(self, expiration=3600):
         payload = {"reset": self.id}
-        return self._jwt_encode(payload, expiration).decode(model_encoding)
+        return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def reset_password(self, token, new_password):
         try:
@@ -588,7 +588,7 @@ class User(UserMixin, BaseModel):
 
     def generate_email_change_token(self, new_email, expiration=3600):
         payload = {"change_email": self.id, "new_email": new_email}
-        return self._jwt_encode(payload, expiration).decode(model_encoding)
+        return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def change_email(self, token):
         try:

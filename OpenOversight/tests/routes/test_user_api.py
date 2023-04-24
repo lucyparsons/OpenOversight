@@ -6,7 +6,11 @@ from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.models import User, db
-from OpenOversight.app.utils import ENCODING_UTF_8, HTTP_METHOD_GET, HTTP_METHOD_POST
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    HTTP_METHOD_GET,
+    HTTP_METHOD_POST,
+)
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
