@@ -42,7 +42,8 @@ COPY package.json /usr/src/app/
 RUN yarn
 COPY create_db.py /usr/src/app/
 
-WORKDIR /usr/src/app/OpenOversight
+WORKDIR /usr/src/app/
+COPY OpenOversight OpenOversight
 
 # Development Target
 FROM base as development
@@ -56,11 +57,8 @@ RUN apt-get update && \
 COPY requirements-dev.txt /usr/src/app/
 RUN pip3 install -r /usr/src/app/requirements-dev.txt
 
-COPY OpenOversight .
-
-CMD ["scripts/entrypoint.sh"]
+CMD ["OpenOversight/scripts/entrypoint.sh"]
 
 # Production Target
 FROM base as production
-COPY OpenOversight .
-CMD ["scripts/entrypoint.sh"]
+CMD ["OpenOversight/scripts/entrypoint.sh"]

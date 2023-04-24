@@ -6,6 +6,14 @@ default: build start create_db populate test stop clean
 build:  ## Build containers
 	docker-compose build
 
+.PHONY: build_with_version
+build_with_version:
+	docker-compose build --build-arg TRAVIS_PYTHON_VERSION=$(PYTHON_VERSION)
+
+.PHONY: test_with_version
+test_with_version: build_with_version assets
+	FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+
 .PHONY: start
 start: build  ## Run containers
 	docker-compose up -d
@@ -44,13 +52,9 @@ testlocal:
 .PHONY: test
 test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
-	    if [ "$$(uname)" == "Darwin" ]; then \
-			ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -n $$(sysctl -n hw.logicalcpu) --dist=loadfile -v tests/ app; \
-		else \
-			ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -n $$(nproc --all) --dist=loadfile -v tests/ app; \
-		fi; \
+		FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-	    ENVIRONMENT=testing docker-compose run --rm web pytest --doctest-modules -v tests/ app -k $(name); \
+	    FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint
