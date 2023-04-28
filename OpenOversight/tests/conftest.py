@@ -15,7 +15,6 @@ from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
-from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
@@ -200,15 +199,13 @@ def app(request):
     app = create_app("testing")
     app.config["WTF_CSRF_ENABLED"] = False
 
-    # Establish an application context before running the tests.
-    ctx = app.app_context()
-    ctx.push()
+    yield app
 
-    def teardown():
-        ctx.pop()
 
-    request.addfinalizer(teardown)
-    return app
+@pytest.fixture(autouse=True)
+def ctx(app):
+    with app.app_context():
+        yield
 
 
 @pytest.fixture(scope="session")
@@ -231,7 +228,9 @@ def session(db, request):
     connection = db.engine.connect()
     transaction = connection.begin()
 
-    session = scoped_session(session_factory=sessionmaker(bind=connection))
+    options = dict(bind=connection, binds={})
+    session = db.create_scoped_session(options=options)
+
     db.session = session
 
     def teardown():
@@ -682,20 +681,18 @@ def csvfile(mockdata, tmp_path, request):
 
 
 @pytest.fixture
-def client(app, request):
+def client(app):
     client = app.test_client()
-
-    def teardown():
-        pass
-
-    request.addfinalizer(teardown)
-    return client
+    yield client
 
 
-@pytest.fixture
-def browser(app, request):
+@pytest.fixture(scope="session")
+def browser(app):
     # start server
-    threading.Thread(target=app.run).start()
+    port = 5000
+    threading.Thread(
+        target=app.run, daemon=True, kwargs={"debug": False, "port": port}
+    ).start()
     # give the server a few seconds to ensure it is up
     time.sleep(10)
 
@@ -706,10 +703,6 @@ def browser(app, request):
     # wait for browser to start up
     time.sleep(3)
     yield driver
-
-    # shutdown server
-    driver.get("http://localhost:5000/shutdown")
-    time.sleep(3)
 
     # shutdown headless webdriver
     driver.quit()
