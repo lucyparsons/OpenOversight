@@ -10,7 +10,7 @@ Flask-Login==0.6.2
 Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
-Flask-SQLAlchemy==2.5.1
+Flask-SQLAlchemy==3.0.3
 Flask-WTF==1.1.1
 gunicorn==19.9
 Markdown==3.2.2
