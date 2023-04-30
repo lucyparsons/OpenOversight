@@ -682,14 +682,28 @@ def csvfile(mockdata, tmp_path, request):
 
 @pytest.fixture
 def client(app):
-    client = app.test_client()
-    yield client
+    with app.app_context():
+        client = app.test_client()
+        yield client
 
 
 @pytest.fixture(scope="session")
-def browser(app):
+def worker_number(worker_id):
+    if len(worker_id) < 2 or worker_id[:2] != "gw":
+        return 0
+    return int(worker_id[2:])
+
+
+@pytest.fixture(scope="session")
+def server_port(worker_number):
+    return 5000 + worker_number
+
+
+@pytest.fixture(scope="session")
+def browser(app, server_port):
     # start server
-    port = 5000
+    port = server_port
+    print("Starting server at port {port}")
     threading.Thread(
         target=app.run, daemon=True, kwargs={"debug": False, "port": port}
     ).start()
