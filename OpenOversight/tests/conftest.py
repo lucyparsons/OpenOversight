@@ -48,6 +48,10 @@ RANK_CHOICES_2 = [
     "Chief",
 ]
 
+DEPARTMENT_NAME = "Springfield Police Department"
+DEPARTMENT_TWO_NAME = "Chicago Police Department"
+DEPARTMENT_EMPTY_NAME = "Empty Police Department"
+
 
 AC_DEPT = 1
 
@@ -116,7 +120,7 @@ def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
-def generate_officer():
+def generate_officer(department):
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
     return models.Officer(
@@ -127,7 +131,7 @@ def generate_officer():
         gender=pick_gender(),
         birth_year=year_born,
         employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
-        department_id=pick_department().id,
+        department_id=department.id,
         unique_internal_identifier=pick_uid(),
     )
 
@@ -216,6 +220,13 @@ def db(app):
     with app.app_context():
         _db.app = app
         _db.create_all()
+        connection = _db.engine.connect()
+        session = scoped_session(session_factory=sessionmaker(bind=connection))
+        _db.session = session
+        add_mockdata(session)
+        session.commit()
+        connection.close()
+        session.remove()
 
         yield _db
 
@@ -269,28 +280,44 @@ def test_csv_dir():
 def add_mockdata(session):
     NUM_OFFICERS = current_app.config["NUM_OFFICERS"]
     department = models.Department(
-        name="Springfield Police Department",
+        name=DEPARTMENT_NAME,
         short_name="SPD",
         unique_internal_identifier_label="homer_number",
     )
     session.add(department)
-    department2 = models.Department(name="Chicago Police Department", short_name="CPD")
+    department2 = models.Department(name=DEPARTMENT_TWO_NAME, short_name="CPD")
     session.add(department2)
+    empty_department = models.Department(name=DEPARTMENT_EMPTY_NAME, short_name="EPD")
+    session.add(empty_department)
     session.commit()
 
-    i = 0
-    for rank in RANK_CHOICES_1:
+    for i, rank in enumerate(RANK_CHOICES_1):
         session.add(
-            models.Job(job_title=rank, order=i, is_sworn_officer=True, department_id=1)
+            models.Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=department.id,
+            )
         )
-        i += 1
+        session.add(
+            models.Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=empty_department.id,
+            )
+        )
 
-    i = 0
-    for rank in RANK_CHOICES_2:
+    for i, rank in enumerate(RANK_CHOICES_2):
         session.add(
-            models.Job(job_title=rank, order=i, is_sworn_officer=True, department_id=2)
+            models.Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=department2.id,
+            )
         )
-        i += 1
     session.commit()
 
     # Ensure test data is deterministic
@@ -310,15 +337,18 @@ def add_mockdata(session):
 
     test_images = [
         models.Image(
-            filepath="/static/images/test_cop{}.png".format(x + 1), department_id=1
+            filepath="/static/images/test_cop{}.png".format(x + 1),
+            department_id=department.id,
         )
         for x in range(5)
     ] + [
         models.Image(
-            filepath="/static/images/test_cop{}.png".format(x + 1), department_id=2
+            filepath="/static/images/test_cop{}.png".format(x + 1),
+            department_id=department2.id,
         )
         for x in range(5)
     ]
+    session.add_all(test_images)
 
     test_officer_links = [
         models.Link(
@@ -335,10 +365,11 @@ def add_mockdata(session):
         ),
     ]
 
-    officers = [generate_officer() for o in range(NUM_OFFICERS)]
+    officers = []
+    for d in [department, department2]:
+        officers += [generate_officer(d) for _ in range(NUM_OFFICERS)]
     officers[0].links = test_officer_links
     session.add_all(officers)
-    session.add_all(test_images)
 
     session.commit()
 
@@ -348,7 +379,7 @@ def add_mockdata(session):
 
     # assures that there are some assigned and unassigned images in each department
     assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
-    assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(2).all()
+    assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(3).all()
 
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
@@ -553,35 +584,18 @@ def add_mockdata(session):
 
 @pytest.fixture
 def mockdata(session):
-    return add_mockdata(session)
+    pass
+    # return add_mockdata(session)
 
 
 @pytest.fixture
 def department(session):
-    department = models.Department(
-        id=1,
-        name="Springfield Police Department",
-        short_name="SPD",
-        unique_internal_identifier_label="homer_number",
-    )
-    session.add(department)
-    session.commit()
-    return department
+    return models.Department.query.filter_by(name=DEPARTMENT_NAME).one()
 
 
 @pytest.fixture
-def department_with_ranks(department, session):
-    for order, rank in enumerate(RANK_CHOICES_1):
-        session.add(
-            models.Job(
-                job_title=rank,
-                order=order,
-                is_sworn_officer=True,
-                department=department,
-            )
-        )
-    session.commit()
-    return department
+def new_department(session):
+    return models.Department.query.filter_by(name=DEPARTMENT_EMPTY_NAME).one()
 
 
 @pytest.fixture
