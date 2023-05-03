@@ -1087,25 +1087,29 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     other_department = Department(name="Other department", short_name="OPD")
     session.add(other_department)
 
+    cop1_id = 999001
+    cop2_id = 999002
     officer = Officer(
-        id=99001,
+        id=cop1_id,
         department_id=department.id,
         first_name="Already",
         last_name="InDatabase",
     )
     officer2 = Officer(
-        id=99002,
+        id=cop2_id,
         department_id=department.id,
         first_name="Also",
         last_name="InDatabase",
     )
+    a1_id = 999101
+    a2_id = 999102
     assignment = Assignment(
-        id=123,
+        id=a1_id,
         officer_id=officer.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
     )
     assignment2 = Assignment(
-        id=124,
+        id=a2_id,
         officer_id=officer2.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
     )
@@ -1127,17 +1131,19 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
 
     officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
 
+    b1 = "12345"
+    b2 = "999"
     assignments_data = [
         {
-            "officer_id": 99001,
+            "officer_id": cop1_id,
             "job title": "Captain",
-            "badge number": "12345",
+            "badge number": b1,
             "start date": "2020-07-24",
         },
         {
             "officer_id": "#1",
             "job title": "Police Officer",
-            "badge number": "999",
+            "badge number": b2,
             "start date": "2020-07-21",
         },
     ]
@@ -1161,17 +1167,17 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     assert result.exit_code == 0
 
     # make sure all the data is imported as expected
-    cop1 = Officer.query.get(99001)
+    cop1 = Officer.query.get(cop1_id)
     assert len(cop1.assignments.all()) == 1
-    assert cop1.assignments[0].star_no == "12345"
+    assert cop1.assignments[0].star_no == b1
 
-    cop2 = Officer.query.get(99002)
+    cop2 = Officer.query.get(cop2_id)
     assert len(cop2.assignments.all()) == 1
-    assert cop2.assignments[0] == Assignment.query.get(124)
+    assert cop2.assignments[0] == Assignment.query.get(a2_id)
 
-    cop3 = Officer.query.filter_by(first_name="Second").first()
+    cop3 = Officer.query.filter_by(first_name="Second", last_name="Test").first()
     assert len(cop3.assignments.all()) == 1
-    assert cop3.assignments[0].star_no == "999"
+    assert cop3.assignments[0].star_no == b2
     assert cop3.assignments[0].job.job_title == "Police Officer"
 
 
@@ -1318,11 +1324,10 @@ def test_advanced_csv_import__unit_other_department(
     assert result.exit_code != 0
 
 
-def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, session):
+def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(
+    app, session, new_department
+):
     with app.app_context():
-        department = Department(name="Cityname Police Department", short_name="CNPD")
-        session.add(department)
-        session.commit()
         lookup_officer = Officer.query.filter_by(
             first_name="NewOfficerFromRow"
         ).one_or_none()
@@ -1335,7 +1340,7 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
             "employment_date": "1980-12-01",
             "unique_internal_identifier": "officer-jones-unique-id",
         }
-        create_officer_from_row(row, department.id)
+        create_officer_from_row(row, new_department.id)
 
         lookup_officer = Officer.query.filter_by(
             first_name="NewOfficerFromRow"

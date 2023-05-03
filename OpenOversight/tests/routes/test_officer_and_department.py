@@ -331,13 +331,13 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert assignment.resign_date == date(2019, 11, 30)
 
 
-def test_admin_edit_assignment_validation_error(mockdata, client, session):
+def test_admin_edit_assignment_validation_error(
+    mockdata, client, session, officer_no_assignments
+):
     with current_app.test_request_context():
         login_admin(client)
 
-        # Remove existing assignments
-        officer = Officer.query.filter_by(id=10).one()
-        print(officer, officer.department, officer.assignments.all())
+        officer = officer_no_assignments
         job = Job.query.filter_by(
             department_id=officer.department_id, job_title="Police Officer"
         ).one()
@@ -349,21 +349,14 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("main.add_assignment", officer_id=10),
+            url_for("main.add_assignment", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
         )
 
         # Attempt to set resign date to a date before the start date
         form = AssignmentForm(resign_date=date(2018, 12, 31))
-        officer = Officer.query.filter_by(id=10).one()
-
-        print(
-            officer,
-            officer.department,
-            officer.assignments.all(),
-            officer.assignments.all()[0].__dict__,
-        )
+        officer = Officer.query.filter_by(id=officer.id).one()
 
         rv = client.post(
             url_for(
@@ -2148,7 +2141,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
         data = [x[1] for x in data]
         assert "Commander" in data
 
-        assert data.count("Commander") == 2  # Once for each test department
+        assert data.count("Commander") == 3  # Once for each test department
 
 
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
@@ -2267,7 +2260,13 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email="raq929@example.org").first()
-        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        # Officer from department with id AC_DEPT and no links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2319,9 +2318,13 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
     with current_app.test_request_context():
         login_admin(client)
         admin = User.query.filter_by(email="jen@example.org").first()
-        officer = Officer.query.except_(
-            Officer.query.filter_by(department_id=AC_DEPT)
-        ).all()[10]
+        # Officer from another department (not id AC_DEPT) and no links
+        officer = (
+            Officer.query.filter(Officer.department_id != AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2370,7 +2373,13 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
 def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=1).one()
+        # Officer from department with id AC_DEPT and some links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links != None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) > 0
 
@@ -2390,7 +2399,13 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email="raq929@example.org").first()
-        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        # Officer from department with id AC_DEPT and no links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2430,9 +2445,13 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
     with current_app.test_request_context():
         login_admin(client)
         admin = User.query.filter_by(email="jen@example.org").first()
-        officer = Officer.query.except_(
-            Officer.query.filter_by(department_id=AC_DEPT)
-        ).all()[10]
+        # Officer from another department (not id AC_DEPT) and no links
+        officer = (
+            Officer.query.filter(Officer.department_id != AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 

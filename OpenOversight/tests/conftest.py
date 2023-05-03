@@ -1,5 +1,6 @@
 import csv
 import datetime
+import math
 import os
 import random
 import sys
@@ -279,6 +280,7 @@ def test_csv_dir():
 
 def add_mockdata(session):
     NUM_OFFICERS = current_app.config["NUM_OFFICERS"]
+    assert NUM_OFFICERS >= 5
     department = models.Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
@@ -383,11 +385,19 @@ def add_mockdata(session):
 
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+
+    assignment_ratio = 0.9
     assignments_dept1 = [
-        build_assignment(officer, test_units, jobs_dept1) for officer in officers_dept1
+        build_assignment(officer, test_units, jobs_dept1)
+        for officer in officers_dept1[
+            : math.ceil(len(officers_dept1) * assignment_ratio)
+        ]
     ]
     assignments_dept2 = [
-        build_assignment(officer, test_units, jobs_dept2) for officer in officers_dept2
+        build_assignment(officer, test_units, jobs_dept2)
+        for officer in officers_dept2[
+            : math.ceil(len(officers_dept2) * assignment_ratio)
+        ]
     ]
 
     salaries = [build_salary(officer) for officer in all_officers]
@@ -585,7 +595,6 @@ def add_mockdata(session):
 @pytest.fixture
 def mockdata(session):
     pass
-    # return add_mockdata(session)
 
 
 @pytest.fixture
@@ -596,6 +605,16 @@ def department(session):
 @pytest.fixture
 def new_department(session):
     return models.Department.query.filter_by(name=DEPARTMENT_EMPTY_NAME).one()
+
+
+@pytest.fixture
+def officer_no_assignments(department):
+    return (
+        Officer.query.filter_by(department_id=department.id)
+        .outerjoin(Officer.assignments)
+        .filter(Officer.assignments == None)  # noqa: E711
+        .first()
+    )
 
 
 @pytest.fixture
