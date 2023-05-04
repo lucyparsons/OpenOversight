@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os
 from contextlib import contextmanager
 
@@ -25,8 +23,8 @@ def wait_for_page_load(browser, timeout=10):
     WebDriverWait(browser, timeout).until(expected_conditions.staleness_of(old_page))
 
 
-def login_admin(browser):
-    browser.get("http://localhost:5000/auth/login")
+def login_admin(browser, server_port):
+    browser.get(f"http://localhost:{server_port}/auth/login")
     with wait_for_page_load(browser):
         elem = browser.find_element_by_id("email")
         elem.clear()
@@ -59,8 +57,8 @@ def wait_for_element_to_be_visible(browser, locator, text, timeout=10):
         pytest.fail("Timed out while waiting for element to become visible")
 
 
-def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
-    browser.get("http://localhost:5000")
+def test_user_can_load_homepage_and_get_to_form(mockdata, browser, server_port):
+    browser.get(f"http://localhost:{server_port}")
 
     # Complainant loads homepage
     assert "OpenOversight" in browser.title
@@ -71,8 +69,8 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser):
     assert "Find an Officer" in page_text
 
 
-def test_user_can_use_form_to_get_to_browse(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+def test_user_can_use_form_to_get_to_browse(mockdata, browser, server_port):
+    browser.get(f"http://localhost:{server_port}/find")
 
     # Complainant selects department and proceeds to next step
     browser.find_element_by_id("activate-step-2").click()
@@ -94,9 +92,11 @@ def test_user_can_use_form_to_get_to_browse(mockdata, browser):
     assert browser.find_element_by_id("officer-profile-1")
 
 
-def test_user_can_get_to_complaint(mockdata, browser):
+def test_user_can_get_to_complaint(mockdata, browser, server_port):
     browser.get(
-        "http://localhost:5000/complaint?officer_star=6265&officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png"
+        f"http://localhost:{server_port}/complaint?officer_star=6265&"
+        "officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial="
+        "&officer_image=static%2Fimages%2Ftest_cop2.png"
     )
 
     wait_for_element(browser, By.TAG_NAME, "h1")
@@ -107,13 +107,13 @@ def test_user_can_get_to_complaint(mockdata, browser):
     assert "File a Complaint" in title_text
 
 
-def test_officer_browse_pagination(mockdata, browser):
+def test_officer_browse_pagination(mockdata, browser, server_port):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
     perpage = BaseConfig.OFFICERS_PER_PAGE
 
     # first page of results
-    browser.get("http://localhost:5000/department/{}?page=1".format(dept_id))
+    browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing 1-{} of {}".format(perpage, total)
@@ -122,7 +122,7 @@ def test_officer_browse_pagination(mockdata, browser):
     # last page of results
     last_page_index = (total // perpage) + 1
     browser.get(
-        "http://localhost:5000/department/{}?page={}".format(dept_id, last_page_index)
+        f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
@@ -132,8 +132,10 @@ def test_officer_browse_pagination(mockdata, browser):
     assert expected in page_text
 
 
-def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+def test_find_officer_can_see_uii_question_for_depts_with_uiis(
+    mockdata, browser, server_port
+):
+    browser.get(f"http://localhost:{server_port}/find")
 
     dept_with_uii = Department.query.filter(
         Department.unique_internal_identifier_label.isnot(None)
@@ -148,8 +150,10 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(mockdata, browser
     assert "Do you know any part of the Officer's" in page_text
 
 
-def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, browser):
-    browser.get("http://localhost:5000/find")
+def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
+    mockdata, browser, server_port
+):
+    browser.get(f"http://localhost:{server_port}/find")
 
     dept_without_uii = Department.query.filter_by(
         unique_internal_identifier_label=None
@@ -165,10 +169,10 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
-    mockdata, browser
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
 
     incident_long_descrip = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
@@ -180,10 +184,10 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
 
 
 def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
-    mockdata, browser
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
 
     incident_long_descrip = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
@@ -200,19 +204,19 @@ def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
 
 
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
-    mockdata, browser
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
 
     # Select incident for officer that has description under cuttoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
     assert not result.is_displayed()
 
 
-def test_click_to_read_more_displays_full_description(mockdata, browser):
+def test_click_to_read_more_displays_full_description(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
 
     incident_long_descrip = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
@@ -230,9 +234,9 @@ def test_click_to_read_more_displays_full_description(mockdata, browser):
     assert description_text == orig_descrip
 
 
-def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
+def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
 
     incident_long_descrip = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
@@ -246,8 +250,8 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser):
     assert not buttonRow.is_displayed()
 
 
-def test_officer_form_has_units_alpha_sorted(mockdata, browser):
-    login_admin(browser)
+def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
+    login_admin(browser, server_port)
 
     # get the units from the DB in the sort we expect
     db_units_sorted = list(
@@ -260,29 +264,31 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser):
     db_units_sorted.insert(0, "None")
 
     # Check for the Unit sort on the 'add officer' form
-    browser.get("http://localhost:5000/officer/new")
+    browser.get(f"http://localhost:{server_port}/officer/new")
     unit_select = Select(browser.find_element_by_id("unit"))
     select_units_sorted = list(map(lambda x: x.text, unit_select.options))
     assert db_units_sorted == select_units_sorted
 
     # Check for the Unit sort on the 'add assignment' form
-    browser.get("http://localhost:5000/officer/1")
+    browser.get(f"http://localhost:{server_port}/officer/1")
     unit_select = Select(browser.find_element_by_id("unit"))
     select_units_sorted = list(map(lambda x: x.text, unit_select.options))
     assert db_units_sorted == select_units_sorted
 
 
-def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, browser):
+def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
+    mockdata, browser, server_port
+):
     # Set NULL race and gender for officer 1
     db.session.execute(
         Officer.__table__.update().where(Officer.id == 1).values(race=None, gender=None)
     )
     db.session.commit()
 
-    login_admin(browser)
+    login_admin(browser, server_port)
 
     # Nagivate to edit officer page for officer having NULL race and gender
-    browser.get("http://localhost:5000/officer/1/edit")
+    browser.get(f"http://localhost:{server_port}/officer/1/edit")
 
     wait_for_element(browser, By.ID, "gender")
     select = Select(browser.find_element_by_id("gender"))
@@ -298,14 +304,14 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(mockdata, bro
 
 
 @pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_image_classification_and_tagging(mockdata, browser):
+def test_image_classification_and_tagging(mockdata, browser, server_port):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
 
-    login_admin(browser)
+    login_admin(browser, server_port)
 
     # 1. Create new department (to avoid mockdata)
-    browser.get("http://localhost:5000/department/new")
+    browser.get(f"http://localhost:{server_port}/department/new")
     wait_for_page_load(browser)
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
@@ -313,7 +319,7 @@ def test_image_classification_and_tagging(mockdata, browser):
     wait_for_page_load(browser)
 
     # 2. Add a new officer
-    browser.get("http://localhost:5000/officer/new")
+    browser.get(f"http://localhost:{server_port}/officer/new")
     wait_for_page_load(browser)
 
     dept_select = Select(browser.find_element("id", "department"))
@@ -325,11 +331,11 @@ def test_image_classification_and_tagging(mockdata, browser):
     browser.find_element(By.ID, "submit").click()
 
     wait_for_page_load(browser)
-    # expected url: http://localhost:5000/submit_officer_images/officer/<id>
+    # expected url: http://localhost:{server_port}/submit_officer_images/officer/<id>
     officer_id = browser.current_url.split("/")[-1]
 
     # 3. Submit an image
-    browser.get("http://localhost:5000/submit")
+    browser.get(f"http://localhost:{server_port}/submit")
     wait_for_page_load(browser)
 
     Select(browser.find_element("id", "department")).select_by_value(dept_id)
@@ -341,7 +347,7 @@ def test_image_classification_and_tagging(mockdata, browser):
     wait_for_element(browser, By.CLASS_NAME, "dz-success")
 
     # 4. Classify the uploaded image
-    browser.get(f"http://localhost:5000/sort/department/{dept_id}")
+    browser.get(f"http://localhost:{server_port}/sort/department/{dept_id}")
 
     # Check that image loaded correctly: https://stackoverflow.com/a/36296478
     wait_for_element(browser, By.TAG_NAME, "img")
@@ -356,7 +362,7 @@ def test_image_classification_and_tagging(mockdata, browser):
     assert "All images have been classfied!" in page_text
 
     # 5. Identify the new officer in the uploaded image
-    browser.get(f"http://localhost:5000/cop_face/department/{dept_id}")
+    browser.get(f"http://localhost:{server_port}/cop_face/department/{dept_id}")
     wait_for_page_load(browser)
     browser.find_element(By.ID, "officer_id").send_keys(officer_id)
     browser.find_element(By.CSS_SELECTOR, "input[value='Add identified face']").click()
@@ -366,11 +372,11 @@ def test_image_classification_and_tagging(mockdata, browser):
     assert "Tag added to database" in page_text
 
     # 6. Log out as admin
-    browser.get("http://localhost:5000/auth/logout")
+    browser.get(f"http://localhost:{server_port}/auth/logout")
     wait_for_page_load(browser)
 
     # 7. Check that the tag appears on the officer page
-    browser.get(f"http://localhost:5000/officer/{officer_id}")
+    browser.get(f"http://localhost:{server_port}/officer/{officer_id}")
     wait_for_page_load(browser)
     browser.find_element(By.CSS_SELECTOR, "a > img.officer-face").click()
 

@@ -1,6 +1,5 @@
 import datetime
 
-from future.utils import iteritems
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
@@ -216,7 +215,7 @@ def edit_existing_assignment(assignment, form):
 
 
 def edit_officer_profile(officer, form):
-    for field, data in iteritems(form.data):
+    for field, data in form.data.items():
         setattr(officer, field, data)
 
     db.session.add(officer)

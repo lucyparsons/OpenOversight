@@ -36,12 +36,14 @@ class ModelView(MethodView):
                 if not self.descending:
                     objects = self.model.query.order_by(
                         getattr(self.model, self.order_by)
-                    ).paginate(page, self.per_page, False)
+                    ).paginate(page=page, per_page=self.per_page, error_out=False)
                 objects = self.model.query.order_by(
                     getattr(self.model, self.order_by).desc()
-                ).paginate(page, self.per_page, False)
+                ).paginate(page=page, per_page=self.per_page, error_out=False)
             else:
-                objects = self.model.query.paginate(page, self.per_page, False)
+                objects = self.model.query.paginate(
+                    page=page, per_page=self.per_page, error_out=False
+                )
 
             return render_template(
                 "{}_list.html".format(self.model_name),

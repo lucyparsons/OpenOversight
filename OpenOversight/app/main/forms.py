@@ -5,6 +5,7 @@ from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import (
     BooleanField,
+    DateField,
     DecimalField,
     FieldList,
     FormField,
@@ -15,8 +16,6 @@ from wtforms import (
     SubmitField,
     TextAreaField,
 )
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms.fields.html5 import DateField
 from wtforms.validators import (
     URL,
     AnyOf,
@@ -28,6 +27,7 @@ from wtforms.validators import (
     Regexp,
     ValidationError,
 )
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 from OpenOversight.app.utils.db import dept_choices, unit_choices
 
@@ -175,10 +175,10 @@ class SalaryForm(Form):
     )
     is_fiscal_year = BooleanField("Is fiscal year?", default=False)
 
-    def validate(form, extra_validators=()):
-        if not form.data.get("salary") and not form.data.get("overtime_pay"):
+    def validate(self, extra_validators=None):
+        if not self.data.get("salary") and not self.data.get("overtime_pay"):
             return True
-        return super(SalaryForm, form).validate()
+        return super(SalaryForm, self).validate(extra_validators=extra_validators)
 
     # def process(self, *args, **kwargs):
     # raise Exception(args[0])
@@ -229,8 +229,8 @@ class LinkForm(Form):
     )
     creator_id = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
 
-    def validate(self):
-        success = super(LinkForm, self).validate()
+    def validate(self, extra_validators=None):
+        success = super(LinkForm, self).validate(extra_validators=extra_validators)
         if self.url.data and not self.link_type.data:
             self.url.errors = list(self.url.errors)
             self.url.errors.append("Links must have a link type.")

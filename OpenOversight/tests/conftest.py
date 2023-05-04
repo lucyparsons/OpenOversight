@@ -15,6 +15,7 @@ from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
+from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
@@ -199,49 +200,40 @@ def app(request):
     app = create_app("testing")
     app.config["WTF_CSRF_ENABLED"] = False
 
-    # Establish an application context before running the tests.
-    ctx = app.app_context()
-    ctx.push()
+    yield app
 
-    def teardown():
-        ctx.pop()
 
-    request.addfinalizer(teardown)
-    return app
+@pytest.fixture(autouse=True)
+def ctx(app):
+    with app.app_context():
+        yield
 
 
 @pytest.fixture(scope="session")
-def db(app, request):
+def db(app):
     """Session-wide test database."""
 
-    def teardown():
-        _db.drop_all()
+    with app.app_context():
+        _db.app = app
+        _db.create_all()
 
-    _db.app = app
-    _db.create_all()
-
-    request.addfinalizer(teardown)
-    return _db
+        yield _db
 
 
 @pytest.fixture(scope="function")
-def session(db, request):
+def session(db):
     """Creates a new database session for a test."""
     connection = db.engine.connect()
     transaction = connection.begin()
 
-    options = dict(bind=connection, binds={})
-    session = db.create_scoped_session(options=options)
-
+    session = scoped_session(session_factory=sessionmaker(bind=connection))
     db.session = session
 
-    def teardown():
-        transaction.rollback()
-        connection.close()
-        session.remove()
+    yield session
 
-    request.addfinalizer(teardown)
-    return session
+    transaction.rollback()
+    connection.close()
+    session.remove()
 
 
 @pytest.fixture
@@ -683,20 +675,32 @@ def csvfile(mockdata, tmp_path, request):
 
 
 @pytest.fixture
-def client(app, request):
-    client = app.test_client()
-
-    def teardown():
-        pass
-
-    request.addfinalizer(teardown)
-    return client
+def client(app):
+    with app.app_context():
+        client = app.test_client()
+        yield client
 
 
-@pytest.fixture
-def browser(app, request):
+@pytest.fixture(scope="session")
+def worker_number(worker_id):
+    if len(worker_id) < 2 or worker_id[:2] != "gw":
+        return 0
+    return int(worker_id[2:])
+
+
+@pytest.fixture(scope="session")
+def server_port(worker_number):
+    return 5000 + worker_number
+
+
+@pytest.fixture(scope="session")
+def browser(app, server_port):
     # start server
-    threading.Thread(target=app.run).start()
+    port = server_port
+    print("Starting server at port {port}")
+    threading.Thread(
+        target=app.run, daemon=True, kwargs={"debug": False, "port": port}
+    ).start()
     # give the server a few seconds to ensure it is up
     time.sleep(10)
 
@@ -707,10 +711,6 @@ def browser(app, request):
     # wait for browser to start up
     time.sleep(3)
     yield driver
-
-    # shutdown server
-    driver.get("http://localhost:5000/shutdown")
-    time.sleep(3)
 
     # shutdown headless webdriver
     driver.quit()

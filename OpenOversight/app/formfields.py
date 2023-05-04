@@ -1,7 +1,7 @@
 import datetime
 
 from wtforms import StringField
-from wtforms.widgets.html5 import TimeInput
+from wtforms.widgets import TimeInput
 
 
 class TimeField(StringField):

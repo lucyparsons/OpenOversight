@@ -1,5 +1,4 @@
 from flask import url_for
-from future.utils import iteritems
 
 from OpenOversight.app.auth.forms import LoginForm
 
@@ -51,13 +50,13 @@ def process_form_data(form_dict):
 
     in the way that it is flattened in the browser"""
     new_dict = {}
-    for key, value in iteritems(form_dict):
+    for key, value in form_dict.items():
 
         if type(value) == list:
             if value[0]:
                 if type(value[0]) is dict:
                     for idx, item in enumerate(value):
-                        for subkey, subvalue in iteritems(item):
+                        for subkey, subvalue in item.items():
                             new_dict["{}-{}-{}".format(key, idx, subkey)] = subvalue
                 elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
@@ -69,7 +68,7 @@ def process_form_data(form_dict):
                         )
                     )
         elif type(value) == dict:
-            for subkey, subvalue in iteritems(value):
+            for subkey, subvalue in value.items():
                 new_dict["{}-{}".format(key, subkey)] = subvalue
         else:
             new_dict[key] = value
