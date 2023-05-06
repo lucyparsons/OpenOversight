@@ -3,7 +3,7 @@
 Faker==18.4.0
 flake8==6.0.0
 ipython
-mypy==0.982
+mypy==1.2.0
 pandas>=0.23.4
 pre-commit==3.2.2
 pytest==7.3.0
