@@ -13,7 +13,7 @@ pytest-flake8==1.1.1
 pytest-sugar==0.9.6
 pytest-xdist==3.2.1
 selenium==4.8.3
-sphinx==6.0.0
+sphinx==7.0.0
 sphinx-autobuild==2021.3.14
 webdriver-manager==3.8.5
 xvfbwrapper==0.2.9
