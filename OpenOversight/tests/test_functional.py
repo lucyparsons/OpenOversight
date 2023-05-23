@@ -159,7 +159,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(mockdata, b
 
     dept_without_uii = Department.query.filter_by(
         unique_internal_identifier_label=None
-    ).one_or_none()
+    ).first()
     dept_id = str(dept_without_uii.id)
 
     dept_selector = Select(browser.find_element("id", "dept"))

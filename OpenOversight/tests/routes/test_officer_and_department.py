@@ -43,10 +43,10 @@ from OpenOversight.app.models import (
     User,
 )
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-from OpenOversight.app.utils.db import dept_choices, unit_choices
+from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
 
-from ..conftest import AC_DEPT, RANK_CHOICES_1
+from ..conftest import AC_DEPT, DEPARTMENT_NAME, RANK_CHOICES_1
 from .route_helpers import login_ac, login_admin, login_user, process_form_data
 
 
@@ -332,12 +332,13 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert assignment.resign_date == date(2019, 11, 30)
 
 
-def test_admin_edit_assignment_validation_error(mockdata, client, session):
+def test_admin_edit_assignment_validation_error(
+    mockdata, client, session, officer_no_assignments
+):
     with current_app.test_request_context():
         login_admin(client)
 
-        # Remove existing assignments
-        officer = Officer.query.filter_by(id=3).one()
+        officer = officer_no_assignments
         job = Job.query.filter_by(
             department_id=officer.department_id, job_title="Police Officer"
         ).one()
@@ -349,14 +350,14 @@ def test_admin_edit_assignment_validation_error(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("main.add_assignment", officer_id=3),
+            url_for("main.add_assignment", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
         )
 
         # Attempt to set resign date to a date before the start date
         form = AssignmentForm(resign_date=date(2018, 12, 31))
-        officer = Officer.query.filter_by(id=3).one()
+        officer = Officer.query.filter_by(id=officer.id).one()
 
         rv = client.post(
             url_for(
@@ -605,11 +606,9 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         assert edit_short_name_department.short_name == "CPD"
 
 
-def test_ac_cannot_edit_police_department(mockdata, client, session):
+def test_ac_cannot_edit_police_department(mockdata, client, session, department):
     with current_app.test_request_context():
         login_ac(client)
-
-        department = Department.query.first()
 
         form = EditDepartmentForm(name="Corrected Police Department", short_name="CPD")
 
@@ -622,21 +621,19 @@ def test_ac_cannot_edit_police_department(mockdata, client, session):
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_admin_can_edit_rank_order(mockdata, client, session):
+def test_admin_can_edit_rank_order(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-
-        ranks = (
-            Department.query.filter_by(name="Springfield Police Department").one().jobs
-        )
+        department_name = department.name
+        ranks = department.jobs
         ranks_update = ranks.copy()
         original_first_rank = copy.deepcopy(ranks_update[0])
         ranks_update[0], ranks_update[1] = ranks_update[1], ranks_update[0]
         ranks_stringified = [rank.job_title for rank in ranks_update]
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department",
-            short_name="SPD",
+            name=department_name,
+            short_name=department.short_name,
             jobs=ranks_stringified,
         )
         processed_data = process_form_data(rank_change_form.data)
@@ -647,30 +644,25 @@ def test_admin_can_edit_rank_order(mockdata, client, session):
             follow_redirects=True,
         )
 
-        updated_ranks = (
-            Department.query.filter_by(name="Springfield Police Department").one().jobs
-        )
-        assert "Department Springfield Police Department edited" in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
+        assert f"Department {department_name} edited" in rv.data.decode(ENCODING_UTF_8)
         assert (
             updated_ranks[0].job_title == original_first_rank.job_title
             and updated_ranks[0].order != original_first_rank.order
         )
 
 
-def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
+def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
 
-        ranks = (
-            Department.query.filter_by(name="Springfield Police Department").one().jobs
-        )
+        ranks = department.jobs
+        department_name = department.name
         original_ranks = ranks.copy()
         ranks_update = RANK_CHOICES_1.copy()[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -680,9 +672,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
             follow_redirects=True,
         )
 
-        updated_ranks = (
-            Department.query.filter_by(name="Springfield Police Department").one().jobs
-        )
+        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
         assert (
             "You attempted to delete a rank, Commander, that is still in use"
             in result.data.decode(ENCODING_UTF_8)
@@ -690,10 +680,10 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session):
         assert len(updated_ranks) == len(original_ranks)
 
 
-def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
+def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-
+        department_name = department.name
         ranks_update = RANK_CHOICES_1.copy()
         original_ranks_length = len(ranks_update)
         ranks_update.append(
@@ -706,7 +696,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
         )
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -719,24 +709,18 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length + 1
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name="Springfield Police Department")
-            .one()
-            .jobs
+            for job in Department.query.filter_by(name=department_name).one().jobs
         ]
         ranks_update = ranks_update[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -749,16 +733,14 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session):
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length
         )
 
 
-def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
+def test_admin_can_delete_multiple_ranks_not_in_use(
+    mockdata, client, session, department
+):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -767,8 +749,10 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
         ranks_update.append("Temporary Rank 1")
         ranks_update.append("Temporary Rank 2")
 
+        department_name = department.name
+
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -781,24 +765,18 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length + 2
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name="Springfield Police Department")
-            .one()
-            .jobs
+            for job in Department.query.filter_by(name=department_name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -811,17 +789,13 @@ def test_admin_can_delete_multiple_ranks_not_in_use(mockdata, client, session):
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length
         )
 
 
 def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_use_rank(
-    mockdata, client, session
+    mockdata, client, session, department
 ):
     with current_app.test_request_context():
         login_admin(client)
@@ -836,9 +810,9 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
                 department_id=1,
             )
         )
-
+        department_name = department.name
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -851,25 +825,19 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length + 1
         )
 
         # attempt to delete multiple ranks
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name="Springfield Police Department")
-            .one()
-            .jobs
+            for job in Department.query.filter_by(name=department_name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name="Springfield Police Department", short_name="SPD", jobs=ranks_update
+            name=department_name, short_name=department.short_name, jobs=ranks_update
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -881,11 +849,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
         )
 
         assert (
-            len(
-                Department.query.filter_by(name="Springfield Police Department")
-                .one()
-                .jobs
-            )
+            len(Department.query.filter_by(name=department_name).one().jobs)
             == original_ranks_length + 1
         )
 
@@ -949,13 +913,12 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
         rv = client.get(url_for("main.submit_data"), follow_redirects=True)
 
-        assert "Springfield Police Department" in rv.data.decode(ENCODING_UTF_8)
+        assert DEPARTMENT_NAME in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_admin_can_add_new_officer(mockdata, client, session):
+def test_admin_can_add_new_officer(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
             LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
@@ -987,10 +950,9 @@ def test_admin_can_add_new_officer(mockdata, client, session):
         assert officer.gender == "M"
 
 
-def test_admin_can_add_new_officer_with_unit(mockdata, client, session):
+def test_admin_can_add_new_officer_with_unit(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
         unit = random.choice(unit_choices())
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
@@ -1148,10 +1110,9 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
         assert officer is None
 
 
-def test_admin_can_edit_existing_officer(mockdata, client, session):
+def test_admin_can_edit_existing_officer(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
         unit = random.choice(unit_choices())
         link_url0 = "http://pleasework.com"
         link_url1 = "http://avideo/?v=2345jk"
@@ -1298,11 +1259,12 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
         assert officer.last_name == new_last_name
 
 
-def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
+def test_admin_adds_officer_without_middle_initial(
+    mockdata, client, session, department
+):
     with current_app.test_request_context():
         login_admin(client)
 
-        department = random.choice(dept_choices())
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
             first_name="Test",
@@ -1328,11 +1290,12 @@ def test_admin_adds_officer_without_middle_initial(mockdata, client, session):
         assert officer.gender == "M"
 
 
-def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
+def test_admin_adds_officer_with_letter_in_badge_no(
+    mockdata, client, session, department
+):
     with current_app.test_request_context():
         login_admin(client)
 
-        department = random.choice(dept_choices())
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
             first_name="Test",
@@ -1359,13 +1322,10 @@ def test_admin_adds_officer_with_letter_in_badge_no(mockdata, client, session):
         assert officer.assignments[0].star_no == "T666"
 
 
-def test_admin_can_add_new_unit(mockdata, client, session):
+def test_admin_can_add_new_unit(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
 
-        department = Department.query.filter_by(
-            name="Springfield Police Department"
-        ).first()
         form = AddUnitForm(descrip="Test", department=department.id)
 
         rv = client.post(
@@ -1413,10 +1373,9 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         assert unit is None
 
 
-def test_admin_can_add_new_officer_with_suffix(mockdata, client, session):
+def test_admin_can_add_new_officer_with_suffix(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
             LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
@@ -1468,10 +1427,9 @@ def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_officer_csv(mockdata, client, session):
+def test_officer_csv(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
         ]
@@ -1518,9 +1476,8 @@ def test_officer_csv(mockdata, client, session):
         assert form.star_no.data == added_lines[0]["badge number"]
 
 
-def test_assignments_csv(mockdata, client, session):
+def test_assignments_csv(mockdata, client, session, department):
     with current_app.test_request_context():
-        department = random.choice(dept_choices())
         officer = Officer.query.filter_by(department_id=department.id).first()
         job = (
             Job.query.filter_by(department_id=department.id)
@@ -1558,10 +1515,9 @@ def test_assignments_csv(mockdata, client, session):
         assert new_assignment[0]["job title"] == job.job_title
 
 
-def test_incidents_csv(mockdata, client, session):
+def test_incidents_csv(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department = random.choice(dept_choices())
 
         # Delete existing incidents for chosen department
         Incident.query.filter_by(department_id=department.id).delete()
@@ -2164,9 +2120,10 @@ def test_ac_cannot_edit_non_dept_salary(mockdata, client, session):
         assert officer.salaries[0].salary == Decimal("123456.78")
 
 
-def test_get_department_ranks_with_specific_department_id(mockdata, client, session):
+def test_get_department_ranks_with_specific_department_id(
+    mockdata, client, session, department
+):
     with current_app.test_request_context():
-        department = Department.query.first()
         rv = client.get(
             url_for("main.get_dept_ranks", department_id=department.id),
             follow_redirects=True,
@@ -2185,7 +2142,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
         data = [x[1] for x in data]
         assert "Commander" in data
 
-        assert data.count("Commander") == 2  # Once for each test department
+        assert data.count("Commander") == 3  # Once for each test department
 
 
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
@@ -2304,7 +2261,13 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email="raq929@example.org").first()
-        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        # Officer from department with id AC_DEPT and no links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2356,9 +2319,13 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
     with current_app.test_request_context():
         login_admin(client)
         admin = User.query.filter_by(email="jen@example.org").first()
-        officer = Officer.query.except_(
-            Officer.query.filter_by(department_id=AC_DEPT)
-        ).all()[10]
+        # Officer from another department (not id AC_DEPT) and no links
+        officer = (
+            Officer.query.filter(Officer.department_id != AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2407,7 +2374,13 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
 def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=1).one()
+        # Officer from department with id AC_DEPT and some links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links != None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) > 0
 
@@ -2427,7 +2400,13 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
     with current_app.test_request_context():
         login_ac(client)
         ac = User.query.filter_by(email="raq929@example.org").first()
-        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        # Officer from department with id AC_DEPT and no links
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 
@@ -2467,9 +2446,13 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
     with current_app.test_request_context():
         login_admin(client)
         admin = User.query.filter_by(email="jen@example.org").first()
-        officer = Officer.query.except_(
-            Officer.query.filter_by(department_id=AC_DEPT)
-        ).all()[10]
+        # Officer from another department (not id AC_DEPT) and no links
+        officer = (
+            Officer.query.filter(Officer.department_id != AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links == None)  # noqa: E711
+            .first()
+        )
 
         assert len(officer.links) == 0
 

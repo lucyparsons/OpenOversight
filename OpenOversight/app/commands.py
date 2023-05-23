@@ -588,7 +588,7 @@ def advanced_csv_import(
         links_csv,
         incidents_csv,
         force_create,
-        overwrite_assignments
+        overwrite_assignments,
     )
 
 
