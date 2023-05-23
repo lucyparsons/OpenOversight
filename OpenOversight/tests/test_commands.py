@@ -103,9 +103,9 @@ def test_add_department__missing_argument(session):
 def test_add_job_title__success(session, department):
     department_id = department.id
 
-    job_title = "Police Officer"
+    job_title = "New Rank"
     is_sworn = True
-    order = 1
+    order = 15
 
     # run command to add job title
     result = run_command_print_output(
@@ -128,14 +128,14 @@ def test_add_job_title__duplicate(session, department):
     job_title = "Police Officer"
     is_sworn = True
     order = 1
-    job = Job(
-        job_title=job_title,
-        is_sworn_officer=is_sworn,
-        order=order,
-        department=department,
+
+    # make sure Job is already included in db
+    assert (
+        Job.query.filter_by(
+            job_title=job_title, is_sworn_officer=True, order=1, department=department
+        ).first()
+        is not None
     )
-    session.add(job)
-    session.commit()
 
     # adding exact same job again via command
     result = run_command_print_output(
@@ -156,14 +156,13 @@ def test_add_job_title__different_departments(session, department):
     job_title = "Police Officer"
     is_sworn = True
     order = 1
-    job = Job(
-        job_title=job_title,
-        is_sworn_officer=is_sworn,
-        order=order,
-        department=department,
+    # make sure Job is already included in db
+    assert (
+        Job.query.filter_by(
+            job_title=job_title, is_sworn_officer=True, order=1, department=department
+        ).first()
+        is not None
     )
-    session.add(job)
-    session.commit()
 
     # adding samme job but for different department
     result = run_command_print_output(
@@ -432,16 +431,15 @@ def test_csv_new_salary(csvfile, monkeypatch):
 
 
 def test_bulk_add_officers__success(
-    session, department_with_ranks, csv_path, monkeypatch
+    session, department_without_officers, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # generate two officers with different names
-    first_officer = generate_officer()
-    first_officer.department = department_with_ranks
+    first_officer = generate_officer(department_without_officers)
     print(Job.query.all())
-    print(Job.query.filter_by(department=department_with_ranks).all())
+    print(Job.query.filter_by(department=department_without_officers).all())
     job = (
-        Job.query.filter_by(department=department_with_ranks).filter_by(order=1)
+        Job.query.filter_by(department=department_without_officers).filter_by(order=1)
     ).first()
     fo_fn = "Uniquefirst"
     first_officer.first_name = fo_fn
@@ -451,8 +449,7 @@ def test_bulk_add_officers__success(
     assignment = Assignment(baseofficer=first_officer, job_id=job.id)
     session.add(assignment)
     session.commit()
-    different_officer = generate_officer()
-    different_officer.department = department_with_ranks
+    different_officer = generate_officer(department_without_officers)
     different_officer.job = job
     do_fn = different_officer.first_name
     do_ln = different_officer.last_name
@@ -461,7 +458,7 @@ def test_bulk_add_officers__success(
     session.add(assignment)
     session.commit()
 
-    department_id = department_with_ranks.id
+    department_id = department_without_officers.id
 
     # generate csv to update one existing officer and add one new
 
@@ -532,15 +529,13 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     # two officers with the same name
     first_name = "James"
     last_name = "Smith"
-    first_officer = generate_officer()
-    first_officer.department = department
+    first_officer = generate_officer(department)
     first_officer.first_name = first_name
     first_officer.last_name = last_name
     session.add(first_officer)
     session.commit()
 
-    different_officer = generate_officer()
-    different_officer.department = department
+    different_officer = generate_officer(department)
     different_officer.first_name = first_name
     different_officer.last_name = last_name
     session.add(different_officer)
@@ -580,9 +575,8 @@ def test_bulk_add_officers__write_static_null_field(
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # start with an officer whose birth_year is missing
-    officer = generate_officer()
+    officer = generate_officer(department)
     officer.birth_year = None
-    officer.department = department
     session.add(officer)
     session.commit()
     fo_uuid = officer.unique_internal_identifier
@@ -624,10 +618,9 @@ def test_bulk_add_officers__write_static_null_field(
 
 def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_path):
     # officer with birth year set
-    officer = generate_officer()
+    officer = generate_officer(department)
     old_birth_year = 1979
     officer.birth_year = old_birth_year
-    officer.department = department
     session.add(officer)
     session.commit()
     fo_uuid = officer.unique_internal_identifier
@@ -674,9 +667,8 @@ def test_bulk_add_officers__write_static_field__flag_set(
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # officer with birth year set
-    officer = generate_officer()
+    officer = generate_officer(department)
     officer.birth_year = 1979
-    officer.department = department
     session.add(officer)
     session.commit()
     officer_uuid = officer.unique_internal_identifier
@@ -719,13 +711,14 @@ def test_bulk_add_officers__write_static_field__flag_set(
     assert officer.birth_year == new_birth_year
 
 
-def test_bulk_add_officers__no_create_flag(session, department, csv_path, monkeypatch):
+def test_bulk_add_officers__no_create_flag(
+    session, department_without_officers, csv_path, monkeypatch
+):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # department with one officer
-    department_id = department.id
-    officer = generate_officer()
+    department_id = department_without_officers.id
+    officer = generate_officer(department_without_officers)
     officer.gender = None
-    officer.department = department
     session.add(officer)
     session.commit()
     officer_uuid = officer.unique_internal_identifier
@@ -772,14 +765,15 @@ def test_bulk_add_officers__no_create_flag(session, department, csv_path, monkey
     assert result.exception is None
 
     # confirm that only one officer is in database and information was updated
+    print(Officer.query.filter_by(department_id=department_id).all())
     officer = Officer.query.filter_by(department_id=department_id).one()
     assert officer.unique_internal_identifier == officer_uuid
     assert officer.gender == officer_gender_updated
 
 
-def test_advanced_csv_import__success(session, department_with_ranks, test_csv_dir):
+def test_advanced_csv_import__success(session, department, test_csv_dir):
     # make sure department name aligns with the csv files
-    assert department_with_ranks.name == "Springfield Police Department"
+    assert department.name == "Springfield Police Department"
 
     # set up existing data
     officer = Officer(
@@ -796,7 +790,7 @@ def test_advanced_csv_import__success(session, department_with_ranks, test_csv_d
         officer_id=officer.id,
         star_no="4567",
         star_date=datetime.date(2020, 1, 1),
-        job_id=department_with_ranks.jobs[0].id,
+        job_id=department.jobs[0].id,
     )
     session.add(assignment)
 
@@ -827,7 +821,7 @@ def test_advanced_csv_import__success(session, department_with_ranks, test_csv_d
     result = run_command_print_output(
         advanced_csv_import,
         [
-            str(department_with_ranks.name),
+            str(department.name),
             "--officers-csv",
             os.path.join(test_csv_dir, "officers.csv"),
             "--assignments-csv",
@@ -969,10 +963,10 @@ def _create_csv(data, path, csv_file_name):
     return csv_path
 
 
-def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_path):
+def test_advanced_csv_import__force_create(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department_with_ranks.name
+    department_name = department.name
 
     other_department = Department(name="Other department", short_name="OPD")
     session.add(other_department)
@@ -1048,7 +1042,7 @@ def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_p
     result = run_command_print_output(
         advanced_csv_import,
         [
-            str(department_with_ranks.name),
+            str(department.name),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
@@ -1089,35 +1083,37 @@ def test_advanced_csv_import__force_create(session, department_with_ranks, tmp_p
     assert cop1.links[0] == link
 
 
-def test_advanced_csv_import__overwrite_assignments(
-    session, department_with_ranks, tmp_path
-):
+def test_advanced_csv_import__overwrite_assignments(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department_with_ranks.name
+    department_name = department.name
 
     other_department = Department(name="Other department", short_name="OPD")
     session.add(other_department)
 
+    cop1_id = 999001
+    cop2_id = 999002
     officer = Officer(
-        id=99001,
-        department_id=department_with_ranks.id,
+        id=cop1_id,
+        department_id=department.id,
         first_name="Already",
         last_name="InDatabase",
     )
     officer2 = Officer(
-        id=99002,
-        department_id=department_with_ranks.id,
+        id=cop2_id,
+        department_id=department.id,
         first_name="Also",
         last_name="InDatabase",
     )
+    a1_id = 999101
+    a2_id = 999102
     assignment = Assignment(
-        id=123,
+        id=a1_id,
         officer_id=officer.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
     )
     assignment2 = Assignment(
-        id=124,
+        id=a2_id,
         officer_id=officer2.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
     )
@@ -1139,17 +1135,19 @@ def test_advanced_csv_import__overwrite_assignments(
 
     officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
 
+    b1 = "12345"
+    b2 = "999"
     assignments_data = [
         {
-            "officer_id": 99001,
+            "officer_id": cop1_id,
             "job title": "Captain",
-            "badge number": "12345",
+            "badge number": b1,
             "start date": "2020-07-24",
         },
         {
             "officer_id": "#1",
             "job title": "Police Officer",
-            "badge number": "999",
+            "badge number": b2,
             "start date": "2020-07-21",
         },
     ]
@@ -1159,7 +1157,7 @@ def test_advanced_csv_import__overwrite_assignments(
     result = run_command_print_output(
         advanced_csv_import,
         [
-            str(department_with_ranks.name),
+            str(department.name),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
@@ -1173,24 +1171,22 @@ def test_advanced_csv_import__overwrite_assignments(
     assert result.exit_code == 0
 
     # make sure all the data is imported as expected
-    cop1 = Officer.query.get(99001)
+    cop1 = Officer.query.get(cop1_id)
     assert len(cop1.assignments.all()) == 1
-    assert cop1.assignments[0].star_no == "12345"
+    assert cop1.assignments[0].star_no == b1
 
-    cop2 = Officer.query.get(99002)
+    cop2 = Officer.query.get(cop2_id)
     assert len(cop2.assignments.all()) == 1
-    assert cop2.assignments[0] == Assignment.query.get(124)
+    assert cop2.assignments[0] == Assignment.query.get(a2_id)
 
-    cop3 = Officer.query.filter_by(first_name="Second").first()
+    cop3 = Officer.query.filter_by(first_name="Second", last_name="Test").first()
     assert len(cop3.assignments.all()) == 1
-    assert cop3.assignments[0].star_no == "999"
+    assert cop3.assignments[0].star_no == b2
     assert cop3.assignments[0].job.job_title == "Police Officer"
 
 
-def test_advanced_csv_import__extra_fields_officers(
-    session, department_with_ranks, tmp_path
-):
-    department_name = department_with_ranks.name
+def test_advanced_csv_import__extra_fields_officers(session, department, tmp_path):
+    department_name = department.name
     # create csv with invalid field 'name'
     officers_data = [
         {"id": "", "department_name": department_name, "name": "John Smith"},
@@ -1200,7 +1196,7 @@ def test_advanced_csv_import__extra_fields_officers(
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+        [str(department.name), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because of unexpected field 'name'
@@ -1210,9 +1206,9 @@ def test_advanced_csv_import__extra_fields_officers(
 
 
 def test_advanced_csv_import__missing_required_field_officers(
-    session, department_with_ranks, tmp_path
+    session, department, tmp_path
 ):
-    department_name = department_with_ranks.name
+    department_name = department.name
     # create csv with missing field 'id'
     officers_data = [
         {
@@ -1226,7 +1222,7 @@ def test_advanced_csv_import__missing_required_field_officers(
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+        [str(department.name), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because 'id' is missing
@@ -1235,10 +1231,8 @@ def test_advanced_csv_import__missing_required_field_officers(
     assert "id" in str(result.exception)
 
 
-def test_advanced_csv_import__wrong_department(
-    session, department_with_ranks, tmp_path
-):
-    department_name = department_with_ranks.name
+def test_advanced_csv_import__wrong_department(session, department, tmp_path):
+    department_name = department.name
     other_department = Department(name="Other department", short_name="OPD")
     session.add(other_department)
 
@@ -1266,9 +1260,9 @@ def test_advanced_csv_import__wrong_department(
 
 
 def test_advanced_csv_import__update_officer_different_department(
-    session, department_with_ranks, tmp_path
+    session, department, tmp_path
 ):
-    department_name = department_with_ranks.name
+    department_name = department.name
 
     # set up data
     other_department = Department(name="Other department", short_name="OPD")
@@ -1292,7 +1286,7 @@ def test_advanced_csv_import__update_officer_different_department(
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department_with_ranks.name), "--officers-csv", officers_csv],
+        [str(department.name), "--officers-csv", officers_csv],
     )
 
     # command fails because the officer is assigned to a different department
@@ -1302,19 +1296,15 @@ def test_advanced_csv_import__update_officer_different_department(
 
 
 def test_advanced_csv_import__unit_other_department(
-    session, department_with_ranks, tmp_path
+    session, department, department_without_officers, tmp_path
 ):
-    department_id = department_with_ranks.id
-
     # set up data
-    officer = generate_officer()
-    officer.department_id = department_id
+    officer = generate_officer(department)
     session.add(officer)
     session.flush()
-    other_department = Department(name="Other department", short_name="OPD")
-    session.add(other_department)
+    session.add(department_without_officers)
     session.flush()
-    unit = Unit(department_id=other_department.id)
+    unit = Unit(department_id=department_without_officers.id)
     session.add(unit)
     session.flush()
 
@@ -1330,7 +1320,7 @@ def test_advanced_csv_import__unit_other_department(
     assignments_csv = _create_csv(assignments_data, tmp_path, "assignments.csv")
     result = run_command_print_output(
         advanced_csv_import,
-        [department_with_ranks.name, "--assignments-csv", assignments_csv],
+        [department.name, "--assignments-csv", assignments_csv],
     )
 
     # command fails because the unit does not belong to the department
@@ -1338,11 +1328,10 @@ def test_advanced_csv_import__unit_other_department(
     assert result.exit_code != 0
 
 
-def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, session):
+def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(
+    app, session, department_without_officers
+):
     with app.app_context():
-        department = Department(name="Cityname Police Department", short_name="CNPD")
-        session.add(department)
-        session.commit()
         lookup_officer = Officer.query.filter_by(
             first_name="NewOfficerFromRow"
         ).one_or_none()
@@ -1355,7 +1344,7 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(app, ses
             "employment_date": "1980-12-01",
             "unique_internal_identifier": "officer-jones-unique-id",
         }
-        create_officer_from_row(row, department.id)
+        create_officer_from_row(row, department_without_officers.id)
 
         lookup_officer = Officer.query.filter_by(
             first_name="NewOfficerFromRow"
