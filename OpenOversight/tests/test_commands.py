@@ -430,13 +430,17 @@ def test_csv_new_salary(csvfile, monkeypatch):
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
-def test_bulk_add_officers__success(session, new_department, csv_path, monkeypatch):
+def test_bulk_add_officers__success(
+    session, department_without_officers, csv_path, monkeypatch
+):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # generate two officers with different names
-    first_officer = generate_officer(new_department)
+    first_officer = generate_officer(department_without_officers)
     print(Job.query.all())
-    print(Job.query.filter_by(department=new_department).all())
-    job = (Job.query.filter_by(department=new_department).filter_by(order=1)).first()
+    print(Job.query.filter_by(department=department_without_officers).all())
+    job = (
+        Job.query.filter_by(department=department_without_officers).filter_by(order=1)
+    ).first()
     fo_fn = "Uniquefirst"
     first_officer.first_name = fo_fn
     fo_ln = first_officer.last_name
@@ -445,7 +449,7 @@ def test_bulk_add_officers__success(session, new_department, csv_path, monkeypat
     assignment = Assignment(baseofficer=first_officer, job_id=job.id)
     session.add(assignment)
     session.commit()
-    different_officer = generate_officer(new_department)
+    different_officer = generate_officer(department_without_officers)
     different_officer.job = job
     do_fn = different_officer.first_name
     do_ln = different_officer.last_name
@@ -454,7 +458,7 @@ def test_bulk_add_officers__success(session, new_department, csv_path, monkeypat
     session.add(assignment)
     session.commit()
 
-    department_id = new_department.id
+    department_id = department_without_officers.id
 
     # generate csv to update one existing officer and add one new
 
@@ -708,12 +712,12 @@ def test_bulk_add_officers__write_static_field__flag_set(
 
 
 def test_bulk_add_officers__no_create_flag(
-    session, new_department, csv_path, monkeypatch
+    session, department_without_officers, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # department with one officer
-    department_id = new_department.id
-    officer = generate_officer(new_department)
+    department_id = department_without_officers.id
+    officer = generate_officer(department_without_officers)
     officer.gender = None
     session.add(officer)
     session.commit()
@@ -1292,15 +1296,15 @@ def test_advanced_csv_import__update_officer_different_department(
 
 
 def test_advanced_csv_import__unit_other_department(
-    session, department, new_department, tmp_path
+    session, department, department_without_officers, tmp_path
 ):
     # set up data
     officer = generate_officer(department)
     session.add(officer)
     session.flush()
-    session.add(new_department)
+    session.add(department_without_officers)
     session.flush()
-    unit = Unit(department_id=new_department.id)
+    unit = Unit(department_id=department_without_officers.id)
     session.add(unit)
     session.flush()
 
@@ -1325,7 +1329,7 @@ def test_advanced_csv_import__unit_other_department(
 
 
 def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(
-    app, session, new_department
+    app, session, department_without_officers
 ):
     with app.app_context():
         lookup_officer = Officer.query.filter_by(
@@ -1340,7 +1344,7 @@ def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(
             "employment_date": "1980-12-01",
             "unique_internal_identifier": "officer-jones-unique-id",
         }
-        create_officer_from_row(row, new_department.id)
+        create_officer_from_row(row, department_without_officers.id)
 
         lookup_officer = Officer.query.filter_by(
             first_name="NewOfficerFromRow"

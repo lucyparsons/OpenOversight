@@ -50,8 +50,8 @@ RANK_CHOICES_2 = [
 ]
 
 DEPARTMENT_NAME = "Springfield Police Department"
-DEPARTMENT_TWO_NAME = "Chicago Police Department"
-DEPARTMENT_EMPTY_NAME = "Empty Police Department"
+OTHER_DEPARTMENT_NAME = "Chicago Police Department"
+DEPARTMENT_WITHOUT_OFFICERS_NAME = "Empty Police Department"
 
 
 AC_DEPT = 1
@@ -287,9 +287,11 @@ def add_mockdata(session):
         unique_internal_identifier_label="homer_number",
     )
     session.add(department)
-    department2 = models.Department(name=DEPARTMENT_TWO_NAME, short_name="CPD")
+    department2 = models.Department(name=OTHER_DEPARTMENT_NAME, short_name="CPD")
     session.add(department2)
-    empty_department = models.Department(name=DEPARTMENT_EMPTY_NAME, short_name="EPD")
+    empty_department = models.Department(
+        name=DEPARTMENT_WITHOUT_OFFICERS_NAME, short_name="EPD"
+    )
     session.add(empty_department)
     session.commit()
 
@@ -339,13 +341,13 @@ def add_mockdata(session):
 
     test_images = [
         models.Image(
-            filepath="/static/images/test_cop{}.png".format(x + 1),
+            filepath=f"/static/images/test_cop{x+1}.png",
             department_id=department.id,
         )
         for x in range(5)
     ] + [
         models.Image(
-            filepath="/static/images/test_cop{}.png".format(x + 1),
+            filepath=f"/static/images/test_cop{x+1}.png",
             department_id=department2.id,
         )
         for x in range(5)
@@ -386,18 +388,17 @@ def add_mockdata(session):
     jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
     jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
 
-    assignment_ratio = 0.9
+    # which percentage of officers have an assignment
+    assignment_ratio = 0.9  # 90%
+    num_officers_with_assignments_1 = math.ceil(len(officers_dept1) * assignment_ratio)
     assignments_dept1 = [
         build_assignment(officer, test_units, jobs_dept1)
-        for officer in officers_dept1[
-            : math.ceil(len(officers_dept1) * assignment_ratio)
-        ]
+        for officer in officers_dept1[:num_officers_with_assignments_1]
     ]
+    num_officers_with_assignments_2 = math.ceil(len(officers_dept2) * assignment_ratio)
     assignments_dept2 = [
         build_assignment(officer, test_units, jobs_dept2)
-        for officer in officers_dept2[
-            : math.ceil(len(officers_dept2) * assignment_ratio)
-        ]
+        for officer in officers_dept2[:num_officers_with_assignments_2]
     ]
 
     salaries = [build_salary(officer) for officer in all_officers]
@@ -603,8 +604,10 @@ def department(session):
 
 
 @pytest.fixture
-def new_department(session):
-    return models.Department.query.filter_by(name=DEPARTMENT_EMPTY_NAME).one()
+def department_without_officers(session):
+    return models.Department.query.filter_by(
+        name=DEPARTMENT_WITHOUT_OFFICERS_NAME
+    ).one()
 
 
 @pytest.fixture
