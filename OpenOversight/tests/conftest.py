@@ -12,11 +12,12 @@ from typing import List, Optional
 
 import pytest
 from faker import Faker
-from flask import current_app, g
+from flask import current_app
 from PIL import Image as Pimage
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
+from sqlalchemy.orm import scoped_session, sessionmaker
 from webdriver_manager.firefox import GeckoDriverManager
 from xvfbwrapper import Xvfb
 
@@ -197,55 +198,40 @@ def app(request):
     app = create_app("testing")
     app.config["WTF_CSRF_ENABLED"] = False
 
-    # Establish an application context before running the tests.
-    ctx = app.app_context()
-    ctx.push()
+    yield app
 
-    def teardown():
-        ctx.pop()
 
-    request.addfinalizer(teardown)
-    return app
+@pytest.fixture(autouse=True)
+def ctx(app):
+    with app.app_context():
+        yield
 
 
 @pytest.fixture(scope="session")
-def db(app, request):
+def db(app):
     """Session-wide test database."""
 
-    def teardown():
-        _db.drop_all()
+    with app.app_context():
+        _db.app = app
+        _db.create_all()
 
-    _db.app = app
-    _db.create_all()
-
-    request.addfinalizer(teardown)
-    return _db
+        yield _db
 
 
 @pytest.fixture(scope="function")
-def session(db, request):
+def session(db):
     """Creates a new database session for a test."""
     connection = db.engine.connect()
     transaction = connection.begin()
 
-    options = dict(bind=connection, binds={})
-    session = db.create_scoped_session(options=options)
-
+    session = scoped_session(session_factory=sessionmaker(bind=connection))
     db.session = session
 
-    def teardown():
-        transaction.rollback()
-        connection.close()
-        session.remove()
+    yield session
 
-        # Since Flask-Login now records the logged in user on the Flask `g` object and we persist the app context
-        # (in the app fixture) for the entire testing session, we need to reset this value manually.
-        #
-        # Relevant PR: https://github.com/maxcountryman/flask-login/pull/691
-        g.pop("_login_user", None)
-
-    request.addfinalizer(teardown)
-    return session
+    transaction.rollback()
+    connection.close()
+    session.remove()
 
 
 @pytest.fixture
@@ -685,14 +671,10 @@ def csvfile(mockdata, tmp_path, request):
 
 
 @pytest.fixture
-def client(app, request):
-    client = app.test_client()
-
-    def teardown():
-        pass
-
-    request.addfinalizer(teardown)
-    return client
+def client(app):
+    with app.app_context():
+        client = app.test_client()
+        yield client
 
 
 @pytest.fixture(scope="session")
@@ -703,7 +685,7 @@ def server(app, request):
 
 
 @pytest.fixture(scope="session")
-def browser(app, request, server):
+def browser(app, server):
     # start headless webdriver
     vdisplay = Xvfb()
     vdisplay.start()

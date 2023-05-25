@@ -108,11 +108,12 @@ def test_filter_by_name(mockdata):
         assert "J" in element.last_name
 
 
-def test_filters_do_not_exclude_officers_without_assignments(mockdata):
+def test_filters_do_not_exclude_officers_without_assignments(mockdata, db):
     department = OpenOversight.app.models.Department.query.first()
     officer = OpenOversight.app.models.Officer(
         first_name="Rachel", last_name="S", department=department, birth_year=1992
     )
+    db.session.add(officer)
     results = OpenOversight.app.utils.grab_officers({"name": "S", "dept": department})
     assert officer in results.all()
 

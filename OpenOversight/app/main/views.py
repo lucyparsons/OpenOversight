@@ -708,7 +708,7 @@ def list_officer(
     officers = officers.options(selectinload(Officer.face))
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
     officers = officers.distinct(Officer.last_name, Officer.first_name, Officer.id)
-    officers = officers.paginate(page, OFFICERS_PER_PAGE, False)
+    officers = officers.paginate(page=page, per_page=OFFICERS_PER_PAGE, error_out=False)
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
@@ -1426,7 +1426,7 @@ class IncidentApi(ModelView):
 
         incidents = incidents.order_by(
             getattr(self.model, self.order_by).desc()
-        ).paginate(page, self.per_page, False)
+        ).paginate(page=page, per_page=self.per_page, error_out=False)
 
         url = "main.{}_api".format(self.model_name)
         next_url = url_for(
