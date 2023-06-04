@@ -15,5 +15,5 @@ pytest-xdist==3.2.1
 selenium==4.8.3
 sphinx==7.0.0
 sphinx-autobuild==2021.3.14
-webdriver-manager==3.8.5
+webdriver-manager==3.8.6
 xvfbwrapper==0.2.9
