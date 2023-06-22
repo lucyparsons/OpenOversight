@@ -26,7 +26,7 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker-compose run --rm web python ../create_db.py
+	docker-compose run --rm web python ./create_db.py
 
 .PHONY: assets
 assets:
@@ -43,7 +43,7 @@ populate: create_db  ## Build and run containers
 	done
 	@echo "Postgres is up"
 	## Populate database with test data
-	docker-compose run --rm web python ../test_data.py -p
+	docker-compose run --rm web python ./test_data.py -p
 
 .PHONY: test
 test: start  ## Run tests
