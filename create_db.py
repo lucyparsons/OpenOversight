@@ -4,5 +4,6 @@ from OpenOversight.app.models import db
 
 
 app = create_app("development")
-db.app = app
-db.create_all()
+with app.app_context():
+    db.app = app
+    db.create_all()
