@@ -7,30 +7,23 @@ https://github.com/lucyparsons/OpenOversight/blob/develop/CONTRIB.md#recommended
 Also make sure you have read and abide by the code of conduct:
 https://github.com/lucyparsons/OpenOversight/blob/develop/CODE_OF_CONDUCT.md
 
+If this pull request is not ready for review yet, please submit it as a draft.
 -->
-
-## Status
-
-Ready for review / in progress
-
 ## Description of Changes
+Fixes issue: (LINK YOUR ISSUE RIGHT HERE)
 
-Fixes # .
-
-Changes proposed in this pull request:
-
+## Changes proposed in this pull request:
  -
  -
  -
 
 ## Notes for Deployment
 
+
 ## Screenshots (if appropriate)
 
+
 ## Tests and linting
-
  - [ ] I have rebased my changes on current `develop`
-
- - [ ] pytests pass in the development environment on my local machine
-
+ - [ ] `pytest` passes in the development environment on my local machine
  - [ ] `pre-commit` checks pass
