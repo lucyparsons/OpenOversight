@@ -1,7 +1,7 @@
 <!-- New Contributor? Welcome!
 
 We recommend you check your privacy settings, so the name and email associated with
-the commit are what you want them to be. See the contribution guide at
+the commits are what you want them to be. See the contribution guide at
 https://github.com/lucyparsons/OpenOversight/blob/develop/CONTRIB.md#recommended-privacy-settings for more infos.
 
 Also make sure you have read and abide by the code of conduct:
@@ -26,5 +26,5 @@ If this pull request is not ready for review yet, please submit it as a draft.
 
 
 ## Tests and linting
- - [ ] I have rebased my changes on current `develop`
- - [ ] `pytest` passes in the development environment on my local machine
+ - [ ] This branch is up-to-date with the `develop` branch.
+ - [ ] `pytest` passes in the development environment on my local machine.
