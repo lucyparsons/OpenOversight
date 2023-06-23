@@ -28,4 +28,3 @@ If this pull request is not ready for review yet, please submit it as a draft.
 ## Tests and linting
  - [ ] I have rebased my changes on current `develop`
  - [ ] `pytest` passes in the development environment on my local machine
- - [ ] `pre-commit` checks pass
