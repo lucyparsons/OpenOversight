@@ -9,8 +9,10 @@ https://github.com/lucyparsons/OpenOversight/blob/develop/CODE_OF_CONDUCT.md
 
 If this pull request is not ready for review yet, please submit it as a draft.
 -->
+**Fixes issue:** (LINK YOUR ISSUE RIGHT HERE)
+
 ## Description of Changes
-Fixes issue: (LINK YOUR ISSUE RIGHT HERE)
+
 
 ## Changes proposed in this pull request:
  -
