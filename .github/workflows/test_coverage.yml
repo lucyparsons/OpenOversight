@@ -24,7 +24,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        path-to-lcov: OpenOversight/tests/coverage.xml
+      - name: Upload Coverage Results
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: OpenOversight/tests/coverage.xml
