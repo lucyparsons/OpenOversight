@@ -1,5 +1,3 @@
-version: "3.4"
-
 services:
   web:
     image: ghcr.io/lucyparsons/openoversight:${DOCKER_IMAGE_TAG}
