@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.9"
       - name: Run tests
-      - run: |
+        run: |
           PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
       - name: Coveralls
         uses: AndreMiras/coveralls-python-action@develop
