@@ -1,35 +1,31 @@
 name: Test Coverage
-
 on:
   pull_request:
     branches:
     - develop
     - main
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 jobs:
-  build:
-    # The type of runner that the job will run on
+  test:
     runs-on: ubuntu-latest
     env:
       FLASK_APP: OpenOversight.app
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
         with:
           python-version: "3.9"
       - name: Run tests
       - run: |
           PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
-          flake8 --ignore=E501,E722,W504,W503
-          coveralls --service=github
-  get-code-coverage:
+      - name: Coveralls
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel: true
+          flag-name: Unit Test
+  coveralls_finish:
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Coveralls
-      - uses: coverallsapp/github-action@v2
-        with:
-          python-version: "3.9"
+    - name: Coveralls Finished
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel-finished: true
