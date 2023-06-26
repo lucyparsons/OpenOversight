@@ -30,7 +30,7 @@ services:
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      FLASK_APP: OpenOversight.app
-     FLASK_ENV: "${FLASK_ENV:-development}"
+     FLASK_ENV: "${FLASK_ENV:?development}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
