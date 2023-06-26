@@ -6,6 +6,8 @@ on:
     - develop
     - main
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   get-coverage:
@@ -19,6 +21,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       - name: Run tests
-      - run: PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
-      - run: 'flake8 --ignore=E501,E722,W504,W503'
-      - run: coveralls
+      - run: |
+          PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
+          flake8 --ignore=E501,E722,W504,W503
+          coveralls
