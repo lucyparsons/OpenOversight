@@ -1,0 +1,41 @@
+name: Test Coverage
+
+on:
+  pull_request:
+    branches:
+    - develop
+    - main
+
+
+jobs:
+  get-coverage:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            python-version: '3.8'
+            DOCKER_COMPOSE_VERSION: 1.24.0
+          - os: ubuntu-18.04
+            python-version: '3.9'
+            DOCKER_COMPOSE_VERSION: 1.24.0
+    steps:
+      - name: 'Set up Python ${{ matrix.python-version }}'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '${{ matrix.python-version }}'
+      - uses: actions/checkout@v2
+      - run: sudo rm /usr/local/bin/docker-compose
+      - run: >-
+          curl -L
+          https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
+          -s`-`uname -m` > docker-compose
+        env:
+          DOCKER_COMPOSE_VERSION: '${{ matrix.DOCKER_COMPOSE_VERSION }}'
+      - run: chmod +x docker-compose
+      - run: sudo mv docker-compose /usr/local/bin
+      - run: pip install coveralls flake8==3.8.3
+      - run: sudo service postgresql stop
+      - run: sudo make test
+      - run: 'flake8 --ignore=E501,E722,W504,W503'
+      - run: coveralls
