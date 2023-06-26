@@ -15,11 +15,6 @@ If this pull request is not ready for review yet, please submit it as a draft.
 ## Description of Changes
 
 
-## Changes proposed in this pull request:
- -
- -
- -
-
 ## Notes for Deployment
 
 
