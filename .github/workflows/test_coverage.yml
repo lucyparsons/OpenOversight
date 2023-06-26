@@ -16,14 +16,6 @@ jobs:
       - name: Run tests
         run: |
           PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
-      - name: Coveralls
-        uses: AndreMiras/coveralls-python-action@develop
-        with:
-          flag-name: Unit Test
-  coveralls_finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
       - name: Upload Coverage Results
         uses: coverallsapp/github-action@master
         with:
