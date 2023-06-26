@@ -9,33 +9,16 @@ on:
 
 jobs:
   get-coverage:
-    runs-on: '${{ matrix.os }}'
+    runs-on: ubuntu-latest
+    env:
+      FLASK_APP: OpenOversight.app
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            python-version: '3.8'
-            DOCKER_COMPOSE_VERSION: 1.24.0
-          - os: ubuntu-latest
-            python-version: '3.9'
-            DOCKER_COMPOSE_VERSION: 1.24.0
+        python-version: [ "3.8", "3.9" ]
     steps:
-      - name: 'Set up Python ${{ matrix.python-version }}'
-        uses: actions/setup-python@v2
-        with:
-          python-version: '${{ matrix.python-version }}'
-      - uses: actions/checkout@v2
-      - run: sudo rm /usr/local/bin/docker-compose
-      - run: >-
-          curl -L
-          https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
-          -s`-`uname -m` > docker-compose
-        env:
-          DOCKER_COMPOSE_VERSION: '${{ matrix.DOCKER_COMPOSE_VERSION }}'
-      - run: chmod +x docker-compose
-      - run: sudo mv docker-compose /usr/local/bin
-      - run: pip install coveralls flake8==3.8.3
-      - run: sudo service postgresql stop
-      - run: sudo make test
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - name: Run tests
+      - run: PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
       - run: 'flake8 --ignore=E501,E722,W504,W503'
       - run: coveralls
