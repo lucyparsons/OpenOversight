@@ -50,7 +50,7 @@ test: start  ## Run tests
 	if [ -z "$(name)" ]; then \
 		FLASK_ENV=testing docker-compose coverage run --rm web pytest --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-	    FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -v OpenOversight/tests/ -k $(name); \
+	    FLASK_ENV=testing docker-compose coverage run --rm web pytest --doctest-modules -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint
