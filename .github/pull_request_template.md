@@ -28,4 +28,5 @@ If this pull request is not ready for review yet, please submit it as a draft.
 
 ## Tests and linting
  - [ ] This branch is up-to-date with the `develop` branch.
- - [ ] `pytest` passes in the development environment on my local machine.
+ - [ ] `pytest` passes on my local development environment.
+ - [ ] `pre-commit` passes on my local development environment.
