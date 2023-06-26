@@ -13,10 +13,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             python-version: '3.8'
             DOCKER_COMPOSE_VERSION: 1.24.0
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             python-version: '3.9'
             DOCKER_COMPOSE_VERSION: 1.24.0
     steps:
