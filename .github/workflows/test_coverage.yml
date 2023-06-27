@@ -2,7 +2,9 @@ name: Test Coverage
 on:
   push:
     branches:
-    - develop
+      - develop
+      - main
+
 jobs:
   test:
     runs-on: ubuntu-latest
