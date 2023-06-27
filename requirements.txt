@@ -12,6 +12,7 @@ Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.3
 Flask-WTF==1.1.1
+google-api-python-client==2.90.0
 gunicorn==20.1.0
 httplib2==0.22.0
 Markdown==3.4.3
