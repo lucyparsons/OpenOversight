@@ -12,7 +12,7 @@ build_with_version:
 
 .PHONY: test_with_version
 test_with_version: build_with_version assets
-	FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+	FLASK_ENV=testing docker-compose run --rm web pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 .PHONY: start
 start: build  ## Run containers

@@ -1,9 +1,8 @@
 name: Test Coverage
 on:
-  pull_request:
+  push:
     branches:
-    - develop
-    - main
+    - coveralls_fix
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -17,7 +16,7 @@ jobs:
         run: |
           PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
       - name: Upload Coverage Results
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: OpenOversight/tests/coverage.xml
