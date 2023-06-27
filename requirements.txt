@@ -13,8 +13,10 @@ Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.3
 Flask-WTF==1.1.1
 gunicorn==20.1.0
+httplib2==0.22.0
 Markdown==3.4.3
 MarkupSafe==2.1.2
+oauth2==1.9.0.post1
 Pillow==9.5.0
 psycopg2==2.9.6
 python-dateutil==2.8.2
