@@ -3,7 +3,7 @@ bleach==6.0.0
 bleach-allowlist==1.0.3
 boto3==1.26.161
 email-validator==2.0.0.post2
-Flask==2.2.5
+Flask==2.3.2
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==3.3.1
 Flask-Login==0.6.2
