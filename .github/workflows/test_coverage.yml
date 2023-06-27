@@ -2,7 +2,7 @@ name: Test Coverage
 on:
   push:
     branches:
-    - coveralls_fix
+    - develop
 jobs:
   test:
     runs-on: ubuntu-latest
