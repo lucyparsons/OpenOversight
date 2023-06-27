@@ -9,7 +9,7 @@ pytest==7.4.0
 pytest-cov==4.1.0
 pytest-pep8==1.0.6
 pytest-xdist==3.3.1
-selenium==3.14.0
-sphinx==1.7.8
+selenium==3.14.0 # This breaks the build for python 3.9
+sphinx==7.0.1
 sphinx-autobuild==2021.3.14
 xvfbwrapper==0.2.9
