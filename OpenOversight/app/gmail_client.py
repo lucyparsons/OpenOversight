@@ -19,53 +19,58 @@ class Email:
         self.sender = DEFAULT_SENDER_ADDRESS
         self.subject = subject
 
-    @classmethod
-    def create_message(cls):
-        message = MIMEText(cls.body)
-        message["to"] = cls.receiver
-        message["from"] = cls.sender
-        message["subject"] = cls.subject
-        return {"raw": base64.urlsafe_b64encode(message.as_string())}
+    def create_message(self):
+        message = MIMEText(self.body)
+        message["to"] = self.receiver
+        message["from"] = self.sender
+        message["subject"] = self.subject
+        return {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
 
 class AdministratorApprovalEmail(Email):
     def __init__(self, receiver: str, **kwargs):
-        app = current_app.app_context()
-        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} New User Registered"
+        subject = (
+            f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Registered"
+        )
         body = render_template("auth/email/new_registration.txt", **kwargs)
-        super.__init__(body, subject, receiver)
+        super().__init__(body, subject, receiver)
 
 
 class ChangeEmailAddressEmail(Email):
     def __init__(self, receiver: str, **kwargs):
-        app = current_app.app_context()
-        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} 	Confirm Your Email Address"
+        subject = (
+            f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Email "
+            f"Address"
+        )
         body = render_template("auth/email/change_email.txt", **kwargs)
-        super.__init__(body, subject, receiver)
+        super().__init__(body, subject, receiver)
 
 
 class ConfirmAccountEmail(Email):
     def __init__(self, receiver: str, **kwargs):
-        app = current_app.app_context()
-        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+        subject = (
+            f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Account"
+        )
         body = render_template("auth/email/confirm.txt", **kwargs)
-        super.__init__(body, subject, receiver)
+        super().__init__(body, subject, receiver)
 
 
 class ConfirmedUserEmail(Email):
     def __init__(self, receiver: str, **kwargs):
-        app = current_app.app_context()
-        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} New User Confirmed"
+        subject = (
+            f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Confirmed"
+        )
         body = render_template("auth/email/new_confirmation.txt", **kwargs)
-        super.__init__(body, subject, receiver)
+        super().__init__(body, subject, receiver)
 
 
 class ResetPasswordEmail(Email):
     def __init__(self, receiver: str, **kwargs):
-        app = current_app.app_context()
-        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+        subject = (
+            f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Reset Your Password"
+        )
         body = render_template("auth/email/reset_password.txt", **kwargs)
-        super.__init__(body, subject, receiver)
+        super().__init__(body, subject, receiver)
 
 
 class GmailClient(object):
@@ -81,24 +86,34 @@ class GmailClient(object):
             credentials = service_account.Credentials.from_service_account_file(
                 cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
-            delegated_credentials = credentials.with_subject(cls.DEFAULT_SENDER_ADDRESS)
+            delegated_credentials = credentials.with_subject(DEFAULT_SENDER_ADDRESS)
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(GmailClient, cls).__new__(cls)
         return cls._instance
 
     @classmethod
     def send_email(cls, email: Email):
-        app = current_app.app_context()
-        if app.env in ("staging", "production"):
-            try:
-                message = (
-                    cls.service.users()
-                    .messages()
-                    .send(userId="me", body=email.create_message())
-                    .execute()
-                )
-                return message
-            except errors.HttpError as error:
-                print("An error occurred: %s" % error)
-        else:
-            app.logger.info("simulated email:\n%s\n%s", email.subject, email.body)
+        current_app.logger.debug(current_app.config.get('FLASK_ENV'))
+        current_app.logger.debug(cls.SCOPES)
+        try:
+            (
+                cls.service.users()
+                .messages()
+                .send(userId="me", body=email.create_message())
+                .execute()
+            )
+        except errors.HttpError as error:
+            print("An error occurred: %s" % error)
+        # if current_app.config.get('env') in ("staging", "production"):
+        #     try:
+        #         message = (
+        #             cls.service.users()
+        #             .messages()
+        #             .send(userId="me", body=email.create_message())
+        #             .execute()
+        #         )
+        #         return message
+        #     except errors.HttpError as error:
+        #         print("An error occurred: %s" % error)
+        # else:
+        #     app.logger.info("simulated email:\n%s\n%s", email.subject, email.body)
