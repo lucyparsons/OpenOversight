@@ -13,6 +13,7 @@ DEFAULT_SENDER_ADDRESS = "chi-oo@lucyparsonslabs.com"
 
 class Email:
     """Base class for all emails."""
+
     def __init__(self, body: str, subject: str, receiver: str):
         self.body = body
         self.receiver = receiver
