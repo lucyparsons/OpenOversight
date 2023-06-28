@@ -24,7 +24,7 @@ from .gmail_client import GmailClient
 
 bootstrap = Bootstrap()
 mail = Mail()
-gmail_client = GmailClient()
+GmailClient()
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
