@@ -19,7 +19,6 @@ from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
 from .config import config
-from .gmail_client import GmailClient
 
 
 bootstrap = Bootstrap()
