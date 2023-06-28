@@ -23,7 +23,6 @@ from .gmail_client import GmailClient
 
 
 bootstrap = Bootstrap()
-gmail_client = GmailClient()
 mail = Mail()
 
 login_manager = LoginManager()
