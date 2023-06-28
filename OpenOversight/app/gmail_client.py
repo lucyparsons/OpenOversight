@@ -93,7 +93,7 @@ class GmailClient(object):
 
     @classmethod
     def send_email(cls, email: Email):
-        current_app.logger.debug(current_app.config.get('FLASK_ENV'))
+        current_app.logger.debug(current_app.config.get("FLASK_ENV"))
         current_app.logger.debug(cls.SCOPES)
         try:
             (
