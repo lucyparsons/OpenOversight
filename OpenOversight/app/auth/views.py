@@ -11,6 +11,7 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
+from OpenOversight.app.gmail_client import GmailClient
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
@@ -32,6 +33,7 @@ from .forms import (
 from .utils import admin_required
 
 
+gmail_client = GmailClient()
 sitemap_endpoints = []
 
 
@@ -113,6 +115,9 @@ def register():
         if current_app.config["APPROVE_REGISTRATIONS"]:
             admins = User.query.filter_by(is_administrator=True).all()
             for admin in admins:
+                # gmail_client.send_email(
+                #     AdministratorApprovalEmail(admin.email, user=user, admin=admin)
+                # )
                 send_email(
                     admin.email,
                     "New user registered",
@@ -126,6 +131,9 @@ def register():
             )
         else:
             token = user.generate_confirmation_token()
+            # gmail_client.send_email(
+            #     ConfirmAccountEmail(user.email, user=user, token=token)
+            # )
             send_email(
                 user.email,
                 "Confirm Your Account",
@@ -148,6 +156,9 @@ def confirm(token):
     if current_user.confirm(token):
         admins = User.query.filter_by(is_administrator=True).all()
         for admin in admins:
+            # gmail_client.send_email(
+            #     ConfirmedUserEmail(admin.email, user=current_user, admin=admin)
+            # )
             send_email(
                 admin.email,
                 "New user confirmed",
@@ -165,6 +176,9 @@ def confirm(token):
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
+    # gmail_client.send_email(
+    #     ConfirmAccountEmail(current_user.email, user=current_user, token=token)
+    # )
     send_email(
         current_user.email,
         "Confirm Your Account",
@@ -204,6 +218,9 @@ def password_reset_request():
         user = User.by_email(form.email.data).first()
         if user:
             token = user.generate_reset_token()
+            # gmail_client.send_email(
+            #     ResetPasswordEmail(user.email, user=user, token=token)
+            # )
             send_email(
                 user.email,
                 "Reset Your Password",
@@ -245,6 +262,9 @@ def change_email_request():
         if current_user.verify_password(form.password.data):
             new_email = form.email.data
             token = current_user.generate_email_change_token(new_email)
+            # gmail_client.send_email(
+            #     ChangeEmailAddressEmail(new_email, user=current_user, token=token)
+            # )
             send_email(
                 new_email,
                 "Confirm your email address",
@@ -338,7 +358,8 @@ def edit_user(user_id):
                 db.session.add(user)
                 db.session.commit()
 
-                # automatically send a confirmation email when approving an unconfirmed user
+                # automatically send a confirmation email when approving an
+                # unconfirmed user
                 if (
                     current_app.config["APPROVE_REGISTRATIONS"]
                     and not already_approved
@@ -376,6 +397,9 @@ def admin_resend_confirmation(user):
         flash("User {} is already confirmed.".format(user.username))
     else:
         token = user.generate_confirmation_token()
+        # gmail_client.send_email(
+        #     ConfirmAccountEmail(user.email, user=user, token=token)
+        # )
         send_email(
             user.email,
             "Confirm Your Account",
