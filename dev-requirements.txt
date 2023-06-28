@@ -1,3 +1,4 @@
+coveralls==3.3.1
 faker==18.11.2
 flake8==6.0.0
 mock==5.0.2
