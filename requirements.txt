@@ -1,17 +1,18 @@
+# TODO: There are currently A LOT of packages that we are using that are not included in this file.
 apiclient==1.0.4
-Authlib==0.15.5
-bleach==5.0.1
+Authlib==1.2.1
+bleach==6.0.0
 bleach-allowlist==1.0.3
-boto3==1.26.20
-email-validator==1.3.1
-Flask==2.2.5
+boto3==1.26.161
+email-validator==2.0.0.post2
+Flask==2.2.5 # Updating this breaks the build for python 3.8
 Flask-Bootstrap==3.3.7.1
-Flask-Limiter==3.3.0
+Flask-Limiter==3.3.1
 Flask-Login==0.6.2
 Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
-Flask-SQLAlchemy==3.0.3
+Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.1
 google-api-python-client==2.90.0
 google-auth-httplib2==0.1.0
@@ -19,12 +20,12 @@ google-auth-oauthlib==1.0.0
 gunicorn==20.1.0
 httplib2==0.22.0
 Markdown==3.4.3
-MarkupSafe==2.1.2
+MarkupSafe==2.1.3
 oauth2==1.9.0.post1
 Pillow==9.5.0
 psycopg2==2.9.6
 python-dateutil==2.8.2
-SQLAlchemy==1.4.47
-us==1.0
+SQLAlchemy==1.4.47 # Updating this breaks the build for python 3.9
+us==3.1.1
 wtforms==3.0.1
 WTForms-SQLAlchemy==0.3.0
