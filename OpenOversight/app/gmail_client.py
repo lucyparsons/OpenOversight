@@ -3,6 +3,7 @@ import base64
 from email.mime.text import MIMEText
 
 from apiclient import errors
+from flask import current_app, render_template
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -26,24 +27,43 @@ class Email:
         return {"raw": base64.urlsafe_b64encode(message.as_string())}
 
 
-class ConfirmEmailAddressEmail(Email):
-    def __init__(self, receiver: str):
-        subject = "CONFIRM EMAIL ADDRESS TITLE"
-        body = "CONFIRM EMAIL ADDRESS BODY"
+class AdministratorApprovalEmail(Email):
+    def __init__(self, receiver: str, **kwargs):
+        app = current_app.app_context()
+        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} New User Registered"
+        body = render_template("auth/email/new_registration.txt", **kwargs)
         super.__init__(body, subject, receiver)
 
 
 class ChangeEmailAddressEmail(Email):
-    def __init__(self, receiver: str):
-        body = "CONFIRM EMAIL ADDRESS BODY"
-        subject = "CHANGE EMAIL ADDRESS TITLE"
+    def __init__(self, receiver: str, **kwargs):
+        app = current_app.app_context()
+        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} 	Confirm Your Email Address"
+        body = render_template("auth/email/change_email.txt", **kwargs)
         super.__init__(body, subject, receiver)
 
 
-class ChangePasswordEmail(Email):
-    def __init__(self, receiver: str):
-        body = "CHANGE PASSWORD BODY"
-        subject = "CHANGE PASSWORD TITLE"
+class ConfirmAccountEmail(Email):
+    def __init__(self, receiver: str, **kwargs):
+        app = current_app.app_context()
+        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+        body = render_template("auth/email/confirm.txt", **kwargs)
+        super.__init__(body, subject, receiver)
+
+
+class ConfirmedUserEmail(Email):
+    def __init__(self, receiver: str, **kwargs):
+        app = current_app.app_context()
+        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} New User Confirmed"
+        body = render_template("auth/email/new_confirmation.txt", **kwargs)
+        super.__init__(body, subject, receiver)
+
+
+class ResetPasswordEmail(Email):
+    def __init__(self, receiver: str, **kwargs):
+        app = current_app.app_context()
+        subject = f"{app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+        body = render_template("auth/email/reset_password.txt", **kwargs)
         super.__init__(body, subject, receiver)
 
 
@@ -66,11 +86,18 @@ class GmailClient(object):
         return cls._instance
 
     @classmethod
-    def send_email(cls, message: bytes):
-        try:
-            message = (
-                cls.service.users().messages().send(userId="me", body=message).execute()
-            )
-            return message
-        except errors.HttpError as error:
-            print("An error occurred: %s" % error)
+    def send_email(cls, email: Email):
+        app = current_app.app_context()
+        if app.env in ("staging", "production"):
+            try:
+                message = (
+                    cls.service.users()
+                    .messages()
+                    .send(userId="me", body=email.create_message())
+                    .execute()
+                )
+                return message
+            except errors.HttpError as error:
+                print("An error occurred: %s" % error)
+        else:
+            app.logger.info("simulated email:\n%s\n%s", email.subject, email.body)
