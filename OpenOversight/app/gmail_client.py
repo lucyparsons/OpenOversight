@@ -1,4 +1,3 @@
-"""This file houses the classes used to send emails."""
 import base64
 from email.mime.text import MIMEText
 
