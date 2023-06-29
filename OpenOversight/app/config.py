@@ -5,7 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BaseConfig(object):
-    # DB SETUP
+    # DB Settings
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Pagination Settings
@@ -37,6 +37,7 @@ class BaseConfig(object):
     # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
     USE_SESSION_FOR_NEXT = True
 
+    # Misc. Settings
     SEED = 666
 
     @staticmethod
