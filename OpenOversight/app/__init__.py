@@ -43,11 +43,11 @@ def create_app(config_name="default"):
     from .models import db
 
     bootstrap.init_app(app)
-    db.init_app(app)
-    login_manager.init_app(app)
-    limiter.init_app(app)
-    sitemap.init_app(app)
     csrf.init_app(app)
+    db.init_app(app)
+    limiter.init_app(app)
+    login_manager.init_app(app)
+    sitemap.init_app(app)
 
     from .main import main as main_blueprint
 
