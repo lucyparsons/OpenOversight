@@ -8,7 +8,7 @@ class BaseConfig(object):
     # DB SETUP
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # pagination
+    # Pagination Settings
     OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
     USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
 
@@ -19,7 +19,6 @@ class BaseConfig(object):
     # Mail Settings
     OO_MAIL_SUBJECT_PREFIX = os.environ.get("OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]")
     OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
-    # OO_ADMIN = os.environ.get('OO_ADMIN')
 
     # AWS Settings
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -31,7 +30,7 @@ class BaseConfig(object):
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
 
-    # User settings
+    # User Settings
     APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
 
     # Use session cookie to store URL to redirect to after login
