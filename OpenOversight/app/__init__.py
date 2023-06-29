@@ -22,7 +22,6 @@ from .gmail_client import GmailClient
 
 
 bootstrap = Bootstrap()
-GmailClient()
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
