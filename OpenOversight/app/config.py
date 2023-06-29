@@ -17,7 +17,8 @@ class BaseConfig(object):
     SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
 
     # Mail Settings
-    GMAIL_SERVICE_EMAIL = os.environ.get("GMAIL_SERVICE_EMAIL")
+    OO_MAIL_SUBJECT_PREFIX = os.environ.get("OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]")
+    OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
     # OO_ADMIN = os.environ.get('OO_ADMIN')
 
     # AWS Settings
