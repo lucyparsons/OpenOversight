@@ -9,7 +9,6 @@ Flask==2.2.5 # Updating this breaks the build for python 3.8
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==3.3.1
 Flask-Login==0.6.2
-Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.5
