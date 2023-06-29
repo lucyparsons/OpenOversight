@@ -18,7 +18,7 @@ class Email:
         self.subject = subject
 
     def create_message(self):
-        message = MIMEText(self.body)
+        message = MIMEText(self.body, "html")
         message["to"] = self.receiver
         message["from"] = BaseConfig.OO_SERVICE_EMAIL
         message["subject"] = self.subject
@@ -30,7 +30,7 @@ class AdministratorApprovalEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Registered"
         )
-        body = render_template("auth/email/new_registration.txt", **kwargs)
+        body = render_template("auth/email/new_registration.html", **kwargs)
         super().__init__(body, subject, receiver)
 
 
@@ -40,7 +40,7 @@ class ChangeEmailAddressEmail(Email):
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Email "
             f"Address"
         )
-        body = render_template("auth/email/change_email.txt", **kwargs)
+        body = render_template("auth/email/change_email.html", **kwargs)
         super().__init__(body, subject, receiver)
 
 
@@ -49,7 +49,7 @@ class ConfirmAccountEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Account"
         )
-        body = render_template("auth/email/confirm.txt", **kwargs)
+        body = render_template("auth/email/confirm.html", **kwargs)
         super().__init__(body, subject, receiver)
 
 
@@ -58,7 +58,7 @@ class ConfirmedUserEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Confirmed"
         )
-        body = render_template("auth/email/new_confirmation.txt", **kwargs)
+        body = render_template("auth/email/new_confirmation.html", **kwargs)
         super().__init__(body, subject, receiver)
 
 
@@ -67,7 +67,7 @@ class ResetPasswordEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Reset Your Password"
         )
-        body = render_template("auth/email/reset_password.txt", **kwargs)
+        body = render_template("auth/email/reset_password.html", **kwargs)
         super().__init__(body, subject, receiver)
 
 
