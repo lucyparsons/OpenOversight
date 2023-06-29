@@ -45,6 +45,7 @@ def create_app(config_name="default"):
     bootstrap.init_app(app)
     csrf.init_app(app)
     db.init_app(app)
+    GmailClient()
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)
