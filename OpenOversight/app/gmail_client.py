@@ -9,22 +9,18 @@ from googleapiclient.discovery import build
 from OpenOversight.app.config import BaseConfig
 
 
-DEFAULT_SENDER_ADDRESS = BaseConfig.GMAIL_SERVICE_EMAIL
-
-
 class Email:
     """Base class for all emails."""
 
     def __init__(self, body: str, subject: str, receiver: str):
         self.body = body
         self.receiver = receiver
-        self.sender = DEFAULT_SENDER_ADDRESS
         self.subject = subject
 
     def create_message(self):
         message = MIMEText(self.body)
         message["to"] = self.receiver
-        message["from"] = self.sender
+        message["from"] = BaseConfig.OO_SERVICE_EMAIL
         message["subject"] = self.subject
         return {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
@@ -88,7 +84,9 @@ class GmailClient(object):
             credentials = service_account.Credentials.from_service_account_file(
                 cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
-            delegated_credentials = credentials.with_subject(DEFAULT_SENDER_ADDRESS)
+            delegated_credentials = credentials.with_subject(
+                BaseConfig.OO_SERVICE_EMAIL
+            )
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(GmailClient, cls).__new__(cls)
         return cls._instance
