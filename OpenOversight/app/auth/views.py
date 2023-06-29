@@ -115,7 +115,7 @@ def register():
             email=form.email.data,
             username=form.username.data,
             password=form.password.data,
-            approved=True if BaseConfig.APPROVE_REGISTRATIONS else False,
+            approved=False if BaseConfig.APPROVE_REGISTRATIONS else True,
         )
         db.session.add(user)
         db.session.commit()
