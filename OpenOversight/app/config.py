@@ -1,5 +1,7 @@
 import os
 
+from OpenOversight.app.utils.constants import MEGABYTE
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,7 +29,7 @@ class BaseConfig(object):
     S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
     # Upload Settings
-    MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 50 * MEGABYTE
     ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
 
     # User Settings

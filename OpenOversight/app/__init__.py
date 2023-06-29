@@ -19,6 +19,7 @@ from markupsafe import Markup
 
 from .config import config
 from .gmail_client import GmailClient
+from .utils.constants import MEGABYTE
 
 
 bootstrap = Bootstrap()
@@ -57,7 +58,7 @@ def create_app(config_name="default"):
 
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
-    max_log_size = 10 * 1024 * 1024  # start new log file after 10 MB
+    max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
     num_logs_to_keep = 5
     file_handler = RotatingFileHandler(
         "/tmp/openoversight.log", "a", max_log_size, num_logs_to_keep
