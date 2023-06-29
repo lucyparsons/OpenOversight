@@ -6,8 +6,10 @@ from flask import current_app, render_template
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
+from OpenOversight.app.config import BaseConfig
 
-DEFAULT_SENDER_ADDRESS = "chi-oo@lucyparsonslabs.com"
+
+DEFAULT_SENDER_ADDRESS = BaseConfig.GMAIL_SERVICE_EMAIL
 
 
 class Email:
