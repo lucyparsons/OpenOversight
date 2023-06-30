@@ -341,7 +341,7 @@ def test_admin_can_approve_user(mock_data, client, session):
         (False, True, True, False),
     ],
 )
-## TODO: Fix
+# TODO: Fix
 def test_admin_approval_sends_confirmation_email(
     currently_approved,
     currently_confirmed,
