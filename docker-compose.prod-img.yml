@@ -11,6 +11,7 @@ services:
     volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/
      - ./static/:/usr/src/app/OpenOversight/static
+     - ./service_account_key.json:/usr/src/app/service_account_key.json
     ports:
       - "4000:3000"
     networks:
