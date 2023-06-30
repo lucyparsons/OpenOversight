@@ -327,11 +327,13 @@ def test_admin_can_approve_user(mockdata, client, session):
 
 
 @pytest.mark.parametrize(
-    "currently_approved, currently_confirmed, approve_registration_config, should_send_email",
+    "currently_approved, currently_confirmed, approve_registration_config, "
+    "should_send_email",
     [
         # Approving unconfirmed user sends email
         (False, False, True, True),
-        # Approving unconfirmed user does not send email if approve_registration config is not set
+        # Approving unconfirmed user does not send email if approve_registration config
+        # is not set
         (False, False, False, False),
         # Updating approved user does not send email
         (True, False, True, False),
@@ -339,6 +341,7 @@ def test_admin_can_approve_user(mockdata, client, session):
         (False, True, True, False),
     ],
 )
+## TODO: Fix
 def test_admin_approval_sends_confirmation_email(
     currently_approved,
     currently_confirmed,
