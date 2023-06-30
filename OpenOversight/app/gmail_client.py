@@ -80,7 +80,7 @@ class GmailClient(object):
     _instance = None
 
     def __new__(cls):
-        if current_app.config.get("env") != "testing" and cls._instance is None:
+        if cls._instance is None:
             credentials = service_account.Credentials.from_service_account_file(
                 cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
