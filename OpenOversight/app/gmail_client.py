@@ -93,27 +93,17 @@ class GmailClient(object):
 
     @classmethod
     def send_email(cls, email: Email):
-        current_app.logger.debug(current_app.config.get("FLASK_ENV"))
-        current_app.logger.debug(cls.SCOPES)
-        try:
-            (
-                cls.service.users()
-                .messages()
-                .send(userId="me", body=email.create_message())
-                .execute()
+        if current_app.config.get("env") == "testing":
+            current_app.logger.info(
+                "simulated email:\n%s\n%s", email.subject, email.body
             )
-        except errors.HttpError as error:
-            print("An error occurred: %s" % error)
-        # if current_app.config.get('env') in ("staging", "production"):
-        #     try:
-        #         message = (
-        #             cls.service.users()
-        #             .messages()
-        #             .send(userId="me", body=email.create_message())
-        #             .execute()
-        #         )
-        #         return message
-        #     except errors.HttpError as error:
-        #         print("An error occurred: %s" % error)
-        # else:
-        #     app.logger.info("simulated email:\n%s\n%s", email.subject, email.body)
+        else:
+            try:
+                (
+                    cls.service.users()
+                    .messages()
+                    .send(userId="me", body=email.create_message())
+                    .execute()
+                )
+            except errors.HttpError as error:
+                print("An error occurred: %s" % error)
