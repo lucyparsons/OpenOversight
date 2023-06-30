@@ -6,6 +6,7 @@ from flask import current_app, url_for
 from mock import patch
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
+from OpenOversight.app.gmail_client import GmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -26,7 +27,7 @@ routes_methods = [
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_user_api_login_required(route, methods, client, mock_data):
+def test_user_api_login_required(route, methods, client, mockdata):
     if HTTP_METHOD_GET in methods:
         rv = client.get(route)
         assert rv.status_code == HTTPStatus.FORBIDDEN
@@ -36,7 +37,7 @@ def test_user_api_login_required(route, methods, client, mock_data):
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_user_cannot_access_user_api(route, methods, mock_data, client, session):
+def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         if HTTP_METHOD_GET in methods:
@@ -48,7 +49,7 @@ def test_user_cannot_access_user_api(route, methods, mock_data, client, session)
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_ac_cannot_access_user_api(route, methods, mock_data, client, session):
+def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         if HTTP_METHOD_GET in methods:
@@ -59,7 +60,7 @@ def test_ac_cannot_access_user_api(route, methods, mock_data, client, session):
             assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_admin_can_update_users_to_ac(mock_data, client, session):
+def test_admin_can_update_users_to_ac(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -80,7 +81,7 @@ def test_admin_can_update_users_to_ac(mock_data, client, session):
         assert user.is_area_coordinator is True
 
 
-def test_admin_cannot_update_to_ac_without_department(mock_data, client, session):
+def test_admin_cannot_update_to_ac_without_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -99,7 +100,7 @@ def test_admin_cannot_update_to_ac_without_department(mock_data, client, session
         assert user.is_area_coordinator is False
 
 
-def test_admin_can_update_users_to_admin(mock_data, client, session):
+def test_admin_can_update_users_to_admin(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -120,7 +121,7 @@ def test_admin_can_update_users_to_admin(mock_data, client, session):
         assert user.is_administrator is True
 
 
-def test_admin_can_delete_user(mock_data, client, session):
+def test_admin_can_delete_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -144,7 +145,7 @@ def test_admin_can_delete_user(mock_data, client, session):
         assert not User.query.get(user_id)
 
 
-def test_admin_cannot_delete_other_admin(mock_data, client, session):
+def test_admin_cannot_delete_other_admin(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -161,7 +162,7 @@ def test_admin_cannot_delete_other_admin(mock_data, client, session):
         assert User.query.get(user_id) is not None
 
 
-def test_admin_can_disable_user(mock_data, client, session):
+def test_admin_can_disable_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -188,7 +189,7 @@ def test_admin_can_disable_user(mock_data, client, session):
         assert user.is_disabled
 
 
-def test_admin_cannot_disable_self(mock_data, client, session):
+def test_admin_cannot_disable_self(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -214,7 +215,7 @@ def test_admin_cannot_disable_self(mock_data, client, session):
         assert not user.is_disabled
 
 
-def test_admin_can_enable_user(mock_data, client, session):
+def test_admin_can_enable_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -243,7 +244,7 @@ def test_admin_can_enable_user(mock_data, client, session):
         assert not user.is_disabled
 
 
-def test_admin_can_resend_user_confirmation_email(mock_data, client, session):
+def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -266,7 +267,7 @@ def test_admin_can_resend_user_confirmation_email(mock_data, client, session):
         ) in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_register_user_approval_required(mock_data, client, session):
+def test_register_user_approval_required(mockdata, client, session):
     current_app.config["APPROVE_REGISTRATIONS"] = True
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
@@ -298,7 +299,7 @@ def test_register_user_approval_required(mock_data, client, session):
         assert b"administrator has not approved your account yet" in rv.data
 
 
-def test_admin_can_approve_user(mock_data, client, session):
+def test_admin_can_approve_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -327,7 +328,6 @@ def test_admin_can_approve_user(mock_data, client, session):
         assert user.approved
 
 
-@patch("GmailClient.__new__")
 @pytest.mark.parametrize(
     "currently_approved, currently_confirmed, approve_registration_config, "
     "should_send_email",
@@ -348,12 +348,19 @@ def test_admin_approval_sends_confirmation_email(
     currently_confirmed,
     should_send_email,
     approve_registration_config,
-    mock_data,
+    mockdata,
     client,
     session,
 ):
+    def __new__(self):
+        return {}
+
+    # do something else
+
     current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
-    with current_app.test_request_context():
+    with current_app.test_request_context(), patch.object(
+        GmailClient, "__new__", __new__
+    ):
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
