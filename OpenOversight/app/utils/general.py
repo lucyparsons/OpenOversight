@@ -139,6 +139,10 @@ def replace_list(items, obj, attr, model, db):
     setattr(obj, attr, new_list)
 
 
+def return_empty_object():
+    return {}
+
+
 def serve_image(filepath):
     if "http" in filepath:
         return filepath
