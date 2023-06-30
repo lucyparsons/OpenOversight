@@ -79,7 +79,10 @@ class GmailClient(object):
 
     _instance = None
 
-    def __new__(cls):
+    def __new__(cls, environment=""):
+        if environment == "testing" and cls._instance is None:
+            cls._instance = {}
+
         if cls._instance is None:
             credentials = service_account.Credentials.from_service_account_file(
                 cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
@@ -93,7 +96,7 @@ class GmailClient(object):
 
     @classmethod
     def send_email(cls, email: Email):
-        if current_app.config.get("env") == "testing":
+        if cls._instance == {}:
             current_app.logger.info(
                 "simulated email:\n%s\n%s", email.subject, email.body
             )
