@@ -6,6 +6,7 @@ from flask import current_app, url_for
 from mock import patch
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
+from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.gmail_client import GmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
@@ -13,6 +14,7 @@ from OpenOversight.app.utils.constants import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
 )
+from OpenOversight.app.utils.general import return_empty_object
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
@@ -268,8 +270,10 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 
 def test_register_user_approval_required(mockdata, client, session):
-    current_app.config["APPROVE_REGISTRATIONS"] = True
-    with current_app.test_request_context():
+    BaseConfig.APPROVE_REGISTRATIONS = True
+    with current_app.test_request_context(), patch.object(
+        GmailClient, "__new__", return_empty_object
+    ):
         diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email="jen@example.com",
@@ -352,14 +356,9 @@ def test_admin_approval_sends_confirmation_email(
     client,
     session,
 ):
-    def __new__(self):
-        return {}
-
-    # do something else
-
-    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    BaseConfig.APPROVE_REGISTRATIONS = approve_registration_config
     with current_app.test_request_context(), patch.object(
-        GmailClient, "__new__", __new__
+        GmailClient, "__new__", return_empty_object
     ):
         login_admin(client)
 
