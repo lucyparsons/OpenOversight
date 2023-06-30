@@ -268,7 +268,7 @@ def test_admin_can_resend_user_confirmation_email(mock_data, client, session):
 def test_register_user_approval_required(mock_data, client, session):
     current_app.config["APPROVE_REGISTRATIONS"] = True
     with current_app.test_request_context():
-        diceware_password = "operative hamster perservere verbalize curling"
+        diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email="jen@example.com",
             username="redshiftzero",
