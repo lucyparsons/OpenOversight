@@ -3,8 +3,10 @@ from http import HTTPStatus
 
 import pytest
 from flask import current_app, url_for
+from mock import patch
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
+from OpenOversight.app.gmail_client import GmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -341,7 +343,7 @@ def test_admin_can_approve_user(mock_data, client, session):
         (False, True, True, False),
     ],
 )
-# TODO: Fix
+@patch.object(GmailClient, "__new__", return_value={})
 def test_admin_approval_sends_confirmation_email(
     currently_approved,
     currently_confirmed,
