@@ -6,7 +6,6 @@ from flask import current_app, url_for
 from mock import patch
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.gmail_client import GmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -328,6 +327,7 @@ def test_admin_can_approve_user(mock_data, client, session):
         assert user.approved
 
 
+@patch("GmailClient.__new__")
 @pytest.mark.parametrize(
     "currently_approved, currently_confirmed, approve_registration_config, "
     "should_send_email",
@@ -343,7 +343,6 @@ def test_admin_can_approve_user(mock_data, client, session):
         (False, True, True, False),
     ],
 )
-@patch.object(GmailClient, "__new__", return_value={})
 def test_admin_approval_sends_confirmation_email(
     currently_approved,
     currently_confirmed,
