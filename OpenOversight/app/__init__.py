@@ -45,7 +45,7 @@ def create_app(config_name="default"):
     bootstrap.init_app(app)
     csrf.init_app(app)
     db.init_app(app)
-    GmailClient(app.config.get("env"))
+    GmailClient(app.config.get("FLASK_ENV"))
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)
