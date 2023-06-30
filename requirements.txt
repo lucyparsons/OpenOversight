@@ -3,7 +3,7 @@ apiclient==1.0.4
 Authlib==1.2.1
 bleach==6.0.0
 bleach-allowlist==1.0.3
-boto3==1.26.161
+boto3==1.26.164
 email-validator==2.0.0.post2
 Flask==2.2.5 # Updating this breaks the build for python 3.8
 Flask-Bootstrap==3.3.7.1
@@ -13,7 +13,7 @@ Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.1
-google-api-python-client==2.90.0
+google-api-python-client==2.91.0
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==1.0.0
 gunicorn==20.1.0
