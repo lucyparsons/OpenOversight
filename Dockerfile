@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim as base
+FROM python:3.11.4-slim as base
 
 WORKDIR /usr/src/app
 
@@ -6,6 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV DEBIAN-FRONTEND noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
+
+# Pin nodesource repo for nodejs
+# https://github.com/nodesource/distributions/issues/1579
+RUN echo "Package: nodejs" >> /etc/apt/preferences.d/nodesource && \
+    echo "Pin: origin deb.nodesource.com" >> /etc/apt/preferences.d/nodesource && \
+    echo "Pin-Priority: 600" >> /etc/apt/preferences.d/nodesource
+
 RUN apt-get update && \
     apt-get install -y wget && \
     wget -O - https://deb.nodesource.com/setup_16.x | bash - && \
