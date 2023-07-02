@@ -1,8 +1,12 @@
-version: "3"
+version: "3.2"
 
 volumes:
   postgres:
     driver: local
+
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
 
 services:
  postgres:
@@ -36,7 +40,9 @@ services:
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
-     - ./service_account_key.json:/usr/src/app/service_account_key.json
+   secrets:
+     - source: service-account-key
+       target: /usr/src/app/service_account_key.json
    user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
    links:
      - postgres:postgres

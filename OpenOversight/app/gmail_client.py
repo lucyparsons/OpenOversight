@@ -79,8 +79,8 @@ class GmailClient(object):
 
     _instance = None
 
-    def __new__(cls, environment=""):
-        if environment == "testing" and cls._instance is None:
+    def __new__(cls, testing=False):
+        if testing and cls._instance is None:
             cls._instance = {}
 
         if cls._instance is None:

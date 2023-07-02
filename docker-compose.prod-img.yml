@@ -1,5 +1,9 @@
 version: "3.4"
 
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
+
 services:
   web:
     image: ghcr.io/lucyparsons/openoversight:${DOCKER_IMAGE_TAG}
@@ -8,13 +12,14 @@ services:
     environment:
       ENVIRONMENT: production
       FLASK_APP: OpenOversight.app
-      OO_SERVICE_EMAIL: 'freddy@lucyparsonslabs.com'
     volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/
      - ./static/:/usr/src/app/OpenOversight/static
-     - ./service_account_key.json:/usr/src/app/service_account_key.json
     ports:
       - "4000:3000"
     networks:
       - default
     restart: always
+    secrets:
+     - source: service-account-key
+       target: /usr/src/app/service_account_key.json

@@ -3,11 +3,11 @@ export UID=$(shell id -u)
 default: build start create_db populate test stop clean
 
 .PHONY: build
-build:  ## Build containers
+build:  create_empty_secret ## Build containers
 	docker-compose build
 
 .PHONY: build_with_version
-build_with_version:
+build_with_version: create_empty_secret
 	docker-compose build --build-arg TRAVIS_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
@@ -88,3 +88,10 @@ help: ## Print this message and exit
 .PHONY: attach
 attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
+
+.PHONY: create_empty_secret
+create_empty_secret:  # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
+	touch service_account_key.json || \
+	(echo "Need to delete that empty directory first"; \
+	 sudo rm -d service_account_key.json/; \
+	 touch service_account_key.json)
