@@ -126,7 +126,9 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing {}-{} of {}".format(
-        BaseConfig.OFFICERS_PER_PAGE * (total // BaseConfig.OFFICERS_PER_PAGE) + 1, total, total
+        BaseConfig.OFFICERS_PER_PAGE * (total // BaseConfig.OFFICERS_PER_PAGE) + 1,
+        total,
+        total,
     )
     assert expected in page_text
 
