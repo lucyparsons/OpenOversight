@@ -58,6 +58,11 @@ You will need to do these two things for the service account to work as a Gmail 
 2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
 3. Save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository.
 
+Example `.env` variable:
+```bash
+OO_SERVICE_EMAIL="sample_email@domain.com"
+```
+
 ## Testing S3 Functionality
 We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
 then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
