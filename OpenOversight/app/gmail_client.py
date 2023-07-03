@@ -96,7 +96,7 @@ class GmailClient(object):
 
     @classmethod
     def send_email(cls, email: Email):
-        if cls._instance == {}:
+        if not cls._instance:
             current_app.logger.info(
                 "simulated email:\n%s\n%s", email.subject, email.body
             )
