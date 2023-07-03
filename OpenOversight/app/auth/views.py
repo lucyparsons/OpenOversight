@@ -338,7 +338,8 @@ def edit_user(user_id):
                 db.session.add(user)
                 db.session.commit()
 
-                # automatically send a confirmation email when approving an unconfirmed user
+                # automatically send a confirmation email when approving an
+                # unconfirmed user
                 if (
                     BaseConfig.APPROVE_REGISTRATIONS
                     and not already_approved
