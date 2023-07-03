@@ -5,47 +5,51 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BaseConfig(object):
-    # DB SETUP
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    def __init__(self):
+        # DB SETUP
+        self.SQLALCHEMY_TRACK_MODIFICATIONS = False
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
-    # pagination
-    OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
-    USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
+        # pagination
+        self.OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
+        self.USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
 
-    # Form Settings
-    WTF_CSRF_ENABLED = True
-    SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
+        # Form Settings
+        self.WTF_CSRF_ENABLED = True
+        self.SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
 
-    # Mail Settings
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    OO_MAIL_SUBJECT_PREFIX = os.environ.get("OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]")
-    OO_MAIL_SENDER = os.environ.get(
-        "OO_MAIL_SENDER", "OpenOversight <OpenOversight@gmail.com>"
-    )
-    # OO_ADMIN = os.environ.get('OO_ADMIN')
+        # Mail Settings
+        self.MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
+        self.MAIL_PORT = 587
+        self.MAIL_USE_TLS = True
+        self.MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+        self.MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+        self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
+            "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
+        )
+        self.OO_MAIL_SENDER = os.environ.get(
+            "OO_MAIL_SENDER", "OpenOversight <OpenOversight@gmail.com>"
+        )
+        # OO_ADMIN = os.environ.get('OO_ADMIN')
 
-    # AWS Settings
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
-    S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
+        # AWS Settings
+        self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+        self.AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+        self.AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
+        self.S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
-    # Upload Settings
-    MAX_CONTENT_LENGTH = 50 * 1024 * 1024
-    ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
+        # Upload Settings
+        self.MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+        self.ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
 
-    # User settings
-    APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
+        # User settings
+        self.APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
 
-    # Use session cookie to store URL to redirect to after login
-    # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
-    USE_SESSION_FOR_NEXT = True
+        # Use session cookie to store URL to redirect to after login
+        # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
+        self.USE_SESSION_FOR_NEXT = True
 
-    SEED = 666
+        self.SEED = 666
 
     @staticmethod
     def init_app(app):
@@ -53,26 +57,32 @@ class BaseConfig(object):
 
 
 class DevelopmentConfig(BaseConfig):
-    DEBUG = True
-    SQLALCHEMY_ECHO = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
-    NUM_OFFICERS = 15000
-    SITEMAP_URL_SCHEME = "http"
+    def __init__(self):
+        super().__init__()
+        self.DEBUG = True
+        self.SQLALCHEMY_ECHO = True
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+        self.NUM_OFFICERS = 15000
+        self.SITEMAP_URL_SCHEME = "http"
 
 
 class TestingConfig(BaseConfig):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    WTF_CSRF_ENABLED = False
-    NUM_OFFICERS = 120
-    APPROVE_REGISTRATIONS = False
-    SITEMAP_URL_SCHEME = "http"
-    RATELIMIT_ENABLED = False
+    def __init__(self):
+        super().__init__()
+        self.TESTING = True
+        self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+        self.WTF_CSRF_ENABLED = False
+        self.NUM_OFFICERS = 120
+        self.APPROVE_REGISTRATIONS = False
+        self.SITEMAP_URL_SCHEME = "http"
+        self.RATELIMIT_ENABLED = False
 
 
 class ProductionConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
-    SITEMAP_URL_SCHEME = "https"
+    def __init__(self):
+        super().__init__()
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+        self.SITEMAP_URL_SCHEME = "https"
 
     @classmethod
     def init_app(cls, app):  # pragma: no cover
@@ -80,8 +90,8 @@ class ProductionConfig(BaseConfig):
 
 
 config = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "production": ProductionConfig,
+    "development": DevelopmentConfig(),
+    "testing": TestingConfig(),
+    "production": ProductionConfig(),
 }
-config["default"] = config.get(os.environ.get("FLASK_ENV", ""), DevelopmentConfig)
+config["default"] = config.get(os.environ.get("FLASK_ENV", ""), DevelopmentConfig())
