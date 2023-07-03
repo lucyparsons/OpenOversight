@@ -11,7 +11,7 @@ build_with_version:
 	docker-compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
-test_with_version: create_empty_secret build assets
+test_with_version: build_with_version assets
 	FLASK_ENV=testing docker-compose run --rm web pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 .PHONY: start
