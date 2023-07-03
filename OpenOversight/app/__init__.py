@@ -37,26 +37,26 @@ csrf = CSRFProtect()
 
 
 def create_app(config_name="default"):
-    app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    config[config_name]
+    new_flask_app = Flask(__name__)
+    new_flask_app.config.from_object(config[config_name])
+    new_flask_app.config = config[config_name]
     from .models import db
 
-    bootstrap.init_app(app)
-    mail.init_app(app)
-    db.init_app(app)
-    login_manager.init_app(app)
-    limiter.init_app(app)
-    sitemap.init_app(app)
-    csrf.init_app(app)
+    bootstrap.init_app(new_flask_app)
+    mail.init_app(new_flask_app)
+    db.init_app(new_flask_app)
+    login_manager.init_app(new_flask_app)
+    limiter.init_app(new_flask_app)
+    sitemap.init_app(new_flask_app)
+    csrf.init_app(new_flask_app)
 
     from .main import main as main_blueprint
 
-    app.register_blueprint(main_blueprint)
+    new_flask_app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
 
-    app.register_blueprint(auth_blueprint, url_prefix="/auth")
+    new_flask_app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
     max_log_size = 10 * 1024 * 1024  # start new log file after 10 MB
     num_logs_to_keep = 5
@@ -70,28 +70,28 @@ def create_app(config_name="default"):
         )
     )
 
-    app.logger.setLevel(logging.INFO)
+    new_flask_app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
-    app.logger.info("OpenOversight startup")
+    new_flask_app.logger.addHandler(file_handler)
+    new_flask_app.logger.info("OpenOversight startup")
 
     # Also log when endpoints are getting hit hard
     limiter.logger.addHandler(file_handler)
 
     # Define error handlers
-    def create_errorhandler(code, error, template):
+    def create_errorhandler(status_code, json_error, response_template):
         """
         Create an error handler that returns a JSON or a template response
         based on the request "Accept" header.
-        :param code: status code to handle
-        :param error: response error message, if JSON
-        :param template: template response
+        :param status_code: status code to handle
+        :param json_error: response error message, if JSON
+        :param response_template: template response
         """
 
-        def _handler_method(e):
+        def _handler_method():
             if request.accept_mimetypes.best == "application/json":
-                return jsonify(error=error), code
-            return render_template(template), code
+                return jsonify(error=json_error), status_code
+            return render_template(response_template), status_code
 
         return _handler_method
 
@@ -104,19 +104,19 @@ def create_app(config_name="default"):
     ]
     for code, error, template in error_handlers:
         # Pass generated errorhandler function to @app.errorhandler decorator
-        app.errorhandler(code)(create_errorhandler(code, error, template))
+        new_flask_app.errorhandler(code)(create_errorhandler(code, error, template))
 
     # create jinja2 filter for titles with multiple capitals
-    @app.template_filter("capfirst")
+    @new_flask_app.template_filter("capfirst")
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
 
-    @app.template_filter("get_age")
+    @new_flask_app.template_filter("get_age")
     def get_age_from_birth_year(birth_year):
         if birth_year:
             return int(datetime.datetime.now().year - birth_year)
 
-    @app.template_filter("field_in_query")
+    @new_flask_app.template_filter("field_in_query")
     def field_in_query(form_data, field):
         """
         Determine if a field is specified in the form data, and if so return a Bootstrap
@@ -124,7 +124,7 @@ def create_app(config_name="default"):
         """
         return " in " if form_data.get(field) else ""
 
-    @app.template_filter("markdown")
+    @new_flask_app.template_filter("markdown")
     def markdown(text):
         text = text.replace("\n", "  \n")  # make markdown not ignore new lines.
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
@@ -132,7 +132,7 @@ def create_app(config_name="default"):
 
     # Add commands
     Migrate(
-        app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
+        new_flask_app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
     )  # Adds 'db' command
     from .commands import (
         add_department,
@@ -144,15 +144,15 @@ def create_app(config_name="default"):
         make_admin_user,
     )
 
-    app.cli.add_command(make_admin_user)
-    app.cli.add_command(link_images_to_department)
-    app.cli.add_command(link_officers_to_department)
-    app.cli.add_command(bulk_add_officers)
-    app.cli.add_command(add_department)
-    app.cli.add_command(add_job_title)
-    app.cli.add_command(advanced_csv_import)
+    new_flask_app.cli.add_command(make_admin_user)
+    new_flask_app.cli.add_command(link_images_to_department)
+    new_flask_app.cli.add_command(link_officers_to_department)
+    new_flask_app.cli.add_command(bulk_add_officers)
+    new_flask_app.cli.add_command(add_department)
+    new_flask_app.cli.add_command(add_job_title)
+    new_flask_app.cli.add_command(advanced_csv_import)
 
-    return app
+    return new_flask_app
 
 
 app = create_app()
