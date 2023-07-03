@@ -1,9 +1,7 @@
 # Contributing Guide
-
 First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.  Please also read our [code of conduct](/CODE_OF_CONDUCT.md) before getting started.
 
 ## Submitting a Pull Request (PR)
-
 When you come to implement your new feature, clone the repository and then create a branch off `develop` locally and add commits to implement your feature.
 
 If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
@@ -21,13 +19,11 @@ git config user.name "<your-github-username>"
 This will make sure that all commits you make locally are associated with your github account and do not contain any additional identifying information. More detailed information on this topic can be found [here](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address).
 
 ### Linting / Style Checks
+We use [pre-commit](https://pre-commit.com/) for automated linting and style checks. Be sure to [install pre-commit](https://pre-commit.com/#installation) and run `pre-commit install` in your local version of the repository to install our pre-commit checks. This will make sure your commits are always formatted correctly.
 
- We use [pre-commit](https://pre-commit.com/) for automated linting and style checks. Be sure to [install pre-commit](https://pre-commit.com/#installation) and run `pre-commit install` in your local version of the repository to install our pre-commit checks. This will make sure your commits are always formatted correctly.
-
- You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
+You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
 
 ## Development Environment
-
 You can use our Docker-compose environment to stand up a development OpenOversight.
 
 You will need to have Docker installed in order to use the Docker development environment.
@@ -54,7 +50,6 @@ $ docker exec -it openoversight_web_1 /bin/bash
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
 ## Testing S3 Functionality
-
 We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
 then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
 on Amazon Web Services.
@@ -72,7 +67,6 @@ Now when you run `make dev` as usual in the same session, you will be able to su
 your test bucket.
 
 ## Database commands
-
 Running `make dev` will create the database and persist it into your local filesystem.
 
 You can access your PostgreSQL development database via psql using:
@@ -89,7 +83,6 @@ or
 `$ python test_data.py --cleanup` to delete the data
 
 ### Migrating the Database
-
 If you e.g. add a new column or table, you'll need to migrate the database using the Flask CLI. First we need to 'stamp' the current version of the database:
 
 ```sh
@@ -152,7 +145,6 @@ pip install -r dev-requirements.txt
 ```
 
 ## OpenOversight Management Interface
-
 In addition to generating database migrations, the Flask CLI can be used to run additional commands:
 
 ```sh
