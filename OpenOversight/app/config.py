@@ -16,7 +16,7 @@ class BaseConfig(object):
     USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
 
     # Form Settings
-    WTF_CSRF_ENABLED = True
+    WTF_CSRF_ENABLED = os.environ.get("WTF_CSRF_ENABLED", True)
     SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
 
     # Mail Settings
@@ -64,7 +64,6 @@ class DevelopmentConfig(BaseConfig):
 
 class TestingConfig(BaseConfig):
     TESTING = True
-    WTF_CSRF_ENABLED = False
     NUM_OFFICERS = 120
     APPROVE_REGISTRATIONS = False
     SITEMAP_URL_SCHEME = "http"

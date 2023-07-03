@@ -20,6 +20,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
+from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Job, Officer, Unit
 from OpenOversight.app.models import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
@@ -203,7 +204,7 @@ def assign_faces(officer, images):
 def app(request):
     """Session-wide test `Flask` application."""
     app = create_app("testing")
-    app.config["WTF_CSRF_ENABLED"] = False
+    BaseConfig.WTF_CSRF_ENABLED = False
 
     yield app
 
