@@ -96,6 +96,11 @@ class GmailClient(object):
 
     @classmethod
     def send_email(cls, email: Email):
+        """
+        This function sends an email using the above instance's service.
+
+        :param email: the specific email to be delivered
+        """
         if not cls._instance:
             current_app.logger.info(
                 "simulated email:\n%s\n%s", email.subject, email.body
