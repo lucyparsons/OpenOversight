@@ -664,7 +664,7 @@ def list_officer(
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
-    OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
+    OFFICERS_PER_PAGE = int(current_app.config.OFFICERS_PER_PAGE)
     department = Department.query.filter_by(id=department_id).first()
     if not department:
         abort(HTTPStatus.NOT_FOUND)
