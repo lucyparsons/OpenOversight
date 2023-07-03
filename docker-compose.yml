@@ -29,6 +29,8 @@ services:
       - DOCKER_BUILD_ENV
       - MAKE_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
+   env_file:
+     - .env
    environment:
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
