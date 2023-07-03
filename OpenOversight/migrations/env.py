@@ -22,7 +22,7 @@ from flask import current_app  # noqa: E402
 
 
 config.set_main_option(
-    "sqlalchemy.url", current_app.config.get("SQLALCHEMY_DATABASE_URI")
+    "sqlalchemy.url", current_app.config.SQLALCHEMY_DATABASE_URI
 )
 target_metadata = current_app.extensions["migrate"].db.metadata
 

@@ -6,6 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class BaseConfig(object):
     # DB SETUP
+    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # pagination
@@ -55,14 +56,12 @@ class BaseConfig(object):
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_ECHO = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
     NUM_OFFICERS = 15000
     SITEMAP_URL_SCHEME = "http"
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
     NUM_OFFICERS = 120
     APPROVE_REGISTRATIONS = False
@@ -71,7 +70,6 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
     SITEMAP_URL_SCHEME = "https"
 
     @classmethod
