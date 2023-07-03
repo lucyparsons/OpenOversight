@@ -3,7 +3,6 @@ from http import HTTPStatus
 
 import pytest
 from flask import current_app, url_for
-from mock import patch
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.config import BaseConfig
@@ -14,7 +13,6 @@ from OpenOversight.app.utils.constants import (
     HTTP_METHOD_GET,
     HTTP_METHOD_POST,
 )
-from OpenOversight.app.utils.general import return_empty_object
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
@@ -271,9 +269,8 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 def test_register_user_approval_required(mockdata, client, session):
     BaseConfig.APPROVE_REGISTRATIONS = True
-    with current_app.test_request_context(), patch.object(
-        GmailClient, "__new__", return_empty_object
-    ):
+    GmailClient(testing=True)
+    with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email="jen@example.com",
@@ -357,9 +354,8 @@ def test_admin_approval_sends_confirmation_email(
     session,
 ):
     BaseConfig.APPROVE_REGISTRATIONS = approve_registration_config
-    with current_app.test_request_context(), patch.object(
-        GmailClient, "__new__", return_empty_object
-    ):
+    GmailClient(testing=True)
+    with current_app.test_request_context():
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
