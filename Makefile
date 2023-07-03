@@ -6,12 +6,8 @@ default: build start create_db populate test stop clean
 build:  create_empty_secret ## Build containers
 	docker-compose build
 
-.PHONY: build_with_version
-build_with_version: create_empty_secret
-	docker-compose build
-
 .PHONY: test_with_version
-test_with_version: build_with_version assets
+test_with_version: create_empty_secret build assets
 	FLASK_ENV=testing docker-compose run --rm web pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 .PHONY: start
