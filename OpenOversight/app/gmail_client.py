@@ -97,7 +97,7 @@ class GmailClient(object):
     @classmethod
     def send_email(cls, email: Email):
         """
-        This function sends an email using the above instance's service.
+        Deliver the email from the parameter list using the Singleton client.
 
         :param email: the specific email to be delivered
         """
