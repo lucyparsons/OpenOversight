@@ -6,12 +6,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class BaseConfig(object):
     # DB SETUP
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:")
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # pagination
-    OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
-    USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
+    OFFICERS_PER_PAGE = int(os.environ.get("OFFICERS_PER_PAGE", 20))
+    USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
 
     # Form Settings
     WTF_CSRF_ENABLED = True
