@@ -12,9 +12,10 @@ from OpenOversight.app.utils.constants import (
     HTTP_METHOD_POST,
 )
 
+from ...app.config import BaseConfig
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
-from ...app.config import BaseConfig
+
 
 routes_methods = [
     ("/auth/users/", [HTTP_METHOD_GET]),
