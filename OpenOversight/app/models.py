@@ -12,6 +12,7 @@ from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import login_manager
+from .config import BaseConfig
 from .utils.constants import ENCODING_UTF_8
 from .validators import state_validator, url_validator
 
@@ -512,7 +513,7 @@ class User(UserMixin, BaseModel):
     tags = db.relationship("Face", backref="users")
 
     def _jwt_encode(self, payload, expiration):
-        secret = current_app.config["SECRET_KEY"]
+        secret = BaseConfig.SECRET_KEY
         header = {"alg": "HS512"}
 
         now = int(time.time())
@@ -522,7 +523,7 @@ class User(UserMixin, BaseModel):
         return jwt.encode(header, payload, secret)
 
     def _jwt_decode(self, token):
-        secret = current_app.config["SECRET_KEY"]
+        secret = BaseConfig.SECRET_KEY
         token = jwt.decode(token, secret)
         token.validate()
         return token
