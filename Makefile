@@ -3,7 +3,7 @@ export UID=$(shell id -u)
 default: build start create_db populate test stop clean
 
 .PHONY: build
-build:  create_empty_secret ## Build containers
+build: create_empty_secret ## Build containers
 	docker-compose build
 
 .PHONY: test_with_version
@@ -53,8 +53,8 @@ test: start  ## Run tests
 lint:
 	pre-commit run --all-files
 
-.PHONY: cleanassets
-cleanassets:
+.PHONY: clean_assets
+clean_assets:
 	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
@@ -62,7 +62,7 @@ stop:  ## Stop containers
 	docker-compose stop
 
 .PHONY: clean
-clean: cleanassets stop  ## Remove containers
+clean: clean_assets stop  ## Remove containers
 	docker-compose rm -f
 
 .PHONY: clean_all
