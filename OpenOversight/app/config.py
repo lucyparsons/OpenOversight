@@ -11,6 +11,9 @@ class BaseConfig(object):
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Protocol Settings
+    SITEMAP_URL_SCHEME = "http"
+
     # pagination
     OFFICERS_PER_PAGE = int(os.environ.get("OFFICERS_PER_PAGE", 20))
     USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
@@ -59,13 +62,11 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_ECHO = True
     NUM_OFFICERS = 15000
-    SITEMAP_URL_SCHEME = "http"
 
 
 class TestingConfig(BaseConfig):
     TESTING = True
     NUM_OFFICERS = 120
-    SITEMAP_URL_SCHEME = "http"
     RATELIMIT_ENABLED = False
 
 
