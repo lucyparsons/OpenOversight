@@ -54,8 +54,8 @@ For the application to work properly, you will need a [Google Cloud Project serv
 We would suggest that you do not use a personal email address, but instead one that is used strictly for sending out OpenOversight emails.
 
 You will need to do these two things for the service account to work as a Gmail bot:
-1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en).
-2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes).
+1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en)
+2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
 
 ## Testing S3 Functionality
 We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
