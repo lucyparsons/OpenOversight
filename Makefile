@@ -8,7 +8,7 @@ build:  create_empty_secret ## Build containers
 
 .PHONY: build_with_version
 build_with_version: create_empty_secret
-	docker-compose build --build-arg TRAVIS_PYTHON_VERSION=$(PYTHON_VERSION)
+	docker-compose build
 
 .PHONY: test_with_version
 test_with_version: build_with_version assets
