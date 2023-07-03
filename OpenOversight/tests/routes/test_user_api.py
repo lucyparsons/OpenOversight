@@ -14,7 +14,7 @@ from OpenOversight.app.utils.constants import (
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
-
+from ...app.config import BaseConfig
 
 routes_methods = [
     ("/auth/users/", [HTTP_METHOD_GET]),
@@ -266,7 +266,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 
 def test_register_user_approval_required(mockdata, client, session):
-    current_app.config["APPROVE_REGISTRATIONS"] = True
+    BaseConfig.APPROVE_REGISTRATIONS = True
     with current_app.test_request_context():
         diceware_password = "operative hamster perservere verbalize curling"
         form = RegistrationForm(
@@ -348,7 +348,7 @@ def test_admin_approval_sends_confirmation_email(
     client,
     session,
 ):
-    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    BaseConfig.APPROVE_REGISTRATIONS = approve_registration_config
     with current_app.test_request_context():
         login_admin(client)
 

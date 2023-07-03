@@ -65,7 +65,6 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     TESTING = True
     NUM_OFFICERS = 120
-    APPROVE_REGISTRATIONS = False
     SITEMAP_URL_SCHEME = "http"
     RATELIMIT_ENABLED = False
 

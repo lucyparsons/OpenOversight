@@ -63,7 +63,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"]:
+    if BaseConfig.APPROVE_REGISTRATIONS:
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -107,11 +107,11 @@ def register():
             email=form.email.data,
             username=form.username.data,
             password=form.password.data,
-            approved=False if current_app.config["APPROVE_REGISTRATIONS"] else True,
+            approved=False if BaseConfig.APPROVE_REGISTRATIONS else True,
         )
         db.session.add(user)
         db.session.commit()
-        if current_app.config["APPROVE_REGISTRATIONS"]:
+        if BaseConfig.APPROVE_REGISTRATIONS:
             admins = User.query.filter_by(is_administrator=True).all()
             for admin in admins:
                 send_email(
@@ -340,7 +340,7 @@ def edit_user(user_id):
 
                 # automatically send a confirmation email when approving an unconfirmed user
                 if (
-                    current_app.config["APPROVE_REGISTRATIONS"]
+                    BaseConfig.APPROVE_REGISTRATIONS
                     and not already_approved
                     and user.approved
                     and not user.confirmed
