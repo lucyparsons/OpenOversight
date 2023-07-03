@@ -326,8 +326,7 @@ def add_mockdata(session):
     session.commit()
 
     # Ensure test data is deterministic
-    SEED = current_app.config["SEED"]
-    random.seed(SEED)
+    random.seed(BaseConfig.SEED)
 
     test_units = [
         models.Unit(descrip="test", department_id=1),
