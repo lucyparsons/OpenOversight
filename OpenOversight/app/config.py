@@ -8,7 +8,12 @@ class BaseConfig(object):
     def __init__(self):
         # DB SETUP
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get(
+            "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+        )
+
+        # Protocol Settings
+        self.SITEMAP_URL_SCHEME = "http"
 
         # pagination
         self.OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
@@ -61,27 +66,22 @@ class DevelopmentConfig(BaseConfig):
         super().__init__()
         self.DEBUG = True
         self.SQLALCHEMY_ECHO = True
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
         self.NUM_OFFICERS = 15000
-        self.SITEMAP_URL_SCHEME = "http"
 
 
 class TestingConfig(BaseConfig):
     def __init__(self):
         super().__init__()
         self.TESTING = True
-        self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
         self.WTF_CSRF_ENABLED = False
         self.NUM_OFFICERS = 120
         self.APPROVE_REGISTRATIONS = False
-        self.SITEMAP_URL_SCHEME = "http"
         self.RATELIMIT_ENABLED = False
 
 
 class ProductionConfig(BaseConfig):
     def __init__(self):
         super().__init__()
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
         self.SITEMAP_URL_SCHEME = "https"
 
     @classmethod
