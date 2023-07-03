@@ -89,6 +89,7 @@ help: ## Print this message and exit
 attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
 
+# TODO: These two commands are the same with the exception of the file name, this should be addressed at some point
 .PHONY: create_empty_secret
 create_empty_secret: # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
 	touch service_account_key.json || \
