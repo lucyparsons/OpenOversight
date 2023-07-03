@@ -12,7 +12,6 @@ services:
     environment:
       ENVIRONMENT: production
       FLASK_APP: OpenOversight.app
-      OO_SERVICE_EMAIL: "freddy@lucyparsonslabs.com"
     volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/
      - ./static/:/usr/src/app/OpenOversight/static
