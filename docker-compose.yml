@@ -27,7 +27,7 @@ services:
       context: .
       args:
       - DOCKER_BUILD_ENV
-      - TRAVIS_PYTHON_VERSION
+      - MAKE_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"

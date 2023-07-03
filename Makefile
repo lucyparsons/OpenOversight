@@ -3,8 +3,12 @@ export UID=$(shell id -u)
 default: build start create_db populate test stop clean
 
 .PHONY: build
-build: create_empty_secret ## Build containers
+build: ## Build containers
 	docker-compose build
+
+.PHONY: build_with_version
+build_with_version:
+	docker-compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
 test_with_version: create_empty_secret build assets
