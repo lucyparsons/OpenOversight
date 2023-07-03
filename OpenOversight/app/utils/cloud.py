@@ -15,6 +15,7 @@ from flask_login import current_user
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
 
+from ..config import BaseConfig
 from ..models import Image, db
 
 
@@ -112,7 +113,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
-    if image_type not in current_app.config["ALLOWED_EXTENSIONS"]:
+    if image_type not in BaseConfig.ALLOWED_EXTENSIONS:
         raise ValueError("Attempted to pass invalid data type: {}".format(image_type))
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)

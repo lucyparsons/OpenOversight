@@ -4,9 +4,10 @@ from distutils.util import strtobool
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import current_app, url_for
+from flask import url_for
 
 from ...app.custom import add_jpeg_patch
+from ..config import BaseConfig
 
 
 # Call JPEG patch function
@@ -22,8 +23,7 @@ def ac_can_edit_officer(officer, ac):
 def allowed_file(filename):
     return (
         "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in current_app.config["ALLOWED_EXTENSIONS"]
+        and filename.rsplit(".", 1)[1].lower() in BaseConfig.ALLOWED_EXTENSIONS
     )
 
 
