@@ -50,7 +50,7 @@ $ docker exec -it openoversight_web_1 /bin/bash
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
 ## Gmail Requirements
-For the application to work properly, you will need a [Google Cloud Project service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to a GSuite email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
+For the application to work properly, you will need a [Google Cloud Platform service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to a GSuite email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
 We would suggest that you do not use a personal email address, but instead one that is used strictly for sending out OpenOversight emails.
 
 You will need to do these two things for the service account to work as a Gmail bot:
