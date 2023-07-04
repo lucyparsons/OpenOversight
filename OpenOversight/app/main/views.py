@@ -664,7 +664,6 @@ def list_officer(
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
-    OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
     department = Department.query.filter_by(id=department_id).first()
     if not department:
         abort(HTTPStatus.NOT_FOUND)
@@ -727,7 +726,9 @@ def list_officer(
     )
     officers = officers.options(selectinload(Officer.face))
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
-    officers = officers.paginate(page=page, per_page=OFFICERS_PER_PAGE, error_out=False)
+    officers = officers.paginate(
+        page=page, per_page=current_app.OFFICERS_PER_PAGE, error_out=False
+    )
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 

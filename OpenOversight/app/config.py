@@ -14,7 +14,7 @@ class BaseConfig(object):
         self.SITEMAP_URL_SCHEME = "http"
 
         # Pagination Settings
-        self.OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
+        self.OFFICERS_PER_PAGE = int(os.environ.get("OFFICERS_PER_PAGE", 20))
         self.USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
 
         # Form Settings
