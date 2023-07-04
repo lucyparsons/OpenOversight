@@ -8,9 +8,7 @@ class BaseConfig(object):
     def __init__(self):
         # DB SETUP
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get(
-            "SQLALCHEMY_DATABASE_URI"
-        )
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
         # Protocol Settings
         self.SITEMAP_URL_SCHEME = "http"
