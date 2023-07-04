@@ -13,7 +13,7 @@ class BaseConfig(object):
         # Protocol Settings
         self.SITEMAP_URL_SCHEME = "http"
 
-        # pagination
+        # Pagination Settings
         self.OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
         self.USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
 
@@ -33,7 +33,6 @@ class BaseConfig(object):
         self.OO_MAIL_SENDER = os.environ.get(
             "OO_MAIL_SENDER", "OpenOversight <OpenOversight@gmail.com>"
         )
-        # OO_ADMIN = os.environ.get('OO_ADMIN')
 
         # AWS Settings
         self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
