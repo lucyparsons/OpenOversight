@@ -79,19 +79,19 @@ def create_app(config_name="default"):
     limiter.logger.addHandler(file_handler)
 
     # Define error handlers
-    def create_errorhandler(status_code, error_response, template_response):
+    def create_errorhandler(code, error, template):
         """
         Create an error handler that returns a JSON or a template response
         based on the request "Accept" header.
-        :param status_code: status code to handle
-        :param error_response: response error message, if JSON
-        :param template_response: template response
+        :param code: status code to handle
+        :param error: response error message, if JSON
+        :param template: template response
         """
 
-        def _handler_method():
+        def _handler_method(e):
             if request.accept_mimetypes.best == "application/json":
-                return jsonify(error=error_response), status_code
-            return render_template(template_response), status_code
+                return jsonify(error=error), code
+            return render_template(template), code
 
         return _handler_method
 
