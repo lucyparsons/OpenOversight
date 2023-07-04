@@ -75,7 +75,6 @@ class TestingConfig(BaseConfig):
         self.TESTING = True
         self.WTF_CSRF_ENABLED = False
         self.NUM_OFFICERS = 120
-        self.APPROVE_REGISTRATIONS = False
         self.RATELIMIT_ENABLED = False
 
 
