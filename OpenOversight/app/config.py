@@ -9,7 +9,7 @@ class BaseConfig(object):
         # DB SETUP
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
         self.SQLALCHEMY_DATABASE_URI = os.environ.get(
-            "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+            "SQLALCHEMY_DATABASE_URI"
         )
 
         # Protocol Settings
@@ -76,6 +76,7 @@ class TestingConfig(BaseConfig):
         self.WTF_CSRF_ENABLED = False
         self.NUM_OFFICERS = 120
         self.RATELIMIT_ENABLED = False
+        self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 
 class ProductionConfig(BaseConfig):
