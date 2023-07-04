@@ -12,9 +12,8 @@ from sqlalchemy.sql.expression import func
 from OpenOversight.app.config import TestingConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
-
+CONFIG = TestingConfig()
 DESCRIPTION_CUTOFF = 700
-config = TestingConfig()
 
 
 @contextmanager
@@ -116,18 +115,18 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
-    expected = "Showing 1-{} of {}".format(config.OFFICERS_PER_PAGE, total)
+    expected = "Showing 1-{} of {}".format(CONFIG.OFFICERS_PER_PAGE, total)
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // config.OFFICERS_PER_PAGE) + 1
+    last_page_index = (total // CONFIG.OFFICERS_PER_PAGE) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing {}-{} of {}".format(
-        config.OFFICERS_PER_PAGE * (total // config.OFFICERS_PER_PAGE) + 1, total, total
+        CONFIG.OFFICERS_PER_PAGE * (total // CONFIG.OFFICERS_PER_PAGE) + 1, total, total
     )
     assert expected in page_text
 
