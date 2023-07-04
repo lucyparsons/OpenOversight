@@ -12,6 +12,7 @@ from sqlalchemy.sql.expression import func
 from OpenOversight.app.config import TestingConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
+
 CONFIG = TestingConfig()
 DESCRIPTION_CUTOFF = 700
 
