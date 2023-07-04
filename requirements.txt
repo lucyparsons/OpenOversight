@@ -4,6 +4,7 @@ attrs~=23.1.0
 Authlib==1.2.1
 Babel~=2.12.1
 bleach==6.0.0
+bleach-allowlist==1.0.3
 blinker~=1.6.2
 boto3==1.27.0
 botocore==1.30.0
@@ -17,6 +18,14 @@ docutils~=0.20.1
 dominate~=2.8.0
 Faker~=18.11.2
 Flask==2.2.5 # Updating this breaks the build for python 3.8
+Flask-Bootstrap==3.3.7.1
+Flask-Limiter==3.3.1
+Flask-Login==0.6.2
+Flask-Mail==0.9.1
+Flask-Migrate==4.0.4
+Flask-Sitemap==0.4.0
+Flask-SQLAlchemy==3.0.5
+Flask-WTF==1.1.1
 gunicorn==20.1.0
 idna~=3.4
 itsdangerous~=2.1.2
