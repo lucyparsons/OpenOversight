@@ -16,6 +16,7 @@ Deprecated~=1.2.14
 dnspython~=2.3.0
 docutils~=0.20.1
 dominate~=2.8.0
+email-validator==2.0.0.post2
 Faker~=18.11.2
 Flask==2.2.5 # Updating this breaks the build for python 3.8
 Flask-Bootstrap==3.3.7.1
