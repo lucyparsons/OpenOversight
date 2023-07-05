@@ -3,8 +3,7 @@ from flask import current_app
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-from OpenOversight.app.config import BaseConfig
-from OpenOversight.app.models.emails import Email
+from OpenOversight.app.models import Email
 
 
 class EmailClient(object):
