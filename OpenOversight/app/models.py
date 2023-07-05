@@ -428,6 +428,7 @@ class LicensePlate(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
+
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
 
@@ -640,46 +641,46 @@ class Email:
 
 
 class AdministratorApprovalEmail(Email):
-    def __init__(self, receiver: str, **kwargs):
+    def __init__(self, receiver: str, user, admin):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Registered"
         )
-        body = render_template("auth/email/new_registration.html", **kwargs)
+        body = render_template("auth/email/new_registration.html", user, admin)
         super().__init__(body, subject, receiver)
 
 
 class ChangeEmailAddressEmail(Email):
-    def __init__(self, receiver: str, **kwargs):
+    def __init__(self, receiver: str, user, token: str):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Email "
             f"Address"
         )
-        body = render_template("auth/email/change_email.html", **kwargs)
+        body = render_template("auth/email/change_email.html", user, token)
         super().__init__(body, subject, receiver)
 
 
 class ConfirmAccountEmail(Email):
-    def __init__(self, receiver: str, **kwargs):
+    def __init__(self, receiver: str, user, token: str):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Account"
         )
-        body = render_template("auth/email/confirm.html", **kwargs)
+        body = render_template("auth/email/confirm.html", user, token)
         super().__init__(body, subject, receiver)
 
 
 class ConfirmedUserEmail(Email):
-    def __init__(self, receiver: str, **kwargs):
+    def __init__(self, receiver: str, user, admin):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Confirmed"
         )
-        body = render_template("auth/email/new_confirmation.html", **kwargs)
+        body = render_template("auth/email/new_confirmation.html", user, admin)
         super().__init__(body, subject, receiver)
 
 
 class ResetPasswordEmail(Email):
-    def __init__(self, receiver: str, **kwargs):
+    def __init__(self, receiver: str, user, token: str):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Reset Your Password"
         )
-        body = render_template("auth/email/reset_password.html", **kwargs)
+        body = render_template("auth/email/reset_password.html", user, token)
         super().__init__(body, subject, receiver)
