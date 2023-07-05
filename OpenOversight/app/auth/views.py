@@ -18,13 +18,14 @@ from OpenOversight.app.models import (
     ConfirmAccountEmail,
     ConfirmedUserEmail,
     ResetPasswordEmail,
+    User,
+    db,
 )
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
 from .. import sitemap
-from ..models import User, db
 from . import auth
 from .forms import (
     ChangeDefaultDepartmentForm,
