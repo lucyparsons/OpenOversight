@@ -47,6 +47,10 @@ class BaseConfig(object):
     # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
     USE_SESSION_FOR_NEXT = True
 
+    # Rate limiting
+    # https://flask-limiter.readthedocs.io/en/stable/configuration.html
+    RATELIMIT_ENABLED = os.environ.get("RATELIMIT_ENABLED", True)
+
     SEED = 666
 
     @staticmethod
