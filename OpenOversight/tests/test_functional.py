@@ -10,7 +10,6 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
-from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
 
