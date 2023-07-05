@@ -6,7 +6,7 @@ from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.config import BaseConfig
-from OpenOversight.app.gmail_client import GmailClient
+from OpenOversight.app.email_client import GmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,

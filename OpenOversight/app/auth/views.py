@@ -12,7 +12,7 @@ from flask import (
 from flask_login import current_user, login_required, login_user, logout_user
 
 from OpenOversight.app.config import BaseConfig
-from OpenOversight.app.gmail_client import (
+from OpenOversight.app.email_client import (
     AdministratorApprovalEmail,
     ChangeEmailAddressEmail,
     ConfirmAccountEmail,

@@ -18,7 +18,7 @@ from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
 from .config import config
-from .gmail_client import GmailClient
+from .email_client import GmailClient
 from .utils.constants import MEGABYTE
 
 
