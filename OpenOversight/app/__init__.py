@@ -17,9 +17,9 @@ from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
-from .config import config
-from .email_client import EmailClient
-from .utils.constants import MEGABYTE
+from OpenOversight.app.config import config
+from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
 
 
 bootstrap = Bootstrap()
@@ -45,7 +45,10 @@ def create_app(config_name="default"):
     bootstrap.init_app(app)
     csrf.init_app(app)
     db.init_app(app)
-    EmailClient(app.testing)
+    # This allows the application to run without creating an email client if it is
+    # in testing or dev mode and the service account file is empty.
+    service_account_file_size = os.path.getsize(SERVICE_ACCOUNT_FILE)
+    EmailClient(dev=app.debug and service_account_file_size == 0, testing=app.testing)
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)

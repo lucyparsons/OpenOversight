@@ -1,11 +1,12 @@
 import base64
-import os
 from email.mime.text import MIMEText
 
 from apiclient import errors
 from flask import current_app, render_template
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+
+from OpenOversight.app.utils.constants import SERVICE_ACCOUNT_FILE
 
 
 class Email:
@@ -82,19 +83,16 @@ class EmailClient(object):
     """
 
     SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
-    SERVICE_ACCOUNT_FILE = "service_account_key.json"
 
     _instance = None
 
-    def __new__(cls, testing=False):
-        service_account_file_size = os.path.getsize(cls.SERVICE_ACCOUNT_FILE)
-
-        if (testing or service_account_file_size == 0) and cls._instance is None:
+    def __new__(cls, dev=False, testing=False):
+        if (testing or dev) and cls._instance is None:
             cls._instance = {}
 
         if cls._instance is None:
             credentials = service_account.Credentials.from_service_account_file(
-                cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
+                SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
             delegated_credentials = credentials.with_subject(
                 current_app.config["OO_SERVICE_EMAIL"]
