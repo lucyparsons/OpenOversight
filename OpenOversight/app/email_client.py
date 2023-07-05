@@ -87,9 +87,9 @@ class EmailClient(object):
     _instance = None
 
     def __new__(cls, testing=False):
-        service_account_file_present = os.path.exists(cls.SERVICE_ACCOUNT_FILE)
+        service_account_file_size = os.path.getsize(cls.SERVICE_ACCOUNT_FILE)
 
-        if (testing or not service_account_file_present) and cls._instance is None:
+        if (testing or service_account_file_size == 0) and cls._instance is None:
             cls._instance = {}
 
         if cls._instance is None:
