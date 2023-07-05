@@ -1,6 +1,5 @@
 import datetime
 import hashlib
-import imghdr as imghdr
 import os
 import random
 import sys
@@ -14,6 +13,7 @@ from urllib.request import urlopen
 import boto3
 import botocore
 from botocore.exceptions import ClientError
+from filetype.match import image_match
 from flask import current_app, url_for
 from flask_login import current_user
 from future.utils import iteritems
@@ -23,7 +23,6 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
 
-from .custom import add_jpeg_patch
 from .main.choices import GENDER_CHOICES, RACE_CHOICES
 from .models import (
     Assignment,
@@ -50,10 +49,6 @@ SAVED_UMASK = os.umask(0o077)
 
 # Cropped officer face image size
 THUMBNAIL_SIZE = 1000, 1000
-
-
-# Call JPEG patch function
-add_jpeg_patch()
 
 
 def set_dynamic_default(form_field, value):
@@ -276,9 +271,12 @@ def upload_obj_to_s3(file_obj, dest_filename):
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
-    file_ending = imghdr.what(None, h=file_obj.read())
+
+    # File extension filtering is expected to have already been performed before this
+    # point (see `upload_image_to_s3_and_store_in_db`)
+    s3_content_type = image_match(file_obj).mime
+
     file_obj.seek(0)
-    s3_content_type = "image/%s" % file_ending
     s3_path = "{}/{}".format(s3_folder, s3_filename)
     s3_client.upload_fileobj(
         file_obj,
@@ -609,10 +607,17 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     we have to scrub the image before we do anything else like hash it
     but we also have to get the date for the image before we scrub it.
     """
-    image_buf.seek(0)
-    image_type = imghdr.what(image_buf)
+    kind = image_match(image_buf)
+    image_type = kind.extension.lower() if kind else None
     if image_type not in current_app.config["ALLOWED_EXTENSIONS"]:
         raise ValueError("Attempted to pass invalid data type: {}".format(image_type))
+
+    # PIL expects format name to be JPEG, not JPG
+    # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
+    if image_type == "jpg":
+        image_type = "jpeg"
+
+    # Scrub EXIF data, extracting date taken data if it exists
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
     date_taken = find_date_taken(pimage)
@@ -622,12 +627,15 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     scrubbed_image_buf = BytesIO()
     pimage.save(scrubbed_image_buf, image_type)
     pimage.close()
+
+    # Check whether image with hash already exists
     scrubbed_image_buf.seek(0)
     image_data = scrubbed_image_buf.read()
     hash_img = compute_hash(image_data)
     existing_image = Image.query.filter_by(hash_img=hash_img).first()
     if existing_image:
         return existing_image
+
     try:
         new_filename = "{}.{}".format(hash_img, image_type)
         scrubbed_image_buf.seek(0)

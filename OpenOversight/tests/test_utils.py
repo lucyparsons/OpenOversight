@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from flask import current_app
 from flask_login import current_user
+from PIL import Image as Pimage
 
 import OpenOversight
 from OpenOversight.app.models import Department, Image, Officer, Unit
@@ -22,6 +23,13 @@ upload_s3_patch = patch(
     "OpenOversight.app.utils.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
+
+
+def create_test_image_bytes_io(extension):
+    test_img = Pimage.new("RGB", (1, 1))
+    test_img_bytes = BytesIO()
+    test_img.save(test_img_bytes, format=extension)
+    return test_img_bytes
 
 
 def test_department_filter(mockdata):
@@ -179,28 +187,25 @@ def test_compute_hash(mockdata):
     assert hash_result == expected_hash
 
 
-def test_s3_upload_png(mockdata, test_png_BytesIO):
+@pytest.mark.parametrize(
+    "extension,mime_type",
+    [
+        ("jpeg", "image/jpeg"),
+        ("png", "image/png"),
+        ("gif", "image/gif"),
+        ("webp", "image/webp"),
+    ],
+)
+def test_s3_upload_image(mockdata, extension, mime_type):
+    test_img_bytes = create_test_image_bytes_io(extension)
+
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.utils.upload_obj_to_s3(test_png_BytesIO, "test_cop1.png")
+            OpenOversight.app.utils.upload_obj_to_s3(test_img_bytes, "test_cop1.png")
 
-    assert (
-        mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/png"
-    )
-
-
-def test_s3_upload_jpeg(mockdata, test_jpg_BytesIO):
-    mocked_connection = Mock()
-    mocked_resource = Mock()
-    with patch("boto3.client", Mock(return_value=mocked_connection)):
-        with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            OpenOversight.app.utils.upload_obj_to_s3(test_jpg_BytesIO, "test_cop5.jpg")
-
-    assert (
-        mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/jpeg"
-    )
+    assert mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == mime_type
 
 
 def test_user_can_submit_allowed_file(mockdata):
@@ -288,11 +293,15 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
     "OpenOversight.app.utils.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
+# Formats pulled from ALLOWED_EXTENSIONS. Removed jpg and jpe extensions since they
+# will be detected as jpegs and PIL does not support them as `format` parameters.
+@pytest.mark.parametrize("extension", ["jpeg", "png", "gif", "webp"])
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_BytesIO, client, extension
 ):
     try:
-        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+        test_img_bytes = create_test_image_bytes_io(extension)
+        upload_image_to_s3_and_store_in_db(test_img_bytes, 1, 1)
     except ValueError:
         pytest.fail("Unexpected value error")
 
