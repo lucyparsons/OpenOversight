@@ -29,8 +29,6 @@ services:
       - DOCKER_BUILD_ENV
       - MAKE_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
-   env_file:
-     - .env
    environment:
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
@@ -38,6 +36,7 @@ services:
      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
      FLASK_APP: OpenOversight.app
      FLASK_ENV: "${FLASK_ENV:-development}"
+     OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
