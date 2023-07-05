@@ -7,7 +7,7 @@ from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models.emails import Email
 
 
-class GmailClient(object):
+class EmailClient(object):
     """GmailClient is a Singleton class that is used for the Gmail client."""
 
     SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
@@ -27,7 +27,7 @@ class GmailClient(object):
                 BaseConfig.OO_SERVICE_EMAIL
             )
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
-            cls._instance = super(GmailClient, cls).__new__(cls)
+            cls._instance = super(EmailClient, cls).__new__(cls)
         return cls._instance
 
     @classmethod

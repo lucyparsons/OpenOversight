@@ -17,7 +17,7 @@ from OpenOversight.app.email_client import (
     ChangeEmailAddressEmail,
     ConfirmAccountEmail,
     ConfirmedUserEmail,
-    GmailClient,
+    EmailClient,
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
@@ -121,7 +121,7 @@ def register():
         if BaseConfig.APPROVE_REGISTRATIONS:
             admins = User.query.filter_by(is_administrator=True).all()
             for admin in admins:
-                GmailClient.send_email(
+                EmailClient.send_email(
                     AdministratorApprovalEmail(admin.email, user=user, admin=admin)
                 )
             flash(
@@ -130,7 +130,7 @@ def register():
             )
         else:
             token = user.generate_confirmation_token()
-            GmailClient.send_email(
+            EmailClient.send_email(
                 ConfirmAccountEmail(user.email, user=user, token=token)
             )
             flash("A confirmation email has been sent to you.")
@@ -148,7 +148,7 @@ def confirm(token):
     if current_user.confirm(token):
         admins = User.query.filter_by(is_administrator=True).all()
         for admin in admins:
-            GmailClient.send_email(
+            EmailClient.send_email(
                 ConfirmedUserEmail(admin.email, user=current_user, admin=admin)
             )
         flash("You have confirmed your account. Thanks!")
@@ -161,7 +161,7 @@ def confirm(token):
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    GmailClient.send_email(
+    EmailClient.send_email(
         ConfirmAccountEmail(current_user.email, user=current_user, token=token)
     )
     flash("A new confirmation email has been sent to you.")
@@ -196,7 +196,7 @@ def password_reset_request():
         user = User.by_email(form.email.data).first()
         if user:
             token = user.generate_reset_token()
-            GmailClient.send_email(
+            EmailClient.send_email(
                 ResetPasswordEmail(user.email, user=user, token=token)
             )
         flash("An email with instructions to reset your password has been sent to you.")
@@ -233,7 +233,7 @@ def change_email_request():
         if current_user.verify_password(form.password.data):
             new_email = form.email.data
             token = current_user.generate_email_change_token(new_email)
-            GmailClient.send_email(
+            EmailClient.send_email(
                 ChangeEmailAddressEmail(new_email, user=current_user, token=token)
             )
             flash(
@@ -361,6 +361,6 @@ def admin_resend_confirmation(user):
         flash("User {} is already confirmed.".format(user.username))
     else:
         token = user.generate_confirmation_token()
-        GmailClient.send_email(ConfirmAccountEmail(user.email, user=user, token=token))
+        EmailClient.send_email(ConfirmAccountEmail(user.email, user=user, token=token))
         flash("A new confirmation email has been sent to {}.".format(user.email))
     return redirect(url_for("auth.get_users"))

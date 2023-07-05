@@ -18,7 +18,7 @@ from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
 from .config import config
-from .email_client import GmailClient
+from .email_client import EmailClient
 from .utils.constants import MEGABYTE
 
 
@@ -45,7 +45,7 @@ def create_app(config_name="default"):
     bootstrap.init_app(app)
     csrf.init_app(app)
     db.init_app(app)
-    GmailClient(app.testing)
+    EmailClient(app.testing)
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)
