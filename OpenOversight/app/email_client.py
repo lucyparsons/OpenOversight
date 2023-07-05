@@ -28,7 +28,9 @@ class AdministratorApprovalEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Registered"
         )
-        body = render_template("auth/email/new_registration.html", user, admin)
+        body = render_template(
+            "auth/email/new_registration.html", user=user, admin=admin
+        )
         super().__init__(body, subject, receiver)
 
 
@@ -38,7 +40,7 @@ class ChangeEmailAddressEmail(Email):
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Email "
             f"Address"
         )
-        body = render_template("auth/email/change_email.html", user, token)
+        body = render_template("auth/email/change_email.html", user=user, token=token)
         super().__init__(body, subject, receiver)
 
 
@@ -47,7 +49,7 @@ class ConfirmAccountEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Confirm Your Account"
         )
-        body = render_template("auth/email/confirm.html", user, token)
+        body = render_template("auth/email/confirm.html", user=user, token=token)
         super().__init__(body, subject, receiver)
 
 
@@ -56,7 +58,9 @@ class ConfirmedUserEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} New User Confirmed"
         )
-        body = render_template("auth/email/new_confirmation.html", user, admin)
+        body = render_template(
+            "auth/email/new_confirmation.html", user=user, admin=admin
+        )
         super().__init__(body, subject, receiver)
 
 
@@ -65,7 +69,7 @@ class ResetPasswordEmail(Email):
         subject = (
             f"{current_app.config.get('OO_MAIL_SUBJECT_PREFIX')} Reset Your Password"
         )
-        body = render_template("auth/email/reset_password.html", user, token)
+        body = render_template("auth/email/reset_password.html", user=user, token=token)
         super().__init__(body, subject, receiver)
 
 
