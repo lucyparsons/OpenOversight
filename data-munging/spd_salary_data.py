@@ -42,8 +42,6 @@ def match_salary_data(
     merged.columns = ["salary", "overtime_pay", "officer_id"]
     # Add an empty id column
     merged["id"] = None
-    # Set the year to 2020
-    merged["year"] = 2020
     # Only save out records with an OO ID
     merged = merged[~merged.officer_id.isna()]
     # Convert the salary from "$###,###.##" to a float
@@ -61,7 +59,7 @@ def match_salary_data(
     return merged, missing
 
 
-def main(id_path: Path, data: Path, output: Path):
+def main(year: int, id_path: Path, data: Path, output: Path):
     log.info("Starting import")
     df = pd.read_csv(data, usecols=["Name", "Base Pay", "Overtime"])
     ids = pd.read_csv(
@@ -69,19 +67,21 @@ def main(id_path: Path, data: Path, output: Path):
         usecols=["id", "first name", "last name"],
     )
     merged, missing = match_salary_data(ids, df)
+    merged["year"] = year
     common.write_files_with_missing(merged, missing, output)
 
 
 @click.command()
+@click.argument("year", type=int)
 @click.argument("id_path", type=click.Path(exists=True, path_type=Path))
 @click.argument("data", type=click.Path(exists=True, path_type=Path))
 @click.argument("output", type=click.Path(path_type=Path))
-def cli(id_path: Path, data: Path, output: Path):
+def cli(year: int, id_path: Path, data: Path, output: Path):
     logging.basicConfig(
         format="[%(asctime)s - %(name)s - %(lineno)3d][%(levelname)s] %(message)s",
         level=logging.INFO,
     )
-    main(id_path, data, output)
+    main(year, id_path, data, output)
 
 
 if __name__ == "__main__":
