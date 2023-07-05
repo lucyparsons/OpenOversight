@@ -28,7 +28,7 @@ class EmailClient(object):
                 cls.SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
             delegated_credentials = credentials.with_subject(
-                BaseConfig.OO_SERVICE_EMAIL
+                current_app.config["OO_SERVICE_EMAIL"]
             )
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(EmailClient, cls).__new__(cls)

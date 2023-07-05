@@ -2,6 +2,7 @@ import os
 from contextlib import contextmanager
 
 import pytest
+from flask import current_app
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -110,24 +111,24 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
 def test_officer_browse_pagination(mockdata, browser, server_port):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
-    perpage = BaseConfig.OFFICERS_PER_PAGE
+    per_page = current_app.config["OFFICERS_PER_PAGE"]
 
     # first page of results
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
-    expected = "Showing 1-{} of {}".format(perpage, total)
+    expected = "Showing 1-{} of {}".format(per_page, total)
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // perpage) + 1
+    last_page_index = (total // per_page) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing {}-{} of {}".format(
-        perpage * (total // perpage) + 1, total, total
+        per_page * (total // per_page) + 1, total, total
     )
     assert expected in page_text
 

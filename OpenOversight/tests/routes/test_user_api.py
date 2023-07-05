@@ -5,7 +5,6 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import (
@@ -268,7 +267,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 
 def test_register_user_approval_required(mockdata, client, session):
-    BaseConfig.APPROVE_REGISTRATIONS = True
+    current_app.config["APPROVE_REGISTRATIONS"] = True
     EmailClient(testing=True)
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
@@ -353,7 +352,7 @@ def test_admin_approval_sends_confirmation_email(
     client,
     session,
 ):
-    BaseConfig.APPROVE_REGISTRATIONS = approve_registration_config
+    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
     EmailClient(testing=True)
     with current_app.test_request_context():
         login_admin(client)
