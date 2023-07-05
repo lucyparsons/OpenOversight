@@ -110,24 +110,24 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
 def test_officer_browse_pagination(mockdata, browser, server_port):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
-    per_page = BaseConfig.OFFICERS_PER_PAGE
+    perpage = BaseConfig.OFFICERS_PER_PAGE
 
     # first page of results
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
-    expected = "Showing 1-{} of {}".format(per_page, total)
+    expected = "Showing 1-{} of {}".format(perpage, total)
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // per_page) + 1
+    last_page_index = (total // perpage) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing {}-{} of {}".format(
-        per_page * (total // per_page) + 1, total, total
+        perpage * (total // perpage) + 1, total, total
     )
     assert expected in page_text
 
