@@ -59,7 +59,7 @@ You will need to do these two things for the service account to work as a Gmail 
 1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en)
 2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
 3. Save the service account key file in OpenOversight's base folder as `service_account_key.json`. The file is in the `.gitignore` file GitHub will not allow you to save it, provided you've named it correctly.
-4. Save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository.
+4. For production, save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_SERVICE_EMAIL` variable in the `docker-compose.yml` file.
 
 Example `.env` variable:
 ```bash
