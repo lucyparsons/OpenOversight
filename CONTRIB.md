@@ -50,13 +50,16 @@ $ docker exec -it openoversight_web_1 /bin/bash
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
 ## Gmail Requirements
+**NOTE:** If you are running on dev and do not currently have a `service_account_key.json` file, create one and leave it empty. The email client will then default to an empty object and simulate emails in the logs.
+
 For the application to work properly, you will need a [Google Cloud Platform service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to a GSuite email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
 We would suggest that you do not use a personal email address, but instead one that is used strictly for sending out OpenOversight emails.
 
 You will need to do these two things for the service account to work as a Gmail bot:
 1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en)
 2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
-3. Save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository.
+3. Save the service account key file in OpenOversight's base folder as `service_account_key.json`. The file is in the `.gitignore` file GitHub will not allow you to save it, provided you've named it correctly.
+4. Save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository.
 
 Example `.env` variable:
 ```bash
