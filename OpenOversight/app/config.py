@@ -49,7 +49,7 @@ class BaseConfig(object):
 
     # Rate limiting
     # https://flask-limiter.readthedocs.io/en/stable/configuration.html
-    RATELIMIT_ENABLED = os.environ.get("RATELIMIT_ENABLED", True)
+    RATELIMIT_ENABLED = not (os.environ.get("RATELIMIT_DISABLED", False) == "True")
 
     SEED = 666
 
