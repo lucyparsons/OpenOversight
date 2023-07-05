@@ -2,7 +2,6 @@ import os
 from contextlib import contextmanager
 
 import pytest
-from flask import current_app
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -10,6 +9,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
+from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models import Department, Incident, Officer, Unit, db
 
 
@@ -110,7 +110,7 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
 def test_officer_browse_pagination(mockdata, browser, server_port):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
-    per_page = current_app.config["OFFICERS_PER_PAGE"]
+    per_page = BaseConfig.OFFICERS_PER_PAGE
 
     # first page of results
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
