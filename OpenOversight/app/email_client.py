@@ -8,7 +8,11 @@ from OpenOversight.app.models.emails import Email
 
 
 class EmailClient(object):
-    """GmailClient is a Singleton class that is used for the Gmail client."""
+    """
+    EmailClient is a Singleton class that is used for the Gmail client.
+    This can be fairly easily switched out with another email service, but it is
+    currently defaulted to Gmail.
+    """
 
     SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
     SERVICE_ACCOUNT_FILE = "service_account_key.json"
