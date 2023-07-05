@@ -11,13 +11,12 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app.config import BaseConfig
-from OpenOversight.app.email_client import (
+from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models import (
     AdministratorApprovalEmail,
     ChangeEmailAddressEmail,
     ConfirmAccountEmail,
     ConfirmedUserEmail,
-    EmailClient,
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
