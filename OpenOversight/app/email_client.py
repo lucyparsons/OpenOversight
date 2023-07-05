@@ -1,4 +1,5 @@
 import base64
+import os
 from email.mime.text import MIMEText
 
 from apiclient import errors
@@ -86,7 +87,9 @@ class EmailClient(object):
     _instance = None
 
     def __new__(cls, testing=False):
-        if testing and cls._instance is None:
+        service_account_file_present = os.path.exists(cls.SERVICE_ACCOUNT_FILE)
+
+        if (testing or not service_account_file_present) and cls._instance is None:
             cls._instance = {}
 
         if cls._instance is None:
