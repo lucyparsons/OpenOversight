@@ -32,6 +32,7 @@ from .forms import (
 from .utils import admin_required
 
 
+js_loads = ["js/zxcvbn.js", "js/password.js"]
 sitemap_endpoints = []
 
 
@@ -99,7 +100,6 @@ def logout():
 @sitemap_include
 @auth.route("/register", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 def register():
-    jsloads = ["js/zxcvbn.js", "js/password.js"]
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(
@@ -137,7 +137,7 @@ def register():
         return redirect(url_for("auth.login"))
     else:
         current_app.logger.info(form.errors)
-    return render_template("auth/register.html", form=form, jsloads=jsloads)
+    return render_template("auth/register.html", form=form, jsloads=js_loads)
 
 
 @auth.route("/confirm/<token>", methods=[HTTP_METHOD_GET])
@@ -179,7 +179,6 @@ def resend_confirmation():
 @auth.route("/change-password", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
 @login_required
 def change_password():
-    jsloads = ["js/zxcvbn.js", "js/password.js"]
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if current_user.verify_password(form.old_password.data):
@@ -192,7 +191,7 @@ def change_password():
             flash("Invalid password.")
     else:
         current_app.logger.info(form.errors)
-    return render_template("auth/change_password.html", form=form, jsloads=jsloads)
+    return render_template("auth/change_password.html", form=form, jsloads=js_loads)
 
 
 @auth.route("/reset", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
