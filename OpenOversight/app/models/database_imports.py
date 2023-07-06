@@ -4,8 +4,8 @@ import dateutil.parser
 
 from OpenOversight.app.utils.general import get_or_create, str_is_true
 
-from .main import choices
-from .models import (
+from OpenOversight.app.main import choices
+from OpenOversight.app.models import (
     Assignment,
     Incident,
     LicensePlate,
@@ -15,7 +15,7 @@ from .models import (
     Salary,
     db,
 )
-from .validators import state_validator, url_validator
+from OpenOversight.app.validators import state_validator, url_validator
 
 
 if TYPE_CHECKING:

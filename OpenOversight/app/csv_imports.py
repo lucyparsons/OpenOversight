@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from .database_imports import (
+from OpenOversight.app.models.database_imports import (
     create_assignment_from_dict,
     create_incident_from_dict,
     create_link_from_dict,
