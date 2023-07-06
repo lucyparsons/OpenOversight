@@ -6,7 +6,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class BaseConfig:
     def __init__(self):
-        # DB SETUP
+        # App Settings
+        self.DEBUG = False
+        self.TESTING = False
+
+        # DB Settings
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
         self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
