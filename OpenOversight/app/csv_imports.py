@@ -4,6 +4,17 @@ from typing import Dict, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Incident,
+    Job,
+    Link,
+    Officer,
+    Salary,
+    Unit,
+    db,
+)
 from OpenOversight.app.models.database_imports import (
     create_assignment_from_dict,
     create_incident_from_dict,
@@ -17,17 +28,6 @@ from OpenOversight.app.models.database_imports import (
     update_link_from_dict,
     update_officer_from_dict,
     update_salary_from_dict,
-)
-from .models import (
-    Assignment,
-    Department,
-    Incident,
-    Job,
-    Link,
-    Officer,
-    Salary,
-    Unit,
-    db,
 )
 
 
