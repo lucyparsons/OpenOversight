@@ -214,20 +214,25 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             if row[fieldname] == "":
                 row[fieldname] = None
             old_value = getattr(officer, fieldname)
-            # If we're expecting a date type, attempt to parse row[fieldname] as a datetime
-            # This also normalizes all date formats, ensuring the following comparison works properly
+            # If we're expecting a date type, attempt to parse row[fieldname] as a
+            # datetime This also normalizes all date formats, ensuring the following
+            # comparison works properly
             if isinstance(old_value, (date, datetime)):
                 try:
                     new_value = parse(row[fieldname])
                     if isinstance(old_value, date):
                         new_value = new_value.date()
                 except Exception as e:
-                    msg = 'Field {} is a date-type, but "{}" was specified for Officer {} {} and cannot be parsed as a date-type.\nError message from dateutil: {}'.format(
-                        fieldname,
-                        row[fieldname],
-                        officer.first_name,
-                        officer.last_name,
-                        e,
+                    msg = (
+                        'Field {} is a date-type, but "{}" was specified for '
+                        "Officer {} {} and cannot be parsed as a date-type.\nError "
+                        "message from dateutil: {}".format(
+                            fieldname,
+                            row[fieldname],
+                            officer.first_name,
+                            officer.last_name,
+                            e,
+                        )
                     )
                     raise Exception(msg)
             else:
@@ -275,7 +280,8 @@ def create_officer_from_row(row, department_id):
 
 
 def is_equal(a, b):
-    """Run an exhaustive equality check, originally to compare a sqlalchemy result object of various types to a csv string
+    """Run an exhaustive equality check, originally to compare a sqlalchemy result
+    object of various types to a csv string
     Note: Stringifying covers object cases (as in the datetime example below)
     >>> is_equal("1", 1)  # string == int
     True
@@ -450,7 +456,8 @@ def process_salary(row, officer, compare=False):
 @click.option(
     "--update-by-name",
     is_flag=True,
-    help="update officers by first and last name (useful when star_no or unique_internal_identifier are not available)",
+    help="update officers by first and last name (useful when star_no or "
+    "unique_internal_identifier are not available)",
 )
 @click.option(
     "--update-static-fields",
@@ -489,7 +496,8 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
             and "unique_internal_identifier" not in csvfile.fieldnames
         ):
             raise Exception(
-                "CSV file must include either badge numbers or unique identifiers for officers"
+                "CSV file must include either badge numbers or unique identifiers for "
+                "officers"
             )
 
         for row in csvfile:
