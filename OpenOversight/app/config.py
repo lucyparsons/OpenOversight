@@ -53,10 +53,6 @@ class BaseConfig:
 
         self.SEED = 666
 
-    @staticmethod
-    def init_app(app):
-        pass
-
 
 class DevelopmentConfig(BaseConfig):
     def __init__(self):
@@ -80,10 +76,6 @@ class ProductionConfig(BaseConfig):
     def __init__(self):
         super(ProductionConfig, self).__init__()
         self.SITEMAP_URL_SCHEME = "https"
-
-    @classmethod
-    def init_app(cls, app):  # pragma: no cover
-        config.init_app(app)
 
 
 config = {

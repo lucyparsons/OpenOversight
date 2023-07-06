@@ -39,7 +39,7 @@ csrf = CSRFProtect()
 def create_app(config_name="default"):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
+    config[config_name]
     from .models import db
 
     bootstrap.init_app(app)
