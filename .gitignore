@@ -5,6 +5,7 @@
 
 # Credentials
 dbcred*
+service_account_key.json
 
 # Local database backups
 backup/*
@@ -40,6 +41,7 @@ var/
 .installed.cfg
 *.egg
 .mypy_cache
+.python-version
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
