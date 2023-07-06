@@ -6,6 +6,7 @@ from flask import current_app, render_template
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
+from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.utils.constants import SERVICE_ACCOUNT_FILE
 
 
@@ -20,7 +21,7 @@ class Email:
     def create_message(self):
         message = MIMEText(self.body, "html")
         message["to"] = self.receiver
-        message["from"] = current_app.config["OO_SERVICE_EMAIL"]
+        message["from"] = BaseConfig.OO_SERVICE_EMAIL
         message["subject"] = self.subject
         return {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
@@ -95,7 +96,7 @@ class EmailClient(object):
                 SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
             delegated_credentials = credentials.with_subject(
-                current_app.config["OO_SERVICE_EMAIL"]
+                BaseConfig.OO_SERVICE_EMAIL
             )
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(EmailClient, cls).__new__(cls)
