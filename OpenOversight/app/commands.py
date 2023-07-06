@@ -14,9 +14,11 @@ from OpenOversight.app.csv_imports import import_csv_files
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
+    Image,
     Job,
     Officer,
     Salary,
+    Unit,
     User,
     db,
 )
@@ -72,8 +74,6 @@ def make_admin_user():
 @with_appcontext
 def link_images_to_department():
     """Link existing images to first department"""
-    from app.models import Image, db
-
     images = Image.query.all()
     print("Linking images to first department:")
     for image in images:
@@ -89,8 +89,6 @@ def link_images_to_department():
 @with_appcontext
 def link_officers_to_department():
     """Links officers and unit_ids to first department"""
-    from app.models import Officer, Unit, db
-
     officers = Officer.query.all()
     units = Unit.query.all()
 
