@@ -209,7 +209,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    # Select incident for officer that has description under cuttoff chars
+    # Select incident for officer that has description under cutoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
     assert not result.is_displayed()
 
