@@ -22,7 +22,7 @@ upload_s3_patch = patch(
 
 
 def test_department_filter(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {
             "race": ["Not Sure"],
@@ -41,7 +41,7 @@ def test_department_filter(mockdata):
 
 
 def test_race_filter_select_all_black_officers(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"race": ["BLACK"], "dept": department}
     )
@@ -50,7 +50,7 @@ def test_race_filter_select_all_black_officers(mockdata):
 
 
 def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"gender": ["M"], "dept": department}
     )
@@ -63,7 +63,7 @@ def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
 
 
 def test_gender_filter_include_all_genders_if_not_sure(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"gender": ["Not Sure"], "dept": department}
     )
@@ -77,7 +77,7 @@ def test_gender_filter_include_all_genders_if_not_sure(mockdata):
 
 
 def test_rank_filter_select_all_commanders(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"rank": ["Commander"], "dept": department}
     )
@@ -87,7 +87,7 @@ def test_rank_filter_select_all_commanders(mockdata):
 
 
 def test_rank_filter_select_all_police_officers(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"rank": ["Police Officer"], "dept": department}
     )
@@ -97,7 +97,7 @@ def test_rank_filter_select_all_police_officers(mockdata):
 
 
 def test_filter_by_name(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"last_name": "J", "dept": department}
     )
@@ -106,8 +106,8 @@ def test_filter_by_name(mockdata):
 
 
 def test_filters_do_not_exclude_officers_without_assignments(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
-    officer = OpenOversight.app.models.Officer(
+    department = OpenOversight.app.database.Department.query.first()
+    officer = OpenOversight.app.database.Officer(
         first_name="Rachel", last_name="S", department=department, birth_year=1992
     )
     results = OpenOversight.app.utils.forms.grab_officers(
@@ -117,7 +117,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
 
 
 def test_filter_by_badge_no(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     results = OpenOversight.app.utils.forms.grab_officers(
         {"badge": "12", "dept": department}
     )
@@ -127,9 +127,9 @@ def test_filter_by_badge_no(mockdata):
 
 
 def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     target_unique_internal_id = (
-        OpenOversight.app.models.Officer.query.first().unique_internal_identifier
+        OpenOversight.app.database.Officer.query.first().unique_internal_identifier
     )
     results = OpenOversight.app.utils.forms.grab_officers(
         {
@@ -150,9 +150,9 @@ def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
 
 
 def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata):
-    department = OpenOversight.app.models.Department.query.first()
+    department = OpenOversight.app.database.Department.query.first()
     identifier = (
-        OpenOversight.app.models.Officer.query.first().unique_internal_identifier
+        OpenOversight.app.database.Officer.query.first().unique_internal_identifier
     )
     partial_identifier = identifier[: len(identifier) // 2]
     results = OpenOversight.app.utils.forms.grab_officers(
@@ -306,8 +306,8 @@ def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
 ):
     with current_app.test_request_context():
         login_user(client)
-        department = OpenOversight.app.models.Department.query.first()
-        image = OpenOversight.app.models.Image.query.first()
+        department = OpenOversight.app.database.Department.query.first()
+        image = OpenOversight.app.database.Image.query.first()
 
         with patch(
             "OpenOversight.app.utils.cloud.upload_image_to_s3_and_store_in_db"
