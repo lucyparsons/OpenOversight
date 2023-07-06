@@ -13,7 +13,7 @@ from flask import current_app
 
 # Add our Flask app to the search paths for modules
 sys.path.insert(0, os.path.dirname(current_app.root_path))
-from app.models import Officer, db  # noqa: E402
+from OpenOversight.app.models.database import Officer, db  # noqa: E402
 
 
 # revision identifiers, used by Alembic.
