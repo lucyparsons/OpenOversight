@@ -302,7 +302,7 @@ def get_users():
     else:
         page = 1
     users = User.query.order_by(User.username).paginate(
-        page=page, per_page=current_app.config.USERS_PER_PAGE, error_out=False
+        page=page, per_page=current_app.config["USERS_PER_PAGE"], error_out=False
     )
 
     return render_template("auth/users.html", objects=users)
