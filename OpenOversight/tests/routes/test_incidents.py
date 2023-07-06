@@ -13,7 +13,7 @@ from OpenOversight.app.main.forms import (
     LocationForm,
     OOIdForm,
 )
-from OpenOversight.app.models import Department, Incident, Officer
+from OpenOversight.app.models.database import Department, Incident, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 

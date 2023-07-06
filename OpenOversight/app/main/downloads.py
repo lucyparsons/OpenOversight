@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, TypeVar
 from flask import Response, abort
 from sqlalchemy.orm import Query
 
-from ..models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Department,
     Description,

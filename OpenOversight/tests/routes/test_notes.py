@@ -5,7 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import EditTextForm, TextForm
-from OpenOversight.app.models import Note, Officer, User, db
+from OpenOversight.app.models.database import Note, Officer, User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 

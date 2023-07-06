@@ -2,8 +2,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
+from OpenOversight.app import login_manager
 from OpenOversight.app.main import choices
-from OpenOversight.app.models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Incident,
     LicensePlate,
@@ -69,7 +70,6 @@ def parse_str(value: Optional[str], default: Optional[str] = "") -> Optional[str
 
 
 def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Officer:
-
     officer = Officer(
         department_id=int(data["department_id"]),
         last_name=parse_str(data.get("last_name", "")),
@@ -93,7 +93,6 @@ def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Of
 
 
 def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
-
     if "department_id" in data.keys():
         officer.department_id = int(data["department_id"])
     if "last_name" in data.keys():
@@ -123,7 +122,6 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
 def create_assignment_from_dict(
     data: Dict[str, Any], force_id: bool = False
 ) -> Assignment:
-
     assignment = Assignment(
         officer_id=int(data["officer_id"]),
         star_no=parse_str(data.get("star_no"), None),
@@ -319,3 +317,8 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.license_plates = data["license_plate_objects"] or []
     db.session.flush()
     return incident
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))

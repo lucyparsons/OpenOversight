@@ -6,7 +6,7 @@ from flask_login import current_user
 from mock import MagicMock, Mock, patch
 
 import OpenOversight
-from OpenOversight.app.models import Department, Image, Officer, Unit
+from OpenOversight.app.models.database import Department, Image, Officer, Unit
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.forms import filter_by_form
 from OpenOversight.app.utils.general import validate_redirect_url

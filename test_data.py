@@ -3,7 +3,7 @@
 import argparse
 
 from OpenOversight.app import create_app
-from OpenOversight.app.models import db
+from OpenOversight.app.models.database import db
 from OpenOversight.tests.conftest import add_mockdata
 
 

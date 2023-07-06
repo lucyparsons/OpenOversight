@@ -11,7 +11,6 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from OpenOversight.app import login_manager
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.validators import state_validator, url_validator
 
@@ -614,8 +613,3 @@ class User(UserMixin, BaseModel):
 
     def __repr__(self):
         return "<User %r>" % self.username
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))

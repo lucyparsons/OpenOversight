@@ -5,7 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.models import User, db
+from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     HTTP_METHOD_GET,
@@ -327,11 +327,13 @@ def test_admin_can_approve_user(mockdata, client, session):
 
 
 @pytest.mark.parametrize(
-    "currently_approved, currently_confirmed, approve_registration_config, should_send_email",
+    "currently_approved, currently_confirmed, approve_registration_config, "
+    "should_send_email",
     [
         # Approving unconfirmed user sends email
         (False, False, True, True),
-        # Approving unconfirmed user does not send email if approve_registration config is not set
+        # Approving unconfirmed user does not send email if approve_registration
+        # config is not set
         (False, False, False, False),
         # Updating approved user does not send email
         (True, False, True, False),

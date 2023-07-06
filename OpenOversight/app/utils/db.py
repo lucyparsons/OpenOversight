@@ -2,7 +2,16 @@ from typing import Optional
 
 from sqlalchemy import func
 
-from ..models import Assignment, Department, Face, Image, Officer, Unit, User, db
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Face,
+    Image,
+    Officer,
+    Unit,
+    User,
+    db,
+)
 
 
 def add_department_query(form, current_user):

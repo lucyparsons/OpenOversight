@@ -18,7 +18,8 @@ from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
-from .config import config
+from OpenOversight.app.config import config
+from OpenOversight.app.models.database import db
 
 
 bootstrap = Bootstrap()
@@ -40,7 +41,6 @@ def create_app(config_name="default"):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
-    from .models import db
 
     bootstrap.init_app(app)
     mail.init_app(app)

@@ -29,10 +29,10 @@ from wtforms.validators import (
 )
 from wtforms_sqlalchemy.fields import QuerySelectField
 
+from OpenOversight.app.models.database import Officer
 from OpenOversight.app.utils.db import dept_choices, unit_choices
 
 from ..formfields import TimeField
-from ..models import Officer
 from ..widgets import BootstrapListWidget, FormFieldWidget
 from .choices import (
     AGE_CHOICES,

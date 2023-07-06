@@ -21,6 +21,24 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Description,
+    Face,
+    Image,
+    Incident,
+    Job,
+    LicensePlate,
+    Link,
+    Location,
+    Note,
+    Officer,
+    Salary,
+    Unit,
+    User,
+    db,
+)
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.db import (
@@ -54,24 +72,6 @@ from OpenOversight.app.utils.general import (
 from .. import limiter, sitemap
 from ..auth.forms import LoginForm
 from ..auth.utils import ac_or_admin_required, admin_required
-from ..models import (
-    Assignment,
-    Department,
-    Description,
-    Face,
-    Image,
-    Incident,
-    Job,
-    LicensePlate,
-    Link,
-    Location,
-    Note,
-    Officer,
-    Salary,
-    Unit,
-    User,
-    db,
-)
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from .forms import (

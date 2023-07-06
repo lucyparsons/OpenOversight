@@ -3,7 +3,7 @@ import time
 
 from pytest import raises
 
-from OpenOversight.app.models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Department,
     Face,

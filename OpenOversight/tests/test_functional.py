@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.config import BaseConfig
-from OpenOversight.app.models import Department, Incident, Officer, Unit, db
+from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 
 
 DESCRIPTION_CUTOFF = 700
