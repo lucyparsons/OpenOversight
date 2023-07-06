@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Run tests
         run: |
           PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
