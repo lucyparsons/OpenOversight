@@ -221,7 +221,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    orig_description = incident_long_description.description.strip()
+    original_description = incident_long_description.description.strip()
     incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
@@ -230,8 +230,8 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     description_text = browser.find_element_by_id(
         "incident-description_" + incident_id
     ).text.strip()
-    assert len(description_text) == len(orig_description)
-    assert description_text == orig_description
+    assert len(description_text) == len(original_description)
+    assert description_text == original_description
 
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server_port):
