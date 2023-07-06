@@ -1,3 +1,6 @@
+# NOTE: This file is synced from https://github.com/OrcaCollective/techbloc-directory
+# Please see the .github/sync.yml file for sync information.
+# (Note for maintainers, quarterly is not supported yet: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#scheduleinterval)
 ---
 version: 2
 updates:
