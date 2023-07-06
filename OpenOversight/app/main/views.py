@@ -868,9 +868,7 @@ def add_officer():
         return render_template("add_officer.html", form=form, jsloads=jsloads)
 
 
-@main.route(
-    "/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
-)
+@main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
@@ -991,9 +989,7 @@ def leaderboard():
     "/cop_face/department/<int:department_id>/image/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route(
-    "/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
-)
+@main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @main.route(
     "/cop_face/department/<int:department_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
