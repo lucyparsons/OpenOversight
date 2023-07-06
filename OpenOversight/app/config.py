@@ -8,7 +8,11 @@ class BaseConfig:
     def __init__(self):
         # App Settings
         self.DEBUG = False
+        self.SEED = 666
         self.TESTING = False
+        # Use session cookie to store URL to redirect to after login
+        # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
+        self.USE_SESSION_FOR_NEXT = True
 
         # DB Settings
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -22,8 +26,8 @@ class BaseConfig:
         self.USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
 
         # Form Settings
-        self.WTF_CSRF_ENABLED = True
         self.SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
+        self.WTF_CSRF_ENABLED = True
 
         # Mail Settings
         self.MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
@@ -40,22 +44,16 @@ class BaseConfig:
 
         # AWS Settings
         self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-        self.AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
         self.AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
+        self.AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
         self.S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
         # Upload Settings
-        self.MAX_CONTENT_LENGTH = 50 * 1024 * 1024
         self.ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
+        self.MAX_CONTENT_LENGTH = 50 * 1024 * 1024
 
         # User settings
         self.APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
-
-        # Use session cookie to store URL to redirect to after login
-        # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
-        self.USE_SESSION_FOR_NEXT = True
-
-        self.SEED = 666
 
 
 class DevelopmentConfig(BaseConfig):
