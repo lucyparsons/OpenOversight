@@ -727,7 +727,7 @@ def list_officer(
     officers = officers.options(selectinload(Officer.face))
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
     officers = officers.paginate(
-        page=page, per_page=current_app.config.OFFICERS_PER_PAGE, error_out=False
+        page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
     )
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
