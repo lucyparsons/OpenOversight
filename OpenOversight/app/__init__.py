@@ -38,8 +38,8 @@ csrf = CSRFProtect()
 
 def create_app(config_name="default"):
     app = Flask(__name__)
+    # Creates and adds Config type to app.config
     app.config.from_object(config[config_name])
-    config[config_name]
     from .models import db
 
     bootstrap.init_app(app)
