@@ -11,9 +11,9 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import login_manager
-from .utils.constants import ENCODING_UTF_8
-from .validators import state_validator, url_validator
+from OpenOversight.app import login_manager
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
