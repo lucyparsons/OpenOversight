@@ -12,6 +12,7 @@ from OpenOversight.app.models.database import (
     Location,
     Officer,
     Salary,
+    User,
     db,
 )
 from OpenOversight.app.utils.general import get_or_create, str_is_true
