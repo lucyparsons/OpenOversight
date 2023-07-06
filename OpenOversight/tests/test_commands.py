@@ -38,7 +38,7 @@ def run_command_print_output(cli, args=None, **kwargs):
     the exit_code, were 0 indicates a successful run of the command and
     any other value signifies a failure.
 
-    Additionally this function will send all generated logs to stdout
+    Additionally, this function will send all generated logs to stdout
     and will print exceptions and strack-trace to make it easier to debug
     a failing
     """
@@ -164,7 +164,7 @@ def test_add_job_title__different_departments(session, department):
         is not None
     )
 
-    # adding samme job but for different department
+    # adding same job but for different department
     result = run_command_print_output(
         add_job_title, [str(other_department_id), job_title, str(is_sworn), str(order)]
     )
@@ -250,7 +250,7 @@ def test_csv_missing_badge_and_uid(csvfile):
     )
 
 
-def test_csv_non_existant_dept_id(csvfile):
+def test_csv_non_existent_dept_id(csvfile):
     df = pd.read_csv(csvfile)
     df["department_id"] = 666
     df.to_csv(csvfile)
