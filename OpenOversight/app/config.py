@@ -4,7 +4,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class BaseConfig(object):
+class BaseConfig:
     def __init__(self):
         # DB SETUP
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -60,7 +60,7 @@ class BaseConfig(object):
 
 class DevelopmentConfig(BaseConfig):
     def __init__(self):
-        super().__init__()
+        super(DevelopmentConfig, self).__init__()
         self.DEBUG = True
         self.SQLALCHEMY_ECHO = True
         self.NUM_OFFICERS = 15000
@@ -68,7 +68,7 @@ class DevelopmentConfig(BaseConfig):
 
 class TestingConfig(BaseConfig):
     def __init__(self):
-        super().__init__()
+        super(TestingConfig, self).__init__()
         self.TESTING = True
         self.WTF_CSRF_ENABLED = False
         self.NUM_OFFICERS = 120
@@ -78,7 +78,7 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     def __init__(self):
-        super().__init__()
+        super(ProductionConfig, self).__init__()
         self.SITEMAP_URL_SCHEME = "https"
 
     @classmethod
