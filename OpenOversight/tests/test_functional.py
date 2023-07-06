@@ -218,11 +218,11 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    orig_descrip = incident_long_descrip.description.strip()
-    incident_id = str(incident_long_descrip.id)
+    orig_description = incident_long_description.description.strip()
+    incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
@@ -230,18 +230,18 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     description_text = browser.find_element_by_id(
         "incident-description_" + incident_id
     ).text.strip()
-    assert len(description_text) == len(orig_descrip)
-    assert description_text == orig_descrip
+    assert len(description_text) == len(orig_description)
+    assert description_text == orig_description
 
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
@@ -287,7 +287,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
 
     login_admin(browser, server_port)
 
-    # Nagivate to edit officer page for officer having NULL race and gender
+    # Navigate to edit officer page for officer having NULL race and gender
     browser.get(f"http://localhost:{server_port}/officer/1/edit")
 
     wait_for_element(browser, By.ID, "gender")
