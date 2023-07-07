@@ -1,9 +1,7 @@
 # Contributing Guide
-
 First, thanks for being interested in helping us out! If you find an issue you're interested in, feel free to make a comment about how you're thinking of approaching implementing it in the issue and we can give you feedback.  Please also read our [code of conduct](/CODE_OF_CONDUCT.md) before getting started.
 
 ## Submitting a Pull Request (PR)
-
 When you come to implement your new feature, clone the repository and then create a branch off `develop` locally and add commits to implement your feature.
 
 If your git history is not so clean, please do rewrite before you submit your PR - if you're not sure if you need to do this, go ahead and submit and we can let you know when you submit.
@@ -21,13 +19,11 @@ git config user.name "<your-github-username>"
 This will make sure that all commits you make locally are associated with your github account and do not contain any additional identifying information. More detailed information on this topic can be found [here](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-your-github-user-account/setting-your-commit-email-address).
 
 ### Linting / Style Checks
+We use [pre-commit](https://pre-commit.com/) for automated linting and style checks. Be sure to [install pre-commit](https://pre-commit.com/#installation) and run `pre-commit install` in your local version of the repository to install our pre-commit checks. This will make sure your commits are always formatted correctly.
 
- We use [pre-commit](https://pre-commit.com/) for automated linting and style checks. Be sure to [install pre-commit](https://pre-commit.com/#installation) and run `pre-commit install` in your local version of the repository to install our pre-commit checks. This will make sure your commits are always formatted correctly.
-
- You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
+You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
 
 ## Development Environment
-
 You can use our Docker-compose environment to stand up a development OpenOversight.
 
 You will need to have Docker installed in order to use the Docker development environment.
@@ -53,8 +49,24 @@ $ docker exec -it openoversight_web_1 /bin/bash
 
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
-## Testing S3 Functionality
+## Gmail Requirements
+**NOTE:** If you are running on dev and do not currently have a `service_account_key.json` file, create one and leave it empty. The email client will then default to an empty object and simulate emails in the logs.
 
+For the application to work properly, you will need a [Google Cloud Platform service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to a GSuite email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
+We would suggest that you do not use a personal email address, but instead one that is used strictly for sending out OpenOversight emails.
+
+You will need to do these two things for the service account to work as a Gmail bot:
+1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en)
+2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
+3. Save the service account key file in OpenOversight's base folder as `service_account_key.json`. The file is in the `.gitignore` file GitHub will not allow you to save it, provided you've named it correctly.
+4. For production, save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_SERVICE_EMAIL` variable in the `docker-compose.yml` file.
+
+Example `.env` variable:
+```bash
+OO_SERVICE_EMAIL="sample_email@domain.com"
+```
+
+## Testing S3 Functionality
 We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
 then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
 on Amazon Web Services.
@@ -72,7 +84,6 @@ Now when you run `make dev` as usual in the same session, you will be able to su
 your test bucket.
 
 ## Database commands
-
 Running `make dev` will create the database and persist it into your local filesystem.
 
 You can access your PostgreSQL development database via psql using:
@@ -89,7 +100,6 @@ or
 `$ python test_data.py --cleanup` to delete the data
 
 ### Migrating the Database
-
 If you e.g. add a new column or table, you'll need to migrate the database using the Flask CLI. First we need to 'stamp' the current version of the database:
 
 ```sh
@@ -152,7 +162,6 @@ pip install -r dev-requirements.txt
 ```
 
 ## OpenOversight Management Interface
-
 In addition to generating database migrations, the Flask CLI can be used to run additional commands:
 
 ```sh
