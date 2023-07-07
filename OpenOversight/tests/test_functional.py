@@ -9,7 +9,6 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
-from OpenOversight.app.config import BaseConfig
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 
 
@@ -110,24 +109,23 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
 def test_officer_browse_pagination(mockdata, browser, server_port):
     dept_id = 1
     total = Officer.query.filter_by(department_id=dept_id).count()
-    perpage = BaseConfig.OFFICERS_PER_PAGE
 
     # first page of results
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
-    expected = "Showing 1-{} of {}".format(perpage, total)
+    expected = "Showing 1-{} of {}".format(CONFIG.OFFICERS_PER_PAGE, total)
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // perpage) + 1
+    last_page_index = (total // CONFIG.OFFICERS_PER_PAGE) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = "Showing {}-{} of {}".format(
-        perpage * (total // perpage) + 1, total, total
+        CONFIG.OFFICERS_PER_PAGE * (total // CONFIG.OFFICERS_PER_PAGE) + 1, total, total
     )
     assert expected in page_text
 
@@ -209,7 +207,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    # Select incident for officer that has description under cuttoff chars
+    # Select incident for officer that has description under cutoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
     assert not result.is_displayed()
 
@@ -218,11 +216,11 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    orig_descrip = incident_long_descrip.description.strip()
-    incident_id = str(incident_long_descrip.id)
+    original_description = incident_long_description.description.strip()
+    incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
@@ -230,18 +228,18 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     description_text = browser.find_element_by_id(
         "incident-description_" + incident_id
     ).text.strip()
-    assert len(description_text) == len(orig_descrip)
-    assert description_text == orig_descrip
+    assert len(description_text) == len(original_description)
+    assert description_text == original_description
 
 
 def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
     button.click()
@@ -287,7 +285,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
 
     login_admin(browser, server_port)
 
-    # Nagivate to edit officer page for officer having NULL race and gender
+    # Navigate to edit officer page for officer having NULL race and gender
     browser.get(f"http://localhost:{server_port}/officer/1/edit")
 
     wait_for_element(browser, By.ID, "gender")

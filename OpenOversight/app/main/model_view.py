@@ -1,4 +1,5 @@
 import datetime
+from http import HTTPMethod
 from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
@@ -8,7 +9,6 @@ from flask_sqlalchemy.model import DefaultMeta
 from flask_wtf import FlaskForm as Form
 
 from OpenOversight.app.models.database import db
-from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.db import add_department_query
 from OpenOversight.app.utils.forms import set_dynamic_default
 
@@ -133,7 +133,7 @@ class ModelView(MethodView):
             ):
                 abort(403)
 
-        if request.method == HTTP_METHOD_POST:
+        if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
             flash("{} successfully deleted!".format(self.model_name))
@@ -154,7 +154,7 @@ class ModelView(MethodView):
             url_for(
                 "main.{}_api".format(self.model_name),
                 obj_id=kwargs["obj_id"],
-                _method=HTTP_METHOD_GET,
+                _method=HTTPMethod.GET,
             )
         )
 
@@ -184,7 +184,7 @@ class ModelView(MethodView):
             if end_of_url == ending:
                 meth = getattr(self, ending, None)
         if not meth:
-            if request.method == HTTP_METHOD_GET:
+            if request.method == HTTPMethod.GET:
                 meth = getattr(self, "get", None)
             else:
                 assert meth is not None, "Unimplemented method %r" % request.method
