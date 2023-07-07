@@ -1,5 +1,7 @@
 import os
 
+from OpenOversight.app.utils.constants import MEGABYTE
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -30,17 +32,7 @@ class BaseConfig:
         self.WTF_CSRF_ENABLED = True
 
         # Mail Settings
-        self.MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
-        self.MAIL_PORT = 587
-        self.MAIL_USE_TLS = True
-        self.MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-        self.MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-        self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
-            "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
-        )
-        self.OO_MAIL_SENDER = os.environ.get(
-            "OO_MAIL_SENDER", "OpenOversight <OpenOversight@gmail.com>"
-        )
+        self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
 
         # AWS Settings
         self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")

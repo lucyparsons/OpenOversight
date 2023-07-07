@@ -5,6 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
+from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 
@@ -263,8 +264,9 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 def test_register_user_approval_required(mockdata, client, session):
     current_app.config["APPROVE_REGISTRATIONS"] = True
+    EmailClient(testing=True)
     with current_app.test_request_context():
-        diceware_password = "operative hamster perservere verbalize curling"
+        diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email="jen@example.com",
             username="redshiftzero",
@@ -323,11 +325,13 @@ def test_admin_can_approve_user(mockdata, client, session):
 
 
 @pytest.mark.parametrize(
-    "currently_approved, currently_confirmed, approve_registration_config, should_send_email",
+    "currently_approved, currently_confirmed, approve_registration_config, "
+    "should_send_email",
     [
         # Approving unconfirmed user sends email
         (False, False, True, True),
-        # Approving unconfirmed user does not send email if approve_registration config is not set
+        # Approving unconfirmed user does not send email if approve_registration config
+        # is not set
         (False, False, False, False),
         # Updating approved user does not send email
         (True, False, True, False),
@@ -345,6 +349,7 @@ def test_admin_approval_sends_confirmation_email(
     session,
 ):
     current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    EmailClient(testing=True)
     with current_app.test_request_context():
         login_admin(client)
 

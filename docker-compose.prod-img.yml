@@ -1,5 +1,9 @@
 version: "3.4"
 
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
+
 services:
   web:
     image: ghcr.io/lucyparsons/openoversight:${DOCKER_IMAGE_TAG}
@@ -16,3 +20,6 @@ services:
     networks:
       - default
     restart: always
+    secrets:
+     - source: service-account-key
+       target: /usr/src/app/service_account_key.json

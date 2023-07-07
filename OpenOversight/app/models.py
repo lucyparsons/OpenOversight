@@ -426,6 +426,7 @@ class LicensePlate(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
+
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
 
