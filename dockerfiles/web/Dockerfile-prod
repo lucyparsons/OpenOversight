@@ -1,4 +1,4 @@
-ARG PYTHON_VERSION=3.8
+ARG PYTHON_VERSION=3.11
 FROM python:${PYTHON_VERSION}-slim-bullseye as base
 ARG PYTHON_VERSION
 RUN echo "Building image based on python $PYTHON_VERSION"
