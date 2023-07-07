@@ -42,7 +42,7 @@ class BaseConfig:
 
         # Upload Settings
         self.ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
-        self.MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+        self.MAX_CONTENT_LENGTH = 50 * MEGABYTE
 
         # User settings
         self.APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
