@@ -11,15 +11,15 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app.email_client import (
+from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models.database import User, db
+from OpenOversight.app.models.emails import (
     AdministratorApprovalEmail,
     ChangeEmailAddressEmail,
     ConfirmAccountEmail,
     ConfirmedUserEmail,
-    EmailClient,
     ResetPasswordEmail,
 )
-from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
