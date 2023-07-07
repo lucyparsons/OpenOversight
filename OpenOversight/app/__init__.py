@@ -18,8 +18,8 @@ from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
 from OpenOversight.app.config import config
-from OpenOversight.app.models.database import db
 from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
 
 

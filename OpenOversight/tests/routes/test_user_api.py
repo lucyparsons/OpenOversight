@@ -5,8 +5,8 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.models.database import User, db
 from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     HTTP_METHOD_GET,
