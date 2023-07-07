@@ -279,8 +279,7 @@ def test_csv_dir():
 
 
 def add_mockdata(session):
-    NUM_OFFICERS = current_app.config["NUM_OFFICERS"]
-    assert NUM_OFFICERS >= 5
+    assert current_app.config["NUM_OFFICERS"] >= 5
     department = models.Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
@@ -325,8 +324,7 @@ def add_mockdata(session):
     session.commit()
 
     # Ensure test data is deterministic
-    SEED = current_app.config["SEED"]
-    random.seed(SEED)
+    random.seed(current_app.config["SEED"])
 
     test_units = [
         models.Unit(descrip="test", department_id=1),
@@ -371,7 +369,9 @@ def add_mockdata(session):
 
     officers = []
     for d in [department, department2]:
-        officers += [generate_officer(d) for _ in range(NUM_OFFICERS)]
+        officers += [
+            generate_officer(d) for _ in range(current_app.config["NUM_OFFICERS"])
+        ]
     officers[0].links = test_officer_links
     session.add_all(officers)
 
