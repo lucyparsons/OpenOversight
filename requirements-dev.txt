@@ -10,7 +10,7 @@ pytest==7.3.0
 pytest-cov==4.1.0
 pytest-env==0.8.1
 pytest-flake8==1.1.1
-pytest-sugar==0.9.6
+pytest-sugar==0.9.7
 pytest-xdist==3.2.1
 selenium==4.9.1
 sphinx==7.0.1
