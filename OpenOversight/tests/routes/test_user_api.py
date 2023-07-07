@@ -1,5 +1,5 @@
 # Routing and view tests
-from http import HTTPStatus
+from http import HTTPMethod, HTTPStatus
 
 import pytest
 from flask import current_app, url_for
@@ -7,30 +7,26 @@ from flask import current_app, url_for
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models import User, db
-from OpenOversight.app.utils.constants import (
-    ENCODING_UTF_8,
-    HTTP_METHOD_GET,
-    HTTP_METHOD_POST,
-)
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
 
 from ..conftest import AC_DEPT
 from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
 
 
 routes_methods = [
-    ("/auth/users/", [HTTP_METHOD_GET]),
-    ("/auth/users/1", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
-    ("/auth/users/1/delete", [HTTP_METHOD_GET, HTTP_METHOD_POST]),
+    ("/auth/users/", [HTTPMethod.GET]),
+    ("/auth/users/1", [HTTPMethod.GET, HTTPMethod.POST]),
+    ("/auth/users/1/delete", [HTTPMethod.GET, HTTPMethod.POST]),
 ]
 
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_user_api_login_required(route, methods, client, mockdata):
-    if HTTP_METHOD_GET in methods:
+    if HTTPMethod.GET in methods:
         rv = client.get(route)
         assert rv.status_code == HTTPStatus.FORBIDDEN
-    if HTTP_METHOD_POST in methods:
+    if HTTPMethod.POST in methods:
         rv = client.post(route)
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
@@ -39,10 +35,10 @@ def test_user_api_login_required(route, methods, client, mockdata):
 def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        if HTTP_METHOD_GET in methods:
+        if HTTPMethod.GET in methods:
             rv = client.get(route)
             assert rv.status_code == HTTPStatus.FORBIDDEN
-        if HTTP_METHOD_POST in methods:
+        if HTTPMethod.POST in methods:
             rv = client.post(route)
             assert rv.status_code == HTTPStatus.FORBIDDEN
 
@@ -51,10 +47,10 @@ def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
 def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        if HTTP_METHOD_GET in methods:
+        if HTTPMethod.GET in methods:
             rv = client.get(route)
             assert rv.status_code == HTTPStatus.FORBIDDEN
-        if HTTP_METHOD_POST in methods:
+        if HTTPMethod.POST in methods:
             rv = client.post(route)
             assert rv.status_code == HTTPStatus.FORBIDDEN
 

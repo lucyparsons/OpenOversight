@@ -278,8 +278,7 @@ def test_csv_dir():
 
 
 def add_mockdata(session):
-    NUM_OFFICERS = current_app.config["NUM_OFFICERS"]
-    assert NUM_OFFICERS >= 5
+    assert current_app.config["NUM_OFFICERS"] >= 5
     department = models.Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
@@ -324,8 +323,7 @@ def add_mockdata(session):
     session.commit()
 
     # Ensure test data is deterministic
-    SEED = current_app.config["SEED"]
-    random.seed(SEED)
+    random.seed(current_app.config["SEED"])
 
     test_units = [
         models.Unit(descrip="test", department_id=1),
@@ -370,7 +368,9 @@ def add_mockdata(session):
 
     officers = []
     for d in [department, department2]:
-        officers += [generate_officer(d) for _ in range(NUM_OFFICERS)]
+        officers += [
+            generate_officer(d) for _ in range(current_app.config["NUM_OFFICERS"])
+        ]
     officers[0].links = test_officer_links
     session.add_all(officers)
 
@@ -715,10 +715,27 @@ def client(app):
 
 
 @pytest.fixture(scope="session")
-def server(app, request):
+def worker_number(worker_id):
+    if len(worker_id) < 2 or worker_id[:2] != "gw":
+        return 0
+    return int(worker_id[2:])
+
+
+@pytest.fixture(scope="session")
+def server_port(worker_number):
+    return 5000 + worker_number
+
+
+@pytest.fixture(scope="session")
+def server(app, server_port):
+    port = server_port
+    print(f"Starting server at port {port}")
+
     # start server without werkzeug auto-refresh
     # https://stackoverflow.com/questions/38087283/
-    threading.Thread(target=app.run, daemon=True, kwargs={"debug": False}).start()
+    threading.Thread(
+        target=app.run, daemon=True, kwargs={"debug": False, "port": port}
+    ).start()
 
 
 @pytest.fixture(scope="session")

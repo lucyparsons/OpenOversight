@@ -6,81 +6,77 @@ from OpenOversight.app.utils.constants import MEGABYTE
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class BaseConfig(object):
-    ENVIRONMENT = os.environ.get("ENVIRONMENT", "")
-    # DB Settings
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+class BaseConfig:
+    def __init__(self):
+        # App Settings
+        self.DEBUG = False
+        self.ENVIRONMENT = os.environ.get("ENVIRONMENT", "")
+        self.SEED = 666
+        self.TESTING = False
+        # Use session cookie to store URL to redirect to after login
+        # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
+        self.USE_SESSION_FOR_NEXT = True
 
-    # Pagination Settings
-    OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
-    USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
+        # DB Settings
+        self.SQLALCHEMY_TRACK_MODIFICATIONS = False
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
 
-    # Form Settings
-    WTF_CSRF_ENABLED = True
-    SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
+        # Protocol Settings
+        self.SITEMAP_URL_SCHEME = "http"
 
-    # Mail Settings
-    OO_MAIL_SUBJECT_PREFIX = os.environ.get("OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]")
-    OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
+        # Pagination Settings
+        self.OFFICERS_PER_PAGE = int(os.environ.get("OFFICERS_PER_PAGE", 20))
+        self.USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
 
-    # AWS Settings
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-    AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
-    S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
-    AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
+        # Form Settings
+        self.SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
+        self.WTF_CSRF_ENABLED = True
 
-    # Upload Settings
-    MAX_CONTENT_LENGTH = 50 * MEGABYTE
-    ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
+        # Mail Settings
+        self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
 
-    # User Settings
-    APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
+        # AWS Settings
+        self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+        self.AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
+        self.AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
+        self.AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+        self.S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
-    # Use session cookie to store URL to redirect to after login
-    # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
-    USE_SESSION_FOR_NEXT = True
+        # Upload Settings
+        self.ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
+        self.MAX_CONTENT_LENGTH = 50 * MEGABYTE
 
-    # Misc. Settings
-    SEED = 666
-
-    @staticmethod
-    def init_app(app):
-        pass
+        # User settings
+        self.APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
 
 
 class DevelopmentConfig(BaseConfig):
-    DEBUG = True
-    SQLALCHEMY_ECHO = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
-    NUM_OFFICERS = 15000
-    SITEMAP_URL_SCHEME = "http"
+    def __init__(self):
+        super(DevelopmentConfig, self).__init__()
+        self.DEBUG = True
+        self.SQLALCHEMY_ECHO = True
+        self.NUM_OFFICERS = 15000
 
 
 class TestingConfig(BaseConfig):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    WTF_CSRF_ENABLED = False
-    NUM_OFFICERS = 120
-    APPROVE_REGISTRATIONS = False
-    SITEMAP_URL_SCHEME = "http"
-    RATELIMIT_ENABLED = False
+    def __init__(self):
+        super(TestingConfig, self).__init__()
+        self.TESTING = True
+        self.WTF_CSRF_ENABLED = False
+        self.NUM_OFFICERS = 120
+        self.RATELIMIT_ENABLED = False
+        self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
 
 class ProductionConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
-    SITEMAP_URL_SCHEME = "https"
-
-    @classmethod
-    def init_app(cls, app):  # pragma: no cover
-        # ????????
-        # config.init_app(app)
-        pass
+    def __init__(self):
+        super(ProductionConfig, self).__init__()
+        self.SITEMAP_URL_SCHEME = "https"
 
 
 config = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "production": ProductionConfig,
+    "development": DevelopmentConfig(),
+    "testing": TestingConfig(),
+    "production": ProductionConfig(),
 }
 config["default"] = config.get(os.environ.get("ENVIRONMENT", ""), DevelopmentConfig)

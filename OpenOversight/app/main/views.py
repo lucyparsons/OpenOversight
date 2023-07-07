@@ -2,7 +2,7 @@ import datetime
 import os
 import re
 import sys
-from http import HTTPStatus
+from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 
 from flask import (
@@ -22,7 +22,6 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
-from OpenOversight.app.utils.constants import HTTP_METHOD_GET, HTTP_METHOD_POST
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -128,14 +127,14 @@ def index():
 
 
 @sitemap_include
-@main.route("/browse", methods=[HTTP_METHOD_GET])
+@main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
     departments = Department.query.filter(Department.officers.any())
     return render_template("browse.html", departments=departments)
 
 
 @sitemap_include
-@main.route("/find", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
     jsloads = ["js/find_officer.js"]
     form = FindOfficerForm()
@@ -175,7 +174,7 @@ def get_officer():
 
 
 @sitemap_include
-@main.route("/label", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
     form = LoginForm()
     if form.validate_on_submit():
@@ -191,7 +190,7 @@ def get_started_labeling():
 
 
 @main.route(
-    "/sort/department/<int:department_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
 def sort_images(department_id):
@@ -231,7 +230,7 @@ def profile(username):
     return render_template("profile.html", user=user, department=department)
 
 
-@main.route("/officer/<int:officer_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def officer_profile(officer_id):
     form = AssignmentForm()
     try:
@@ -300,7 +299,7 @@ def sitemap_officers():
         yield "main.officer_profile", {"officer_id": officer.id}
 
 
-@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTP_METHOD_POST])
+@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
 @ac_or_admin_required
 def add_assignment(officer_id):
     form = AssignmentForm()
@@ -342,7 +341,7 @@ def add_assignment(officer_id):
 
 @main.route(
     "/officer/<int:officer_id>/assignment/<int:assignment_id>",
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @login_required
 @ac_or_admin_required
@@ -377,7 +376,7 @@ def edit_assignment(officer_id, assignment_id):
 
 
 @main.route(
-    "/officer/<int:officer_id>/salary/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/officer/<int:officer_id>/salary/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @ac_or_admin_required
 def add_salary(officer_id):
@@ -423,7 +422,7 @@ def add_salary(officer_id):
 
 @main.route(
     "/officer/<int:officer_id>/salary/<int:salary_id>",
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @login_required
 @ac_or_admin_required
@@ -469,7 +468,7 @@ def display_tag(tag_id):
 
 
 @main.route(
-    "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTP_METHOD_POST]
+    "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
 def classify_submission(image_id, contains_cops):
@@ -497,7 +496,7 @@ def classify_submission(image_id, contains_cops):
     # return redirect(url_for('main.display_submission', image_id=image_id))
 
 
-@main.route("/department/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/department/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @admin_required
 def add_department():
@@ -540,7 +539,7 @@ def add_department():
 
 
 @main.route(
-    "/department/<int:department_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
+    "/department/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
 @admin_required
@@ -667,7 +666,6 @@ def list_officer(
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
 
-    OFFICERS_PER_PAGE = int(current_app.config["OFFICERS_PER_PAGE"])
     department = Department.query.filter_by(id=department_id).first()
     if not department:
         abort(HTTPStatus.NOT_FOUND)
@@ -730,8 +728,9 @@ def list_officer(
     )
     officers = officers.options(selectinload(Officer.face))
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
-    officers = officers.distinct(Officer.last_name, Officer.first_name, Officer.id)
-    officers = officers.paginate(page=page, per_page=OFFICERS_PER_PAGE, error_out=False)
+    officers = officers.paginate(
+        page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
+    )
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
@@ -839,7 +838,7 @@ def get_dept_units(department_id=None):
     return jsonify(unit_list)
 
 
-@main.route("/officer/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def add_officer():
@@ -872,9 +871,7 @@ def add_officer():
         return render_template("add_officer.html", form=form, jsloads=jsloads)
 
 
-@main.route(
-    "/officer/<int:officer_id>/edit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
-)
+@main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
@@ -882,7 +879,7 @@ def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
 
-    if request.method == HTTP_METHOD_GET:
+    if request.method == HTTPMethod.GET:
         if officer.race is None:
             form.race.data = "Not Sure"
         if officer.gender is None:
@@ -903,7 +900,7 @@ def edit_officer(officer_id):
         return render_template("edit_officer.html", form=form, jsloads=jsloads)
 
 
-@main.route("/unit/new", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def add_unit():
@@ -922,7 +919,7 @@ def add_unit():
         return render_template("add_unit.html", form=form)
 
 
-@main.route("/tag/delete/<int:tag_id>", methods=[HTTP_METHOD_POST])
+@main.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def delete_tag(tag_id):
@@ -948,7 +945,7 @@ def delete_tag(tag_id):
     return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
-@main.route("/tag/set_featured/<int:tag_id>", methods=[HTTP_METHOD_POST])
+@main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 def set_featured_tag(tag_id):
     tag = Face.query.filter_by(id=tag_id).first()
@@ -984,16 +981,14 @@ def leaderboard():
 
 @main.route(
     "/cop_face/department/<int:department_id>/image/<int:image_id>",
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route(
-    "/cop_face/image/<int:image_id>", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST]
-)
+@main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @main.route(
     "/cop_face/department/<int:department_id>",
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route("/cop_face/", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def label_data(department_id=None, image_id=None):
     jsloads = ["js/cropper.js", "js/tagger.js"]
@@ -1135,7 +1130,7 @@ def complete_tagging(image_id):
         return redirect(url_for("main.label_data"))
 
 
-@main.route("/complaint", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def submit_complaint():
     return render_template(
         "complaint.html",
@@ -1148,7 +1143,7 @@ def submit_complaint():
 
 
 @sitemap_include
-@main.route("/submit", methods=[HTTP_METHOD_GET, HTTP_METHOD_POST])
+@main.route("/submit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @limiter.limit("5/minute")
 def submit_data():
     preferred_dept_id = Department.query.first().id
@@ -1174,7 +1169,7 @@ def submit_data():
 
 
 @main.route(
-    "/download/department/<int:department_id>/officers", methods=[HTTP_METHOD_GET]
+    "/download/department/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id):
@@ -1206,7 +1201,7 @@ def download_dept_officers_csv(department_id):
 
 
 @main.route(
-    "/download/department/<int:department_id>/assignments", methods=[HTTP_METHOD_GET]
+    "/download/department/<int:department_id>/assignments", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id):
@@ -1240,7 +1235,7 @@ def download_dept_assignments_csv(department_id):
 
 
 @main.route(
-    "/download/department/<int:department_id>/incidents", methods=[HTTP_METHOD_GET]
+    "/download/department/<int:department_id>/incidents", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id):
@@ -1266,7 +1261,7 @@ def download_incidents_csv(department_id):
 
 
 @main.route(
-    "/download/department/<int:department_id>/salaries", methods=[HTTP_METHOD_GET]
+    "/download/department/<int:department_id>/salaries", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id):
@@ -1292,7 +1287,7 @@ def download_dept_salaries_csv(department_id):
     )
 
 
-@main.route("/download/department/<int:department_id>/links", methods=[HTTP_METHOD_GET])
+@main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id):
     links = (
@@ -1318,7 +1313,7 @@ def download_dept_links_csv(department_id):
 
 
 @main.route(
-    "/download/department/<int:department_id>/descriptions", methods=[HTTP_METHOD_GET]
+    "/download/department/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id):
@@ -1343,7 +1338,7 @@ def download_dept_descriptions_csv(department_id):
 
 
 @sitemap_include
-@main.route("/download/all", methods=[HTTP_METHOD_GET])
+@main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
     return render_template("all_depts.html", departments=departments)
@@ -1351,7 +1346,7 @@ def all_data():
 
 @main.route(
     "/submit_officer_images/officer/<int:officer_id>",
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @login_required
 def submit_officer_images(officer_id):
@@ -1359,10 +1354,10 @@ def submit_officer_images(officer_id):
     return render_template("submit_officer_image.html", officer=officer)
 
 
-@main.route("/upload/department/<int:department_id>", methods=[HTTP_METHOD_POST])
+@main.route("/upload/department/<int:department_id>", methods=[HTTPMethod.POST])
 @main.route(
     "/upload/department/<int:department_id>/officer/<int:officer_id>",
-    methods=[HTTP_METHOD_POST],
+    methods=[HTTPMethod.POST],
 )
 @limiter.limit("250/minute")
 def upload(department_id, officer_id=None):
@@ -1588,25 +1583,25 @@ main.add_url_rule(
     "/incidents/",
     defaults={"obj_id": None},
     view_func=incident_view,
-    methods=[HTTP_METHOD_GET],
+    methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
     "/incidents/new",
     view_func=incident_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/incidents/<int:obj_id>", view_func=incident_view, methods=[HTTP_METHOD_GET]
+    "/incidents/<int:obj_id>", view_func=incident_view, methods=[HTTPMethod.GET]
 )
 main.add_url_rule(
     "/incidents/<int:obj_id>/edit",
     view_func=incident_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/incidents/<int:obj_id>/delete",
     view_func=incident_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
 
@@ -1672,44 +1667,44 @@ note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
     "/officer/<int:officer_id>/note/new",
     view_func=note_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>",
     view_func=note_view,
-    methods=[HTTP_METHOD_GET],
+    methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/edit",
     view_func=note_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/delete",
     view_func=note_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
 description_view = DescriptionApi.as_view("description_api")
 main.add_url_rule(
     "/officer/<int:officer_id>/description/new",
     view_func=description_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>",
     view_func=description_view,
-    methods=[HTTP_METHOD_GET],
+    methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/edit",
     view_func=description_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/delete",
     view_func=description_view,
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
 
@@ -1769,7 +1764,7 @@ class OfficerLinkApi(ModelView):
         ):
             abort(HTTPStatus.FORBIDDEN)
 
-        if request.method == HTTP_METHOD_POST:
+        if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
             flash("{} successfully deleted!".format(self.model_name))
@@ -1811,15 +1806,15 @@ class OfficerLinkApi(ModelView):
 main.add_url_rule(
     "/officer/<int:officer_id>/link/new",
     view_func=OfficerLinkApi.as_view("link_api_new"),
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/link/<int:obj_id>/edit",
     view_func=OfficerLinkApi.as_view("link_api_edit"),
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/link/<int:obj_id>/delete",
     view_func=OfficerLinkApi.as_view("link_api_delete"),
-    methods=[HTTP_METHOD_GET, HTTP_METHOD_POST],
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
