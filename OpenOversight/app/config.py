@@ -32,6 +32,9 @@ class BaseConfig:
         self.WTF_CSRF_ENABLED = True
 
         # Mail Settings
+        self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
+            "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
+        )
         self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
 
         # AWS Settings
