@@ -13,13 +13,13 @@ from typing import List, Optional
 
 import pytest
 from faker import Faker
+from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app, models
-from OpenOversight.app.config import TestingConfig
 from OpenOversight.app.models import Job, Officer, Unit
 from OpenOversight.app.models import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
@@ -27,7 +27,6 @@ from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
-CONFIG = TestingConfig()
 factory = Faker()
 
 
@@ -280,7 +279,7 @@ def test_csv_dir():
 
 
 def add_mockdata(session):
-    assert CONFIG.NUM_OFFICERS >= 5
+    assert current_app.config["NUM_OFFICERS"] >= 5
     department = models.Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
@@ -325,7 +324,7 @@ def add_mockdata(session):
     session.commit()
 
     # Ensure test data is deterministic
-    random.seed(CONFIG.SEED)
+    random.seed(current_app.config["SEED"])
 
     test_units = [
         models.Unit(descrip="test", department_id=1),
@@ -370,7 +369,9 @@ def add_mockdata(session):
 
     officers = []
     for d in [department, department2]:
-        officers += [generate_officer(d) for _ in range(CONFIG.NUM_OFFICERS)]
+        officers += [
+            generate_officer(d) for _ in range(current_app.config["NUM_OFFICERS"])
+        ]
     officers[0].links = test_officer_links
     session.add_all(officers)
 
