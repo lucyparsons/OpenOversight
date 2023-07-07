@@ -19,13 +19,17 @@ default:
 dotenv:
     @([ ! -f .env ] && cp .env.example .env) || true
 
+# Create an empty service_account_key.json file
+service-account-key:
+    @([ ! -f service_account_key.json ] && touch service_account_key.json) || true
+
 
 # Install dev dependencies into currently activated  python environment
 install:
     pip3 install -r requirements-dev.txt
 
 # Build all containers
-build: dotenv
+build: dotenv service-account-key
 	{{ DC }} build
 
 # Spin up all (or the specified) services

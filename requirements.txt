@@ -8,12 +8,12 @@ Flask==2.3.3
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==3.3.1
 Flask-Login==0.6.2
-Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.3
 Flask-WTF==1.1.1
 future==0.18.3
+google-api-python-client==2.92.0
 gunicorn==20.1.0
 Pillow==10.0.0
 psycopg2-binary==2.9.5

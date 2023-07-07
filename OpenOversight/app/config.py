@@ -1,15 +1,17 @@
 import os
 
+from OpenOversight.app.utils.constants import MEGABYTE
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BaseConfig(object):
     ENVIRONMENT = os.environ.get("ENVIRONMENT", "")
-    # DB SETUP
+    # DB Settings
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # pagination
+    # Pagination Settings
     OFFICERS_PER_PAGE = os.environ.get("OFFICERS_PER_PAGE", 20)
     USERS_PER_PAGE = os.environ.get("USERS_PER_PAGE", 20)
 
@@ -18,16 +20,8 @@ class BaseConfig(object):
     SECRET_KEY = os.environ.get("SECRET_KEY", "changemeplzorelsehax")
 
     # Mail Settings
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.googlemail.com")
-    MAIL_PORT = os.environ.get("MAIL_PORT")
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     OO_MAIL_SUBJECT_PREFIX = os.environ.get("OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]")
-    OO_MAIL_SENDER = os.environ.get(
-        "OO_MAIL_SENDER", "OpenOversight <OpenOversight@gmail.com>"
-    )
-    # OO_ADMIN = os.environ.get('OO_ADMIN')
+    OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
 
     # AWS Settings
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -37,16 +31,17 @@ class BaseConfig(object):
     AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 
     # Upload Settings
-    MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 50 * MEGABYTE
     ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
 
-    # User settings
+    # User Settings
     APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
 
     # Use session cookie to store URL to redirect to after login
     # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process
     USE_SESSION_FOR_NEXT = True
 
+    # Misc. Settings
     SEED = 666
 
     @staticmethod

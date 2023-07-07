@@ -4,6 +4,7 @@ from flask import abort
 from flask_login import current_user
 
 
+# TODO: Move these functions to the utils package
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

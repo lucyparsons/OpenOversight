@@ -9,16 +9,16 @@ from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
-from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
-from .config import config
+from OpenOversight.app.config import config
+from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
 
 
 bootstrap = Bootstrap()
-mail = Mail()
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -39,12 +39,15 @@ def create_app(config_name="default"):
     from .models import db
 
     bootstrap.init_app(app)
-    mail.init_app(app)
-    db.init_app(app)
-    login_manager.init_app(app)
-    limiter.init_app(app)
-    sitemap.init_app(app)
     csrf.init_app(app)
+    db.init_app(app)
+    # This allows the application to run without creating an email client if it is
+    # in testing or dev mode and the service account file is empty.
+    service_account_file_size = os.path.getsize(SERVICE_ACCOUNT_FILE)
+    EmailClient(dev=app.debug and service_account_file_size == 0, testing=app.testing)
+    limiter.init_app(app)
+    login_manager.init_app(app)
+    sitemap.init_app(app)
 
     from .main import main as main_blueprint
 
@@ -54,7 +57,7 @@ def create_app(config_name="default"):
 
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
-    max_log_size = 10 * 1024 * 1024  # start new log file after 10 MB
+    max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
     num_logs_to_keep = 5
     file_handler = RotatingFileHandler(
         "/tmp/openoversight.log", "a", max_log_size, num_logs_to_keep

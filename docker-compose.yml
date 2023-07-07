@@ -1,4 +1,4 @@
-version: "3"
+version: "3.2"
 
 services:
   postgres:
@@ -23,7 +23,14 @@ services:
       FLASK_APP: OpenOversight.app
     volumes:
       - ./data:/data/
+    secrets:
+      - source: service-account-key
+        target: /usr/src/app/service_account_key.json
     command: OpenOversight/scripts/entrypoint.sh
 
 volumes:
   postgres:
+
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
