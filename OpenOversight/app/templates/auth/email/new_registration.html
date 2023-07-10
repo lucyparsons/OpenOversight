@@ -1,12 +1,16 @@
 <p>Dear {{ admin.username }},</p>
 <p>A new user has registered with the following information:</p>
 <ul>
-  <li>Username: {{ user.username }}</li>
-  <li>Email: {{ user.email }}</li>
+    <li>Username: {{ user.username }}</li>
+    <li>Email: {{ user.email }}</li>
 </ul>
-<p>To approve or delete this user, please <a href="{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}">click here</a>.</p>
+<p>
+    To approve or delete this user, please <a href="{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}">click here</a>.
+</p>
 <p>Alternatively, you can paste the following link in your browser's address bar:</p>
 <p>{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}</p>
 <p>Sincerely,</p>
 <p>The OpenOversight Team</p>
-<p><small>Note: replies to this email address are not monitored.</small></p>
+<p>
+    <small>Note: replies to this email address are not monitored.</small>
+</p>

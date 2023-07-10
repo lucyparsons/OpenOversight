@@ -1,81 +1,78 @@
 {% extends "base.html" %}
-
 {% block title %}OpenOversight Admin - Users{% endblock %}
-
 {% block content %}
-<div class="text-center">
-	<h1 class="page-header">Users</h1>
-</div>
-
-<div class="container" role="main">
-	<div class="horizontal-padding">
-		{% with paginate=objects,
-          next_url=url_for('auth.get_users', page=objects.next_num),
-          prev_url=url_for('auth.get_users',  page=objects.prev_num),
-          location='top' %}
-	    {% include "partials/paginate_nav.html" %}
-	  {% endwith %}
-		<div class="table-responsive">
-			<table class="table table-hover">
-				<tr>
-					<th>Username</th>
-					<th>Email</th>
-					<th>Status</th>
-					<th>Is Area Coordinator?</th>
-					<th>Area Coordinator Department</th>
-					<th>Is Administator?</th>
-
-				</tr>
-				{% for user in objects.items %}
-				<tr id="user-{{user.id}}">
-					<td>
-						<a href="{{ url_for('auth.edit_user', user_id=user.id)}}"><strong>{{ user.username }}</strong></a>
-						<br />
-						<div class="row-actions">
-							<span class="edit"><a href="{{ url_for('auth.edit_user', user_id=user.id)}}">Edit user</a> | </span>
-							<span class="profile"><a href="{{ url_for('main.profile', username=user.username)}}">Profile</a></span>
-						</div>
-					</td>
-					<td><a href="mailto:{{user.email}}">{{ user.email }}</a></td>
-					<td>
-						{% if user.is_disabled %}
-							Disabled
-						{% elif user.confirmed %}
-							Active
-						{% elif user.approved %}
-							Pending Confirmation
-						{% else %}
-							Pending Approval
-						{% endif %}
-					</td>
-					<td class="{% if user.is_area_coordinator %} success {% else %} danger {% endif %}">
-						{% if user.is_area_coordinator %}
-							<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-						{% else %}
-							<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-						{% endif %}
-						<span class="sr-only">{{ user.is_area_coordinator }}</span>
-					</td>
-					<td>{{ user.ac_department.name }}</td>
-					<td class="{% if user.is_administrator %} success {% else %} danger {% endif %}">
-						{% if user.is_administrator %}
-							<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-						{% else %}
-							<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-						{% endif %}
-						<span class="sr-only">{{ user.is_admin }}</span>
-					</td>
-				</tr>
-
-				{% endfor %}
-			</table>
-		</div>
-		{% with paginate=objects,
-          next_url=url_for('auth.get_users', page=objects.next_num),
-          prev_url=url_for('auth.get_users',  page=objects.prev_num),
-          location='bottom' %}
-	    {% include "partials/paginate_nav.html" %}
-	  {% endwith %}
-	</div>
-</div>
+    <div class="text-center">
+        <h1 class="page-header">Users</h1>
+    </div>
+    <div class="container" role="main">
+        <div class="horizontal-padding">
+            {% with paginate=objects,
+                next_url=url_for('auth.get_users', page=objects.next_num),
+                prev_url=url_for('auth.get_users',  page=objects.prev_num),
+                location='top' %}
+                {% include "partials/paginate_nav.html" %}
+            {% endwith %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Is Area Coordinator?</th>
+                        <th>Area Coordinator Department</th>
+                        <th>Is Administator?</th>
+                    </tr>
+                    {% for user in objects.items %}
+                        <tr id="user-{{ user.id }}">
+                            <td>
+                                <a href="{{ url_for('auth.edit_user', user_id=user.id) }}"><strong>{{ user.username }}</strong></a>
+                                <br />
+                                <div class="row-actions">
+                                    <span class="edit"><a href="{{ url_for('auth.edit_user', user_id=user.id) }}">Edit user</a> | </span>
+                                    <span class="profile"><a href="{{ url_for('main.profile', username=user.username) }}">Profile</a></span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                            </td>
+                            <td>
+                                {% if user.is_disabled %}
+                                    Disabled
+                                {% elif user.confirmed %}
+                                    Active
+                                {% elif user.approved %}
+                                    Pending Confirmation
+                                {% else %}
+                                    Pending Approval
+                                {% endif %}
+                            </td>
+                            <td class="{% if user.is_area_coordinator %} success {% else %} danger {% endif %}">
+                                {% if user.is_area_coordinator %}
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                {% else %}
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                {% endif %}
+                                <span class="sr-only">{{ user.is_area_coordinator }}</span>
+                            </td>
+                            <td>{{ user.ac_department.name }}</td>
+                            <td class="{% if user.is_administrator %} success {% else %} danger {% endif %}">
+                                {% if user.is_administrator %}
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                {% else %}
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                {% endif %}
+                                <span class="sr-only">{{ user.is_admin }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% with paginate=objects,
+                next_url=url_for('auth.get_users', page=objects.next_num),
+                prev_url=url_for('auth.get_users',  page=objects.prev_num),
+                location='bottom' %}
+                {% include "partials/paginate_nav.html" %}
+            {% endwith %}
+        </div>
+    </div>
 {% endblock content %}

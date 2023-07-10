@@ -1,27 +1,26 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}OpenOversight Admin - Edit Officer Assignment{% endblock %}
-
 {% block content %}
-<div class="container theme-showcase" role="main">
-
-<div class="page-header">
-    <h1>Edit Officer Assignment</h1>
-</div>
-<div class="col-md-6">
-    <form class="form" method="post" role="form">
-        {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.star_no) }}
-        {{ wtf.form_field(form.job_title) }}
-        {{ wtf.form_field(form.unit) }}
-        <h4><small><a href="{{ url_for( 'main.add_unit' )}}">Don't see your unit? Add one!</a></small></h4>
-        {{ wtf.form_field(form.star_date) }}
-        {{ wtf.form_field(form.resign_date) }}
-        <input class="btn btn-primary btn-lg" type="submit" value="Edit" />
-    </form>
-    <br>
-</div>
-
-</div>
+    <div class="container theme-showcase" role="main">
+        <div class="page-header">
+            <h1>Edit Officer Assignment</h1>
+        </div>
+        <div class="col-md-6">
+            <form class="form" method="post" role="form">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+                {{ wtf.form_field(form.star_no) }}
+                {{ wtf.form_field(form.job_title) }}
+                {{ wtf.form_field(form.unit) }}
+                <h4>
+                    <small><a href="{{ url_for("main.add_unit") }}">Don't see your unit? Add one!</a></small>
+                </h4>
+                {{ wtf.form_field(form.star_date) }}
+                {{ wtf.form_field(form.resign_date) }}
+                <input class="btn btn-primary btn-lg" type="submit" value="Edit" />
+            </form>
+            <br>
+        </div>
+    </div>
 {% endblock %}

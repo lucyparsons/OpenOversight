@@ -2,27 +2,27 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Volunteer Login - OpenOversight{% endblock %}
 {% block meta %}<meta name="description" content="Volunteer login for OpenOversight">{% endblock %}
-
 {% block content %}
-<div class="container theme-showcase" role="main">
-
-<div class="page-header">
-    <h1>Login</h1>
-</div>
-<div class="col-md-6">
-    <form class="form" method="post" role="form">
-        {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-
-        {{ wtf.form_field(form.email, autofocus="autofocus") }}
-        {{ wtf.form_field(form.password) }}
-        {{ wtf.form_field(form.remember_me) }}
-        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
-    </form>
-    <br>
-    <p>Forgot your password? <a href="{{ url_for('auth.password_reset_request') }}">Click here to reset it</a>.</p>
-    <p>New user? <a href="{{ url_for('auth.register') }}">Click here to register</a>.</p>
-</div>
-
-</div>
+    <div class="container theme-showcase" role="main">
+        <div class="page-header">
+            <h1>Login</h1>
+        </div>
+        <div class="col-md-6">
+            <form class="form" method="post" role="form">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+                {{ wtf.form_field(form.email, autofocus="autofocus") }}
+                {{ wtf.form_field(form.password) }}
+                {{ wtf.form_field(form.remember_me) }}
+                {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+            </form>
+            <br>
+            <p>
+                Forgot your password? <a href="{{ url_for("auth.password_reset_request") }}">Click here to reset it</a>.
+            </p>
+            <p>
+                New user? <a href="{{ url_for("auth.register") }}">Click here to register</a>.
+            </p>
+        </div>
+    </div>
 {% endblock %}

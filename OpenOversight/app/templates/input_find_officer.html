@@ -1,210 +1,262 @@
 {% extends "base.html" %}
 {% block title %}Find an officer - OpenOversight{% endblock %}
-{% block meta %}<meta name="description" content="Find an officer you interacted with using this form.">{% endblock %}
+{% block meta %}
+    <meta name="description"
+          content="Find an officer you interacted with using this form.">
+{% endblock %}
 {% block content %}
-<div role="main">
-    <div class="hero-section no-sub">
-        <div class="hero">Find an Officer </div>
-    </div>
-</div>
-
-<div class="container" role="main">
-    <div class="horizontal-padding">
-        <div class="lead text-center">
-            Use this form to generate a gallery of law enforcement officers.
-        </div>
-        <p class="font-weight-300">
-            Fill in the information you know about an officer you interacted with. Don't worry if you don't know or
-            have answers to every question. OpenOversight takes what you provide and generates a digital gallery of
-            officers who may be a match.
-        </p>
-    </div>
-  <form action="{{ url_for('main.get_officer') }}" method="post" class="form">
-  {{ form.hidden_tag() }}
-      <div class="row form-group">
-        <div class="col-xs-12">
-            <ul class="nav nav-pills nav-justified thumbnail setup-panel">
-                <li class="active"><a href="#step-1">
-                    <h4 class="list-group-item-heading">Step 1</h4>
-                    <p class="list-group-item-text">Department Information</p>
-                </a></li>
-                <li class="disabled"><a href="#step-2">
-                    <h4 class="list-group-item-heading">Step 2</h4>
-                    <p class="list-group-item-text">Partial Name or Badge Number</p>
-                </a></li>
-                <li class="disabled"><a href="#step-3">
-                    <h4 class="list-group-item-heading">Step 3</h4>
-                    <p class="list-group-item-text">Officer Rank</p>
-                </a></li>
-                <li class="disabled"><a href="#step-4">
-                    <h4 class="list-group-item-heading">Step 4</h4>
-                    <p class="list-group-item-text">Officer Demographics</p>
-                </a></li>
-            </ul>
+    <div role="main">
+        <div class="hero-section no-sub">
+            <div class="hero">Find an Officer</div>
         </div>
     </div>
-    <div class="row setup-content" id="step-1" data-ranks-url="{{ url_for('main.get_dept_ranks') }}" data-units-url="{{ url_for('main.get_dept_units') }}">
-        <div class="col-xs-12">
-            <div class="col-md-12 well text-center">
-                <h2><small>Select Department</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.dept(class="form-control") }}
-                </div>
-
-                {% for error in form.dept.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-                {% endfor %}
-
-                <br><br>
-                <div>
-                    <a id="activate-step-2" class="next" href="#step-2">
-                        <button class="btn btn-primary btn-lg">Next Step</button>
-                    </a>
+    <div class="container" role="main">
+        <div class="horizontal-padding">
+            <div class="lead text-center">Use this form to generate a gallery of law enforcement officers.</div>
+            <p class="font-weight-300">
+                Fill in the information you know about an officer you interacted with. Don't worry if you don't know or
+                have answers to every question. OpenOversight takes what you provide and generates a digital gallery of
+                officers who may be a match.
+            </p>
+        </div>
+        <form action="{{ url_for("main.get_officer") }}" method="post" class="form">
+            {{ form.hidden_tag() }}
+            <div class="row form-group">
+                <div class="col-xs-12">
+                    <ul class="nav nav-pills nav-justified thumbnail setup-panel">
+                        <li class="active">
+                            <a href="#step-1">
+                                <h4 class="list-group-item-heading">Step 1</h4>
+                                <p class="list-group-item-text">Department Information</p>
+                            </a>
+                        </li>
+                        <li class="disabled">
+                            <a href="#step-2">
+                                <h4 class="list-group-item-heading">Step 2</h4>
+                                <p class="list-group-item-text">Partial Name or Badge Number</p>
+                            </a>
+                        </li>
+                        <li class="disabled">
+                            <a href="#step-3">
+                                <h4 class="list-group-item-heading">Step 3</h4>
+                                <p class="list-group-item-text">Officer Rank</p>
+                            </a>
+                        </li>
+                        <li class="disabled">
+                            <a href="#step-4">
+                                <h4 class="list-group-item-heading">Step 4</h4>
+                                <p class="list-group-item-text">Officer Demographics</p>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="row setup-content" id="step-2">
-        <div class="col-xs-12">
-            <div class="col-md-12 well text-center">
-                <h2><small>Do you remember any part of the Officer's last name?</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.last_name(class="form-control") }}
-                  {% for error in form.last_name.errors %}
-                      <p><span style="color: red;">[{{ error }}]</span></p>
-                  {% endfor %}
-                </div>
-
-                <h2><small>Do you remember any part of the Officer's first name?</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.first_name(class="form-control") }}
-                  {% for error in form.first_name.errors %}
-                      <p><span style="color: red;">[{{ error }}]</span></p>
-                  {% endfor %}
-                </div>
-
-                <h2><small>Do you remember any part of the Officer's badge number?</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.badge(class="form-control") }}
-                  {% for error in form.badge.errors %}
-                      <p><span style="color: red;">[{{ error }}]</span></p>
-                  {% endfor %}
-                </div>
-                <div id="uii-question">
-                    <h2><small>Do you know any part of the Officer's <span id="current-uii" data-departments='{{depts_dict | tojson}}'>unique internal identifier</span>?</small></h2>
-                    <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                    {{ form.unique_internal_identifier(class="form-control") }}
-                    {% for error in form.unique_internal_identifier.errors %}
-                        <p><span style="color: red;">[{{ error }}]</span></p>
-                    {% endfor %}
+            <div class="row setup-content"
+                 id="step-1"
+                 data-ranks-url="{{ url_for("main.get_dept_ranks") }}"
+                 data-units-url="{{ url_for("main.get_dept_units") }}">
+                <div class="col-xs-12">
+                    <div class="col-md-12 well text-center">
+                        <h2>
+                            <small>Select Department</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">{{ form.dept(class="form-control") }}</div>
+                        {% for error in form.dept.errors %}
+                            <p>
+                                <span style="color: red;">[{{ error }}]</span>
+                            </p>
+                        {% endfor %}
+                        <br>
+                        <br>
+                        <div>
+                            <a id="activate-step-2" class="next" href="#step-2">
+                                <button class="btn btn-primary btn-lg">Next Step</button>
+                            </a>
+                        </div>
                     </div>
                 </div>
-
-                <br><br>
-                <div>
-                    <a class="btn btn-default btn-lg" href="#step-1">
-                        Previous Step
-                    </a>
-                    &nbsp;
-                    <a id="activate-step-3" class="next" href="#step-3">
-                        <button class="btn btn-primary btn-lg">Next Step</button>
-                    </a>
+            </div>
+            <div class="row setup-content" id="step-2">
+                <div class="col-xs-12">
+                    <div class="col-md-12 well text-center">
+                        <h2>
+                            <small>Do you remember any part of the Officer's last name?</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.last_name(class="form-control") }}
+                            {% for error in form.last_name.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <h2>
+                            <small>Do you remember any part of the Officer's first name?</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.first_name(class="form-control") }}
+                            {% for error in form.first_name.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <h2>
+                            <small>Do you remember any part of the Officer's badge number?</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.badge(class="form-control") }}
+                            {% for error in form.badge.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <div id="uii-question">
+                            <h2>
+                                <small>Do you know any part of the Officer's <span id="current-uii" data-departments='{{ depts_dict | tojson }}'>unique internal identifier</span>?</small>
+                            </h2>
+                            <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                                {{ form.unique_internal_identifier(class="form-control") }}
+                                {% for error in form.unique_internal_identifier.errors %}
+                                    <p>
+                                        <span style="color: red;">[{{ error }}]</span>
+                                    </p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div>
+                            <a class="btn btn-default btn-lg" href="#step-1">Previous Step</a>
+                            &nbsp;
+                            <a id="activate-step-3" class="next" href="#step-3">
+                                <button class="btn btn-primary btn-lg">Next Step</button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="row setup-content" id="step-3">
-        <div class="col-xs-12">
-            <div class="col-md-12 well text-center">
-                <h2><small>Officer Rank</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.rank(class="form-control") }}
-                {% for error in form.rank.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <div id="show-img-div">
-                <p><a id="show-img">Show rank shoulder patches as reference</a></p>
-                </div>
-                <div id="hidden-img" style="display:none;">
-                  <p><a id="hide-img">Hide rank shoulder patches</a></p>
-                  <img src="{{url_for('static', filename='images/OfficerRank.png')}}" width="50%" height="50%">
-                </div>
-
-                <h2><small>Officer Unit</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.unit(class="form-control") }}
-                {% for error in form.unit.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <h2><small>Currently Employed</small></h2>
-                <span class="text-muted" style="position: relative; top: -0.8em">(in this unit and/or rank, if specified)</span>
-                <div class="input-group input-group-sm col-md-4 col-md-offset-4">
-                {{ form.current_job(class="form-control", style="box-shadow: none") }}
-                {% for error in form.current_job.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <br><br>
-                <div>
-                    <a class="btn btn-default btn-lg" href="#step-2">
-                        Previous Step
-                    </a>
-                    &nbsp;
-                    <a id="activate-step-4" class="next" href="#step-4">
-                        <button class="btn btn-primary btn-lg">Next Step</button>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row setup-content" id="step-4">
-        <div class="col-xs-12">
-            <div class="col-md-12 well text-center">
-                <h2><small>Race</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                  {{ form.race(class="form-control") }}
-                {% for error in form.race.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <h2><small>Gender</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.gender(class="form-control") }}
-                {% for error in form.gender.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <h2><small>Age</small></h2>
-                <div class="input-group input-group-lg col-md-4 col-md-offset-4">
-                {{ form.min_age(size=4, class="form-control") }} to {{ form.max_age(size=4, class="form-control") }}
-                {% for error in form.min_age.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                {% for error in form.max_age.errors %}
-                    <p><span style="color: red;">[{{ error }}]</span></p>
-                {% endfor %}
-                </div>
-
-                <br><br>
-                <div>
-                    <a class="btn btn-default btn-lg" href="#step-3">
-                        Previous Step
-                    </a>
-                    &nbsp;
-                    <input class="btn btn-primary btn-lg next" type="submit" value="Generate officer gallery" id="user-notification" name="submit-officer-search-form" /> <img id="loader" style="display:none;" src="{{url_for('static', filename='images/page-loader.gif')}}">
+            <div class="row setup-content" id="step-3">
+                <div class="col-xs-12">
+                    <div class="col-md-12 well text-center">
+                        <h2>
+                            <small>Officer Rank</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.rank(class="form-control") }}
+                            {% for error in form.rank.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <div id="show-img-div">
+                            <p>
+                                <a id="show-img">Show rank shoulder patches as reference</a>
+                            </p>
+                        </div>
+                        <div id="hidden-img" style="display:none;">
+                            <p>
+                                <a id="hide-img">Hide rank shoulder patches</a>
+                            </p>
+                            <img src="{{ url_for('static', filename='images/OfficerRank.png') }}"
+                                 width="50%"
+                                 height="50%">
+                        </div>
+                        <h2>
+                            <small>Officer Unit</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.unit(class="form-control") }}
+                            {% for error in form.unit.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <h2>
+                            <small>Currently Employed</small>
+                        </h2>
+                        <span class="text-muted" style="position: relative; top: -0.8em">(in this unit and/or rank, if specified)</span>
+                        <div class="input-group input-group-sm col-md-4 col-md-offset-4">
+                            {{ form.current_job(class="form-control", style="box-shadow: none") }}
+                            {% for error in form.current_job.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <br>
+                        <br>
+                        <div>
+                            <a class="btn btn-default btn-lg" href="#step-2">Previous Step</a>
+                            &nbsp;
+                            <a id="activate-step-4" class="next" href="#step-4">
+                                <button class="btn btn-primary btn-lg">Next Step</button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="row setup-content" id="step-4">
+                <div class="col-xs-12">
+                    <div class="col-md-12 well text-center">
+                        <h2>
+                            <small>Race</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.race(class="form-control") }}
+                            {% for error in form.race.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <h2>
+                            <small>Gender</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.gender(class="form-control") }}
+                            {% for error in form.gender.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <h2>
+                            <small>Age</small>
+                        </h2>
+                        <div class="input-group input-group-lg col-md-4 col-md-offset-4">
+                            {{ form.min_age(size=4, class="form-control") }} to {{ form.max_age(size=4, class="form-control") }}
+                            {% for error in form.min_age.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                            {% for error in form.max_age.errors %}
+                                <p>
+                                    <span style="color: red;">[{{ error }}]</span>
+                                </p>
+                            {% endfor %}
+                        </div>
+                        <br>
+                        <br>
+                        <div>
+                            <a class="btn btn-default btn-lg" href="#step-3">Previous Step</a>
+                            &nbsp;
+                            <input class="btn btn-primary btn-lg next"
+                                   type="submit"
+                                   value="Generate officer gallery"
+                                   id="user-notification"
+                                   name="submit-officer-search-form" />
+                            <img id="loader"
+                                 style="display:none"
+                                 src="{{ url_for('static', filename='images/page-loader.gif') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
-  </form>
-</div>
 {% endblock %}

@@ -2,126 +2,112 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title %}Volunteer with OpenOversight{% endblock %}
 {% block meta %}
-<meta name="description" content="Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.">
+    <meta name="description"
+          content="Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.">
 {% endblock %}
 {% block content %}
-
-{% if current_user and current_user.is_authenticated %}
-<div class="container theme-showcase" role="main">
-    <div class="text-center frontpage-leads">
-      <h1><small>Volunteer</small></h1>
-    </div>
-
-    <div class="text-center frontpage-leads">
-      <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.get_tutorial') }}">
-          <span class="glyphicon glyphicon-alert tutorial" aria-hidden="true"></span>
-          Tutorial
-        </a>
-      </p>
-      <p>
-        New to working on images for OpenOversight? Or just need a refresher?
-      </p>
-      <p>
-        <a class="btn btn-lg btn-primary" href="/leaderboard">
-          <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
-          Leaderboard
-        </a>
-      </p>
-    </div>
-
-    {% for department in departments %}
-    <div class="text-center frontpage-leads">
-      <h2><small>{{ department.name }} ({{department.short_name}})</small></h2>
-      <p>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.sort_images', department_id=department.id) }}">
-          <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
-          Image classification
-        </a>
-        <a class="btn btn-lg btn-primary" href="{{ url_for('main.label_data', department_id=department.id) }}">
-          <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
-          Officer identification
-        </a>
-      </p>
-    </div>
-    {% endfor %}
-    <div class="text-center frontpage-leads">
-      {% if current_user.is_administrator %}
-        <a href="{{ url_for('main.add_department') }}"
-              class="btn btn-primary" role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add New Department
-        </a>
-      {% endif %}
-      {% if current_user.is_administrator or current_user.is_area_coordinator %}
-        <a href="{{ url_for('main.add_officer') }}"
-              class="btn btn-primary" role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add New Officer
-        </a>
-
-        <a href="{{ url_for('main.add_unit') }}"
-              class="btn btn-primary" role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add New Unit
-        </a>
-
-        <a href="{{ url_for('main.incident_api')+ 'new' }}"
-              class="btn btn-primary" role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-            Add New Incident
-        </a>
-      {% endif %}
-    </div>
-</div>
-{% else %}
-
-<div role="main" class="theme-showcase">
-    <div class="text-center">
-        <div class="hero-section">
-            <div class="hero">
-                Volunteer
+    {% if current_user and current_user.is_authenticated %}
+        <div class="container theme-showcase" role="main">
+            <div class="text-center frontpage-leads">
+                <h1>
+                    <small>Volunteer</small>
+                </h1>
             </div>
-            <div class="subhero">
-                Help OpenOversight create transparency with the first public, searchable
-                database of law enforcement officers.
+            <div class="text-center frontpage-leads">
+                <p>
+                    <a class="btn btn-lg btn-primary"
+                       href="{{ url_for("main.get_tutorial") }}">
+                        <span class="glyphicon glyphicon-alert tutorial" aria-hidden="true"></span>
+                        Tutorial
+                    </a>
+                </p>
+                <p>New to working on images for OpenOversight? Or just need a refresher?</p>
+                <p>
+                    <a class="btn btn-lg btn-primary" href="/leaderboard">
+                        <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+                        Leaderboard
+                    </a>
+                </p>
+            </div>
+            {% for department in departments %}
+                <div class="text-center frontpage-leads">
+                    <h2>
+                        <small>{{ department.name }} ({{ department.short_name }})</small>
+                    </h2>
+                    <p>
+                        <a class="btn btn-lg btn-primary"
+                           href="{{ url_for('main.sort_images', department_id=department.id) }}">
+                            <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+                            Image classification
+                        </a>
+                        <a class="btn btn-lg btn-primary"
+                           href="{{ url_for('main.label_data', department_id=department.id) }}">
+                            <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+                            Officer identification
+                        </a>
+                    </p>
+                </div>
+            {% endfor %}
+            <div class="text-center frontpage-leads">
+                {% if current_user.is_administrator %}
+                    <a href="{{ url_for("main.add_department") }}"
+                       class="btn btn-primary"
+                       role="button">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add New Department
+                    </a>
+                {% endif %}
+                {% if current_user.is_administrator or current_user.is_area_coordinator %}
+                    <a href="{{ url_for("main.add_officer") }}"
+                       class="btn btn-primary"
+                       role="button">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add New Officer
+                    </a>
+                    <a href="{{ url_for("main.add_unit") }}"
+                       class="btn btn-primary"
+                       role="button">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add New Unit
+                    </a>
+                    <a href="{{ url_for("main.incident_api") + 'new' }}"
+                       class="btn btn-primary"
+                       role="button">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Add New Incident
+                    </a>
+                {% endif %}
             </div>
         </div>
-        <div class="container horizontal-padding">
-            <h2 class="horizontal-padding font-weight-300">
-                How you can help
-            </h2>
-            <div class="row pb-50">
-                <div class="col-lg-4 horizontal-padding">
-                    <span class="fa fa-picture-o fa-2x"></span>
-                    <p class="lead margin-less">
-                        Sort Images
-                    </p>
-                    <div class="font-weight-300">
-                        Sort submitted images into those with and without officers.
+    {% else %}
+        <div role="main" class="theme-showcase">
+            <div class="text-center">
+                <div class="hero-section">
+                    <div class="hero">Volunteer</div>
+                    <div class="subhero">
+                        Help OpenOversight create transparency with the first public, searchable
+                        database of law enforcement officers.
                     </div>
                 </div>
-                <div class="col-lg-4 horizontal-padding"">
-                    <span class="fa fa-users fa-2x"></span>
-                    <p class="lead margin-less">
-                        Identify Officers
-                    </p>
-                    <div class="font-weight-300">
-                        Have a photo containing uniformed officers?
-                    </div>
+                <div class="container horizontal-padding">
+                    <h2 class="horizontal-padding font-weight-300">How you can help</h2>
+                    <div class="row pb-50">
+                        <div class="col-lg-4 horizontal-padding">
+                            <span class="fa fa-picture-o fa-2x"></span>
+                            <p class="lead margin-less">Sort Images</p>
+                            <div class="font-weight-300">Sort submitted images into those with and without officers.</div>
+                        </div>
+                    <div class="col-lg-4 horizontal-padding""> <span class="fa fa-users fa-2x"></span>
+                    <p class="lead margin-less">Identify Officers</p>
+                    <div class="font-weight-300">Have a photo containing uniformed officers?</div>
                 </div>
                 <div class="col-lg-4 horizontal-padding"">
                     <span class="fa fa-envelope fa-2x"></span>
-                    <p class="lead margin-less">
-                        Contact Us
-                    </p>
-                    <div class="font-weight-300">
-                        Reach out with any questions, concerns, or ways you'd like to get involved.
-                    </div>
+                    <p class="lead margin-less">Contact Us</p>
+                    <div class="font-weight-300">Reach out with any questions, concerns, or ways you'd like to get involved.</div>
                 </div>
             </div>
         </div>
-
         <div class="container-fluid">
             <div class="row display-flex vertical-padding">
                 <div class="col-lg-6 col-half-no-border bg-blue-gray bordered-box">
@@ -130,21 +116,18 @@
                             <small>Log In</small>
                         </h1>
                     </div>
-                        <form class="form" method="post" role="form">
-                            {{ form.hidden_tag() }}
-                            {{ wtf.form_errors(form, hiddens="only") }}
-
-                            {{ wtf.form_field(form.email) }}
-                            {{ wtf.form_field(form.password) }}
-                            <div class="text-center">
-                                {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
-                                {% if error %}
-                                    {{ error }}
-                                {% endif %}
-                            </div>
-                        </form>
+                    <form class="form" method="post" role="form">
+                        {{ form.hidden_tag() }}
+                        {{ wtf.form_errors(form, hiddens="only") }}
+                        {{ wtf.form_field(form.email) }}
+                        {{ wtf.form_field(form.password) }}
+                        <div class="text-center">
+                            {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
+                            {% if error %}{{ error }}{% endif %}
+                        </div>
+                    </form>
                     <p class="text-center">
-                        <a href="{{ url_for('auth.password_reset_request') }}">Forgot Password</a>
+                        <a href="{{ url_for("auth.password_reset_request") }}">Forgot Password</a>
                     </p>
                 </div>
                 <div class="col-lg-6 col-half-no-border bg-blue-gray">
@@ -153,9 +136,7 @@
                             <small>Interested in volunteering?</small>
                         </h1>
                         <div class="horizontal-padding">
-                            <a class="btn btn-lg btn-info" href="{{ url_for('auth.register') }}">
-                                Sign Up
-                            </a>
+                            <a class="btn btn-lg btn-info" href="{{ url_for("auth.register") }}">Sign Up</a>
                         </div>
                     </div>
                 </div>
@@ -164,5 +145,4 @@
     </div>
 </div>
 {% endif %}
-
 {% endblock %}

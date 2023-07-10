@@ -1,107 +1,120 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="container" role="main">
-
-
-  <div class="page-header">
-    <h1>Image Submission Detail</h1>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-6">
-      <img class="officer-face" src="{{ path }}" alt="Submission">
-    </div>
-    <div class="col-sm-6 col-md-4">
-      <div class="thumbnail">
-        <div class="caption">
-          <h3>Metadata</h3>
-          <table class="table table-hover">
-            <tbody>
-              <tr>
-                <td><b>Image ID</b></td>
-                <td>{{ image.id }}</td>
-              </tr>
-              <tr>
-                <td><b>Department</b></td>
-                <td>{{ image.department.name }}</td>
-              </tr>
-              <tr>
-                <td><b>Date image inserted</b></td>
-                <td>{% if image.date_image_inserted %}
-                       {{ image.date_image_inserted }}
-                    {% else %}
-                       Not provided
-                    {% endif %}</td>
-              </tr>
-              <tr>
-                <td><b>Date image taken</b></td>
-                <td>{% if image.date_image_taken %}
-                       {{ image.date_image_taken }}
-                    {% else %}
-                       Not provided
-                    {% endif %}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <h3>Classification</h3>
-          <table class="table table-hover">
-            <tbody>
-              <tr>
-                <td><b>Contains cops?</b></td>
-                <td>{% if image.contains_cops != None %}
-                       {{ image.contains_cops }}
-                    {% else %}
-                       Not yet classified!
-                    {% endif %}</td>
-              </tr>
-              <tr>
-                <td><b>Has been tagged?</b></td>
-                <td> {{ image.is_tagged }}</td>
-              </tr>
-              <tr>
-                <td><b>Classified by user</b></td>
-                <td> <a href="{{ url_for('main.profile', username=image.user.username ) }}">
-                  {{ image.user.username }}</a> </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {% if current_user.is_administrator
-            or (current_user.is_area_coordinator and current_user.ac_department_id == image.department.id) %}
-          <h3>Classify <small>Admin only</small></h3>
-          <p>
-            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <button type="submit" name="action" class="btn btn-primary">
-                No cops here
-              </button>
-            </form>
-          </p>
-          <p>
-            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <button type="submit" name="action" class="btn btn-primary">
-                Cops here
-              </button>
-            </form>
-          </p>
-          <h3>Identify <small>Admin only</small></h3>
-          <p>
-              <a href="{{ url_for('main.label_data', image_id=image.id) }}">
-                <button class="btn btn-primary">
-                  Tag this image
-                </button>
-              </a>
-            </form>
-          </p>
-          {% endif %}
+    <div class="container" role="main">
+        <div class="page-header">
+            <h1>Image Submission Detail</h1>
         </div>
-      </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <img class="officer-face" src="{{ path }}" alt="Submission">
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h3>Metadata</h3>
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>Image ID</b>
+                                    </td>
+                                    <td>{{ image.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Department</b>
+                                    </td>
+                                    <td>{{ image.department.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Date image inserted</b>
+                                    </td>
+                                    <td>
+                                        {% if image.date_image_inserted %}
+                                            {{ image.date_image_inserted }}
+                                        {% else %}
+                                            Not provided
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Date image taken</b>
+                                    </td>
+                                    <td>
+                                        {% if image.date_image_taken %}
+                                            {{ image.date_image_taken }}
+                                        {% else %}
+                                            Not provided
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h3>Classification</h3>
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>Contains cops?</b>
+                                    </td>
+                                    <td>
+                                        {% if image.contains_cops != None %}
+                                            {{ image.contains_cops }}
+                                        {% else %}
+                                            Not yet classified!
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Has been tagged?</b>
+                                    </td>
+                                    <td>{{ image.is_tagged }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Classified by user</b>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.profile', username=image.user.username) }}">{{ image.user.username }}</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        {% if current_user.is_administrator
+                            or (current_user.is_area_coordinator and current_user.ac_department_id == image.department.id) %}
+                            <h3>
+                                Classify <small>Admin only</small>
+                            </h3>
+                            <p>
+                                <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                                      method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" name="action" class="btn btn-primary">No cops here</button>
+                                </form>
+                            </p>
+                            <p>
+                                <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
+                                      method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" name="action" class="btn btn-primary">Cops here</button>
+                                </form>
+                            </p>
+                            <h3>
+                                Identify <small>Admin only</small>
+                            </h3>
+                            <p>
+                                <a href="{{ url_for('main.label_data', image_id=image.id) }}">
+                                    <button class="btn btn-primary">Tag this image</button>
+                                </a>
+                            </form>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-
 </div>
-
 {% endblock %}
