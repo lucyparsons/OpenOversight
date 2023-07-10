@@ -39,6 +39,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.db import (
     add_department_query,
@@ -70,7 +71,6 @@ from OpenOversight.app.utils.general import (
 
 from .. import limiter, sitemap
 from ..auth.forms import LoginForm
-from ..auth.utils import ac_or_admin_required, admin_required
 from . import downloads, main
 from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from .forms import (

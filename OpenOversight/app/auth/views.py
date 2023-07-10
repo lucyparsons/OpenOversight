@@ -20,6 +20,7 @@ from OpenOversight.app.models.emails import (
     ConfirmedUserEmail,
     ResetPasswordEmail,
 )
+from OpenOversight.app.utils.auth import admin_required
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
@@ -35,7 +36,6 @@ from .forms import (
     PasswordResetRequestForm,
     RegistrationForm,
 )
-from .utils import admin_required
 
 
 js_loads = ["js/zxcvbn.js", "js/password.js"]

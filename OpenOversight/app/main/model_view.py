@@ -9,10 +9,9 @@ from flask_sqlalchemy.model import DefaultMeta
 from flask_wtf import FlaskForm as Form
 
 from OpenOversight.app.models.database import db
+from OpenOversight.app.utils.auth import ac_or_admin_required
 from OpenOversight.app.utils.db import add_department_query
 from OpenOversight.app.utils.forms import set_dynamic_default
-
-from ..auth.utils import ac_or_admin_required
 
 
 class ModelView(MethodView):
