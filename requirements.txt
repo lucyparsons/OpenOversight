@@ -61,7 +61,7 @@ sphinx~=7.0.1
 SQLAlchemy==1.4.47 # Updating this breaks the build for python 3.9
 tornado~=6.3.2
 trio==0.22.1
-urllib3~=1.26.16
+urllib3~=1.26.16 # This version is required for other packages to run
 us==3.1.1
 visitor~=0.1.3
 webencodings~=0.5.1
