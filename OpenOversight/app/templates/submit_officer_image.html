@@ -12,7 +12,7 @@
                 Submit images <small>of {{ officer.full_name() }} in uniform. Officer faces should be clearly visible in each photograph. It is preferred (but not required) for the name and/or badge number to be visible. </small>
             </h1>
         </div>
-        <div class='header'>
+        <div class="header">
             <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
         </div>
         <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}"

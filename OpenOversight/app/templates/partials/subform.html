@@ -1,6 +1,6 @@
 {% import "bootstrap/wtf.html" as wtf %}
 <fieldset {% if id and number %}id="{{ id }}-{{ number }}"{% endif %}
-          class='well'>
+          class="well">
     {{ subform.hidden_tag() }}
     <div class="text-danger">{{ wtf.form_errors(subform, hiddens="only") }}</div>
     {% for subfield in subform %}
