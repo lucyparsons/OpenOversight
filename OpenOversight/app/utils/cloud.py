@@ -15,7 +15,7 @@ from flask_login import current_user
 from PIL import Image as Pimage
 from PIL.PngImagePlugin import PngImageFile
 
-from ..models import Image, db
+from OpenOversight.app.models.database import Image, db
 
 
 def compute_hash(data_to_hash):

@@ -13,11 +13,15 @@ from OpenOversight.app.main.forms import (
     LocationForm,
     OOIdForm,
 )
-from OpenOversight.app.models import Department, Incident, Officer
+from OpenOversight.app.models.database import Department, Incident, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-
-from .route_helpers import login_ac, login_admin, login_user, process_form_data
+from OpenOversight.tests.routes.route_helpers import (
+    login_ac,
+    login_admin,
+    login_user,
+    process_form_data,
+)
 
 
 @pytest.mark.parametrize(

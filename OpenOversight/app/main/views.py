@@ -21,6 +21,57 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
+from OpenOversight.app import limiter, sitemap
+from OpenOversight.app.auth.forms import LoginForm
+from OpenOversight.app.main import main
+from OpenOversight.app.main.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
+from OpenOversight.app.main.downloads import (
+    assignment_record_maker,
+    descriptions_record_maker,
+    incidents_record_maker,
+    links_record_maker,
+    make_downloadable_csv,
+    officer_record_maker,
+    salary_record_maker,
+)
+from OpenOversight.app.main.forms import (
+    AddImageForm,
+    AddOfficerForm,
+    AddUnitForm,
+    AssignmentForm,
+    BrowseForm,
+    DepartmentForm,
+    EditDepartmentForm,
+    EditOfficerForm,
+    EditTextForm,
+    FaceTag,
+    FindOfficerForm,
+    IncidentForm,
+    IncidentListForm,
+    OfficerLinkForm,
+    SalaryForm,
+    TextForm,
+)
+from OpenOversight.app.main.model_view import ModelView
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Description,
+    Face,
+    Image,
+    Incident,
+    Job,
+    LicensePlate,
+    Link,
+    Location,
+    Note,
+    Officer,
+    Salary,
+    Unit,
+    User,
+    db,
+)
+from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.db import (
     add_department_query,
@@ -49,49 +100,6 @@ from OpenOversight.app.utils.general import (
     serve_image,
     validate_redirect_url,
 )
-
-from .. import limiter, sitemap
-from ..auth.forms import LoginForm
-from ..auth.utils import ac_or_admin_required, admin_required
-from ..models import (
-    Assignment,
-    Department,
-    Description,
-    Face,
-    Image,
-    Incident,
-    Job,
-    LicensePlate,
-    Link,
-    Location,
-    Note,
-    Officer,
-    Salary,
-    Unit,
-    User,
-    db,
-)
-from . import downloads, main
-from .choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
-from .forms import (
-    AddImageForm,
-    AddOfficerForm,
-    AddUnitForm,
-    AssignmentForm,
-    BrowseForm,
-    DepartmentForm,
-    EditDepartmentForm,
-    EditOfficerForm,
-    EditTextForm,
-    FaceTag,
-    FindOfficerForm,
-    IncidentForm,
-    IncidentListForm,
-    OfficerLinkForm,
-    SalaryForm,
-    TextForm,
-)
-from .model_view import ModelView
 
 
 # Ensure the file is read/write by the creator only
@@ -1175,8 +1183,8 @@ def download_dept_officers_csv(department_id):
         "job title",
         "most recent salary",
     ]
-    return downloads.make_downloadable_csv(
-        officers, department_id, "Officers", field_names, downloads.officer_record_maker
+    return make_downloadable_csv(
+        officers, department_id, "Officers", field_names, officer_record_maker
     )
 
 
@@ -1205,12 +1213,12 @@ def download_dept_assignments_csv(department_id):
         "unit id",
         "unit description",
     ]
-    return downloads.make_downloadable_csv(
+    return make_downloadable_csv(
         assignments,
         department_id,
         "Assignments",
         field_names,
-        downloads.assignment_record_maker,
+        assignment_record_maker,
     )
 
 
@@ -1231,12 +1239,12 @@ def download_incidents_csv(department_id):
         "links",
         "officers",
     ]
-    return downloads.make_downloadable_csv(
+    return make_downloadable_csv(
         incidents,
         department_id,
         "Incidents",
         field_names,
-        downloads.incidents_record_maker,
+        incidents_record_maker,
     )
 
 
@@ -1262,8 +1270,8 @@ def download_dept_salaries_csv(department_id):
         "year",
         "is_fiscal_year",
     ]
-    return downloads.make_downloadable_csv(
-        salaries, department_id, "Salaries", field_names, downloads.salary_record_maker
+    return make_downloadable_csv(
+        salaries, department_id, "Salaries", field_names, salary_record_maker
     )
 
 
@@ -1287,8 +1295,8 @@ def download_dept_links_csv(department_id):
         "officers",
         "incidents",
     ]
-    return downloads.make_downloadable_csv(
-        links, department_id, "Links", field_names, downloads.links_record_maker
+    return make_downloadable_csv(
+        links, department_id, "Links", field_names, links_record_maker
     )
 
 
@@ -1312,8 +1320,8 @@ def download_dept_descriptions_csv(department_id):
         "date_created",
         "date_updated",
     ]
-    return downloads.make_downloadable_csv(
-        notes, department_id, "Notes", field_names, downloads.descriptions_record_maker
+    return make_downloadable_csv(
+        notes, department_id, "Notes", field_names, descriptions_record_maker
     )
 
 

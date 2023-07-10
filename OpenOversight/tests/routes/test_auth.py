@@ -14,7 +14,7 @@ from OpenOversight.app.auth.forms import (
     PasswordResetRequestForm,
     RegistrationForm,
 )
-from OpenOversight.app.models import User
+from OpenOversight.app.models.database import User
 
 from .route_helpers import (
     login_disabled_user,

@@ -17,8 +17,9 @@ from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 from markupsafe import Markup
 
-from OpenOversight.app.config import config
 from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models.config import config
+from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
 
 
@@ -40,7 +41,6 @@ def create_app(config_name="default"):
     app = Flask(__name__)
     # Creates and adds the Config object of the correct type to app.config
     app.config.from_object(config[config_name])
-    from .models import db
 
     bootstrap.init_app(app)
     csrf.init_app(app)
@@ -99,11 +99,19 @@ def create_app(config_name="default"):
         return _handler_method
 
     error_handlers = [
-        (HTTPStatus.FORBIDDEN, "Forbidden", "403.html"),
-        (HTTPStatus.NOT_FOUND, "Not found", "404.html"),
-        (HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "File too large", "413.html"),
-        (HTTPStatus.TOO_MANY_REQUESTS, "Too many requests", "429.html"),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500.html"),
+        (HTTPStatus.FORBIDDEN, HTTPStatus.FORBIDDEN.phrase, "403.html"),
+        (HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.phrase, "404.html"),
+        (
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE.phrase,
+            "413.html",
+        ),
+        (HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.TOO_MANY_REQUESTS.phrase, "429.html"),
+        (
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
+            "500.html",
+        ),
     ]
     for code, error, template in error_handlers:
         # Pass generated errorhandler function to @app.errorhandler decorator

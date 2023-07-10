@@ -11,21 +11,9 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app.email_client import (
-    AdministratorApprovalEmail,
-    ChangeEmailAddressEmail,
-    ConfirmAccountEmail,
-    ConfirmedUserEmail,
-    EmailClient,
-    ResetPasswordEmail,
-)
-from OpenOversight.app.models import User, db
-from OpenOversight.app.utils.forms import set_dynamic_default
-from OpenOversight.app.utils.general import validate_redirect_url
-
-from .. import sitemap
-from . import auth
-from .forms import (
+from OpenOversight.app import sitemap
+from OpenOversight.app.auth import auth
+from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
     ChangeEmailForm,
     ChangePasswordForm,
@@ -35,7 +23,18 @@ from .forms import (
     PasswordResetRequestForm,
     RegistrationForm,
 )
-from .utils import admin_required
+from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.models.database import User, db
+from OpenOversight.app.models.emails import (
+    AdministratorApprovalEmail,
+    ChangeEmailAddressEmail,
+    ConfirmAccountEmail,
+    ConfirmedUserEmail,
+    ResetPasswordEmail,
+)
+from OpenOversight.app.utils.auth import admin_required
+from OpenOversight.app.utils.forms import set_dynamic_default
+from OpenOversight.app.utils.general import validate_redirect_url
 
 
 js_loads = ["js/zxcvbn.js", "js/password.js"]

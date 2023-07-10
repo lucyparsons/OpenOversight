@@ -29,7 +29,7 @@ from OpenOversight.app.main.forms import (
     OfficerLinkForm,
     SalaryForm,
 )
-from OpenOversight.app.models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Department,
     Face,

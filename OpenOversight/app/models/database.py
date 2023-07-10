@@ -11,9 +11,8 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import login_manager
-from .utils.constants import ENCODING_UTF_8
-from .validators import state_validator, url_validator
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
@@ -168,7 +167,7 @@ class Officer(BaseModel):
     def race_label(self):
         if self.race is None:
             return "Data Missing"
-        from .main.choices import RACE_CHOICES
+        from OpenOversight.app.main.choices import RACE_CHOICES
 
         for race, label in RACE_CHOICES:
             if self.race == race:
@@ -177,7 +176,7 @@ class Officer(BaseModel):
     def gender_label(self):
         if self.gender is None:
             return "Data Missing"
-        from .main.choices import GENDER_CHOICES
+        from OpenOversight.app.main.choices import GENDER_CHOICES
 
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
@@ -615,8 +614,3 @@ class User(UserMixin, BaseModel):
 
     def __repr__(self):
         return "<User %r>" % self.username
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))

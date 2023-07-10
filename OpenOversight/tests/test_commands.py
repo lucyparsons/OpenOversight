@@ -17,7 +17,7 @@ from OpenOversight.app.commands import (
     bulk_add_officers,
     create_officer_from_row,
 )
-from OpenOversight.app.models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Department,
     Incident,
