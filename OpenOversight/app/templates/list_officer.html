@@ -163,7 +163,7 @@
       {% for officer in officers.items %}
         <li class="list-group-item">
             <div class="row">
-              <div class="col-md-6 col-xs-12">
+              <div class="col-md-6 col-xs-12 center-text">
                 <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
                   <img class="officer-face" src="{{ officer.image | default('/static/images/placeholder.png') }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
                 </a>
