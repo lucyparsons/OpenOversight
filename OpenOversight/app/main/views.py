@@ -652,6 +652,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
+    require_photo=False,
 ):
     js_loads = ["js/select2.min.js", "js/list_officer.js"]
 
@@ -673,6 +674,7 @@ def list_officer(
     form_data["unit"] = unit or []
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
+    form_data["require_photo"] = require_photo
 
     department = Department.query.filter_by(id=department_id).first()
     if not department:
@@ -705,15 +707,18 @@ def list_officer(
         for gender in genders
     ):
         form_data["gender"] = genders
+    if require_photo_arg := request.args.get("require_photo"):
+        current_app.logger.info("SETTING THE REQUIRE_PHOTO KEY")
+        form_data["require_photo"] = require_photo_arg
 
-    unit_choices = ["Not Sure"] + [
+    unit_selections = ["Not Sure"] + [
         uc[0]
         for uc in db.session.query(Unit.descrip)
         .filter_by(department_id=department_id)
         .order_by(Unit.descrip.asc())
         .all()
     ]
-    rank_choices = [
+    rank_selections = [
         jc[0]
         for jc in db.session.query(Job.job_title, Job.order)
         .filter_by(department_id=department_id)
@@ -721,11 +726,11 @@ def list_officer(
         .all()
     ]
     if (units := request.args.getlist("unit")) and all(
-        unit in unit_choices for unit in units
+        unit in unit_selections for unit in units
     ):
         form_data["unit"] = units
     if (ranks := request.args.getlist("rank")) and all(
-        rank in rank_choices for rank in ranks
+        rank in rank_selections for rank in ranks
     ):
         form_data["rank"] = ranks
     if current_job_arg := request.args.get("current_job"):
@@ -734,11 +739,18 @@ def list_officer(
     officers = filter_by_form(form_data, Officer.query, department_id).filter(
         Officer.department_id == department_id
     )
-    officers = officers.options(selectinload(Officer.face))
+
+    if form_data["require_photo"]:
+        officers = officers.join(Face)
+    else:
+        officers = officers.options(selectinload(Officer.face))
+
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
+
     officers = officers.paginate(
         page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
     )
+
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
@@ -751,8 +763,8 @@ def list_officer(
     choices = {
         "race": RACE_CHOICES,
         "gender": GENDER_CHOICES,
-        "rank": [(rc, rc) for rc in rank_choices],
-        "unit": [(uc, uc) for uc in unit_choices],
+        "rank": [(rc, rc) for rc in rank_selections],
+        "unit": [(uc, uc) for uc in unit_selections],
     }
 
     next_url = url_for(
@@ -770,6 +782,7 @@ def list_officer(
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
         current_job=form_data["current_job"],
+        require_photo=form_data["require_photo"],
     )
     prev_url = url_for(
         "main.list_officer",
@@ -786,6 +799,7 @@ def list_officer(
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
         current_job=form_data["current_job"],
+        require_photo=form_data["require_photo"],
     )
 
     return render_template(
