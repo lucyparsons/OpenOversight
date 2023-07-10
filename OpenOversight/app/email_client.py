@@ -18,17 +18,15 @@ class EmailClient(object):
 
     _instance = None
 
-    def __new__(cls, dev=False, testing=False):
+    def __new__(cls, config=None, dev=False, testing=False):
         if (testing or dev) and cls._instance is None:
             cls._instance = {}
 
-        if cls._instance is None:
+        if cls._instance is None and config:
             credentials = service_account.Credentials.from_service_account_file(
                 SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
-            delegated_credentials = credentials.with_subject(
-                current_app.config["OO_SERVICE_EMAIL"]
-            )
+            delegated_credentials = credentials.with_subject(config["OO_SERVICE_EMAIL"])
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(EmailClient, cls).__new__(cls)
         return cls._instance
