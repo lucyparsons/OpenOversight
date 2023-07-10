@@ -10,9 +10,8 @@ from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models.database import Department, Face, Image, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-
-from ..conftest import AC_DEPT
-from .route_helpers import login_ac, login_admin, login_user
+from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
 PROJECT_ROOT = os.path.abspath(os.curdir)
