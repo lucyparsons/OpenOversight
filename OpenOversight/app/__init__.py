@@ -99,11 +99,19 @@ def create_app(config_name="default"):
         return _handler_method
 
     error_handlers = [
-        (HTTPStatus.FORBIDDEN, "Forbidden", "403.html"),
-        (HTTPStatus.NOT_FOUND, "Not found", "404.html"),
-        (HTTPStatus.REQUEST_ENTITY_TOO_LARGE, "File too large", "413.html"),
-        (HTTPStatus.TOO_MANY_REQUESTS, "Too many requests", "429.html"),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500.html"),
+        (HTTPStatus.FORBIDDEN, HTTPStatus.FORBIDDEN.phrase, "403.html"),
+        (HTTPStatus.NOT_FOUND, HTTPStatus.NOT_FOUND.phrase, "404.html"),
+        (
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE.phrase,
+            "413.html",
+        ),
+        (HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.TOO_MANY_REQUESTS.phrase, "429.html"),
+        (
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            HTTPStatus.INTERNAL_SERVER_ERROR.phrase,
+            "500.html",
+        ),
     ]
     for code, error, template in error_handlers:
         # Pass generated errorhandler function to @app.errorhandler decorator
