@@ -48,7 +48,11 @@ def create_app(config_name="default"):
     # This allows the application to run without creating an email client if it is
     # in testing or dev mode and the service account file is empty.
     service_account_file_size = os.path.getsize(SERVICE_ACCOUNT_FILE)
-    EmailClient(dev=app.debug and service_account_file_size == 0, testing=app.testing)
+    EmailClient(
+        config=app.config,
+        dev=app.debug and service_account_file_size == 0,
+        testing=app.testing,
+    )
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)
