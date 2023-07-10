@@ -653,7 +653,7 @@ def list_officer(
     unit=None,
     current_job=None,
 ):
-    jsloads = ["js/select2.min.js", "js/list_officer.js"]
+    js_loads = ["js/select2.min.js", "js/list_officer.js"]
 
     form = BrowseForm()
     form.rank.query = (
@@ -797,7 +797,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
-        jsloads=jsloads,
+        jsloads=js_loads,
     )
 
 
