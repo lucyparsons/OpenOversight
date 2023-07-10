@@ -246,7 +246,7 @@ def officer_profile(officer_id):
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
-        exception_type, value, full_tback = sys.exc_info()
+        exception_type, value, full_traceback = sys.exc_info()
         current_app.logger.error(
             "Error finding officer: {}".format(
                 " ".join([str(exception_type), str(value), format_exc()])
@@ -272,7 +272,7 @@ def officer_profile(officer_id):
             # Add in the placeholder image if no faces are found
             face_paths = [url_for("static", filename="images/placeholder.png")]
     except:  # noqa: E722
-        exception_type, value, full_tback = sys.exc_info()
+        exception_type, value, full_traceback = sys.exc_info()
         current_app.logger.error(
             "Error loading officer profile: {}".format(
                 " ".join([str(exception_type), str(value), format_exc()])
@@ -491,7 +491,7 @@ def classify_submission(image_id, contains_cops):
         flash("Updated image classification")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
+        exception_type, value, full_traceback = sys.exc_info()
         current_app.logger.error(
             "Error classifying image: {}".format(
                 " ".join([str(exception_type), str(value), format_exc()])
@@ -739,8 +739,9 @@ def list_officer(
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
-        # could do some extra work to not lazy load images but load them all together
-        # but we would want to ensure to only load the first picture of each officer
+        # Could do some extra work to not lazy load images but load them all together.
+        # To do that properly we would want to ensure to only load the first picture of
+        # each officer.
         if officer_face and officer_face[0].image:
             officer.image = officer_face[0].image.filepath
 
@@ -812,7 +813,8 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         ranks = ranks.order_by(Job.job_title).all()
         rank_list = [(rank.id, rank.job_title) for rank in ranks]
     else:
-        ranks = Job.query.all()  # Not filtering by is_sworn_officer
+        # Not filtering by is_sworn_officer
+        ranks = Job.query.all()
         # Prevent duplicate ranks
         rank_list = sorted(
             set((rank.id, rank.job_title) for rank in ranks),
@@ -863,11 +865,11 @@ def add_officer():
         abort(HTTPStatus.FORBIDDEN)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
-        new_formdata = request.form.copy()
-        for key in new_formdata.keys():
+        new_form_data = request.form.copy()
+        for key in new_form_data.keys():
             if re.fullmatch(r"salaries-\d+-is_fiscal_year", key):
-                new_formdata[key] = "y"
-        form = AddOfficerForm(new_formdata)
+                new_form_data[key] = "y"
+        form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
         flash("New Officer {} added to OpenOversight".format(officer.last_name))
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
@@ -1025,7 +1027,8 @@ def label_data(department_id=None, image_id=None):
         department = None
         if image_id:
             image = Image.query.filter_by(id=image_id).one()
-        else:  # Select a random untagged image from the entire database
+        else:
+            # Select a random untagged image from the entire database
             image_query = Image.query.filter_by(contains_cops=True).filter_by(
                 is_tagged=False
             )
@@ -1052,9 +1055,8 @@ def label_data(department_id=None, image_id=None):
             flash("Invalid officer ID. Please select a valid OpenOversight ID!")
         elif department and officer_exists.department_id != department_id:
             flash(
-                "The officer is not in {}. Are you sure that is the correct OpenOversight ID?".format(
-                    department.name
-                )
+                "The officer is not in {}. Are you sure that is the correct "
+                "OpenOversight ID?".format(department.name)
             )
         elif not existing_tag:
             left = form.dataX.data
@@ -1389,7 +1391,8 @@ def upload(department_id, officer_id=None):
             image.contains_cops = True
             face = Face(
                 officer_id=officer_id,
-                # Assuming photos uploaded with an officer ID are already cropped, so we set both images to the uploaded one
+                # Assuming photos uploaded with an officer ID are already cropped,
+                # we set both images to the uploaded one
                 img_id=image.id,
                 original_image_id=image.id,
                 user_id=current_user.get_id(),
@@ -1712,7 +1715,10 @@ main.add_url_rule(
 
 
 class OfficerLinkApi(ModelView):
-    """This API only applies to links attached to officer profiles, not links attached to incidents"""
+    """
+    This API only applies to links attached to officer profiles, not links attached to
+    incidents.
+    """
 
     model = Link
     model_name = "link"
