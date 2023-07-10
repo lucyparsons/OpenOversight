@@ -35,10 +35,10 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-badge">
+          <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-badge">
             <h3 class="panel-title accordion-toggle">Badge</h3>
           </div>
-          <div class="collapse in" id="filter-badge">
+          <div class="collapse {{ form_data | field_in_query("badge") }}" id="filter-badge">
             <div class="panel-body">
               <div class="form-group">
                 <input type="text" class="form-control" id="badge" name="badge" value="{{ form_data['badge'] or '' }}" />
@@ -47,7 +47,7 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-race">
+          <div class="panel-heading{% if not form_data['race'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-race">
             <h3 class="panel-title accordion-toggle">Race</h3>
           </div>
           <div class="collapse {{ form_data | field_in_query("race") }}" id="filter-race">
@@ -63,7 +63,7 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-gender">
+          <div class="panel-heading{% if not form_data['gender'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-gender">
             <h3 class="panel-title accordion-toggle">Gender</h3>
           </div>
           <div class="collapse {{ form_data | field_in_query("gender") }}" id="filter-gender">
@@ -79,7 +79,7 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-job">
+          <div class="panel-heading{% if not form_data['rank'] and not form_data['unit'] and not form_data['current_job'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-job">
             <h3 class="panel-title accordion-toggle">Job</h3>
           </div>
           <div class="collapse {{ form_data | field_in_query("rank") }} {{ form_data | field_in_query("unit") }} {{ form_data | field_in_query("current_job") }}" id="filter-job">
@@ -121,10 +121,10 @@
           </div>
         </div>
         <div class="panel">
-          <div class="panel-heading" data-toggle="collapse" data-target="#filter-age">
+          <div class="panel-heading{% if not form_data['min_age'] and not form_data['max_age'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-age">
             <h3 class="panel-title accordion-toggle">Age range</h3>
           </div>
-          <div class="collapse" id="filter-age">
+          <div class="collapse  {{ form_data | field_in_query("min_age") }} {{ form_data | field_in_query("max_age") }}" id="filter-age">
             <div class="panel-body">
               <div class="form-row">
                 <div class="form-group col-md-6">
@@ -147,6 +147,23 @@
             <div class="panel-body">
               <div class="form-group">
                 <input type="text" class="form-control" id="unique_internal_identifier" name="unique_internal_identifier" value="{{ form_data['unique_internal_identifier'] or '' }}" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading{% if not form_data['require_photo'] %} collapsed{% endif %}" data-toggle="collapse" data-target="#filter-photo">
+            <h3 class="panel-title accordion-toggle">Photo</h3>
+          </div>
+          <div class="collapse {{ form_data | field_in_query("require_photo") }}" id="filter-photo">
+            <div class="panel-body panel-body-long">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="require_photo">
+                    <input id="require_photo" name="require_photo" type="checkbox" value="True" {% if form_data.get("require_photo") %}checked{% endif %}>
+                    Officer has Photo
+                  </label>
+                </div>
               </div>
             </div>
           </div>
