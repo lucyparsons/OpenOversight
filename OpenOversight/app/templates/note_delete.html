@@ -11,7 +11,7 @@
             <form action="{{ '{}/delete'.format(url_for('main.note_api', obj_id=obj.id, officer_id=obj.officer_id) ) }}"
                   method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <button class='btn btn-danger' type="submit">Delete</button>
+                <button class="btn btn-danger" type="submit">Delete</button>
             </form>
         </p>
     </div>

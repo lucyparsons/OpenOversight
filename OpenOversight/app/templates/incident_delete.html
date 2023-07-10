@@ -10,7 +10,7 @@
             <form action="{{ '{}/delete'.format(url_for('main.incident_api', obj_id=obj.id) ) }}"
                   method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <button class='btn btn-danger' type="submit">Delete</button>
+                <button class="btn btn-danger" type="submit">Delete</button>
             </form>
         </p>
     </div>
