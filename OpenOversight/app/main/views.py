@@ -740,6 +740,7 @@ def list_officer(
         Officer.department_id == department_id
     )
 
+    # Filter officers by presence of a photo
     if form_data["require_photo"]:
         officers = officers.join(Face)
     else:
