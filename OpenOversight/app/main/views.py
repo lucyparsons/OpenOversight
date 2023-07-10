@@ -177,7 +177,10 @@ def get_officer():
     else:
         current_app.logger.info(form.errors)
     return render_template(
-        "input_find_officer.html", form=form, depts_dict=departments_dict, jsloads=jsloads
+        "input_find_officer.html",
+        form=form,
+        depts_dict=departments_dict,
+        jsloads=jsloads,
     )
 
 
