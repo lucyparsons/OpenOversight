@@ -30,7 +30,7 @@ from OpenOversight.app.utils.general import normalize_gender, prompt_yes_no, str
 @click.command()
 @with_appcontext
 def make_admin_user():
-    """Add confirmed administrator account"""
+    """Add confirmed administrator account."""
     while True:
         username = input("Username: ")
         user = User.by_username(username).one_or_none()
@@ -73,7 +73,7 @@ def make_admin_user():
 @click.command()
 @with_appcontext
 def link_images_to_department():
-    """Link existing images to first department"""
+    """Link existing images to first department."""
     images = Image.query.all()
     print("Linking images to first department:")
     for image in images:
@@ -88,7 +88,7 @@ def link_images_to_department():
 @click.command()
 @with_appcontext
 def link_officers_to_department():
-    """Links officers and unit_ids to first department"""
+    """Links officers and unit_ids to first department."""
     officers = Officer.query.all()
     units = Unit.query.all()
 
@@ -164,35 +164,40 @@ def row_has_data(row, required_fields, optional_fields):
     return False
 
 
-def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
-    fieldname = fieldname or attribute
-    if fieldname in row and (row[fieldname] or allow_blank):
+def set_field_from_row(row, obj, attribute, allow_blank=True, field_name=None):
+    field_name = field_name or attribute
+    if field_name in row and (row[field_name] or allow_blank):
         try:
-            val = datetime.strptime(row[fieldname], "%Y-%m-%d").date()
+            val = datetime.strptime(row[field_name], "%Y-%m-%d").date()
         except ValueError:
-            val = row[fieldname]
+            val = row[field_name]
             if attribute == "gender":
                 val = normalize_gender(val)
         setattr(obj, attribute, val)
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname):
-        if fieldname not in row:
+    def update_officer_field(officer_field_name):
+        if officer_field_name not in row:
             return
 
-        if fieldname == "gender":
-            row[fieldname] = normalize_gender(row[fieldname])
+        if officer_field_name == "gender":
+            row[officer_field_name] = normalize_gender(row[officer_field_name])
 
-        if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
+        if (
+            row[officer_field_name]
+            and getattr(officer, officer_field_name) != row[officer_field_name]
+        ):
 
             ImportLog.log_change(
                 officer,
                 "Updated {}: {} --> {}".format(
-                    fieldname, getattr(officer, fieldname), row[fieldname]
+                    officer_field_name,
+                    getattr(officer, officer_field_name),
+                    row[officer_field_name],
                 ),
             )
-            setattr(officer, fieldname, row[fieldname])
+            setattr(officer, officer_field_name, row[officer_field_name])
 
     # Name and gender are the only potentially changeable fields, so update those
     update_officer_field("last_name")
@@ -209,17 +214,17 @@ def update_officer_from_row(row, officer, update_static_fields=False):
         "employment_date",
         "birth_year",
     ]
-    for fieldname in static_fields:
-        if fieldname in row:
-            if row[fieldname] == "":
-                row[fieldname] = None
-            old_value = getattr(officer, fieldname)
-            # If we're expecting a date type, attempt to parse row[fieldname] as a
-            # datetime This also normalizes all date formats, ensuring the following
+    for field_name in static_fields:
+        if field_name in row:
+            if row[field_name] == "":
+                row[field_name] = None
+            old_value = getattr(officer, field_name)
+            # If we're expecting a date type, attempt to parse row[field_name] as a
+            # datetime. This normalizes all date formats, ensuring the following
             # comparison works properly
             if isinstance(old_value, (date, datetime)):
                 try:
-                    new_value = parse(row[fieldname])
+                    new_value = parse(row[field_name])
                     if isinstance(old_value, date):
                         new_value = new_value.date()
                 except Exception as e:
@@ -227,8 +232,8 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                         'Field {} is a date-type, but "{}" was specified for '
                         "Officer {} {} and cannot be parsed as a date-type.\nError "
                         "message from dateutil: {}".format(
-                            fieldname,
-                            row[fieldname],
+                            field_name,
+                            row[field_name],
                             officer.first_name,
                             officer.last_name,
                             e,
@@ -236,20 +241,20 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                     )
                     raise Exception(msg)
             else:
-                new_value = row[fieldname]
+                new_value = row[field_name]
             if old_value is None:
-                update_officer_field(fieldname)
+                update_officer_field(field_name)
             elif str(old_value) != str(new_value):
                 msg = "Officer {} {} has differing {} field. Old: {}, new: {}".format(
                     officer.first_name,
                     officer.last_name,
-                    fieldname,
+                    field_name,
                     old_value,
                     new_value,
                 )
                 if update_static_fields:
                     print(msg)
-                    update_officer_field(fieldname)
+                    update_officer_field(field_name)
                 else:
                     raise Exception(msg)
 
@@ -281,7 +286,7 @@ def create_officer_from_row(row, department_id):
 
 def is_equal(a, b):
     """Run an exhaustive equality check, originally to compare a sqlalchemy result
-    object of various types to a csv string
+    object of various types to a csv string.
     Note: Stringifying covers object cases (as in the datetime example below)
     >>> is_equal("1", 1)  # string == int
     True
@@ -511,7 +516,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                     raise Exception("Department ID {} not found".format(department_id))
 
             if not update_by_name:
-                # check for existing officer based on unique ID or name/badge
+                # Check for existing officer based on unique ID or name/badge
                 if (
                     "unique_internal_identifier" in csvfile.fieldnames
                     and row["unique_internal_identifier"]
