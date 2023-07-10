@@ -89,7 +89,15 @@ repos:
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.31.1
     hooks:
-      - id: djlint-reformat-jinja
+      - id: djlint-reformat
         args:
-          - OpenOversight/app/templates/*.html
-      - id: djlint-jinja
+          - OpenOversight/app/templates
+          - --check
+          - --profile=jinja
+      - id: djlint
+        args:
+          - OpenOversight/app/templates
+          - --profile=jinja
+          - --use-gitignore
+          - --format-js
+          - --format-css
