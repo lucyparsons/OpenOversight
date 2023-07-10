@@ -8,9 +8,13 @@ from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationFo
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-
-from ..conftest import AC_DEPT
-from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
+from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.routes.route_helpers import (
+    ADMIN_EMAIL,
+    login_ac,
+    login_admin,
+    login_user,
+)
 
 
 routes_methods = [
