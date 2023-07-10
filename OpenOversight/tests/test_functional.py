@@ -4,6 +4,7 @@ import os
 from contextlib import contextmanager
 
 import pytest
+from flask import current_app
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -11,11 +12,9 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
-from OpenOversight.app.config import TestingConfig
-from OpenOversight.app.models import Department, Incident, Officer, Unit, db
+from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 
 
-CONFIG = TestingConfig()
 DESCRIPTION_CUTOFF = 700
 
 
@@ -120,18 +119,24 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element("tag name", "body").text
-    expected = "Showing 1-{} of {}".format(CONFIG.OFFICERS_PER_PAGE, total)
+    expected = "Showing 1-{} of {}".format(
+        current_app.config["OFFICERS_PER_PAGE"], total
+    )
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // CONFIG.OFFICERS_PER_PAGE) + 1
+    last_page_index = (total // current_app.config["OFFICERS_PER_PAGE"]) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element("tag name", "body").text
     expected = "Showing {}-{} of {}".format(
-        CONFIG.OFFICERS_PER_PAGE * (total // CONFIG.OFFICERS_PER_PAGE) + 1, total, total
+        current_app.config["OFFICERS_PER_PAGE"]
+        * (total // current_app.config["OFFICERS_PER_PAGE"])
+        + 1,
+        total,
+        total,
     )
     assert expected in page_text
 

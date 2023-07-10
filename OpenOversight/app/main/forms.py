@@ -29,12 +29,8 @@ from wtforms.validators import (
 )
 from wtforms_sqlalchemy.fields import QuerySelectField
 
-from OpenOversight.app.utils.db import dept_choices, unit_choices
-
-from ..formfields import TimeField
-from ..models import Officer
-from ..widgets import BootstrapListWidget, FormFieldWidget
-from .choices import (
+from OpenOversight.app.formfields import TimeField
+from OpenOversight.app.main.choices import (
     AGE_CHOICES,
     GENDER_CHOICES,
     LINK_CHOICES,
@@ -42,6 +38,9 @@ from .choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
+from OpenOversight.app.models.database import Officer
+from OpenOversight.app.utils.db import dept_choices, unit_choices
+from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 
 # Normalizes the "not sure" option to what it needs to be when writing to the database.

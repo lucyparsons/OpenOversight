@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from OpenOversight.app.models import (
+from OpenOversight.app.models.database import (
     Assignment,
     Currency,
     Department,

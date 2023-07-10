@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from OpenOversight.app import create_app
-from OpenOversight.app.models import db
+from OpenOversight.app.models.database import db
 
 
 app = create_app("development")

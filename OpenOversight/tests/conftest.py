@@ -22,9 +22,25 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from webdriver_manager.firefox import GeckoDriverManager
 from xvfbwrapper import Xvfb
 
-from OpenOversight.app import create_app, models
-from OpenOversight.app.models import Job, Officer, Unit
-from OpenOversight.app.models import db as _db
+from OpenOversight.app import create_app
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Description,
+    Face,
+    Image,
+    Incident,
+    Job,
+    LicensePlate,
+    Link,
+    Location,
+    Note,
+    Officer,
+    Salary,
+    Unit,
+    User,
+)
+from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
@@ -65,8 +81,9 @@ def pick_birth_date():
 
 
 def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
-    # source: https://stackoverflow.com/questions/40351791/how-to-hash-strings-into-a-float-in-01
-    # Wanted to deterministically create a date from a seed string (e.g. the hash or uuid on an officer object)
+    # source: https://stackoverflow.com/q/40351791
+    # Wanted to deterministically create a date from a seed string (e.g. the hash or
+    # uuid on an officer object).
     from hashlib import sha256
     from struct import unpack
 
@@ -104,7 +121,7 @@ def pick_last():
 
 
 def pick_name():
-    return (pick_first(), pick_middle(), pick_last())
+    return pick_first(), pick_middle(), pick_last()
 
 
 def pick_star():
@@ -112,7 +129,7 @@ def pick_star():
 
 
 def pick_department():
-    departments = models.Department.query.all()
+    departments = Department.query.all()
     return random.choice(departments)
 
 
@@ -127,7 +144,7 @@ def pick_salary():
 def generate_officer(department):
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
-    return models.Officer(
+    return Officer(
         last_name=l_name,
         first_name=f_name,
         middle_initial=m_initial,
@@ -143,7 +160,7 @@ def generate_officer(department):
 def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
     unit = random.choice(units)
     unit_id = unit.id if unit else None
-    return models.Assignment(
+    return Assignment(
         star_no=pick_star(),
         job_id=random.choice(jobs).id,
         officer=officer,
@@ -153,10 +170,12 @@ def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
     )
 
 
-def build_note(officer, user):
+def build_note(officer, user, content=None):
     date = factory.date_time_this_year()
-    return models.Note(
-        text_contents=factory.text(),
+    if content is None:
+        content = factory.text()
+    return Note(
+        text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
         date_created=date,
@@ -164,10 +183,12 @@ def build_note(officer, user):
     )
 
 
-def build_description(officer, user):
+def build_description(officer, user, content=None):
     date = factory.date_time_this_year()
-    return models.Description(
-        text_contents=factory.text(),
+    if content is None:
+        content = factory.text()
+    return Description(
+        text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
         date_created=date,
@@ -176,7 +197,7 @@ def build_description(officer, user):
 
 
 def build_salary(officer):
-    return models.Salary(
+    return Salary(
         officer_id=officer.id,
         salary=pick_salary(),
         overtime_pay=pick_salary(),
@@ -188,7 +209,7 @@ def build_salary(officer):
 def assign_faces(officer, images):
     if random.uniform(0, 1) >= 0.5:
         img_id = random.choice(images).id
-        return models.Face(
+        return Face(
             officer_id=officer.id,
             img_id=img_id,
             original_image_id=img_id,
@@ -279,15 +300,15 @@ def test_csv_dir():
 
 def add_mockdata(session):
     assert current_app.config["NUM_OFFICERS"] >= 5
-    department = models.Department(
+    department = Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
         unique_internal_identifier_label="homer_number",
     )
     session.add(department)
-    department2 = models.Department(name=OTHER_DEPARTMENT_NAME, short_name="CPD")
+    department2 = Department(name=OTHER_DEPARTMENT_NAME, short_name="CPD")
     session.add(department2)
-    empty_department = models.Department(
+    empty_department = Department(
         name=DEPARTMENT_WITHOUT_OFFICERS_NAME, short_name="EPD"
     )
     session.add(empty_department)
@@ -295,7 +316,7 @@ def add_mockdata(session):
 
     for i, rank in enumerate(RANK_CHOICES_1):
         session.add(
-            models.Job(
+            Job(
                 job_title=rank,
                 order=i,
                 is_sworn_officer=True,
@@ -303,7 +324,7 @@ def add_mockdata(session):
             )
         )
         session.add(
-            models.Job(
+            Job(
                 job_title=rank,
                 order=i,
                 is_sworn_officer=True,
@@ -313,7 +334,7 @@ def add_mockdata(session):
 
     for i, rank in enumerate(RANK_CHOICES_2):
         session.add(
-            models.Job(
+            Job(
                 job_title=rank,
                 order=i,
                 is_sworn_officer=True,
@@ -326,24 +347,24 @@ def add_mockdata(session):
     random.seed(current_app.config["SEED"])
 
     test_units = [
-        models.Unit(descrip="test", department_id=1),
-        models.Unit(descrip="District 13", department_id=1),
-        models.Unit(descrip="Donut Devourers", department_id=1),
-        models.Unit(descrip="Bureau of Organized Crime", department_id=2),
-        models.Unit(descrip="Porky's BBQ: Rub Division", department_id=2),
+        Unit(descrip="test", department_id=1),
+        Unit(descrip="District 13", department_id=1),
+        Unit(descrip="Donut Devourers", department_id=1),
+        Unit(descrip="Bureau of Organized Crime", department_id=2),
+        Unit(descrip="Porky's BBQ: Rub Division", department_id=2),
     ]
     session.add_all(test_units)
     session.commit()
     test_units.append(None)
 
     test_images = [
-        models.Image(
+        Image(
             filepath=f"/static/images/test_cop{x+1}.png",
             department_id=department.id,
         )
         for x in range(5)
     ] + [
-        models.Image(
+        Image(
             filepath=f"/static/images/test_cop{x+1}.png",
             department_id=department2.id,
         )
@@ -352,13 +373,13 @@ def add_mockdata(session):
     session.add_all(test_images)
 
     test_officer_links = [
-        models.Link(
+        Link(
             url="https://openoversight.com/",
             link_type="link",
             title="OpenOversight",
             description="A public, searchable database of law enforcement officers.",
         ),
-        models.Link(
+        Link(
             url="http://www.youtube.com/?v=help",
             link_type="video",
             title="Youtube",
@@ -376,16 +397,16 @@ def add_mockdata(session):
 
     session.commit()
 
-    all_officers = models.Officer.query.all()
-    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
-    officers_dept2 = models.Officer.query.filter_by(department_id=2).all()
+    all_officers = Officer.query.all()
+    officers_dept1 = Officer.query.filter_by(department_id=1).all()
+    officers_dept2 = Officer.query.filter_by(department_id=2).all()
 
     # assures that there are some assigned and unassigned images in each department
-    assigned_images_dept1 = models.Image.query.filter_by(department_id=1).limit(3).all()
-    assigned_images_dept2 = models.Image.query.filter_by(department_id=2).limit(3).all()
+    assigned_images_dept1 = Image.query.filter_by(department_id=1).limit(3).all()
+    assigned_images_dept2 = Image.query.filter_by(department_id=2).limit(3).all()
 
-    jobs_dept1 = models.Job.query.filter_by(department_id=1).all()
-    jobs_dept2 = models.Job.query.filter_by(department_id=2).all()
+    jobs_dept1 = Job.query.filter_by(department_id=1).all()
+    jobs_dept2 = Job.query.filter_by(department_id=2).all()
 
     # which percentage of officers have an assignment
     assignment_ratio = 0.9  # 90%
@@ -416,12 +437,12 @@ def add_mockdata(session):
     session.add_all(faces1)
     session.add_all(faces2)
 
-    test_user = models.User(
+    test_user = User(
         email="jen@example.org", username="test_user", password="dog", confirmed=True
     )
     session.add(test_user)
 
-    test_admin = models.User(
+    test_admin = User(
         email=ADMIN_EMAIL,
         username="test_admin",
         password=ADMIN_PASSWORD,
@@ -430,7 +451,7 @@ def add_mockdata(session):
     )
     session.add(test_admin)
 
-    test_area_coordinator = models.User(
+    test_area_coordinator = User(
         email="raq929@example.org",
         username="test_ac",
         password="horse",
@@ -440,13 +461,13 @@ def add_mockdata(session):
     )
     session.add(test_area_coordinator)
 
-    test_unconfirmed_user = models.User(
+    test_unconfirmed_user = User(
         email="freddy@example.org", username="b_meson", password="dog", confirmed=False
     )
     session.add(test_unconfirmed_user)
     session.commit()
 
-    test_disabled_user = models.User(
+    test_disabled_user = User(
         email="may@example.org",
         username="may",
         password="yam",
@@ -456,7 +477,7 @@ def add_mockdata(session):
     session.add(test_disabled_user)
     session.commit()
 
-    test_modified_disabled_user = models.User(
+    test_modified_disabled_user = User(
         email="sam@example.org",
         username="sam",
         password="the yam",
@@ -467,7 +488,7 @@ def add_mockdata(session):
     session.commit()
 
     test_addresses = [
-        models.Location(
+        Location(
             street_name="Test St",
             cross_street1="Cross St",
             cross_street2="2nd St",
@@ -475,7 +496,7 @@ def add_mockdata(session):
             state="AZ",
             zip_code="23456",
         ),
-        models.Location(
+        Location(
             street_name="Testing St",
             cross_street1="First St",
             cross_street2="Fourth St",
@@ -489,21 +510,21 @@ def add_mockdata(session):
     session.commit()
 
     test_license_plates = [
-        models.LicensePlate(number="603EEE", state="MA"),
-        models.LicensePlate(number="404301", state="WA"),
+        LicensePlate(number="603EEE", state="MA"),
+        LicensePlate(number="404301", state="WA"),
     ]
 
     session.add_all(test_license_plates)
     session.commit()
 
     test_incident_links = [
-        models.Link(
+        Link(
             url="https://stackoverflow.com/",
             link_type="link",
             creator=test_admin,
             creator_id=test_admin.id,
         ),
-        models.Link(
+        Link(
             url="http://www.youtube.com/?v=help",
             link_type="video",
             creator=test_admin,
@@ -515,7 +536,7 @@ def add_mockdata(session):
     session.commit()
 
     test_incidents = [
-        models.Incident(
+        Incident(
             date=datetime.date(2016, 3, 16),
             time=datetime.time(4, 20),
             report_number="42",
@@ -528,7 +549,7 @@ def add_mockdata(session):
             creator_id=1,
             last_updated_id=1,
         ),
-        models.Incident(
+        Incident(
             date=datetime.date(2017, 12, 11),
             time=datetime.time(2, 40),
             report_number="38",
@@ -541,7 +562,7 @@ def add_mockdata(session):
             creator_id=2,
             last_updated_id=1,
         ),
-        models.Incident(
+        Incident(
             date=datetime.datetime(2019, 1, 15),
             report_number="39",
             description=(
@@ -562,10 +583,10 @@ def add_mockdata(session):
     users_that_can_create_notes = [test_admin, test_area_coordinator]
 
     # for testing routes
-    first_officer = models.Officer.query.get(1)
+    first_officer = Officer.query.get(1)
     note = build_note(first_officer, test_admin)
     session.add(note)
-    for officer in models.Officer.query.limit(20):
+    for officer in Officer.query.limit(20):
         user = random.choice(users_that_can_create_notes)
         note = build_note(officer, user)
         session.add(note)
@@ -575,10 +596,10 @@ def add_mockdata(session):
     users_that_can_create_descriptions = [test_admin, test_area_coordinator]
 
     # for testing routes
-    first_officer = models.Officer.query.get(1)
+    first_officer = Officer.query.get(1)
     description = build_description(first_officer, test_admin)
     session.add(description)
-    for officer in models.Officer.query.limit(20):
+    for officer in Officer.query.limit(20):
         user = random.choice(users_that_can_create_descriptions)
         description = build_description(officer, user)
         session.add(description)
@@ -595,14 +616,12 @@ def mockdata(session):
 
 @pytest.fixture
 def department(session):
-    return models.Department.query.filter_by(name=DEPARTMENT_NAME).one()
+    return Department.query.filter_by(name=DEPARTMENT_NAME).one()
 
 
 @pytest.fixture
 def department_without_officers(session):
-    return models.Department.query.filter_by(
-        name=DEPARTMENT_WITHOUT_OFFICERS_NAME
-    ).one()
+    return Department.query.filter_by(name=DEPARTMENT_WITHOUT_OFFICERS_NAME).one()
 
 
 @pytest.fixture
@@ -659,7 +678,7 @@ def csvfile(mockdata, tmp_path, request):
         "overtime_pay",
     ]
 
-    officers_dept1 = models.Officer.query.filter_by(department_id=1).all()
+    officers_dept1 = Officer.query.filter_by(department_id=1).all()
 
     if sys.version_info.major == 2:
         csvf = open(str(csv_path), "w")

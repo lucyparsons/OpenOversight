@@ -6,11 +6,15 @@ from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.email_client import EmailClient
-from OpenOversight.app.models import User, db
+from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-
-from ..conftest import AC_DEPT
-from .route_helpers import ADMIN_EMAIL, login_ac, login_admin, login_user
+from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.routes.route_helpers import (
+    ADMIN_EMAIL,
+    login_ac,
+    login_admin,
+    login_user,
+)
 
 
 routes_methods = [
@@ -330,8 +334,8 @@ def test_admin_can_approve_user(mockdata, client, session):
     [
         # Approving unconfirmed user sends email
         (False, False, True, True),
-        # Approving unconfirmed user does not send email if approve_registration config
-        # is not set
+        # Approving unconfirmed user does not send email if approve_registration
+        # config is not set
         (False, False, False, False),
         # Updating approved user does not send email
         (True, False, True, False),

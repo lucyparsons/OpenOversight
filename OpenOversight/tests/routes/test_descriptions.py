@@ -5,11 +5,10 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import EditTextForm, TextForm
-from OpenOversight.app.models import Description, Officer, User, db
+from OpenOversight.app.models.database import Description, Officer, User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-
-from .route_helpers import login_ac, login_admin, login_user
+from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
 @pytest.mark.parametrize(
