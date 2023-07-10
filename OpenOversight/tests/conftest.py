@@ -78,9 +78,9 @@ def pick_birth_date():
 
 
 def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
-    # source: https://stackoverflow.com/questions/40351791/how-to-hash-strings-into-a
-    # -float-in-01 Wanted to deterministically create a date from a seed string (e.g.
-    # the hash or uuid on an officer object)
+    # source: https://stackoverflow.com/q/40351791
+    # Wanted to deterministically create a date from a seed string (e.g. the hash or
+    # uuid on an officer object).
     from hashlib import sha256
     from struct import unpack
 
