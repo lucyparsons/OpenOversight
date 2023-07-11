@@ -95,6 +95,7 @@ repos:
           - --format-js
           - --format-css
           - --profile=jinja
+          - --indent=2
       - id: djlint
         args:
           - OpenOversight/app/templates
