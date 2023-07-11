@@ -1,12 +1,12 @@
 {% extends 'form.html' %}
 {% block page_title %}
-    New Note
+  New Note
 {% endblock page_title %}
 {% block form %}
-    <p>
-        For officer with OOID {{ form.officer_id.data }}.
-        <br>
-        {{ form.description }}
-    </p>
-    {{ super() }}
+  <p>
+    For officer with OOID {{ form.officer_id.data }}.
+    <br>
+    {{ form.description }}
+  </p>
+  {{ super() }}
 {% endblock form %}

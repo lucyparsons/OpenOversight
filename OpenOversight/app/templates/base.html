@@ -1,174 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-        {% block meta %}
-            <meta name="description"
-                  content="A public, searchable database of law enforcement officers">
-            <meta name="author" content="Lucy Parsons Labs">
-        {% endblock %}
-        <title>
-            {% block title %}OpenOversight - a Lucy Parsons Labs project{% endblock %}
-        </title>
-        <!-- Bundled CSS -->
-        <link href="{{ url_for('static', filename='dist/index.css') }}"
-              rel="stylesheet">
-        <!-- Custom styles for this template -->
-        <link href="{{ url_for('static', filename='css/openoversight.css') }}"
-              rel="stylesheet">
-        <!-- Embedded video styles -->
-        <link href="{{ url_for('static', filename='css/responsive_embed.css') }}"
-              rel="stylesheet">
-        <!-- Font Awesome -->
-        <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}"
-              rel="stylesheet">
-        <!-- jQuery UI -->
-        <link href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"
-              rel="stylesheet">
-        <!-- jQuery -->
-        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-        <!-- Bootstrap -->
-        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-        {% block head %}{% endblock %}
-    </head>
-    <body role="document">
-        <nav class="navbar navbar-default navbar-fixed-top">
-            <div class="container">
-                <div class="row">
-                    <div class="navbar-header navbar-default">
-                        <button type="button"
-                                class="navbar-default navbar-toggle collapsed"
-                                data-toggle="collapse"
-                                data-target="#navbar"
-                                aria-expanded="false"
-                                aria-controls="navbar">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-link navbar-brand" href="/">OpenOversight</a>
-                    </div>
-                    <div id="navbar" class="navbar-collapse collapse">
-                        <ul class="nav navbar-nav">
-                            <li>
-                                <a class="navbar-link" href="/browse">Browse</a>
-                            </li>
-                            <li>
-                                <a class="navbar-link" href="/find">Find an Officer</a>
-                            </li>
-                            <li>
-                                <a class="navbar-link" href="/submit">Submit Images</a>
-                            </li>
-                            <li>
-                                <a class="navbar-link" href="/label">Volunteer</a>
-                            </li>
-                            <li>
-                                <a class="navbar-link" href="/about">About</a>
-                            </li>
-                            {% if current_user and current_user.is_administrator %}
-                                <li>
-                                    <a class="navbar-link" href="/auth/users">Users</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                        <ul class="nav navbar-nav navbar-right">
-                            {% if current_user and current_user.is_authenticated %}
-                                <li class="dropdown">
-                                    <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="navbar-link"
-                                               href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
-                                        </li>
-                                        <li>
-                                            <a class="navbar-link" href="{{ url_for("auth.change_password") }}">Change Password</a>
-                                        </li>
-                                        <li>
-                                            <a class="navbar-link" href="{{ url_for("auth.change_email_request") }}">Change Email</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
-                                        </li>
-                                        <li>
-                                            <a class="navbar-link" href="{{ url_for("auth.logout") }}">Log Out</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            {% else %}
-                                <li>
-                                    <a class="navbar-link" href="{{ url_for("auth.register") }}">Register</a>
-                                </li>
-                                <li>
-                                    <a class="navbar-link" href="{{ url_for("auth.login") }}">Log In</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    {% block meta %}
+      <meta name="description"
+            content="A public, searchable database of law enforcement officers">
+      <meta name="author" content="Lucy Parsons Labs">
+    {% endblock %}
+    <title>
+      {% block title %}OpenOversight - a Lucy Parsons Labs project{% endblock %}
+    </title>
+    <!-- Bundled CSS -->
+    <link href="{{ url_for('static', filename='dist/index.css') }}"
+          rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='css/openoversight.css') }}"
+          rel="stylesheet">
+    <!-- Embedded video styles -->
+    <link href="{{ url_for('static', filename='css/responsive_embed.css') }}"
+          rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="{{ url_for('static', filename='css/font-awesome.min.css') }}"
+          rel="stylesheet">
+    <!-- jQuery UI -->
+    <link href="{{ url_for('static', filename='css/jquery-ui.min.css') }}"
+          rel="stylesheet">
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body role="document">
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="row">
+          <div class="navbar-header navbar-default">
+            <button type="button"
+                    class="navbar-default navbar-toggle collapsed"
+                    data-toggle="collapse"
+                    data-target="#navbar"
+                    aria-expanded="false"
+                    aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-link navbar-brand" href="/">OpenOversight</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li>
+                <a class="navbar-link" href="/browse">Browse</a>
+              </li>
+              <li>
+                <a class="navbar-link" href="/find">Find an Officer</a>
+              </li>
+              <li>
+                <a class="navbar-link" href="/submit">Submit Images</a>
+              </li>
+              <li>
+                <a class="navbar-link" href="/label">Volunteer</a>
+              </li>
+              <li>
+                <a class="navbar-link" href="/about">About</a>
+              </li>
+              {% if current_user and current_user.is_administrator %}
+                <li>
+                  <a class="navbar-link" href="/auth/users">Users</a>
+                </li>
+              {% endif %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              {% if current_user and current_user.is_authenticated %}
+                <li class="dropdown">
+                  <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="navbar-link"
+                         href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
+                    </li>
+                    <li>
+                      <a class="navbar-link" href="{{ url_for("auth.change_password") }}">Change Password</a>
+                    </li>
+                    <li>
+                      <a class="navbar-link" href="{{ url_for("auth.change_email_request") }}">Change Email</a>
+                    </li>
+                    <li>
+                      <a href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
+                    </li>
+                    <li>
+                      <a class="navbar-link" href="{{ url_for("auth.logout") }}">Log Out</a>
+                    </li>
+                  </ul>
+                </li>
+              {% else %}
+                <li>
+                  <a class="navbar-link" href="{{ url_for("auth.register") }}">Register</a>
+                </li>
+                <li>
+                  <a class="navbar-link" href="{{ url_for("auth.login") }}">Log In</a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="container">
+            <div class="row">
+              <div class="alert alert-info alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+                {{ message }}
+              </div>
             </div>
-        </nav>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="container">
-                        <div class="row">
-                            <div class="alert alert-info alert-dismissible" role="alert">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
-                                </button>
-                                {{ message }}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
-        <footer class="footer container {% block footer_class %}{% endblock %}">
-            <hr>
-            <div class="row text-center horizontal-padding">
-                <div class="col-sm-4">
-                    <h5>OpenOversight</h5>
-                    <p class="font-weight-300">
-                        A product of Lucy Parsons Labs in Chicago, IL.
-                        <br>
-                        <a href="https://lucyparsonslabs.com/" target="_blank">Lucy Parsons Labs</a>
-                        <br>
-                        <a href="{{ url_for("main.all_data") }}" target="_blank">Download department data</a>
-                    </p>
-                </div>
-                <div class="col-sm-4">
-                    <h5>Contact</h5>
-                    <p>
-                        <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
-                        <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
-                        <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
-                        <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
-                        <br>
-                        <a href="/privacy" class="btn">Privacy Policy</a>
-                    </p>
-                </div>
-                <div class="col-sm-4">
-                    <h5>Navigation</h5>
-                    <p class="font-weight-300">
-                        <a href="{{ url_for("main.get_officer") }}">Find an Officer</a>
-                        <br>
-                        <a href="{{ url_for("main.submit_data") }}">Submit Images</a>
-                        <br>
-                        <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
-                        <br>
-                        <a href="{{ url_for("main.about_oo") }}">About</a>
-                        <br>
-                    </p>
-                </div>
-            </div>
-        </footer>
-        {% block js_footer %}
-            {% for item in jsloads %}<script src="{{ url_for('static', filename=item) }}"></script>{% endfor %}
-        {% endblock %}
-    </body>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+    <footer class="footer container {% block footer_class %}{% endblock %}">
+      <hr>
+      <div class="row text-center horizontal-padding">
+        <div class="col-sm-4">
+          <h5>OpenOversight</h5>
+          <p class="font-weight-300">
+            A product of Lucy Parsons Labs in Chicago, IL.
+            <br>
+            <a href="https://lucyparsonslabs.com/" target="_blank">Lucy Parsons Labs</a>
+            <br>
+            <a href="{{ url_for("main.all_data") }}" target="_blank">Download department data</a>
+          </p>
+        </div>
+        <div class="col-sm-4">
+          <h5>Contact</h5>
+          <p>
+            <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
+            <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
+            <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
+            <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
+            <br>
+            <a href="/privacy" class="btn">Privacy Policy</a>
+          </p>
+        </div>
+        <div class="col-sm-4">
+          <h5>Navigation</h5>
+          <p class="font-weight-300">
+            <a href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+            <br>
+            <a href="{{ url_for("main.submit_data") }}">Submit Images</a>
+            <br>
+            <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+            <br>
+            <a href="{{ url_for("main.about_oo") }}">About</a>
+            <br>
+          </p>
+        </div>
+      </div>
+    </footer>
+    {% block js_footer %}
+      {% for item in jsloads %}<script src="{{ url_for('static', filename=item) }}"></script>{% endfor %}
+    {% endblock %}
+  </body>
 </html>

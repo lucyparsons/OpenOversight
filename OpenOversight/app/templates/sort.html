@@ -1,95 +1,95 @@
 {% extends "base.html" %}
 {% block head %}<script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>{% endblock %}
 {% block js_footer %}
-    <script type="text/javascript">
-        $(document).bind('keydown', 'y', function() {
-            $('#answer-yes').click();
-        });
+  <script type="text/javascript">
+      $(document).bind('keydown', 'y', function() {
+          $('#answer-yes').click();
+      });
 
-        $(document).bind('keydown', 'n', function() {
-            $('#answer-no').click();
-        });
+      $(document).bind('keydown', 'n', function() {
+          $('#answer-no').click();
+      });
 
-        $(document).bind('keydown', 's', function() {
-            window.location = $('#answer-skip').attr('href');
-        });
-    </script>
+      $(document).bind('keydown', 's', function() {
+          window.location = $('#answer-skip').attr('href');
+      });
+  </script>
 {% endblock %}
 {% block content %}
-    <div class="container theme-showcase" role="main">
-        {% if current_user and current_user.is_authenticated %}
-            {% if image and current_user.is_disabled == False %}
-                <div class="row">
-                    <div class="text-center">
-                        <h1>
-                            <small>Do you see uniformed law enforcement officers in the photo?</small>
-                        </h1>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-4 text-center">
-                        <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
-                              method="post">
-                            <button type="submit"
-                                    name="action"
-                                    id="answer-no"
-                                    class="btn btn-lg btn-danger">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                <u>N</u>o
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-sm-4 text-center">
-                        <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
-                           id="answer-skip"
-                           class="btn btn-lg btn-primary"
-                           role="button">
-                            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
-                    </div>
-                    <div class="col-sm-4 text-center">
-                        <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
-                              method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                            <button type="submit"
-                                    name="action"
-                                    id="answer-yes"
-                                    class="btn btn-lg btn-success">
-                                <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-                                <u>Y</u>es!
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="frontpage-leads">
-                        <div>
-                            <img class="center-block img-responsive"
-                                 src="{{ path }}"
-                                 alt="Picture to be sorted">
-                        </div>
-                    </div>
-                </div>
-            {% elif current_user.is_disabled == True %}
-                <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
-                <p>
-                    <a href="mailto:info@lucyparsonslabs.com"
-                       class="btn btn-lg btn-primary"
-                       role="button">Email us to get it enabled again</a>
-                </p>
-            {% else %}
-                <h3>All images have been classfied!</h3>
-                <p>
-                    <a href="{{ url_for("main.submit_data") }}"
-                       class="btn btn-lg btn-primary"
-                       role="button">Submit officer pictures to us</a>
-                </p>
-                <p>
-                    <a href="{{ url_for('main.label_data', department_id=department_id) }}"
-                       class="btn btn-lg btn-primary"
-                       role="button">identify officers in the classified images</a>
-                </p>
-            {% endif %}
-        {% endif %}
-    </div>
+  <div class="container theme-showcase" role="main">
+    {% if current_user and current_user.is_authenticated %}
+      {% if image and current_user.is_disabled == False %}
+        <div class="row">
+          <div class="text-center">
+            <h1>
+              <small>Do you see uniformed law enforcement officers in the photo?</small>
+            </h1>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 text-center">
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                  method="post">
+              <button type="submit"
+                      name="action"
+                      id="answer-no"
+                      class="btn btn-lg btn-danger">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
+                <u>N</u>o
+              </button>
+            </form>
+          </div>
+          <div class="col-sm-4 text-center">
+            <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
+               id="answer-skip"
+               class="btn btn-lg btn-primary"
+               role="button">
+              <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
+          </div>
+          <div class="col-sm-4 text-center">
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
+                  method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button type="submit"
+                      name="action"
+                      id="answer-yes"
+                      class="btn btn-lg btn-success">
+                <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
+                <u>Y</u>es!
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="frontpage-leads">
+            <div>
+              <img class="center-block img-responsive"
+                   src="{{ path }}"
+                   alt="Picture to be sorted">
+            </div>
+          </div>
+        </div>
+      {% elif current_user.is_disabled == True %}
+        <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+        <p>
+          <a href="mailto:info@lucyparsonslabs.com"
+             class="btn btn-lg btn-primary"
+             role="button">Email us to get it enabled again</a>
+        </p>
+      {% else %}
+        <h3>All images have been classfied!</h3>
+        <p>
+          <a href="{{ url_for("main.submit_data") }}"
+             class="btn btn-lg btn-primary"
+             role="button">Submit officer pictures to us</a>
+        </p>
+        <p>
+          <a href="{{ url_for('main.label_data', department_id=department_id) }}"
+             class="btn btn-lg btn-primary"
+             role="button">identify officers in the classified images</a>
+        </p>
+      {% endif %}
+    {% endif %}
+  </div>
 {% endblock %}
