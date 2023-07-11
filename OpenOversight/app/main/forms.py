@@ -125,6 +125,9 @@ class FindOfficerForm(Form):
     max_age = IntegerField(
         "max_age", default=85, validators=[NumberRange(min=16, max=100)]
     )
+    require_photo = BooleanField(
+        "require_photo", default=False, validators=[Optional()]
+    )
 
 
 class FaceTag(Form):
@@ -547,18 +550,20 @@ class IncidentForm(DateFieldForm):
 
 class BrowseForm(Form):
     # Any fields added to this form should generally also be added to FindOfficerForm
+    # query set in view function
     rank = QuerySelectField(
         "rank",
         validators=[Optional()],
         get_label="job_title",
         get_pk=lambda job: job.job_title,
-    )  # query set in view function
+    )
+    # query set in view function
     unit = QuerySelectField(
         "unit",
         validators=[Optional()],
         get_label="descrip",
         get_pk=lambda unit: unit.descrip,
-    )  # query set in view function
+    )
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
     name = StringField("Last name")
     badge = StringField("Badge number")
@@ -586,6 +591,9 @@ class BrowseForm(Form):
         default=100,
         choices=AGE_CHOICES,
         validators=[AnyOf(allowed_values(AGE_CHOICES))],
+    )
+    require_photo = BooleanField(
+        "require_photo", default=False, validators=[Optional()]
     )
     submit = SubmitField(label="Submit")
 
