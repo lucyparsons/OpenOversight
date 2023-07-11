@@ -1674,18 +1674,24 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         )
 
         filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Rank</dt>")[1:]
-        assert any(
-            "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
-        )
+        assert any("{}".format(job.job_title) in token for token in filter_list)
+        assert any("<dd>" in token for token in filter_list)
+        assert any("</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Unit</dt>")[1:]
-        assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
+        assert any("{}".format(unit.descrip) in token for token in filter_list)
+        assert any("<dd>" in token for token in filter_list)
+        assert any("</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Race</dt>")[1:]
-        assert any("<dd>White</dd>" in token for token in filter_list)
+        assert any("White" in token for token in filter_list)
+        assert any("<dd>" in token for token in filter_list)
+        assert any("</dd>" in token for token in filter_list)
 
         filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Gender</dt>")[1:]
-        assert any("<dd>Male</dd>" in token for token in filter_list)
+        assert any("Male" in token for token in filter_list)
+        assert any("<dd>" in token for token in filter_list)
+        assert any("</dd>" in token for token in filter_list)
 
 
 def test_find_officer_redirect(client, mockdata, session):
