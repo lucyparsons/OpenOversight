@@ -172,11 +172,11 @@ Usage: flask [OPTIONS] COMMAND [ARGS]...
 
   Provides commands from Flask, extensions, and the application. Loads the
   application defined in the FLASK_APP environment variable, or from a
-  wsgi.py file. Setting the ENVIRONMENT environment variable to 'development'
+  wsgi.py file. Setting the ENV environment variable to 'development'
   will enable debug mode.
 
     $ export FLASK_APP=hello.py
-    $ export ENVIRONMENT=development
+    $ export ENV=development
     $ flask run
 
 Options:
