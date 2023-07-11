@@ -34,7 +34,7 @@ services:
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-     ENVIRONMENT: "${FLASK_ENV:-development}"
+     ENVIRONMENT: "${ENVIRONMENT:-development}"
      FLASK_APP: OpenOversight.app
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
