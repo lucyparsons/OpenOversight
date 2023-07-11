@@ -274,18 +274,18 @@
                   <h2>
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}"
                        id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
-                    <small>{{ officer.badge_number() |default('') }}</small>
+                    <small>{{ officer.badge_number() | default('') }}</small>
                   </h2>
                   <div class="row">
                     <div class="col-md-6 col-xs-6">
                       <dl>
                         <dt>Rank</dt>
                         <dd>
-                          {{ officer.job_title() |default('Unknown') }}
+                          {{ officer.job_title() | default('Unknown') }}
                         </dd>
                         <dt>Unit</dt>
                         <dd>
-                          {{ officer.unit_descrip() |default('Unknown') }}
+                          {{ officer.unit_descrip() | default('Unknown') }}
                         </dd>
                         <dt>Currently on the Force</dt>
                         <dd>
@@ -301,11 +301,11 @@
                       <dl>
                         <dt>Race</dt>
                         <dd>
-                          {{ officer.race_label() |default('Unknown')|lower|title }}
+                          {{ officer.race_label() | default('Unknown') | lower | title }}
                         </dd>
                         <dt>Gender</dt>
                         <dd>
-                          {{ officer.gender_label() |default('Unknown') }}
+                          {{ officer.gender_label() | default('Unknown') }}
                         </dd>
                         <dt>Number of Photos</dt>
                         <dd>
