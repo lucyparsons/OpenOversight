@@ -1620,7 +1620,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
     with current_app.test_request_context():
         department_id = Department.query.first().id
 
-        # Add a officer with a specific race, gender, rank and age to the first page
+        # Add an officer with a specific race, gender, rank and age to the first page
         login_admin(client)
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
