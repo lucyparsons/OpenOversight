@@ -96,3 +96,4 @@ repos:
           - --format-css
           - --profile=jinja
           - --indent=2
+          - --quiet
