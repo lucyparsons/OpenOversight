@@ -30,52 +30,73 @@
     <meta property="og:site_name" content="OpenOversight">
     <!-- JSON-LD -->
     <script type="application/ld+json">
-  {
-    "@context": "https://schema.org/",
-    "@type": "Person",
-    "name": "{{ officer.full_name() }}",
-    {% if officer.birth_year %}"birthDate": "{{ officer.birth_year }}",{% endif %}
-    "gender": "{{ officer.gender_label() }}",
-    "jobTitle": "{{ job_title }}",
-    "worksFor": {
-      "@type" : "Organization",
-      "name": "{{ officer.department.name | title }}"
-    },
-    {% if officer.unique_internal_identifier %}"identifier": "{{ officer.unique_internal_identifier }}",{% endif %}
-    {% if officer.image_url %}
-    "image": {
-      "@type": "URL",
-      "url": "{{ officer.image_url }}"
-    },
-    {% endif %}
-    "url": {
-      "@type": "URL",
-      "url": "{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}"
-    },
-    "description": "{{ description }}"
-  }
+        {
+            "@context": "https://schema.org/",
+            "@type": "Person",
+            "name": "{{ officer.full_name() }}",
+            {
+                %
+                if officer.birth_year %
+            }
+            "birthDate": "{{ officer.birth_year }}",
+            {
+                %
+                endif %
+            }
+            "gender": "{{ officer.gender_label() }}",
+            "jobTitle": "{{ job_title }}",
+            "worksFor": {
+                "@type": "Organization",
+                "name": "{{ officer.department.name | title }}"
+            },
+            {
+                %
+                if officer.unique_internal_identifier %
+            }
+            "identifier": "{{ officer.unique_internal_identifier }}",
+            {
+                %
+                endif %
+            } {
+                %
+                if officer.image_url %
+            }
+            "image": {
+                "@type": "URL",
+                "url": "{{ officer.image_url }}"
+            },
+            {
+                %
+                endif %
+            }
+            "url": {
+                "@type": "URL",
+                "url": "{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}"
+            },
+            "description": "{{ description }}"
+        }
     </script>
     <!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
     <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [{
-      "@type": "ListItem",
-      "position": 1,
-      "name": "OpenOversight",
-      "item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
-    },{
-      "@type": "ListItem",
-      "position": 2,
-      "name": "{{ officer.department.name|title }}",
-      "item": "{{ url_for('main.list_officer', department_id=officer.department.id, _external=True) }}"
-    },{
-      "@type": "ListItem",
-      "position": 3,
-      "name": "{{ officer.full_name() }}"
-    }]
-  }
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [{
+                "@type": "ListItem",
+                "position": 1,
+                "name": "OpenOversight",
+                "item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
+            }, {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ officer.department.name|title }}",
+                "item": "{{ url_for('main.list_officer', department_id=officer.department.id, _external=True) }}"
+            }, {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "{{ officer.full_name() }}"
+            }]
+        }
     </script>
 {% endblock %}
 {% block content %}

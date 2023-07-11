@@ -55,23 +55,27 @@
         <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
         <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
         <script>
-   // Select user's preferred department by default
-   document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
-   // Save the preferred department in dept_id
-   var dept_id = document.getElementById("department").selectedIndex + 1;
-   var csrf_token = "{{ csrf_token() }}";
+            // Select user's preferred department by default
+            document.getElementById("department").selectedIndex = {
+                {
+                    preferred_dept_id
+                }
+            } - 1;
+            // Save the preferred department in dept_id
+            var dept_id = document.getElementById("department").selectedIndex + 1;
+            var csrf_token = "{{ csrf_token() }}";
 
-   // Store changes in drop down list in dept_id variable
-   $(function() {
-      select_dept = $('#deptselect');
-      select_dept.on('change', function() {
-         // fires when department selection changes
-         dept_id = document.getElementById("department").value;
-      });
-   });
+            // Store changes in drop down list in dept_id variable
+            $(function() {
+                select_dept = $('#deptselect');
+                select_dept.on('change', function() {
+                    // fires when department selection changes
+                    dept_id = document.getElementById("department").value;
+                });
+            });
 
-        const getURL = (file) => "/upload/department/" + dept_id;
-        init_dropzone("#my-cop-dropzone", getURL, csrf_token);
+            const getURL = (file) => "/upload/department/" + dept_id;
+            init_dropzone("#my-cop-dropzone", getURL, csrf_token);
         </script>
     </div>
     <div class="container">

@@ -2,17 +2,17 @@
 {% block head %}<script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>{% endblock %}
 {% block js_footer %}
     <script type="text/javascript">
-$(document).bind('keydown', 'y', function(){
-  $('#answer-yes').click();
-});
+        $(document).bind('keydown', 'y', function() {
+            $('#answer-yes').click();
+        });
 
-$(document).bind('keydown', 'n', function(){
-  $('#answer-no').click();
-});
+        $(document).bind('keydown', 'n', function() {
+            $('#answer-no').click();
+        });
 
-$(document).bind('keydown', 's', function(){
-  window.location = $('#answer-skip').attr('href');
-});
+        $(document).bind('keydown', 's', function() {
+            window.location = $('#answer-skip').attr('href');
+        });
     </script>
 {% endblock %}
 {% block content %}
