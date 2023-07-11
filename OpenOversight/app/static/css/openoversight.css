@@ -114,10 +114,6 @@ a > .tutorial{
      max-width:80%;
  }
 
- .center-text {
-   text-align: center;
- }
-
  /* Carousel base class */
  .carousel {
    min-height: 700px;
@@ -590,6 +586,7 @@ tr:hover .row-actions {
 
 .officer-face {
     height: 300px;
+    margin: auto;
 }
 
 .face-wrap {
