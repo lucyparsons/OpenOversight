@@ -258,7 +258,7 @@
         </form>
       </div>
       <div class="search-results col-sm-9">
-        {% with paginate=officers, location='top' %}
+        {% with paginate=officers, location="top" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
         <ul class="list-group">
@@ -267,7 +267,7 @@
               <div class="row">
                 <div class="col-md-6 col-xs-12 center-text">
                   <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
-                    <img class="officer-face" src="{{ officer.image | default("/static/images/placeholder.png") }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
+                    <img class="officer-face img-responsive thumbnail" src="{{ officer.image | default("/static/images/placeholder.png") }}" alt="{{ officer.full_name() }}">
                   </a>
                 </div>
                 <div class="col-md-6 col-xs-12">
@@ -319,7 +319,7 @@
             </li>
           {% endfor %}
         </ul>
-        {% with paginate=officers, location='bottom' %}
+        {% with paginate=officers, location="bottom" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
       </div>
