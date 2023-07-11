@@ -29,7 +29,6 @@ repos:
       - id: python-check-mock-methods
       - id: python-no-eval
       - id: python-no-log-warn
-
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
@@ -92,12 +91,11 @@ repos:
       - id: djlint-reformat
         args:
           - OpenOversight/app/templates
-          - --check
+          - --format-js
+          - --format-css
           - --profile=jinja
       - id: djlint
         args:
           - OpenOversight/app/templates
           - --profile=jinja
           - --use-gitignore
-          - --format-js
-          - --format-css
