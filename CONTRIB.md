@@ -211,7 +211,7 @@ In `docker-compose.yml`, below the line specifying the port number, add the foll
    stdin_open: true
    tty: true
 ```
-Also in `docker-compose.yml`, below the line specifying the `ENVIRONMENT`, add the following to the `environment` portion of the `web` service:
+Also in `docker-compose.yml`, below the line specifying the `ENV`, add the following to the `environment` portion of the `web` service:
 ```yml
   FLASK_DEBUG: 0
 ```
