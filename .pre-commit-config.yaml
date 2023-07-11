@@ -85,3 +85,21 @@ repos:
             - "--target-version=py36"
             - "--target-version=py37"
             - "--target-version=py38"
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.31.1
+    hooks:
+      - id: djlint-reformat
+        args:
+          - OpenOversight/app/templates
+          - --format-js
+          - --format-css
+          - --profile=jinja
+          - --indent=2
+          - --quiet
+      - id: djlint
+        args:
+          - OpenOversight/app/templates
+          - --profile=jinja
+          - --use-gitignore
+          - --ignore=[H006,T028,H031]
