@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta http-equiv="content-language" content="en-us">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,9 +10,11 @@
       <meta name="description"
             content="A public, searchable database of law enforcement officers">
       <meta name="author" content="Lucy Parsons Labs">
-    {% endblock %}
+    {% endblock meta %}
     <title>
-      {% block title %}OpenOversight - a Lucy Parsons Labs project{% endblock %}
+      {% block title %}
+        OpenOversight - a Lucy Parsons Labs project
+      {% endblock title %}
     </title>
     <!-- Bundled CSS -->
     <link href="{{ url_for('static', filename='dist/index.css') }}"
@@ -32,7 +35,8 @@
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <!-- Bootstrap -->
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    {% block head %}{% endblock %}
+    {% block head %}
+    {% endblock head %}
   </head>
   <body role="document">
     <nav class="navbar navbar-default navbar-fixed-top">
@@ -127,8 +131,9 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    {% block content %}{% endblock %}
-    <footer class="footer container {% block footer_class %}{% endblock %}">
+    {% block content %}
+    {% endblock content %}
+    <footer class="footer container {% block footer_class %}{% endblock footer_class %}">
       <hr>
       <div class="row text-center horizontal-padding">
         <div class="col-sm-4">
@@ -169,6 +174,6 @@
     </footer>
     {% block js_footer %}
       {% for item in jsloads %}<script src="{{ url_for('static', filename=item) }}"></script>{% endfor %}
-    {% endblock %}
+    {% endblock js_footer %}
   </body>
 </html>
