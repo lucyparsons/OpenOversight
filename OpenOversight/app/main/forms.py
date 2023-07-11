@@ -426,11 +426,13 @@ class DateFieldForm(Form):
     date_field = DateField("Date*", validators=[DataRequired()])
     time_field = TimeField("Time", validators=[Optional()])
 
-    def validate_time_field(self, field):
+    @staticmethod
+    def validate_time_field(field):
         if not type(field.data) == datetime.time:
             raise ValidationError("Not a valid time.")
 
-    def validate_date_field(self, field):
+    @staticmethod
+    def validate_date_field(field):
         if field.data.year < 1900:
             raise ValidationError("Incidents prior to 1900 not allowed.")
 
