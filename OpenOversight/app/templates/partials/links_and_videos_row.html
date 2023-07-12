@@ -35,7 +35,7 @@
     <a href="{{ url_for("main.link_api_new", officer_id=officer.id) }}"
        class="btn btn-primary">New Link/Video</a>
   {% endif %}
-  {% for type, list in obj.links|groupby("link_type") %}
+  {% for type, list in obj.links | groupby("link_type") %}
     {% if type == "video" %}
       <h3>Videos</h3>
       <ul class="list-group">
