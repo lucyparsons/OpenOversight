@@ -172,11 +172,11 @@ Usage: flask [OPTIONS] COMMAND [ARGS]...
 
   Provides commands from Flask, extensions, and the application. Loads the
   application defined in the FLASK_APP environment variable, or from a
-  wsgi.py file. Setting the FLASK_ENV environment variable to 'development'
+  wsgi.py file. Setting the ENV environment variable to 'development'
   will enable debug mode.
 
     $ export FLASK_APP=hello.py
-    $ export FLASK_ENV=development
+    $ export ENV=development
     $ flask run
 
 Options:
@@ -211,7 +211,7 @@ In `docker-compose.yml`, below the line specifying the port number, add the foll
    stdin_open: true
    tty: true
 ```
-Also in `docker-compose.yml`, below the line specifying the `FLASK_ENV`, add the following to the `environment` portion of the `web` service:
+Also in `docker-compose.yml`, below the line specifying the `ENV`, add the following to the `environment` portion of the `web` service:
 ```yml
   FLASK_DEBUG: 0
 ```

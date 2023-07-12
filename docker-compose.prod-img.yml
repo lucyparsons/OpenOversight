@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     environment:
-      ENVIRONMENT: production
+      ENV: production
       FLASK_APP: OpenOversight.app
     volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/
