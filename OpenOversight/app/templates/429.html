@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Too Many Requests{% endblock %}
-
+{% block title %}
+  Too Many Requests
+{% endblock title %}
 {% block content %}
-
-<div class="container theme-showcase" role="main">
-
-<h1>Too Many Requests</h1>
-<p>You're sending requests too fast. Wait a minute and try again. <a href="{{ url_for('main.index') }}">Return to homepage</a>.</p>
-
-</div>
-{% endblock %}
+  <div class="container theme-showcase" role="main">
+    <h1>Too Many Requests</h1>
+    <p>
+      You're sending requests too fast. Wait a minute and try again. <a href="{{ url_for("main.index") }}">Return to homepage</a>.
+    </p>
+  </div>
+{% endblock content %}

@@ -119,6 +119,7 @@ a > .tutorial{
    min-height: 700px;
    margin-bottom: 50px;
  }
+
  /* Since positioning the image, we need to help out the caption */
  .carousel-caption {
    display:block;
@@ -500,6 +501,12 @@ tr:hover .row-actions {
     content: "\e253";
 }
 
+@media all and (min-width: 768px) and (max-width: 991px) {
+    .filter-sidebar > .form > .btn.btn-primary:first-of-type {
+        margin-bottom: 5px;
+    }
+}
+
 .search-results .list-group-item {
     border: 0;
 }
@@ -578,8 +585,8 @@ tr:hover .row-actions {
 }
 
 .officer-face {
-    min-width: 200px;
-    min-height: 200px;
+    height: 300px;
+    margin: auto;
 }
 
 .face-wrap {

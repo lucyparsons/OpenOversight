@@ -2,75 +2,86 @@
 {% import "bootstrap/wtf.html" as wtf %}¬
 {% block title %}Submit images to OpenOversight{% endblock %}
 {% block meta %}
-<meta name="description" content="Submit images of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible.">
+  <meta name="description"
+        content="Submit images of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible.">
 {% endblock %}
 {% block head %}
-<link href="{{ url_for('static', filename='css/dropzone.css') }}" rel="stylesheet">
-<link href="{{ url_for('static', filename='css/dropzone-override.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/dropzone.css') }}"
+        rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/dropzone-override.css') }}"
+        rel="stylesheet">
 {% endblock %}
-
 {% block content %}
-<div class="container theme-showcase" role="main">
-
-   <div class="page-header">
-      <h1>Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. </small></h1>
-   </div>
-
-   <div class="header">
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>
+        Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. </small>
+      </h1>
+    </div>
+    <div class="header">
       <h3>What happens when I submit a photograph?</h3>
-      <p>The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.</p>
+      <p>
+        The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.
+      </p>
       {% if not current_user.get_id() %}
-        <p>Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.</p>
+        <p>
+          Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.
+        </p>
       {% else %}
         <p>Your user ID will be attached to all photo submissions while you are signed in.</p>
       {% endif %}
-   </div>
-   <h3>Select the department that the police officer in your image belongs to:</h3>
-   <div class="form-group">
-      <form class="form" name = "deptselect" id = "deptselect" method="post" role="form" label="deptselect">
-         {{ wtf.form_field(form.department) }}
+    </div>
+    <h3>Select the department that the police officer in your image belongs to:</h3>
+    <div class="form-group">
+      <form class="form"
+            name="deptselect"
+            id="deptselect"
+            method="post"
+            role="form"
+            label="deptselect">
+        {{ wtf.form_field(form.department) }}
       </form>
       <br>
-   </div>
-
-   <h3>Drop images here to submit photos of officers:</h3>
-
-    <form id="my-cop-dropzone" action="/upload/department/1" class='dropzone'>
+    </div>
+    <h3>Drop images here to submit photos of officers:</h3>
+    <form id="my-cop-dropzone" action="/upload/department/1" class="dropzone">
     </form>
     <p>
       Drag photographs from your computer directly into the box above or click the box to launch a finder window.
       If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.
       An image is successfully uploaded when you see a check mark over it.
     </p>
-
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
     <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
+    <script>
+        // Select user's preferred department by default
+        document.getElementById("department").selectedIndex = {
+            {
+                preferred_dept_id
+            }
+        } - 1;
+        // Save the preferred department in dept_id
+        var dept_id = document.getElementById("department").selectedIndex + 1;
+        var csrf_token = "{{ csrf_token() }}";
 
-   <script>
-   // Select user's preferred department by default
-   document.getElementById("department").selectedIndex = {{preferred_dept_id}} - 1;
-   // Save the preferred department in dept_id
-   var dept_id = document.getElementById("department").selectedIndex + 1;
-   var csrf_token = "{{ csrf_token() }}";
-
-   // Store changes in drop down list in dept_id variable
-   $(function() {
-      select_dept = $('#deptselect');
-      select_dept.on('change', function() {
-         // fires when department selection changes
-         dept_id = document.getElementById("department").value;
-      });
-   });
+        // Store changes in drop down list in dept_id variable
+        $(function() {
+            select_dept = $('#deptselect');
+            select_dept.on('change', function() {
+                // fires when department selection changes
+                dept_id = document.getElementById("department").value;
+            });
+        });
 
         const getURL = (file) => "/upload/department/" + dept_id;
         init_dropzone("#my-cop-dropzone", getURL, csrf_token);
     </script>
-</div>
-
-<div class="container">
-   <h3>High Security Submissions</h3>
-   <p>We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a></p>
-</div>
-
+  </div>
+  <div class="container">
+    <h3>High Security Submissions</h3>
+    <p>
+      We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a>
+    </p>
+  </div>
 {% endblock %}
