@@ -1,90 +1,71 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="theme-showcase" role="main">
-
+  <div class="theme-showcase" role="main">
     <div class="text-center">
-        <div class="hero-section">
-            <div class="hero">Help Us Build Transparency</div>
-            <div class="subhero">OpenOversight: A public, searchable database of law enforcement officers.</div>
+      <div class="hero-section">
+        <div class="hero">Help Us Build Transparency</div>
+        <div class="subhero">OpenOversight: A public, searchable database of law enforcement officers.</div>
+      </div>
+      <div class="container-fluid">
+        <div class="row display-flex vertical-padding horizontal-padding sink-row text-left">
+          <div class="col-lg-6 col-half-border bg-white">
+            <h1>
+              <small>Browse or Find a Law Enforcement Officer</small>
+            </h1>
+            <div class="text-muted">Search the database</div>
+            <p>
+              Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
+            </p>
+            <a href="/browse" class="btn btn-lg btn-primary">Browse officers</a>
+            <div class="small-horizontal-padding"></div>
+            <a href="/find" id="cpd" class="btn btn-lg btn-primary">Identify officers</a>
+          </div>
+          <div class="col-lg-6 col-half-border bg-white">
+            <h1>
+              <small>Submit an Image</small>
+            </h1>
+            <div class="text-muted">Contribute to the database</div>
+            <p>Have a photo containing uniformed law enforcement officers? Drop them here.</p>
+            <a class="btn btn-lg btn-primary"
+               href="{{ url_for("main.submit_data") }}">Submit Image</a>
+          </div>
         </div>
-
-        <div class="container-fluid">
-            <div class="row display-flex vertical-padding horizontal-padding sink-row text-left">
-                <div class="col-lg-6 col-half-border bg-white">
-                    <h1>
-                        <small>Browse or Find a Law Enforcement Officer</small>
-                    </h1>
-                    <div class="text-muted">Search the database</div>
-                    <p>
-                        Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
-                    </p>
-                    <a href="/browse" class="btn btn-lg btn-primary">
-                        Browse officers
-                    </a>
-                    <div class="small-horizontal-padding"></div>
-                    <a href="/find" id="cpd" class="btn btn-lg btn-primary">
-                        Identify officers
-                    </a>
-                </div>
-
-                <div class="col-lg-6 col-half-border bg-white">
-                    <h1>
-                        <small>Submit an Image</small>
-                    </h1>
-                    <div class="text-muted">Contribute to the database</div>
-                    <p>
-                        Have a photo containing uniformed law enforcement officers? Drop them here.
-                    </p>
-                    <a class="btn btn-lg btn-primary" href="{{ url_for('main.submit_data') }}">
-                        Submit Image
-                    </a>
-                </div>
-
-            </div>
-        </div>
+      </div>
     </div>
-    <div class="hr-banner">
-        Want to help? Here are two ways...
-    </div>
-
+    <div class="hr-banner">Want to help? Here are two ways...</div>
     <div class="container-fluid">
-        <div class="row display-flex">
-            <div class="col-lg-6 bg-light-gray col-half-no-border text-left">
-                <h1>
-                    <small>Volunteer</small>
-                </h1>
-                <p>
-                    We're looking for volunteers to help us sort through images. If you're interested in helping out, please
-                    sign up!
-                </p>
-                <a class="btn btn-lg btn-secondary" href="{{ url_for('main.get_started_labeling') }}">
-                    Put me to work
-                </a>
-            </div>
-            <div class="col-lg-6 bg-blue-gray col-half-no-border text-left">
-                <h1>
-                    <small>Donate</small>
-                </h1>
-                <p>
-                   While Seattle Tech Bloc does not accept donations at this time, if you'd like to financially
-                   contribute to police accountability work in the Seattle area, please donate to Divest SPD or
-                   these local BIPOC who have been doing the work as part of this movement.
-                </p>
-                <a class="btn btn-lg btn-secondary" href="https://venmo.com/code?user_id=2748347827879936448" target="_blank" rel="noopener noreferrer">
-                    Donate to Divest SPD via Venmo
-                </a>
-                <div class="small-horizontal-padding"></div>
-                <a class="btn btn-lg btn-secondary" href="https://docs.google.com/spreadsheets/u/0/d/1BOZr842Qtwx7aWKTb8qnVbKntBNJVvRKFOAw48dk9c4/htmlview" target="_blank" rel="noopener noreferrer">
-                    Pay The Fee
-                </a>
-            </div>
-
-
+      <div class="row display-flex">
+        <div class="col-lg-6 bg-light-gray col-half-no-border text-left">
+          <h1>
+            <small>Volunteer</small>
+          </h1>
+          <p>
+            We're looking for volunteers to help us sort through images. If you're interested in helping out, please
+            sign up!
+          </p>
+          <a class="btn btn-lg btn-secondary"
+             href="{{ url_for("main.get_started_labeling") }}">Put me to work</a>
         </div>
-
+        <div class="col-lg-6 bg-blue-gray col-half-no-border text-left">
+          <h1>
+            <small>Donate</small>
+          </h1>
+          <p>
+            While Seattle Tech Bloc does not accept donations at this time, if you'd like to financially
+            contribute to police accountability work in the Seattle area, please donate to Divest SPD or
+            these local BIPOC who have been doing the work as part of this movement.
+          </p>
+          <a class="btn btn-lg btn-secondary"
+             href="https://venmo.com/code?user_id=2748347827879936448"
+             target="_blank"
+             rel="noopener noreferrer">Donate to Divest SPD via Venmo</a>
+          <div class="small-horizontal-padding"></div>
+          <a class="btn btn-lg btn-secondary"
+             href="https://docs.google.com/spreadsheets/u/0/d/1BOZr842Qtwx7aWKTb8qnVbKntBNJVvRKFOAw48dk9c4/htmlview"
+             target="_blank"
+             rel="noopener noreferrer">Pay The Fee</a>
+        </div>
+      </div>
     </div>
-
-</div>
-
-{% endblock %}
+  </div>
+{% endblock content %}

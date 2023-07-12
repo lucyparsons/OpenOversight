@@ -1,12 +1,12 @@
 <h3>Notes</h3>
-
 <ul class="list-group">
   {% for note in officer.notes %}
     <li class="list-group-item">
-      <em>{{ note.date_updated.strftime('%b %d, %Y')}}</em>
+      <em>{{ note.date_updated.strftime("%b %d, %Y") }}</em>
       <br />
       {% for paragraph in note.text_contents.split('\n') %}
-        {{ paragraph | safe }}<br/>
+        {{ paragraph | safe }}
+        <br />
       {% endfor %}
       <br />
       <em>{{ note.creator.username }}</em>
@@ -23,10 +23,5 @@
     </li>
   {% endfor %}
 </ul>
-
-<a
-    href="{{ url_for('main.note_api', officer_id=officer.id) }}"
-    class="btn btn-primary"
->
-  New Note
-</a>
+<a href="{{ url_for('main.note_api', officer_id=officer.id) }}"
+   class="btn btn-primary">New Note</a>

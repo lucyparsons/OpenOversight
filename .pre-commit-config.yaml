@@ -95,3 +95,14 @@ repos:
 #           additional_dependencies:
 #             - types-click
 #             - types-ujson
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.31.1
+    hooks:
+      - id: djlint-reformat
+        args:
+          - OpenOversight/app/templates
+          - --format-css
+          - --profile=jinja
+          - --indent=2
+          - --quiet

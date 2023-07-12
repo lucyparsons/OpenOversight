@@ -1,3 +1,4 @@
 {% if (not current_user.is_anonymous and current_user.ac_department_id == officer.department_id) or current_user.is_administrator %}
-    <a class="btn btn-primary" href={{ url_for('main.submit_officer_images', officer_id=officer.id) }}>Add photos of this officer</a>
+  <a class="btn btn-primary"
+     href="{{ url_for('main.submit_officer_images', officer_id=officer.id) }}">Add photos of this officer</a>
 {% endif %}
