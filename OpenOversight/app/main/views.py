@@ -147,7 +147,7 @@ def get_officer():
     jsloads = ["js/find_officer.js"]
     form = FindOfficerForm()
 
-    depts_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+    departments_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
 
     if getattr(current_user, "dept_pref_rel", None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
@@ -177,7 +177,10 @@ def get_officer():
     else:
         current_app.logger.info(form.errors)
     return render_template(
-        "input_find_officer.html", form=form, depts_dict=depts_dict, jsloads=jsloads
+        "input_find_officer.html",
+        form=form,
+        depts_dict=departments_dict,
+        jsloads=jsloads,
     )
 
 
@@ -246,12 +249,7 @@ def officer_profile(officer_id):
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except Exception:
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error finding officer: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        current_app.logger.exception("Error finding officer")
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -274,12 +272,7 @@ def officer_profile(officer_id):
                 url_for("static", filename="images/placeholder.png", _external=True)
             ]
     except Exception:
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error loading officer profile: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        current_app.logger.exception("Error loading officer profile")
     if faces:
         officer.image_url = faces[0].image.filepath
         if not officer.image_url.startswith("http"):
@@ -494,7 +487,7 @@ def classify_submission(image_id, contains_cops):
         flash("Updated image classification")
     except Exception:
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
+        exception_type, value, full_traceback = sys.exc_info()
         current_app.logger.error(
             "Error classifying image: {}".format(
                 " ".join([str(exception_type), str(value), format_exc()])
@@ -652,8 +645,9 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
+    require_photo=False,
 ):
-    jsloads = ["js/select2.min.js", "js/list_officer.js"]
+    js_loads = ["js/select2.min.js", "js/list_officer.js"]
 
     form = BrowseForm()
     form.rank.query = (
@@ -673,6 +667,7 @@ def list_officer(
     form_data["unit"] = unit or []
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
+    form_data["require_photo"] = require_photo
 
     department = Department.query.filter_by(id=department_id).first()
     if not department:
@@ -705,15 +700,17 @@ def list_officer(
         for gender in genders
     ):
         form_data["gender"] = genders
+    if require_photo_arg := request.args.get("require_photo"):
+        form_data["require_photo"] = require_photo_arg
 
-    unit_choices = ["Not Sure"] + [
+    unit_selections = ["Not Sure"] + [
         uc[0]
         for uc in db.session.query(Unit.descrip)
         .filter_by(department_id=department_id)
         .order_by(Unit.descrip.asc())
         .all()
     ]
-    rank_choices = [
+    rank_selections = [
         jc[0]
         for jc in db.session.query(Job.job_title, Job.order)
         .filter_by(department_id=department_id)
@@ -721,11 +718,11 @@ def list_officer(
         .all()
     ]
     if (units := request.args.getlist("unit")) and all(
-        unit in unit_choices for unit in units
+        unit in unit_selections for unit in units
     ):
         form_data["unit"] = units
     if (ranks := request.args.getlist("rank")) and all(
-        rank in rank_choices for rank in ranks
+        rank in rank_selections for rank in ranks
     ):
         form_data["rank"] = ranks
     if current_job_arg := request.args.get("current_job"):
@@ -734,24 +731,33 @@ def list_officer(
     officers = filter_by_form(form_data, Officer.query, department_id).filter(
         Officer.department_id == department_id
     )
-    officers = officers.options(selectinload(Officer.face))
+
+    # Filter officers by presence of a photo
+    if form_data["require_photo"]:
+        officers = officers.join(Face)
+    else:
+        officers = officers.options(selectinload(Officer.face))
+
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
+
     officers = officers.paginate(
         page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
     )
+
     for officer in officers.items:
         officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
 
-        # could do some extra work to not lazy load images but load them all together
-        # but we would want to ensure to only load the first picture of each officer
+        # Could do some extra work to not lazy load images but load them all together.
+        # To do that properly we would want to ensure to only load the first picture of
+        # each officer.
         if officer_face and officer_face[0].image:
             officer.image = serve_image(officer_face[0].image.filepath)
 
     choices = {
         "race": RACE_CHOICES,
         "gender": GENDER_CHOICES,
-        "rank": [(rc, rc) for rc in rank_choices],
-        "unit": [(uc, uc) for uc in unit_choices],
+        "rank": [(rc, rc) for rc in rank_selections],
+        "unit": [(uc, uc) for uc in unit_selections],
     }
 
     next_url = url_for(
@@ -769,6 +775,7 @@ def list_officer(
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
         current_job=form_data["current_job"],
+        require_photo=form_data["require_photo"],
     )
     prev_url = url_for(
         "main.list_officer",
@@ -785,6 +792,7 @@ def list_officer(
         unique_internal_identifier=form_data["unique_internal_identifier"],
         unit=form_data["unit"],
         current_job=form_data["current_job"],
+        require_photo=form_data["require_photo"],
     )
 
     return render_template(
@@ -796,7 +804,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
-        jsloads=jsloads,
+        jsloads=js_loads,
     )
 
 
@@ -815,7 +823,8 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
         ranks = ranks.order_by(Job.job_title).all()
         rank_list = [(rank.id, rank.job_title) for rank in ranks]
     else:
-        ranks = Job.query.all()  # Not filtering by is_sworn_officer
+        # Not filtering by is_sworn_officer
+        ranks = Job.query.all()
         # Prevent duplicate ranks
         rank_list = sorted(
             set((rank.id, rank.job_title) for rank in ranks),
@@ -866,11 +875,11 @@ def add_officer():
         abort(HTTPStatus.FORBIDDEN)
     if form.validate_on_submit():
         # Work around for WTForms limitation with boolean fields in FieldList
-        new_formdata = request.form.copy()
-        for key in new_formdata.keys():
+        new_form_data = request.form.copy()
+        for key in new_form_data.keys():
             if re.fullmatch(r"salaries-\d+-is_fiscal_year", key):
-                new_formdata[key] = "y"
-        form = AddOfficerForm(new_formdata)
+                new_form_data[key] = "y"
+        form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
         flash("New Officer {} added to OpenOversight".format(officer.last_name))
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
@@ -1020,7 +1029,8 @@ def label_data(department_id=None, image_id=None):
         department = None
         if image_id:
             image = Image.query.filter_by(id=image_id).one()
-        else:  # Select a random untagged image from the entire database
+        else:
+            # Select a random untagged image from the entire database
             image_query = Image.query.filter_by(contains_cops=True).filter_by(
                 is_tagged=False
             )
@@ -1405,7 +1415,8 @@ def upload(department_id, officer_id=None):
             image.contains_cops = True
             face = Face(
                 officer_id=officer_id,
-                # Assuming photos uploaded with an officer ID are already cropped, so we set both images to the uploaded one
+                # Assuming photos uploaded with an officer ID are already cropped,
+                # we set both images to the uploaded one
                 img_id=image.id,
                 original_image_id=image.id,
                 user_id=current_user.get_id(),
@@ -1717,7 +1728,10 @@ main.add_url_rule(
 
 
 class OfficerLinkApi(ModelView):
-    """This API only applies to links attached to officer profiles, not links attached to incidents"""
+    """
+    This API only applies to links attached to officer profiles, not links attached to
+    incidents.
+    """
 
     model = Link
     model_name = "link"

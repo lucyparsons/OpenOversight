@@ -3,6 +3,7 @@ import copy
 import csv
 import json
 import random
+import re
 from datetime import date, datetime
 from decimal import Decimal
 from http import HTTPStatus
@@ -1621,7 +1622,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
     with current_app.test_request_context():
         department_id = Department.query.first().id
 
-        # Add a officer with a specific race, gender, rank and age to the first page
+        # Add an officer with a specific race, gender, rank and age to the first page
         login_admin(client)
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
@@ -1656,7 +1657,8 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         assert officer.race == "WHITE"
         assert officer.gender == "M"
 
-        # Check that added officer appears when filtering for this race, gender, rank and age
+        # Check that added officer appears when filtering for this race, gender, rank
+        # and age
         form = BrowseForm(
             race="WHITE",
             gender="M",
@@ -1674,18 +1676,28 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             follow_redirects=True,
         )
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Rank</dt>")[1:]
+        def normalize_tokens_for_comparison(html_str: str, split_str: str):
+            """Remove new lines, leading, and closing spaces between <dd> elements in
+            formatted HTML."""
+            parsed_list = html_str.data.decode(ENCODING_UTF_8).split(split_str)[1:]
+            parsed_list = [re.sub(r"<dd>\n\s+", "<dd>", token) for token in parsed_list]
+            parsed_list = [
+                re.sub(r"\n\s+</dd>", "</dd>", token) for token in parsed_list
+            ]
+            return parsed_list
+
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Rank</dt>")
         assert any(
             "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
         )
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Unit</dt>")[1:]
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
         assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Race</dt>")[1:]
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
         assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Gender</dt>")[1:]
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Gender</dt>")
         assert any("<dd>Male</dd>" in token for token in filter_list)
 
 
@@ -1697,7 +1709,8 @@ def test_find_officer_redirect(client, mockdata, session):
         min_age = datetime.now().year - 1991
         max_age = datetime.now().year - 1989
 
-        # Check that added officer appears when filtering for this race, gender, rank and age
+        # Check that added officer appears when filtering for this race, gender, rank
+        # and age
         form = FindOfficerForm(
             dept=department_id,
             first_name="A",

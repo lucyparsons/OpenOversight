@@ -346,12 +346,11 @@ def filter_roster(form, officer_query):
     if "dept" in form and form["dept"]:
         officer_query = officer_query.filter(Officer.department_id == form["dept"].id)
 
-    officer_query = (
+    return (
         officer_query.outerjoin(Face)
         .order_by(Face.officer_id.asc())
         .order_by(Officer.id.desc())
     )
-    return officer_query
 
 
 def grab_officers(form):
