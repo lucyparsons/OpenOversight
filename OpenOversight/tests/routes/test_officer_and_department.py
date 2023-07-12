@@ -1621,7 +1621,7 @@ def test_browse_filtering_allows_good(client, mockdata, session):
     with current_app.test_request_context():
         department_id = Department.query.first().id
 
-        # Add a officer with a specific race, gender, rank and age to the first page
+        # Add an officer with a specific race, gender, rank and age to the first page
         login_admin(client)
         links = [
             LinkForm(url="http://www.pleasework.com", link_type="link").data,
@@ -1656,7 +1656,8 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         assert officer.race == "WHITE"
         assert officer.gender == "M"
 
-        # Check that added officer appears when filtering for this race, gender, rank and age
+        # Check that added officer appears when filtering for this race, gender, rank
+        # and age
         form = BrowseForm(
             race="WHITE",
             gender="M",
@@ -1707,7 +1708,8 @@ def test_find_officer_redirect(client, mockdata, session):
         min_age = datetime.now().year - 1991
         max_age = datetime.now().year - 1989
 
-        # Check that added officer appears when filtering for this race, gender, rank and age
+        # Check that added officer appears when filtering for this race, gender, rank
+        # and age
         form = FindOfficerForm(
             dept=department_id,
             first_name="A",

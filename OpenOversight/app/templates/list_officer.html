@@ -1,28 +1,31 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Browse {{ department.name|title }} officers - OpenOversight{% endblock %}
+{% block title %}
+  Browse {{ department.name | title }} officers - OpenOversight
+{% endblock title %}
 {% block meta %}
   <meta name="description"
-        content="Browse or search for officers in the {{ department.name|title }}.">
-{% endblock %}
+        content="Browse or search for officers in the {{ department.name | title }}.">
+{% endblock meta %}
 {% block head %}
   <link href="{{ url_for('static', filename='css/select2.min.css') }}"
         rel="stylesheet">
-{% endblock %}
+{% endblock head %}
 {% block content %}
   <div class="container" role="main">
-    <h1>{{ department.name|title }} Officers</h1>
+    <h1>{{ department.name | title }} Officers</h1>
     <div class="row">
       <div class="filter-sidebar col-sm-3">
         <h3 class="sidebar-title">Filter officers</h3>
         <form class="form" method="get" role="form">
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['first_name'] and not form_data['last_name'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-name">
               <h3 class="panel-title accordion-toggle">Name</h3>
             </div>
-            <div class="collapse in" id="filter-name">
+            <div class="collapse {{ form_data | field_in_query("first_name") }} {{ form_data | field_in_query("last_name") }}"
+                 id="filter-name">
               <div class="panel-body">
                 <div class="form-row">
                   <div class="form-group">
@@ -49,12 +52,13 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-badge">
               <h3 class="panel-title accordion-toggle">Badge</h3>
             </div>
-            <div class="collapse in" id="filter-badge">
+            <div class="collapse {{ form_data | field_in_query("badge") }}"
+                 id="filter-badge">
               <div class="panel-body">
                 <div class="form-group">
                   <input type="text"
@@ -67,7 +71,7 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['race'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-race">
               <h3 class="panel-title accordion-toggle">Race</h3>
@@ -92,7 +96,7 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['gender'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-gender">
               <h3 class="panel-title accordion-toggle">Gender</h3>
@@ -117,7 +121,7 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['rank'] and not form_data['unit'] and not form_data['current_job'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-job">
               <h3 class="panel-title accordion-toggle">Job</h3>
@@ -176,12 +180,13 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['min_age'] and not form_data['max_age'] %} collapsed{% endif %}"
                  data-toggle="collapse"
                  data-target="#filter-age">
               <h3 class="panel-title accordion-toggle">Age range</h3>
             </div>
-            <div class="collapse" id="filter-age">
+            <div class="collapse  {{ form_data | field_in_query("min_age") }} {{ form_data | field_in_query("max_age") }}"
+                 id="filter-age">
               <div class="panel-body">
                 <div class="form-row">
                   <div class="form-group col-md-6">
@@ -223,13 +228,37 @@
               </div>
             </div>
           </div>
+          <div class="panel">
+            <div class="panel-heading{% if not form_data['require_photo'] %} collapsed{% endif %}"
+                 data-toggle="collapse"
+                 data-target="#filter-photo">
+              <h3 class="panel-title accordion-toggle">Photo</h3>
+            </div>
+            <div class="collapse {{ form_data | field_in_query("require_photo") }}"
+                 id="filter-photo">
+              <div class="panel-body panel-body-long">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="require_photo">
+                      <input id="require_photo"
+                             name="require_photo"
+                             type="checkbox"
+                             value="True"
+                             {% if form_data.get("require_photo") %}checked{% endif %}>
+                      Officer has Photo
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
           <a class="btn btn-primary"
              href="{{ url_for(request.endpoint, department_id=department.id) }}">Clear Filters</a>
         </form>
       </div>
       <div class="search-results col-sm-9">
-        {% with paginate=officers, location='top' %}
+        {% with paginate=officers, location="top" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
         <ul class="list-group">
@@ -238,25 +267,25 @@
               <div class="row">
                 <div class="col-md-6 col-xs-12">
                   <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
-                    <img class="officer-face" src="{{ officer.image | default("/static/images/placeholder.png") }}" class="img-responsive thumbnail" alt="{{ officer.full_name() }}">
+                    <img class="officer-face img-responsive thumbnail" src="{{ officer.image | default("/static/images/placeholder.png") }}" alt="{{ officer.full_name() }}">
                   </a>
                 </div>
                 <div class="col-md-6 col-xs-12">
                   <h2>
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}"
                        id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
-                    <small>{{ officer.badge_number() |default('') }}</small>
+                    <small>{{ officer.badge_number() | default('') }}</small>
                   </h2>
                   <div class="row">
                     <div class="col-md-6 col-xs-6">
                       <dl>
                         <dt>Rank</dt>
                         <dd>
-                          {{ officer.job_title() |default('Unknown') }}
+                          {{ officer.job_title() | default('Unknown') }}
                         </dd>
                         <dt>Unit</dt>
                         <dd>
-                          {{ officer.unit_descrip() |default('Unknown') }}
+                          {{ officer.unit_descrip() | default('Unknown') }}
                         </dd>
                         <dt>Currently on the Force</dt>
                         <dd>
@@ -272,11 +301,11 @@
                       <dl>
                         <dt>Race</dt>
                         <dd>
-                          {{ officer.race_label() |default('Unknown')|lower|title }}
+                          {{ officer.race_label() | default('Unknown') | lower | title }}
                         </dd>
                         <dt>Gender</dt>
                         <dd>
-                          {{ officer.gender_label() |default('Unknown') }}
+                          {{ officer.gender_label() | default('Unknown') }}
                         </dd>
                         <dt>Number of Photos</dt>
                         <dd>
@@ -290,7 +319,7 @@
             </li>
           {% endfor %}
         </ul>
-        {% with paginate=officers, location='bottom' %}
+        {% with paginate=officers, location="bottom" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
       </div>
