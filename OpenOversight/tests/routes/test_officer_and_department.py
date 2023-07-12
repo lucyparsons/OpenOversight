@@ -3,6 +3,7 @@ import copy
 import csv
 import json
 import random
+import re
 from datetime import date, datetime
 from http import HTTPStatus
 from io import BytesIO
@@ -1673,25 +1674,29 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             follow_redirects=True,
         )
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Rank</dt>")[1:]
-        assert any("{}".format(job.job_title) in token for token in filter_list)
-        assert any("<dd>" in token for token in filter_list)
-        assert any("</dd>" in token for token in filter_list)
+        def normalize_tokens_for_comparison(html_str: str, split_str: str):
+            """Remove new lines, leading, and closing spaces between <dd> elements in
+            formatted HTML."""
+            parsed_list = html_str.data.decode(ENCODING_UTF_8).split(split_str)[1:]
+            parsed_list = [re.sub(r"<dd>\n\s+", "<dd>", token) for token in parsed_list]
+            parsed_list = [
+                re.sub(r"\n\s+</dd>", "</dd>", token) for token in parsed_list
+            ]
+            return parsed_list
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Unit</dt>")[1:]
-        assert any("{}".format(unit.descrip) in token for token in filter_list)
-        assert any("<dd>" in token for token in filter_list)
-        assert any("</dd>" in token for token in filter_list)
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Rank</dt>")
+        assert any(
+            "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
+        )
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Race</dt>")[1:]
-        assert any("White" in token for token in filter_list)
-        assert any("<dd>" in token for token in filter_list)
-        assert any("</dd>" in token for token in filter_list)
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
+        assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
 
-        filter_list = rv.data.decode(ENCODING_UTF_8).split("<dt>Gender</dt>")[1:]
-        assert any("Male" in token for token in filter_list)
-        assert any("<dd>" in token for token in filter_list)
-        assert any("</dd>" in token for token in filter_list)
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
+        assert any("<dd>White</dd>" in token for token in filter_list)
+
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Gender</dt>")
+        assert any("<dd>Male</dd>" in token for token in filter_list)
 
 
 def test_find_officer_redirect(client, mockdata, session):
