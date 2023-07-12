@@ -90,6 +90,7 @@ repos:
     rev: v1.31.1
     hooks:
       - id: djlint-reformat
+        require_serial: true
         args:
           - OpenOversight/app/templates
           - --format-js
@@ -98,8 +99,9 @@ repos:
           - --indent=2
           - --quiet
       - id: djlint
+        require_serial: true
         args:
           - OpenOversight/app/templates
           - --profile=jinja
           - --use-gitignore
-          - --ignore=[H006,T028,H031]
+          - --ignore=H006,T028,H031
