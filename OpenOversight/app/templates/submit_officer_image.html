@@ -32,7 +32,7 @@
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
   <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
   <script>
-      var csrf_token = "{{ csrf_token() }}";
+      const csrf_token = "{{ csrf_token() }}";
       init_dropzone(
           "#my-cop-dropzone",
           "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
