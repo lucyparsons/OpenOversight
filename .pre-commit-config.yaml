@@ -90,7 +90,6 @@ repos:
     rev: v1.31.1
     hooks:
       - id: djlint-reformat
-        require_serial: true
         args:
           - OpenOversight/app/templates
           - --format-js
