@@ -4,7 +4,7 @@
         rel="stylesheet">
   <link href="{{ url_for('static', filename='css/dropzone-override.css') }}"
         rel="stylesheet">
-{% endblock %}
+{% endblock head %}
 {% block content %}
   <div class="container theme-showcase" role="main">
     <div class="page-header">
@@ -26,7 +26,7 @@
        class="btn btn-primary"
        href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">Done uploading images</a>
   </div>
-{% endblock %}
+{% endblock content %}
 {% block js_footer %}
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
@@ -39,4 +39,4 @@
           csrf_token
       );
   </script>
-{% endblock %}
+{% endblock js_footer %}
