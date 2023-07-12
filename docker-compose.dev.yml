@@ -47,7 +47,7 @@ services:
       - postgres
       - minio
     environment:
-      ENVIRONMENT: development
+      ENV: development
       FLASK_DEBUG: 1
       SQLALCHEMY_WARN_20: 1
     volumes:

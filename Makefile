@@ -12,7 +12,7 @@ build_with_version: create_empty_secret create_empty_env
 
 .PHONY: test_with_version
 test_with_version: build_with_version assets
-	FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+	ENV=testing docker-compose run --rm web pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 .PHONY: start
 start: build ## Run containers
@@ -52,9 +52,9 @@ testlocal:
 .PHONY: test
 test: start ## Run tests
 	if [ -z "$(name)" ]; then \
-		FLASK_ENV=testing docker-compose run --rm web pytest --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
+		ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-		FLASK_ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
+		ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint

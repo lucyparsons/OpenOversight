@@ -10,7 +10,7 @@ class BaseConfig:
     def __init__(self):
         # App Settings
         self.DEBUG = False
-        self.ENVIRONMENT = os.environ.get("ENVIRONMENT", "")
+        self.ENV = os.environ.get("ENV", "development")
         self.SEED = 666
         self.TESTING = False
         # Use session cookie to store URL to redirect to after login
@@ -82,4 +82,4 @@ config = {
     "testing": TestingConfig(),
     "production": ProductionConfig(),
 }
-config["default"] = config.get(os.environ.get("ENVIRONMENT", ""), DevelopmentConfig)
+config["default"] = config.get(os.environ.get("ENV", ""), DevelopmentConfig)
