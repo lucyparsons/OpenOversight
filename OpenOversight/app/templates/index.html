@@ -18,7 +18,9 @@
             </p>
             <a href="/browse" class="btn btn-lg btn-primary">Browse officers</a>
             <div class="small-horizontal-padding"></div>
-            <a href="/find" id="cpd" class="btn btn-lg btn-primary">Identify officers</a>
+            <a href="{{ url_for("main.get_officer") }}"
+               id="cpd"
+               class="btn btn-lg btn-primary">Identify officers</a>
           </div>
           <div class="col-lg-6 col-half-border bg-white">
             <h1>
