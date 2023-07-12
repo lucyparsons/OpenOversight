@@ -15,7 +15,7 @@
     <div class="header">
       <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
     </div>
-    <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}"
+    <form action="{{ url_for('main.upload', department_id=officer.department_id, officer_id=officer.id) }}"
           class="dropzone"
           id="my-cop-dropzone">
     </form>
