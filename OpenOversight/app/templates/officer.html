@@ -26,8 +26,8 @@
   <meta property="og:title" content="{{ officer.full_name() }}">
   <meta property="og:type" content="website">
   <meta property="og:image" content="{{ image_url }}">
-  {#  <meta property="og:url"#}
-  {#        content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">#}
+  <meta property="og:url"
+        content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">
   <meta property="og:description" content="{{ description }}">
   <meta property="og:site_name" content="OpenOversight">
   <!-- JSON-LD -->
