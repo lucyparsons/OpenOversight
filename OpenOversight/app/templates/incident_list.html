@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}View incidents - OpenOversight{% endblock %}
+{% block title %}
+  View incidents - OpenOversight
+{% endblock title %}
 {% block meta %}
   {% if incidents.items|length > 0 %}
     <meta name="description"
@@ -8,7 +10,7 @@
   {% else %}
     <meta name="description" content="No incidents found.">
   {% endif %}
-{% endblock %}
+{% endblock meta %}
 {% block content %}
   <div class="container" role="main">
     <h1>Incidents</h1>
@@ -29,12 +31,12 @@
         </form>
       </div>
       <div class="search-results col-sm-9">
-        {% with paginate=incidents, location='top' %}
+        {% with paginate=incidents, location="top" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
         <ul class="list-group">
-          {% if incidents.items %}
-            <table class='table table-hover table-responsive'>
+          {% if "incidents.items" %}
+            <table class="table table-hover table-responsive">
               <tbody>
                 {% for incident in incidents.items %}
                   {% if not loop.first %}
@@ -56,7 +58,7 @@
                       </h3>
                     </td>
                   </tr>
-                  {% include 'partials/incident_fields.html' %}
+                  {% include "partials/incident_fields.html" %}
                 {% endfor %}
               </tbody>
             </table>
@@ -72,7 +74,7 @@
             Add New Incident
           </a>
         {% endif %}
-        {% with paginate=incidents, location='bottom' %}
+        {% with paginate=incidents, location="bottom" %}
           {% include "partials/paginate_nav.html" %}
         {% endwith %}
       </div>
@@ -81,4 +83,4 @@
 {% endblock content %}
 {% block js_footer %}
   <script src="{{ url_for('static', filename='js/incidentDescription.js') }}"></script>
-{% endblock %}
+{% endblock js_footer %}
