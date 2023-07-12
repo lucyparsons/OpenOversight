@@ -1675,9 +1675,9 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             follow_redirects=True,
         )
 
-        def normalize_filter_tokens_for_comparison(html_str: str, split_str: str):
+        def normalize_tokens_for_comparison(html_str: str, split_str: str):
             """Remove new lines, leading, and closing spaces between <dd> elements in
-            formatting HTML."""
+            formatted HTML."""
             parsed_list = html_str.data.decode(ENCODING_UTF_8).split(split_str)[1:]
             parsed_list = [re.sub(r"<dd>\n\s+", "<dd>", token) for token in parsed_list]
             parsed_list = [
@@ -1685,18 +1685,18 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             ]
             return parsed_list
 
-        filter_list = normalize_filter_tokens_for_comparison(rv, "<dt>Rank</dt>")
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Rank</dt>")
         assert any(
             "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
         )
 
-        filter_list = normalize_filter_tokens_for_comparison(rv, "<dt>Unit</dt>")
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
         assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
 
-        filter_list = normalize_filter_tokens_for_comparison(rv, "<dt>Race</dt>")
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
         assert any("<dd>White</dd>" in token for token in filter_list)
 
-        filter_list = normalize_filter_tokens_for_comparison(rv, "<dt>Gender</dt>")
+        filter_list = normalize_tokens_for_comparison(rv, "<dt>Gender</dt>")
         assert any("<dd>Male</dd>" in token for token in filter_list)
 
 
