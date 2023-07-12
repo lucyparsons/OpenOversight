@@ -26,8 +26,8 @@
   <meta property="og:title" content="{{ officer.full_name() }}">
   <meta property="og:type" content="website">
   <meta property="og:image" content="{{ image_url }}">
-  <meta property="og:url"
-        content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">
+  {#  <meta property="og:url"#}
+  {#        content="{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}">#}
   <meta property="og:description" content="{{ description }}">
   <meta property="og:site_name" content="OpenOversight">
   <!-- JSON-LD -->
@@ -36,41 +36,24 @@
           "@context": "https://schema.org/",
           "@type": "Person",
           "name": "{{ officer.full_name() }}",
-          {
-              %
-              if officer.birth_year %
-          }
+          {% if officer.birth_year %}
           "birthDate": "{{ officer.birth_year }}",
-          {
-              %
-              endif %
-          }
+          {% endif %}
           "gender": "{{ officer.gender_label() }}",
           "jobTitle": "{{ job_title }}",
           "worksFor": {
               "@type": "Organization",
               "name": "{{ officer.department.name | title }}"
           },
-          {
-              %
-              if officer.unique_internal_identifier %
-          }
+          {% if officer.unique_internal_identifier %}
           "identifier": "{{ officer.unique_internal_identifier }}",
-          {
-              %
-              endif %
-          } {
-              %
-              if officer.image_url %
-          }
+          {%endif %}
+          {% if officer.image_url %}
           "image": {
               "@type": "URL",
               "url": "{{ officer.image_url }}"
           },
-          {
-              %
-              endif %
-          }
+          {% endif %}
           "url": {
               "@type": "URL",
               "url": "{{ url_for(request.endpoint, officer_id=officer.id, _external=True) }}"
