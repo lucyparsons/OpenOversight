@@ -99,6 +99,7 @@ repos:
           - --quiet
       - id: djlint
         require_serial: true
+        pass_filenames: false
         args:
           - OpenOversight/app/templates
           - --profile=jinja
