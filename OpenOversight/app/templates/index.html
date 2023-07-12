@@ -16,7 +16,7 @@
             <p>
               Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
             </p>
-            <a href="/browse" class="btn btn-lg btn-primary">Browse officers</a>
+            <a href="{{ url_for("main.browse") }}" class="btn btn-lg btn-primary">Browse officers</a>
             <div class="small-horizontal-padding"></div>
             <a href="{{ url_for("main.get_officer") }}"
                id="cpd"
