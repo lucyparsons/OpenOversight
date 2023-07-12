@@ -1,31 +1,28 @@
 <h3>Descriptions</h3>
 {% if officer.descriptions %}
-<ul class="list-group">
+  <ul class="list-group">
     {% for description in officer.descriptions %}
-    <li class="list-group-item">
-        <em>{{ description.date_updated.strftime('%b %d, %Y')}}</em> <br />
+      <li class="list-group-item">
+        <em>{{ description.date_updated.strftime("%b %d, %Y") }}</em>
+        <br />
         {{ description.text_contents | markdown }}
-        {% if current_user and not current_user.is_anonymous %}
-          <em>{{ description.creator.username }} </em>
-        {% endif %}
+        {% if current_user and not current_user.is_anonymous %}<em>{{ description.creator.username }}</em>{% endif %}
         {% if description.creator_id == current_user.get_id() or
-        current_user.is_administrator %}
-        <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit' }}">
+          current_user.is_administrator %}
+          <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit' }}">
             <span class="sr-only">Edit</span>
             <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-        </a>
-        <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/delete' }}">
+          </a>
+          <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/delete' }}">
             <span class="sr-only">Delete</span>
             <i class="fa fa-trash-o" aria-hidden="true"></i>
-        </a>
+          </a>
         {% endif %}
-    </li>
+      </li>
     {% endfor %}
-</ul>
+  </ul>
 {% endif %}
-
 {% if is_admin_or_coordinator %}
-<a href="{{ url_for('main.description_api', officer_id=officer.id) }}" class="btn btn-primary">
-    New description
-</a>
+  <a href="{{ url_for('main.description_api', officer_id=officer.id) }}"
+     class="btn btn-primary">New description</a>
 {% endif %}

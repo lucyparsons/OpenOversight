@@ -1,25 +1,39 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}OpenOversight Admin - {% if update %} Edit {% else %} Add {% endif %} Officer Salary{% endblock %}
-
+{% block title %}
+  OpenOversight Admin -
+  {% if update %}
+    Edit
+  {% else %}
+    Add
+  {% endif %}
+  Officer Salary
+{% endblock title %}
 {% block content %}
-<div class="container theme-showcase" role="main">
-
-<div class="page-header">
-    <h1>{% if update %} Edit {% else %} Add {% endif %} Officer Salary</h1>
-</div>
-<div class="col-md-6">
-    <form class="form" method="post" role="form">
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>
+        {% if update %}
+          Edit
+        {% else %}
+          Add
+        {% endif %}
+        Officer Salary
+      </h1>
+    </div>
+    <div class="col-md-6">
+      <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
         {{ wtf.form_field(form.salary) }}
         {{ wtf.form_field(form.overtime_pay) }}
         {{ wtf.form_field(form.year) }}
         {{ wtf.form_field(form.is_fiscal_year) }}
-        <input class="btn btn-primary btn-lg" type="submit" value="{% if update %} Edit {% else %} Add {% endif %}" />
-    </form>
-    <br>
-</div>
-
-</div>
-{% endblock %}
+        <input class="btn btn-primary btn-lg"
+               type="submit"
+               value="{% if update %} Edit {% else %} Add {% endif %}" />
+      </form>
+      <br>
+    </div>
+  </div>
+{% endblock content %}

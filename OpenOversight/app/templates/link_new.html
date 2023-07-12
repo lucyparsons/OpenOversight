@@ -1,10 +1,8 @@
 {% extends 'form.html' %}
-
 {% block page_title %}
-	New Link
+  New Link
 {% endblock page_title %}
-
 {% block form %}
   <p>For officer with OOID {{ form.officer_id.data }}.</p>
-	{{ super() }}
+  {{ super() }}
 {% endblock form %}

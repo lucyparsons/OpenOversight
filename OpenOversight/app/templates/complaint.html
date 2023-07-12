@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="container">
-  <div class="row">
-    <div class="col-lg-12">
-      <h1 class="page-header">File a Complaint <small>Using these officer details</small></h1>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-12 col-sm-6 col-lg-8">
-      <p>Now that you've found the offending officer, it's time to submit a complaint
-         to the relevant oversight body. For complaints regarding Chicago Police Department
-         officers, complaints are accepted through the link below. Clicking below will open
-         a new browser tab where you can copy the officer details from this page into the
-         complaint form when requested.</p>
-
-      <div class="text-center">
-        <h3>Warning! <small>The following link will open an external site
-        in a new browser tab:</small></h3>
-
-        <a href="http://ipraportal.iprachicago.org/pls/htmldb/f?p=1503:12:2709570244836141" target="_blank"
-        class="btn btn-info btn-lrg">File Complaint Online</a>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="page-header">
+          File a Complaint <small>Using these officer details</small>
+        </h1>
       </div>
     </div>
-
+    <div class="row">
+      <div class="col-xs-12 col-sm-6 col-lg-8">
+        <p>
+          Now that you've found the offending officer, it's time to submit a complaint
+          to the relevant oversight body. For complaints regarding Chicago Police Department
+          officers, complaints are accepted through the link below. Clicking below will open
+          a new browser tab where you can copy the officer details from this page into the
+          complaint form when requested.
+        </p>
+        <div class="text-center">
+          <h3>
+            Warning! <small>The following link will open an external site
+          in a new browser tab:</small>
+        </h3>
+        <a href="https://ipraportal.iprachicago.org/pls/htmldb/f?p=1503:12:2709570244836141"
+           target="_blank"
+           class="btn btn-info btn-lrg">File Complaint Online</a>
+      </div>
+    </div>
     <div class="col-xs-6 col-lg-4">
       <center>
         <img class="img-responsive" src="{{ officer_image }}" alt="Officer face">
       </center>
-      <h4>Officer name: {{ officer_first_name.lower()|title }}
-      {% if officer_middle_initial %}{{ officer_middle_initial }}.
-      {% endif %}
-      {{ officer_last_name.lower()|title }}
-      {% if officer_suffix %}{{ officer_suffix }}.
-      {% endif %}
+      <h4>
+        Officer name: {{ officer_first_name.lower() |title }}
+        {% if officer_middle_initial %}{{ officer_middle_initial }}.{% endif %}
+        {{ officer_last_name.lower() |title }}
+        {% if officer_suffix %}{{ officer_suffix }}.{% endif %}
       </h4>
       <h4>Officer badge number: #{{ officer_star }}</h4>
     </div>
   </div>
 </div>
-
-{% endblock %}
+{% endblock content %}

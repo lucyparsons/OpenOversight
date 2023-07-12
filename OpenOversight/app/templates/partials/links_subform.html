@@ -1,7 +1,7 @@
 <div>
-	<legend>{{ form.links.label }}</legend>
-	{% for subform in form.links %}
-		{% include "partials/subform.html" %}
-	{% endfor %}
-	<button class="btn btn-success js-add-another-button" disabled>Add another link</button>
+  <legend>{{ form.links.label }}</legend>
+  {% for subform in form.links %}
+    {% include "partials/subform.html" %}
+  {% endfor %}
+  <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
 </div>
