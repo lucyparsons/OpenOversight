@@ -92,7 +92,6 @@ repos:
       - id: djlint-reformat
         args:
           - OpenOversight/app/templates
-          - --format-js
           - --format-css
           - --profile=jinja
           - --indent=2
