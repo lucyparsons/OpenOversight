@@ -708,7 +708,6 @@ def list_officer(
     ):
         form_data["gender"] = genders
     if require_photo_arg := request.args.get("require_photo"):
-        current_app.logger.info("SETTING THE REQUIRE_PHOTO KEY")
         form_data["require_photo"] = require_photo_arg
 
     unit_selections = ["Not Sure"] + [
