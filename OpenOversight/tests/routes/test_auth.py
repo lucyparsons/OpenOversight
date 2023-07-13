@@ -142,8 +142,10 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
 
 
 def test_user_can_register_with_legit_credentials(mockdata, client, session):
-    with current_app.test_request_context():
-        diceware_password = "operative hamster perservere verbalize curling"
+    with current_app.test_request_context(), TestCase.assertLogs(
+        current_app.logger
+    ) as log:
+        diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email="jen@example.com",
             username="redshiftzero",
@@ -155,6 +157,10 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
         )
 
         assert b"A confirmation email has been sent to you." in rv.data
+        assert (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+            in log.output.__str__()
+        )
 
 
 def test_user_cannot_register_with_weak_password(mockdata, client, session):
@@ -173,16 +179,24 @@ def test_user_cannot_register_with_weak_password(mockdata, client, session):
 
 
 def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
-    with current_app.test_request_context():
+    with current_app.test_request_context(), TestCase.assertLogs(
+        current_app.logger
+    ) as log:
         login_user(client)
 
         rv = client.get(url_for("auth.resend_confirmation"), follow_redirects=True)
 
         assert b"A new confirmation email has been sent to you." in rv.data
+        assert (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+            in log.output.__str__()
+        )
 
 
 def test_user_can_get_password_reset_token_sent(mockdata, client, session):
-    with current_app.test_request_context():
+    with current_app.test_request_context(), TestCase.assertLogs(
+        current_app.logger
+    ) as log:
         form = PasswordResetRequestForm(email="jen@example.org")
 
         rv = client.post(
@@ -192,12 +206,18 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
         )
 
         assert b"An email with instructions to reset your password" in rv.data
+        assert (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+            in log.output.__str__()
+        )
 
 
 def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
     mockdata, client, session
 ):
-    with current_app.test_request_context():
+    with current_app.test_request_context(), TestCase.assertLogs(
+        current_app.logger
+    ) as log:
         form = PasswordResetRequestForm(email="JEN@EXAMPLE.ORG")
 
         rv = client.post(
@@ -207,6 +227,10 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
         )
 
         assert b"An email with instructions to reset your password" in rv.data
+        assert (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+            in log.output.__str__()
+        )
 
 
 def test_user_can_get_reset_password_with_valid_token(mockdata, client, session):
