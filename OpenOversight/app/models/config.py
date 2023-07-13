@@ -33,7 +33,7 @@ class BaseConfig:
         self.WTF_CSRF_ENABLED = True
 
         # Mail Settings
-        self.OO_ADMIN_EMAIL = os.environ.get("OO_ADMIN_EMAIL")
+        self.OO_HELP_EMAIL = os.environ.get("OO_HELP_EMAIL")
         self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
             "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
         )

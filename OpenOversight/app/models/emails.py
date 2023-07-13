@@ -47,7 +47,7 @@ class ChangePasswordEmail(Email):
         body = render_template(
             "auth/email/change_password.html",
             user=user,
-            admin_email=current_app.config["OO_ADMIN_EMAIL"],
+            help_email=current_app.config["OO_HELP_EMAIL"],
         )
         super().__init__(body, subject, receiver)
 

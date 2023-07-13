@@ -36,7 +36,7 @@ services:
      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
      ENV: "${ENV:-development}"
      FLASK_APP: OpenOversight.app
-     OO_ADMIN_EMAIL: "info@lucyparsonslabs.com"
+     OO_HELP_EMAIL: "info@lucyparsonslabs.com"
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
    volumes:

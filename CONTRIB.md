@@ -67,11 +67,11 @@ OO_SERVICE_EMAIL="sample_email@domain.com"
 ```
 
 In addition to needing a service account email, you also need an admin email address so that users have someone to reach out to if an action is taken on their account that needs to be reversed or addressed.
-For production, save the email address associated with your admin account to a variable named `OO_ADMIN_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_ADMIN_EMAIL` variable in the `docker-compose.yml` file.
+For production, save the email address associated with your admin account to a variable named `OO_HELP_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_HELP_EMAIL` variable in the `docker-compose.yml` file.
 
 Example `.env` variable:
 ```bash
-OO_ADMIN_EMAIL="sample_admin_email@domain.com"
+OO_HELP_EMAIL="sample_admin_email@domain.com"
 ```
 
 ## Testing S3 Functionality
