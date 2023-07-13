@@ -33,6 +33,7 @@ class BaseConfig:
         self.WTF_CSRF_ENABLED = True
 
         # Mail Settings
+        # TODO: Remove the default once we are able to update the production .env file
         self.OO_HELP_EMAIL = os.environ.get("OO_HELP_EMAIL", "info@lucyparsonslabs.com")
         self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
             "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
