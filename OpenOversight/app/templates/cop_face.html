@@ -42,7 +42,7 @@
           </div>
           <div class="col-sm-3 text-center">
             <div class="docs-data">
-              <form {% if department %} action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id) }}" {% else %} action="{{ url_for('main.label_data', image_id=image.id) }}" {% endif %}
+              <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else None) }}"
                     method="post">
                 {{ form.hidden_tag() }}
                 <div class="input-group input-group-sm">
@@ -164,56 +164,63 @@
               <a href="{{ url_for('main.label_data', department_id=department.id) }}"
                  class="btn btn-lg btn-primary"
                  role="button">
-              {% else %}
-                <a href="{{ url_for("main.label_data") }}"
-                   class="btn btn-lg btn-primary"
-                   role="button">
-                {% endif %}
-                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
-            </div>
-            <div class="col-sm-2 text-center done-button">
-              <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}"
-                 class="btn btn-sm btn-success">
-                <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
-                All officers have been identified!
+                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+                Next Photo
               </a>
-            </div>
-            <hr>
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="text-center button-explanation">
-                  <div class="text done-button-explanation">
-                    <b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.
-                  </div>
-                  <div class="text skip-button-explanation">
-                    <b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.
-                  </div>
-                  <div class="text launchroster-button-explanation">
-                    <b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.
-                  </div>
+            {% else %}
+              <a href="{{ url_for("main.label_data") }}"
+                 class="btn btn-lg btn-primary"
+                 role="button">
+                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+                Next Photo
+              </a>
+            {% endif %}
+          </div>
+          <div class="col-sm-2 text-center done-button">
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}"
+               class="btn btn-sm btn-success">
+              <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
+              All officers have been identified!
+            </a>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="text-center button-explanation">
+                <div class="text done-button-explanation">
+                  <b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.
+                </div>
+                <div class="text skip-button-explanation">
+                  <b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.
+                </div>
+                <div class="text launchroster-button-explanation">
+                  <b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.
                 </div>
               </div>
             </div>
           </div>
-        {% elif current_user.is_disabled == True %}
-          <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
-          <p>
-            <a href="mailto:techblocsea@protonmail.com"
-               class="btn btn-lg btn-primary"
-               role="button">Mail us to get it enabled again</a>
-          </p>
-        {% else %}
-          <h3>All images have been tagged!</h3>
-          <h4>
-            <small class="muted">{{ department.name }}</small>
-          </h4>
-          <p>
-            <a href="{{ url_for("main.submit_data") }}"
-               class="btn btn-lg btn-primary"
-               role="button">Submit officer pictures to us</a>
-          </p>
-        {% endif %}
+        </div>
+      {% elif current_user.is_disabled == True %}
+        <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+        <p>
+          <a href="mailto:techblocsea@protonmail.com"
+             class="btn btn-lg btn-primary"
+             role="button">Mail us to get it enabled again</a>
+        </p>
+      {% else %}
+        <h3>All images have been tagged!</h3>
+        <h4>
+          <small class="muted">{{ department.name }}</small>
+        </h4>
+        <p>
+          <a href="{{ url_for("main.submit_data") }}"
+             class="btn btn-lg btn-primary"
+             role="button">Submit officer pictures to us</a>
+        </p>
       {% endif %}
-    </div>
-  {% endblock %}
-  {% block footer_class %}bottom-10{% endblock %}
+    {% endif %}
+  </div>
+{% endblock content %}
+{% block footer_class %}
+  bottom-10
+{% endblock footer_class %}

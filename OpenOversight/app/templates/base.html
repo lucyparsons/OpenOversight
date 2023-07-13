@@ -58,28 +58,28 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-link navbar-brand" href="/">OpenOversight</a>
+            <a class="navbar-link navbar-brand" href="{{ url_for("main.index") }}">OpenOversight</a>
           </div>
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
               <li>
-                <a class="navbar-link" href="/browse">Browse</a>
+                <a class="navbar-link" href="{{ url_for("main.browse") }}">Browse</a>
               </li>
               <li>
-                <a class="navbar-link" href="/find">Find an Officer</a>
+                <a class="navbar-link" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
               </li>
               <li>
-                <a class="navbar-link" href="/submit">Submit Images</a>
+                <a class="navbar-link" href="{{ url_for("main.submit_data") }}">Submit Images</a>
               </li>
               <li>
-                <a class="navbar-link" href="/label">Volunteer</a>
+                <a class="navbar-link" href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
               </li>
               <li>
-                <a class="navbar-link" href="/about">About</a>
+                <a class="navbar-link" href="{{ url_for("main.about_oo") }}">About</a>
               </li>
               {% if current_user and current_user.is_administrator %}
                 <li>
-                  <a class="navbar-link" href="/auth/users">Users</a>
+                  <a class="navbar-link" href="{{ url_for("auth.get_users") }}">Users</a>
                 </li>
               {% endif %}
             </ul>
@@ -150,7 +150,7 @@
                rel="noopener noreferrer">Lucy Parsons Labs</a>
             <br>
             Maintained by
-            <a href="http://twitter.com/TechBlocSEA"
+            <a href="https://twitter.com/TechBlocSEA"
                target="_blank"
                rel="noopener noreferrer">Seattle Tech Bloc</a>
             <br />
@@ -161,7 +161,7 @@
           <h5>Contact</h5>
           <p>
             <a title="TechBloc Twitter"
-               href="http://twitter.com/TechBlocSEA"
+               href="https://twitter.com/TechBlocSEA"
                rel="noopener noreferrer"
                target="_blank">
               <i class="fa fa-twitter-square fa-3x social" aria-hidden="true"></i>
@@ -182,7 +182,7 @@
               <i class="fa fa-globe fa-3x social" aria-hidden="true"></i>
             </a>
             <br>
-            <a href="/privacy" class="btn">Privacy Policy</a>
+            <a href="{{ url_for("main.privacy_oo") }}" class="btn">Privacy Policy</a>
           </p>
         </div>
         <div class="col-sm-4">

@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% block title %}About OpenOversight{% endblock %}
+{% block title %}
+  About OpenOversight
+{% endblock title %}
 {% block meta %}
   <meta name="description"
         content="OpenOversight is a Seattle Tech Bloc project that aims to improve law enforcement visibility and transparency using public and crowdsourced data. We maintain databases, digital galleries, and profiles of individual law enforcement officers from departments the so called Pacific Northwest that consolidate information including names, birthdates, mentions in news articles, salaries, and photographs." />
-{% endblock %}
+{% endblock meta %}
 {% block content %}
   <div role="main">
     <div class="hero-section no-sub">
@@ -23,7 +25,7 @@
         <small>
           This is an independent instance of OpenOversight hosted by Seattle
           regional techbloc. For more info or reporting problems, reach out to
-          <a href="http://twitter.com/TechBlocSEA"
+          <a href="https://twitter.com/TechBlocSEA"
              rel="noopener noreferrer"
              target="_blank">TechBlocSEA on Twitter</a>
           or
@@ -31,7 +33,9 @@
         </small>
       </p>
       <div class="text-center pb-50">
-        <a href="/find" class="btn btn-lg btn-info" id="try-it">Try it</a>
+        <a href="{{ url_for("main.get_officer") }}"
+           class="btn btn-lg btn-info"
+           id="try-it">Try it</a>
       </div>
       <div class="row font-weight-300 text-center display-flex">
         <div class="col-lg-4 col-half-border">
@@ -121,4 +125,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

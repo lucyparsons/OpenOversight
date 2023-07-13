@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block head %}<script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>{% endblock %}
+{% block head %}
+  <script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>
+{% endblock head %}
 {% block js_footer %}
   <script type="text/javascript">
       $(document).bind('keydown', 'y', function() {
@@ -14,7 +16,7 @@
           window.location = $('#answer-skip').attr('href');
       });
   </script>
-{% endblock %}
+{% endblock js_footer %}
 {% block content %}
   <div class="container theme-showcase" role="main">
     {% if current_user and current_user.is_authenticated %}
@@ -92,4 +94,4 @@
       {% endif %}
     {% endif %}
   </div>
-{% endblock %}
+{% endblock content %}

@@ -2,7 +2,7 @@
   {% if officers.has_prev %}
     <form action="{{ url_for('main.get_gallery', page=officers.prev_num) }}"
           method="post">
-      {% include 'partials/officer_form_fields_hidden.html' %}
+      {% include "partials/officer_form_fields_hidden.html" %}
       <input type="submit" class="btn btn-info btn-md" value=" << " />
     </form>
   {% endif %}
@@ -14,9 +14,8 @@
   {% if officers.has_next %}
     <form action="{{ url_for('main.get_gallery', page=officers.next_num) }}"
           method="post">
-      {% include 'partials/officer_form_fields_hidden.html' %}
+      {% include "partials/officer_form_fields_hidden.html" %}
       <input type="submit" class="btn btn-info btn-md" value=" >> " />
     </form>
   {% endif %}
 </div>
-<!-- /.top-paginate -->

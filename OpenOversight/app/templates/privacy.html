@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Privacy Policy - OpenOversight{% endblock %}
+{% block title %}
+  Privacy Policy - OpenOversight
+{% endblock title %}
 {% block meta %}
   <meta name="description"
         content="Lucy Parsons Labs takes your privacy and security very seriously.">
-{% endblock %}
+{% endblock meta %}
 {% block content %}
   <div role="main">
     <div class="hero-section no-sub">
@@ -26,7 +28,8 @@
           OpenOversight is hosted on its own subdomain and web server, it will be possible for employers, ISPs, or
           anyone performing network-level traffic analysis to identify that you have visited OpenOversight. The
           Lucy Parsons Labs <b>does not</b> maintain network logs on our web servers. We have explicitly disabled
-          nginx from maintaining access or error logs, an example configuration can be found <a rel="noopener noreferrer" href="https://github.com/lucyparsons/OpenOversight/blob/master/DEPLOY.md"
+          nginx from maintaining access or error logs, an example configuration can be found <a rel="noopener noreferrer"
+    href="https://github.com/lucyparsons/OpenOversight/blob/master/DEPLOY.md"
     target="_blank">here</a>. We also do not block incoming connections from any regions or IP
           block, so we welcome traffic from any anonymity network such as Tor.
         </p>
@@ -38,8 +41,11 @@
           hosted by Lucy Parsons Labs and is outside of this Privacy Policy. The Submission Form does not require
           you to provide a name and we will not reject any submissions without names. Please note that Google and
           other third parties might collect your IPs and other identifying information. Google's Privacy Policy
-          can be found <a rel="noopener noreferrer" href="https://www.google.com/intl/en_us/policies/" target="_blank">here</a> and Google
-          Drive's Terms of Service may be found <a rel="noopener noreferrer" href="https://support.google.com/drive/answer/2450387?hl=en"
+          can be found <a rel="noopener noreferrer"
+    href="https://www.google.com/intl/en_us/policies/"
+    target="_blank">here</a> and Google
+          Drive's Terms of Service may be found <a rel="noopener noreferrer"
+    href="https://support.google.com/drive/answer/2450387?hl=en"
     target="_blank">here</a>.
         </p>
       </div>
@@ -50,7 +56,9 @@
         <p class="font-weight-300">
           <b>A note to Illinois law enforcement</b>: This project does not perform facial recognition and is thus
           in compliance with the Biometric Information Privacy Act. Requests or questions regarding this project
-          from those affiliated with law enforcement must be directed to our <a href="mailto:legal@lucyparsonslabs.com">legal representation</a>. You may also review our <a rel="noopener noreferrer" href="https://lucyparsonslabs.com/about/canary/" target="_blank">Warrant Canary</a>.
+          from those affiliated with law enforcement must be directed to our <a href="mailto:legal@lucyparsonslabs.com">legal representation</a>. You may also review our <a rel="noopener noreferrer"
+    href="https://lucyparsonslabs.com/about/canary/"
+    target="_blank">Warrant Canary</a>.
         </p>
       </div>
     </div>
@@ -64,4 +72,4 @@
       </p>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

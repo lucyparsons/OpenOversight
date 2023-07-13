@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Browse OpenOversight{% endblock %}
-{% block meta %}<meta name="description" content="Browse a department on OpenOversight.">{% endblock %}
+{% block title %}
+  Browse OpenOversight
+{% endblock title %}
+{% block meta %}
+  <meta name="description" content="Browse a department on OpenOversight.">
+{% endblock meta %}
 {% block content %}
   <div class="container theme-showcase" role="main">
     <div class="text-center frontpage-leads">
@@ -43,4 +47,4 @@
       {% endfor %}
     </div>
   </div>
-{% endblock %}
+{% endblock content %}

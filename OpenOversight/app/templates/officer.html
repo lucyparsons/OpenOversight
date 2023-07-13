@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block title %}{{ officer.full_name() }} - OpenOversight{% endblock %}
+{% block title %}
+  {{ officer.full_name() }} - OpenOversight
+{% endblock title %}
 {% block meta %}
   {% set job_title = officer.job_title() if officer.job_title() and officer.job_title() != 'Not Sure' else 'Employee' %}
   {% set description = 'See detailed information about ' ~ officer.full_name() ~ ', ' ~ job_title ~ ' of the ' ~ officer.department.name ~ '.' %}
@@ -81,7 +83,7 @@
           }]
       }
   </script>
-{% endblock %}
+{% endblock meta %}
 {% block content %}
   {% set is_admin_or_coordinator = current_user.is_administrator or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id) %}
   <div class="container theme-showcase" role="main">
@@ -119,7 +121,7 @@
         {% endif %}
       </div>
       {# end col #}
-      <div class='col-sm-12 col-md-6'>
+      <div class="col-sm-12 col-md-6">
         {% if officer.salaries or is_admin_or_coordinator %}
           {% include "partials/officer_salary.html" %}
         {% endif %}
@@ -134,5 +136,4 @@
     </div>
     {# end row #}
   </div>
-  {# end container #}
-{% endblock %}
+{% endblock content %}
