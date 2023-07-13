@@ -400,7 +400,6 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         )
 
         assert b"Your password has been updated." in rv.data
-        # Confirm that change password email gets sent
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password has Changed"
             in log.output.__str__()
