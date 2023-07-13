@@ -1,5 +1,6 @@
 # Routing and view tests
 from http import HTTPStatus
+from unittest import TestCase
 from urllib.parse import urlparse
 
 import pytest
@@ -361,8 +362,11 @@ def test_user_can_not_confirm_account_with_invalid_token(mockdata, client, sessi
 
 
 def test_user_can_change_password_if_they_match(mockdata, client, session):
-    with current_app.test_request_context():
+    with current_app.test_request_context(), TestCase.assertLogs(
+        current_app.logger
+    ) as log:
         login_user(client)
+
         form = ChangePasswordForm(
             old_password="dog", password="validpasswd", password2="validpasswd"
         )
@@ -372,6 +376,11 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         )
 
         assert b"Your password has been updated." in rv.data
+        # Confirm that change password email gets sent
+        assert (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password has Changed"
+            in log.output.__str__()
+        )
 
 
 def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, session):
