@@ -390,7 +390,6 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         current_app.logger
     ) as log:
         login_user(client)
-
         form = ChangePasswordForm(
             old_password="dog", password="validpasswd", password2="validpasswd"
         )
