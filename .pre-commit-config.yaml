@@ -90,9 +90,9 @@ repos:
     rev: v1.31.1
     hooks:
       - id: djlint-reformat
+        pass_filenames: false
         args:
           - OpenOversight/app/templates
-          - --format-js
           - --format-css
           - --profile=jinja
           - --indent=2
