@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Volunteer with OpenOversight{% endblock %}
+{% block title %}
+  Volunteer with OpenOversight
+{% endblock title %}
 {% block meta %}
   <meta name="description"
         content="Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.">
-{% endblock %}
+{% endblock meta %}
 {% block content %}
   {% if current_user and current_user.is_authenticated %}
     <div class="container theme-showcase" role="main">
@@ -23,7 +25,8 @@
         </p>
         <p>New to working on images for OpenOversight? Or just need a refresher?</p>
         <p>
-          <a class="btn btn-lg btn-primary" href="/leaderboard">
+          <a class="btn btn-lg btn-primary"
+             href="{{ url_for("main.leaderboard") }}">
             <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
             Leaderboard
           </a>
@@ -145,4 +148,4 @@
   </div>
 </div>
 {% endif %}
-{% endblock %}
+{% endblock content %}

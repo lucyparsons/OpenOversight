@@ -4,7 +4,7 @@
         rel="stylesheet">
   <link href="{{ url_for('static', filename='css/dropzone-override.css') }}"
         rel="stylesheet">
-{% endblock %}
+{% endblock head %}
 {% block content %}
   <div class="container theme-showcase" role="main">
     <div class="page-header">
@@ -15,7 +15,7 @@
     <div class="header">
       <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
     </div>
-    <form action="/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}"
+    <form action="{{ url_for('main.upload', department_id=officer.department_id, officer_id=officer.id) }}"
           class="dropzone"
           id="my-cop-dropzone">
     </form>
@@ -26,17 +26,17 @@
        class="btn btn-primary"
        href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">Done uploading images</a>
   </div>
-{% endblock %}
+{% endblock content %}
 {% block js_footer %}
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
   <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
   <script>
-      var csrf_token = "{{ csrf_token() }}";
+      const csrf_token = "{{ csrf_token() }}";
       init_dropzone(
           "#my-cop-dropzone",
           "/upload/department/{{ officer.department_id }}/officer/{{ officer.id }}",
           csrf_token
       );
   </script>
-{% endblock %}
+{% endblock js_footer %}
