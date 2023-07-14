@@ -42,7 +42,7 @@ class ChangeEmailAddressEmail(Email):
 class ChangePasswordEmail(Email):
     def __init__(self, receiver: str, user):
         subject = (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password has Changed"
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password Has Changed"
         )
         body = render_template(
             "auth/email/change_password.html",
