@@ -159,7 +159,7 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
         assert b"A confirmation email has been sent to you." in rv.data
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
-            in log.output.__str__()
+            in str(log.output)
         )
 
 
@@ -189,7 +189,7 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
         assert b"A new confirmation email has been sent to you." in rv.data
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
-            in log.output.__str__()
+            in str(log.output)
         )
 
 
@@ -208,7 +208,7 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
         assert b"An email with instructions to reset your password" in rv.data
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
-            in log.output.__str__()
+            in str(log.output)
         )
 
 
@@ -229,7 +229,7 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
         assert b"An email with instructions to reset your password" in rv.data
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
-            in log.output.__str__()
+            in str(log.output)
         )
 
 
@@ -401,7 +401,7 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         assert b"Your password has been updated." in rv.data
         assert (
             f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password has Changed"
-            in log.output.__str__()
+            in str(log.output)
         )
 
 
