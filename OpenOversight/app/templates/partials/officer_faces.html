@@ -1,6 +1,8 @@
 {% for path in paths %}
   {# Don't try to link if only image is the placeholder #}
   {% if faces %}<a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">{% endif %}
-    <img class="officer-face officer-profile" src="{{ path }}" alt="Submission">
+    <img class="officer-face officer-profile"
+         src="{{ path }}"
+         alt="Submission">
     {% if faces %}</a>{% endif %}
 {% endfor %}
