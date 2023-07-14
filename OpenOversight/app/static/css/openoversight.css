@@ -609,8 +609,16 @@ tr:hover .row-actions {
 @media (max-width: 767px) {
     .officer-face.officer-profile {
         height: 460px;
-        margin-bottom: 10px;
+        padding-bottom: 10px;
     }
+}
+
+#face-img {
+    border: none;
+    display: block;
+    margin: auto;
+    max-height: 500px;
+    padding-bottom: 10px;
 }
 
 
