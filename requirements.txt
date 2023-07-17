@@ -17,7 +17,7 @@ dnspython~=2.3.0
 docutils~=0.20.1
 dominate~=2.8.0
 email-validator==2.0.0.post2
-Faker==18.13.0
+Faker==19.1.0
 Flask==2.3.2
 Flask-Bootstrap==3.3.7.1
 Flask-Limiter==3.3.1
@@ -26,7 +26,7 @@ Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.1
-google-api-python-client==2.92.0
+google-api-python-client==2.93.0
 gunicorn==20.1.0
 httplib2==0.22.0
 idna~=3.4
