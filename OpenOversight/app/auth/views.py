@@ -28,6 +28,7 @@ from OpenOversight.app.models.database import User, db
 from OpenOversight.app.models.emails import (
     AdministratorApprovalEmail,
     ChangeEmailAddressEmail,
+    ChangePasswordEmail,
     ConfirmAccountEmail,
     ConfirmedUserEmail,
     ResetPasswordEmail,
@@ -175,6 +176,9 @@ def change_password():
             db.session.add(current_user)
             db.session.commit()
             flash("Your password has been updated.")
+            EmailClient.send_email(
+                ChangePasswordEmail(current_user.email, user=current_user)
+            )
             return redirect(url_for("main.index"))
         else:
             flash("Invalid password.")

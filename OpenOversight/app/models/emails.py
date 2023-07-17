@@ -39,6 +39,19 @@ class ChangeEmailAddressEmail(Email):
         super().__init__(body, subject, receiver)
 
 
+class ChangePasswordEmail(Email):
+    def __init__(self, receiver: str, user):
+        subject = (
+            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password Has Changed"
+        )
+        body = render_template(
+            "auth/email/change_password.html",
+            user=user,
+            help_email=current_app.config["OO_HELP_EMAIL"],
+        )
+        super().__init__(body, subject, receiver)
+
+
 class ConfirmAccountEmail(Email):
     def __init__(self, receiver: str, user, token: str):
         subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
