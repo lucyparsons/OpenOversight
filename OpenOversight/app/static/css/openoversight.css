@@ -590,8 +590,40 @@ tr:hover .row-actions {
 }
 
 .officer-face {
+    border: none;
     height: 300px;
     margin: auto;
+}
+
+.officer-face.officer-profile {
+    display: block;
+}
+
+@media (min-width: 992px) {
+    .officer-face.officer-profile {
+        height: 510px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .officer-face.officer-profile {
+        height: 590px;
+    }
+}
+
+@media (max-width: 767px) {
+    .officer-face.officer-profile {
+        height: 460px;
+        padding-bottom: 10px;
+    }
+}
+
+#face-img {
+    border: none;
+    display: block;
+    margin: auto;
+    max-height: 500px;
+    padding-bottom: 10px;
 }
 
 .face-wrap {
