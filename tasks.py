@@ -36,12 +36,12 @@ logging.basicConfig(
 
 
 # make sure we are logging in UTC and have millisecond granularity
-def _formatTime(record, _):
+def _format_time(record, _):
     return str(datetime.datetime.utcfromtimestamp(record.created)) + "Z"
 
 
 for h in logging.getLogger().handlers:
-    h.formatter.formatTime = _formatTime
+    h.formatter.formatTime = _format_time
 
 
 @dataclass
