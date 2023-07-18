@@ -69,7 +69,7 @@ def test_face_repr(mockdata):
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert unit.__repr__() == "Unit: {}".format(unit.descrip)
+    assert unit.__repr__() == "Unit: {}".format(unit.description)
 
 
 def test_user_repr(mockdata):
