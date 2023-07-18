@@ -262,7 +262,7 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
     db_units_sorted = list(
         map(
             lambda x: x.description,
-            db.session.query(Unit).order_by(Unit.descrip.asc()).all(),
+            db.session.query(Unit).order_by(Unit.description.asc()).all(),
         )
     )
     # the Select tag in the interface has a 'None' value at the start
