@@ -179,10 +179,10 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(incident_long_description.id)
 
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
     assert result.is_displayed()
@@ -194,10 +194,10 @@ def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officer/1")
 
-    incident_long_descrip = Incident.query.filter(
+    incident_long_description = Incident.query.filter(
         func.length(Incident.description) > DESCRIPTION_CUTOFF
     ).one_or_none()
-    incident_id = str(incident_long_descrip.id)
+    incident_id = str(incident_long_description.id)
 
     # Check that the text is truncated and contains more than just the ellipsis
     truncated_text = browser.find_element(
@@ -261,7 +261,7 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
     # get the units from the DB in the sort we expect
     db_units_sorted = list(
         map(
-            lambda x: x.descrip,
+            lambda x: x.description,
             db.session.query(Unit).order_by(Unit.descrip.asc()).all(),
         )
     )
