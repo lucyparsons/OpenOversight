@@ -173,7 +173,7 @@ def test_admin_can_add_assignment(mockdata, client, session):
         form = AssignmentForm(
             star_no="1234",
             job_title=job.id,
-            star_date=date(2019, 1, 1),
+            start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -187,7 +187,7 @@ def test_admin_can_add_assignment(mockdata, client, session):
         assert "2019-01-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-12-31" in rv.data.decode(ENCODING_UTF_8)
         assignment = Assignment.query.filter_by(star_no="1234", job_id=job.id).first()
-        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.start_date == date(2019, 1, 1)
         assert assignment.resign_date == date(2019, 12, 31)
 
 
@@ -201,7 +201,7 @@ def test_admin_add_assignment_validation_error(mockdata, client, session):
         form = AssignmentForm(
             star_no="1234",
             job_title=job.id,
-            star_date=date(2020, 1, 1),
+            start_date=date(2020, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -226,7 +226,7 @@ def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
         form = AssignmentForm(
             star_no="S1234",
             job_title=job.id,
-            star_date=date(2019, 1, 1),
+            start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -244,7 +244,7 @@ def test_ac_can_add_assignment_in_their_dept(mockdata, client, session):
         assignment = Assignment.query.filter_by(
             star_no="S1234", officer_id=officer.id
         ).first()
-        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.start_date == date(2019, 1, 1)
         assert assignment.resign_date == date(2019, 12, 31)
 
 
@@ -282,7 +282,7 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         form = AssignmentForm(
             star_no="1234",
             job_title=job.id,
-            star_date=date(2019, 1, 1),
+            start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -298,7 +298,7 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert "2019-12-31" in rv.data.decode(ENCODING_UTF_8)
 
         assignment = Assignment.query.filter_by(star_no="1234", job_id=job.id).first()
-        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.start_date == date(2019, 1, 1)
         assert assignment.resign_date == date(2019, 12, 31)
 
         job = Job.query.filter_by(
@@ -307,7 +307,7 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         form = AssignmentForm(
             star_no="12345",
             job_title=job.id,
-            star_date=date(2019, 2, 1),
+            start_date=date(2019, 2, 1),
             resign_date=date(2019, 11, 30),
         )
         officer = Officer.query.filter_by(id=3).one()
@@ -328,7 +328,7 @@ def test_admin_can_edit_assignment(mockdata, client, session):
         assert "2019-11-30" in rv.data.decode(ENCODING_UTF_8)
 
         assignment = Assignment.query.filter_by(star_no="12345", job_id=job.id).first()
-        assert assignment.star_date == date(2019, 2, 1)
+        assert assignment.start_date == date(2019, 2, 1)
         assert assignment.resign_date == date(2019, 11, 30)
 
 
@@ -345,7 +345,7 @@ def test_admin_edit_assignment_validation_error(
         form = AssignmentForm(
             star_no="1234",
             job_title=job.id,
-            star_date=date(2019, 1, 1),
+            start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -370,7 +370,7 @@ def test_admin_edit_assignment_validation_error(
         )
         assignment = Assignment.query.filter_by(star_no="1234", job_id=job.id).first()
         assert "End date must come after start date." in rv.data.decode(ENCODING_UTF_8)
-        assert assignment.star_date == date(2019, 1, 1)
+        assert assignment.start_date == date(2019, 1, 1)
         assert assignment.resign_date == date(2019, 12, 31)
 
 
@@ -387,7 +387,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         form = AssignmentForm(
             star_no=star_no,
             job_title=job.id,
-            star_date=date(2019, 1, 1),
+            start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
         )
 
@@ -404,7 +404,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         assert "2019-01-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-12-31" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == star_no
-        assert officer.assignments[0].star_date == date(2019, 1, 1)
+        assert officer.assignments[0].start_date == date(2019, 1, 1)
         assert officer.assignments[0].resign_date == date(2019, 12, 31)
 
         officer = Officer.query.filter_by(id=officer.id).one()
@@ -414,7 +414,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         form = AssignmentForm(
             star_no=new_star_no,
             job_title=job.id,
-            star_date=date(2019, 2, 1),
+            start_date=date(2019, 2, 1),
             resign_date=date(2019, 11, 30),
         )
 
@@ -433,7 +433,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         assert "2019-02-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-11-30" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == new_star_no
-        assert officer.assignments[0].star_date == date(2019, 2, 1)
+        assert officer.assignments[0].start_date == date(2019, 2, 1)
         assert officer.assignments[0].resign_date == date(2019, 11, 30)
 
 
@@ -1485,7 +1485,7 @@ def test_assignments_csv(mockdata, client, session, department):
             .first()
         )
         form = AssignmentForm(
-            star_no="9181", job_title=job, star_date=date(2020, 6, 16)
+            star_no="9181", job_title=job, start_date=date(2020, 6, 16)
         )
         add_new_assignment(officer.id, form)
         rv = client.get(
@@ -1511,7 +1511,7 @@ def test_assignments_csv(mockdata, client, session, department):
             row for row in lines if row["badge number"] == form.star_no.data
         ]
         assert len(new_assignment) == 1
-        assert new_assignment[0]["start date"] == str(form.star_date.data)
+        assert new_assignment[0]["start date"] == str(form.start_date.data)
         assert new_assignment[0]["job title"] == job.job_title
 
 
