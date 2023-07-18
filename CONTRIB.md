@@ -11,8 +11,8 @@ To submit your changes for review you have to fork the repository, push your new
 Use [PULL_REQUEST_TEMPLATE.md](/PULL_REQUEST_TEMPLATE.md) to create the description for your PR! (The template should populate automatically when you go to open the pull request.)
 
 ### Recommended privacy settings
-Whenever you make a commit with `git` the name and email saved locally is stored with that commit and will become part of the public history of the project. This can be an unwanted, for example when using a work computer. We recommond changing the email-settings in the github account at https://github.com/settings/emails and selecting "Keep my email addresses private" as well as "Block command line pushes that expose my email". Also find your github-email address of the form `<id>+<username>@users.noreply.github.com` in that section. Then you can change the email and username stored with your commits by running the following commands
-```
+Whenever you make a commit with `git` the name and email saved locally is stored with that commit and will become part of the public history of the project. This can be an unwanted, for example when using a work computer. We recommend changing the email-settings in the github account at https://github.com/settings/emails and selecting "Keep my email addresses private" as well as "Block command line pushes that expose my email". Also find your github-email address of the form `<id>+<username>@users.noreply.github.com` in that section. Then you can change the email and username stored with your commits by running the following commands
+```shell
 git config user.email "<your-github-email>"
 git config user.name "<your-github-username>"
 ```
@@ -34,8 +34,8 @@ Tests are executed via `make test`. If you're switching between the Docker and V
 
 To hop into the postgres container, you can do the following:
 
-```
-$ docker exec -it openoversight_postgres_1 /bin/bash
+```shell
+$ docker exec -it openoversight-postgres-1 bash
 # psql -d openoversight-dev -U openoversight
 ```
 
@@ -43,8 +43,8 @@ or run `make attach`.
 
 Similarly to hop into the web container:
 
-```
-$ docker exec -it openoversight_web_1 /bin/bash
+```shell
+$ docker exec -it openoversight-web-1 bash
 ```
 
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
@@ -78,7 +78,7 @@ For more information about these settings, please see the [Flask-Mail](https://f
 Regardless of implementation, save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_SERVICE_EMAIL` variable in the `docker-compose.yml` file.
 
 Example `.env` variable:
-```bash
+```shell
 OO_SERVICE_EMAIL="sample_email@domain.com"
 ```
 
@@ -86,7 +86,7 @@ In addition to needing a service account email, you also need an admin email add
 For production, save the email address associated with your admin account to a variable named `OO_HELP_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_HELP_EMAIL` variable in the `docker-compose.yml` file.
 
 Example `.env` variable:
-```bash
+```shell
 OO_HELP_EMAIL="sample_admin_email@domain.com"
 ```
 
@@ -97,7 +97,7 @@ on Amazon Web Services.
 
 Once you have done this, you can put your AWS credentials in the following environmental variables:
 
-```sh
+```shell
 $ export S3_BUCKET_NAME=openoversight-test
 $ export AWS_ACCESS_KEY_ID=testtest
 $ export AWS_SECRET_ACCESS_KEY=testtest
@@ -112,7 +112,7 @@ Running `make dev` will create the database and persist it into your local files
 
 You can access your PostgreSQL development database via psql using:
 
-```sh
+```shell
 psql  -h localhost -d openoversight-dev -U openoversight --password
 ```
 
@@ -124,71 +124,88 @@ or
 `$ python test_data.py --cleanup` to delete the data
 
 ### Migrating the Database
-If you e.g. add a new column or table, you'll need to migrate the database using the Flask CLI. First we need to 'stamp' the current version of the database:
+You'll first have to start the Docker instance for the OpenOversight app using the command `make start`. To do this, you'll need to be in the base folder of the repository (the one that houses the `Makefile`).
 
-```sh
-$ cd OpenOversight/  # change directory to source dir
+```shell
+$ make start
+docker-compose build
+...
+docker-compose up -d
+[+] Running 2/0
+ ✔ Container openoversight-postgres-1  Running                                                                                                                                                             0.0s
+ ✔ Container openoversight-web-1       Running
+```
+
+From here on out, we'll be using the Flask CLI. First we need to 'stamp' the current version of the database:
+
+```shell
+$ docker exec -it openoversight-web-1 bash # 'openoversight-web-1' is the name of the app container seen in the step above
 $ flask db stamp head
+$ flask db migrate -m "[THE NAME OF YOUR MIGRATION]" # NOTE: Slugs are limited to 40 characters and will be truncated after the limit
 ```
 
 (Hint: If you get errors when running `flask` commands, e.g. because of differing Python versions, you may need to run the commands in the docker container by prefacing them as so: `docker exec -it openoversight_web_1 flask db stamp head`)
 
-Next make your changes to the database models in `models.py`. You'll then generate the migrations:
+Next make your changes to the database models in `OpenOversight/app/models/database.py`. You'll then generate the migrations:
 
-```sh
+```shell
 $ flask db migrate
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
 
-```sh
+```shell
 $ flask db upgrade
 ```
 
-You can also downgrade the database using `flask db downgrade`.
+You can also downgrade the database using:
+
+```shell
+flask db downgrade
+```
 
 ## Using a Virtual Environment
 One way to avoid hitting version incompatibility errors when running `flask` commands is to use a virtualenv.  See [Python Packaging user guidelines](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/) for instructions on installing virtualenv.  After installing virtualenv, you can create a virtual environment by navigating to the OpenOversight directory and running the below
 
-```bash
+```shell
 python3 -m virtualenv env
 ```
 
 Confirm you're in the virtualenv by running
 
-```bash
+```shell
 which python
 ```
 
 The response should point to your `env` directory.
 If you want to exit the virtualenv, run
 
-```bash
+```shell
 deactivate
 ```
 
 To reactivate the virtualenv, run
 
-```bash
+```shell
 source env/bin/activate
 ```
 
 While in the virtualenv, you can install project dependencies by running
 
-```bash
+```shell
 pip install -r requirements.txt
 ```
 
 and
 
-```bash
+```shell
 pip install -r requirements-dev.txt
 ```
 
 ## OpenOversight Management Interface
 In addition to generating database migrations, the Flask CLI can be used to run additional commands:
 
-```sh
+```shell
 $ flask --help
 Usage: flask [OPTIONS] COMMAND [ARGS]...
 
@@ -220,7 +237,7 @@ Commands:
 
 In development, you can make an administrator account without having to confirm your email:
 
-```sh
+```shell
 $ flask make-admin-user
 Username: redshiftzero
 Email: jen@redshiftzero.com
@@ -246,7 +263,7 @@ Next, in your terminal run `docker ps` to find the container id of the `openover
 
 ## Debugging OpenOversight - Use pdb with a test
 If you want to run an individual test in debug mode, use the below command.
-```bash
+```shell
 docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>
 ```
 
@@ -254,7 +271,7 @@ where `<test_name_here>` is the name of a single test function, such as `test_ac
 
 Similarly, you can run all the tests in a file by specifying the file path:
 
-```bash
+```shell
 docker-compose run --rm web pytest --pdb -v path/to/test/file
 ```
 
