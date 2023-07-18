@@ -290,7 +290,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
         unit_ids = [
             unit.id
             for unit in Unit.query.filter_by(department_id=department_id)
-            .filter(Unit.descrip.in_(form_data.get("unit")))
+            .filter(Unit.description.in_(form_data.get("unit")))
             .all()
         ]
 
