@@ -115,7 +115,8 @@ def _handle_officers_csv(
                 "birth_year",
                 "unique_internal_identifier",
                 "department_name",
-                # the following are unused, but allowed since they are included in the csv output
+                # the following are unused, but allowed since they are included in the
+                # csv output
                 "badge_number",
                 "unique_identifier",
                 "job_title",
@@ -193,8 +194,8 @@ def _handle_assignments_csv(
         job_title_to_id = {
             job.job_title.strip().lower(): job.id for job in jobs_for_department
         }
-        unit_descrip_to_id = {
-            unit.descrip.strip().lower(): unit.id
+        unit_description_to_id = {
+            unit.description.strip().lower(): unit.id
             for unit in Unit.query.filter_by(department_id=department_id).all()
         }
         if overwrite_assignments:
@@ -211,7 +212,8 @@ def _handle_assignments_csv(
             )
             if len(wrong_department) > 0:
                 raise Exception(
-                    "Referenced {} officers in assignment csv that belong to different department. Example ids: {}".format(
+                    "Referenced {} officers in assignment csv that belong to different "
+                    "department. Example ids: {}".format(
                         len(wrong_department),
                         ", ".join(map(str, list(wrong_department)[:3])),
                     )
@@ -253,17 +255,17 @@ def _handle_assignments_csv(
                 )
             elif row.get("unit_name"):
                 unit_name = row["unit_name"].strip()
-                descrip = unit_name.lower()
-                unit_id = unit_descrip_to_id.get(descrip)
+                description = unit_name.lower()
+                unit_id = unit_description_to_id.get(description)
                 if unit_id is None:
                     unit = Unit(
-                        descrip=unit_name,
+                        description=unit_name,
                         department_id=officer.department_id,
                     )
                     db.session.add(unit)
                     db.session.flush()
                     unit_id = unit.id
-                    unit_descrip_to_id[descrip] = unit_id
+                    unit_description_to_id[description] = unit_id
                 row["unit_id"] = unit_id
             job_title = row["job_title"].strip().lower()
             job_id = job_title_to_id.get(job_title)
