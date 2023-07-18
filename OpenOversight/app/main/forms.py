@@ -62,8 +62,8 @@ def validate_money(form, field):
 
 
 def validate_end_date(form, field):
-    if form.data["star_date"] and field.data:
-        if form.data["star_date"] > field.data:
+    if form.data["start_date"] and field.data:
+        if form.data["start_date"] > field.data:
             raise ValidationError("End date must come after start date.")
 
 
@@ -157,7 +157,7 @@ class AssignmentForm(Form):
         allow_blank=True,
         blank_text="None",
     )
-    star_date = DateField("Assignment start date", validators=[Optional()])
+    start_date = DateField("Assignment start date", validators=[Optional()])
     resign_date = DateField(
         "Assignment end date", validators=[Optional(), validate_end_date]
     )
