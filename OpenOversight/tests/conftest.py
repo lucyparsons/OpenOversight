@@ -162,7 +162,7 @@ def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
         job_id=random.choice(jobs).id,
         officer=officer,
         unit_id=unit_id,
-        star_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
+        start_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
         resign_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
     )
 
@@ -671,7 +671,7 @@ def csvfile(mockdata, tmp_path, request):
         "star_no",
         "job_title",
         "unit_id",
-        "star_date",
+        "start_date",
         "resign_date",
         "salary",
         "salary_year",
@@ -702,7 +702,7 @@ def csvfile(mockdata, tmp_path, request):
                         if assignment.job
                         else None,
                         "unit_id": assignment.unit_id,
-                        "star_date": assignment.star_date,
+                        "start_date": assignment.start_date,
                         "resign_date": assignment.resign_date,
                     },
                 )
