@@ -115,7 +115,6 @@ $ make start
 docker-compose build
 ...
 docker-compose up -d
-WARN[0000] The "APPROVE_REGISTRATIONS" variable is not set. Defaulting to a blank string.
 [+] Running 2/0
  ✔ Container openoversight-postgres-1  Running                                                                                                                                                             0.0s
  ✔ Container openoversight-web-1       Running
