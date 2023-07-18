@@ -85,7 +85,7 @@ def test_admins_can_create_notes(mockdata, client, session):
 
         created_note = Note.query.filter_by(text_contents=text_contents).first()
         assert created_note is not None
-        assert created_note.date_created is not None
+        assert created_note.created is not None
 
 
 def test_acs_can_create_notes(mockdata, client, session):
@@ -107,7 +107,7 @@ def test_acs_can_create_notes(mockdata, client, session):
 
         created_note = Note.query.filter_by(text_contents=note).first()
         assert created_note is not None
-        assert created_note.date_created is not None
+        assert created_note.created is not None
 
 
 def test_admins_can_edit_notes(mockdata, client, session):
@@ -140,7 +140,7 @@ def test_admins_can_edit_notes(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated > original_date
 
 
 def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
@@ -174,7 +174,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated > original_date
 
 
 def test_ac_can_edit_others_notes(mockdata, client, session):
@@ -208,7 +208,7 @@ def test_ac_can_edit_others_notes(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated > original_date
 
 
 def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session):
