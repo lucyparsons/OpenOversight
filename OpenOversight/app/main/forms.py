@@ -153,7 +153,7 @@ class AssignmentForm(Form):
         "Unit",
         validators=[Optional()],
         query_factory=unit_choices,
-        get_label="descrip",
+        get_label="description",
         allow_blank=True,
         blank_text="None",
     )
@@ -319,7 +319,7 @@ class AddOfficerForm(Form):
         "Unit",
         validators=[Optional()],
         query_factory=unit_choices,
-        get_label="descrip",
+        get_label="description",
         allow_blank=True,
         blank_text="None",
     )
@@ -561,7 +561,7 @@ class BrowseForm(Form):
     unit = QuerySelectField(
         "unit",
         validators=[Optional()],
-        get_label="descrip",
+        get_label="description",
         get_pk=lambda unit: unit.description,
     )
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
