@@ -162,7 +162,7 @@ def _handle_assignments_csv(
     with _csv_reader(assignments_csv) as csv_reader:
         field_names = csv_reader.fieldnames
         if "start_date" in field_names:
-            field_names[field_names.index("start_date")] = "star_date"
+            field_names[field_names.index("start_date")] = "start_date"
         if "badge_number" in field_names:
             field_names[field_names.index("badge_number")] = "star_no"
         if "end_date" in field_names:
@@ -181,7 +181,7 @@ def _handle_assignments_csv(
                 "star_no",
                 "unit_id",
                 "unit_name",
-                "star_date",
+                "start_date",
                 "resign_date",
                 "officer_unique_identifier",
             ],
