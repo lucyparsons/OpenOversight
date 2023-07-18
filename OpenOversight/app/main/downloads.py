@@ -84,7 +84,7 @@ def salary_record_maker(salary: Salary) -> _Record:
 def officer_record_maker(officer: Officer) -> _Record:
     if officer.assignments_lazy:
         most_recent_assignment = max(
-            officer.assignments_lazy, key=lambda a: a.star_date or date.min
+            officer.assignments_lazy, key=lambda a: a.start_date or date.min
         )
         most_recent_title = most_recent_assignment.job and check_output(
             most_recent_assignment.job.job_title
@@ -121,7 +121,7 @@ def assignment_record_maker(assignment: Assignment) -> _Record:
         "officer unique identifier": officer and officer.unique_internal_identifier,
         "badge number": assignment.star_no,
         "job title": assignment.job and check_output(assignment.job.job_title),
-        "start date": assignment.star_date,
+        "start date": assignment.start_date,
         "end date": assignment.resign_date,
         "unit id": assignment.unit and assignment.unit.id,
         "unit description": assignment.unit and assignment.unit.descrip,
