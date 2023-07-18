@@ -312,7 +312,7 @@ def test_filter_by_form_filter_unit(
     mockdata, units, has_officers_with_unit, has_officers_with_no_unit
 ):
     form_data = dict(unit=units)
-    unit_id = Unit.query.filter_by(descrip="Donut Devourers").one().id
+    unit_id = Unit.query.filter_by(description="Donut Devourers").one().id
     department_id = Department.query.first().id
 
     officers = filter_by_form(form_data, Officer.query, department_id).all()
