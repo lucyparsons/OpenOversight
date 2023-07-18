@@ -188,12 +188,12 @@ class Officer(BaseModel):
                 self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).job.job_title
 
-    def unit_descrip(self):
+    def unit_description(self):
         if self.assignments_lazy:
             unit = max(
                 self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).unit
-            return unit.descrip if unit else None
+            return unit.description if unit else None
 
     def badge_number(self):
         if self.assignments_lazy:
@@ -261,14 +261,14 @@ class Unit(BaseModel):
     __tablename__ = "unit_types"
 
     id = db.Column(db.Integer, primary_key=True)
-    descrip = db.Column(db.String(120), index=True, unique=False)
+    description = db.Column(db.String(120), index=True, unique=False)
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship(
-        "Department", backref="unit_types", order_by="Unit.descrip.asc()"
+        "Department", backref="unit_types", order_by="Unit.description.asc()"
     )
 
     def __repr__(self):
-        return "Unit: {}".format(self.descrip)
+        return "Unit: {}".format(self.description)
 
 
 class Face(BaseModel):
