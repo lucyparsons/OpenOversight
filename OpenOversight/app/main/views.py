@@ -1338,8 +1338,8 @@ def download_dept_descriptions_csv(department_id):
         "text_contents",
         "creator_id",
         "officer_id",
-        "date_created",
-        "date_updated",
+        "created",
+        "updated",
     ]
     return make_downloadable_csv(
         notes, department_id, "Notes", field_names, descriptions_record_maker
@@ -1637,7 +1637,7 @@ def sitemap_incidents():
 
 
 class TextApi(ModelView):
-    order_by = "date_created"
+    order_by = "created"
     descending = True
     department_check = True
     form = TextForm
