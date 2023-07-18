@@ -23,7 +23,7 @@
     {% endif %}
   </tr>
   <tbody>
-    {% for assignment in assignments|rejectattr('star_date','ne',None) %}
+    {% for assignment in assignments|rejectattr('start_date','ne',None) %}
       <tr>
         <td>{{ assignment.job.job_title }}</td>
         <td>{{ assignment.star_no }}</td>
@@ -31,8 +31,8 @@
           {% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}
         </td>
         <td>
-          {% if assignment.star_date %}
-            {{ assignment.star_date }}
+          {% if assignment.start_date %}
+            {{ assignment.start_date }}
           {% else %}
             Unknown
           {% endif %}
@@ -50,7 +50,7 @@
         </td>
       </tr>
     {% endfor %}
-    {% for assignment in assignments | rejectattr('star_date', 'none') | sort(attribute='star_date', reverse=True) %}
+    {% for assignment in assignments | rejectattr('start_date', 'none') | sort(attribute='start_date', reverse=True) %}
       <tr>
         <td>{{ assignment.job.job_title }}</td>
         <td>{{ assignment.star_no }}</td>
@@ -58,8 +58,8 @@
           {% if assignment.unit_id %}{{ assignment.unit.descrip }}{% endif %}
         </td>
         <td>
-          {% if assignment.star_date: %}
-            {{ assignment.star_date }}
+          {% if assignment.start_date: %}
+            {{ assignment.start_date }}
           {% else %}
             Unknown
           {% endif %}
@@ -132,8 +132,8 @@
             <b>Start date of new assignment:</b>
           </td>
           <td>
-            {{ form.star_date }}
-            {% for error in form.star_date.errors %}
+            {{ form.start_date }}
+            {% for error in form.start_date.errors %}
               <p>
                 <span style="color: red">[{{ error }}]</span>
               </p>
