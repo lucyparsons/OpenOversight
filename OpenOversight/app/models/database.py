@@ -250,7 +250,7 @@ class Assignment(BaseModel):
     job = db.relationship("Job")
     unit_id = db.Column(db.Integer, db.ForeignKey("unit_types.id"), nullable=True)
     unit = db.relationship("Unit")
-    star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
