@@ -38,7 +38,7 @@ The csv file can have the following fields:
     star_no
     job_title
     unit_id
-    star_date
+    start_date
     resign_date
     salary
     salary_year
@@ -74,7 +74,7 @@ Current Employment information:
 -  ``job_title`` rank or title, needs to be added to this department
    verbatim or ``Not Sure``
 -  ``unit_id`` id of unit within the department
--  ``star_date`` (sic) start date of this assignment
+-  ``start_date`` start date of this assignment
 -  ``resign_date`` resignation date of this assignment
 
 Salary information:
@@ -91,7 +91,7 @@ Required fields
 
 -  ``department_id``, ``first_name``, ``last_name``, ``job_title`` and
    either ``star_no`` or ``unique_internal_identifier`` are required.
--  ``employment_date``, ``star_date`` and ``resign_date`` can be either
+-  ``employment_date``, ``start_date`` and ``resign_date`` can be either
    in ``yyyy-mm-dd`` or ``mm/dd/yyyy`` format - if the column is present
    the field cannot be left blank
 
