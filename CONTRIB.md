@@ -143,6 +143,7 @@ $ flask db upgrade
 ```
 
 You can also downgrade the database using:
+
 ```shell
 flask db downgrade
 ```
