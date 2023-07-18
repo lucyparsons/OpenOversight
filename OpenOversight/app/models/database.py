@@ -185,26 +185,26 @@ class Officer(BaseModel):
     def job_title(self):
         if self.assignments_lazy:
             return max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).job.job_title
 
     def unit_descrip(self):
         if self.assignments_lazy:
             unit = max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).unit
             return unit.descrip if unit else None
 
     def badge_number(self):
         if self.assignments_lazy:
             return max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).star_no
 
     def currently_on_force(self):
         if self.assignments_lazy:
             most_recent = max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             )
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
