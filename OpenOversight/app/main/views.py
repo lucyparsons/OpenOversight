@@ -712,7 +712,7 @@ def list_officer(
 
     unit_selections = ["Not Sure"] + [
         uc[0]
-        for uc in db.session.query(Unit.descrip)
+        for uc in db.session.query(Unit.description)
         .filter_by(department_id=department_id)
         .order_by(Unit.descrip.asc())
         .all()
@@ -849,7 +849,7 @@ def get_dept_units(department_id=None):
 
     if department_id:
         units = Unit.query.filter_by(department_id=department_id)
-        units = units.order_by(Unit.descrip).all()
+        units = units.order_by(Unit.description).all()
         unit_list = [(unit.id, unit.description) for unit in units]
     else:
         units = Unit.query.all()
@@ -938,7 +938,7 @@ def add_unit():
         )
         db.session.add(unit)
         db.session.commit()
-        flash("New unit {} added to OpenOversight".format(unit.descrip))
+        flash("New unit {} added to OpenOversight".format(unit.description))
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
