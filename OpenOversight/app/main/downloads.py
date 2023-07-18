@@ -124,7 +124,7 @@ def assignment_record_maker(assignment: Assignment) -> _Record:
         "start date": assignment.start_date,
         "end date": assignment.resign_date,
         "unit id": assignment.unit and assignment.unit.id,
-        "unit description": assignment.unit and assignment.unit.descrip,
+        "unit description": assignment.unit and assignment.unit.description,
     }
 
 
