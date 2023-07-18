@@ -344,11 +344,11 @@ def add_mockdata(session):
     random.seed(current_app.config["SEED"])
 
     test_units = [
-        Unit(descrip="test", department_id=1),
-        Unit(descrip="District 13", department_id=1),
-        Unit(descrip="Donut Devourers", department_id=1),
-        Unit(descrip="Bureau of Organized Crime", department_id=2),
-        Unit(descrip="Porky's BBQ: Rub Division", department_id=2),
+        Unit(description="test", department_id=1),
+        Unit(description="District 13", department_id=1),
+        Unit(description="Donut Devourers", department_id=1),
+        Unit(description="Bureau of Organized Crime", department_id=2),
+        Unit(description="Porky's BBQ: Rub Division", department_id=2),
     ]
     session.add_all(test_units)
     session.commit()
