@@ -12,7 +12,7 @@
       <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.descrip, autofocus="autofocus") }}
+        {{ wtf.form_field(form.description, autofocus="autofocus") }}
         {{ wtf.form_field(form.department) }}
         {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
       </form>
