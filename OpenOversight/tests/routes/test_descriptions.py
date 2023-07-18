@@ -95,7 +95,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
             text_contents=text_contents
         ).first()
         assert created_description is not None
-        assert created_description.date_created is not None
+        assert created_description.created is not None
 
 
 def test_acs_can_create_descriptions(mockdata, client, session):
@@ -121,7 +121,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
             text_contents=description
         ).first()
         assert created_description is not None
-        assert created_description.date_created is not None
+        assert created_description.created is not None
 
 
 def test_admins_can_edit_descriptions(mockdata, client, session):
@@ -157,7 +157,7 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.date_updated > original_date
+        assert description.updated > original_date
 
 
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
@@ -194,7 +194,7 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.date_updated > original_date
+        assert description.updated > original_date
 
 
 def test_ac_can_edit_others_descriptions(mockdata, client, session):
@@ -231,7 +231,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.date_updated > original_date
+        assert description.updated > original_date
 
 
 def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):
