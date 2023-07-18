@@ -850,12 +850,12 @@ def get_dept_units(department_id=None):
     if department_id:
         units = Unit.query.filter_by(department_id=department_id)
         units = units.order_by(Unit.descrip).all()
-        unit_list = [(unit.id, unit.descrip) for unit in units]
+        unit_list = [(unit.id, unit.description) for unit in units]
     else:
         units = Unit.query.all()
         # Prevent duplicate units
         unit_list = sorted(
-            set((unit.id, unit.descrip) for unit in units),
+            set((unit.id, unit.description) for unit in units),
             key=lambda x: x[1],
         )
 
@@ -933,7 +933,9 @@ def add_unit():
     set_dynamic_default(form.department, current_user.dept_pref_rel)
 
     if form.validate_on_submit():
-        unit = Unit(descrip=form.descrip.data, department_id=form.department.data.id)
+        unit = Unit(
+            description=form.description.data, department_id=form.department.data.id
+        )
         db.session.add(unit)
         db.session.commit()
         flash("New unit {} added to OpenOversight".format(unit.descrip))
