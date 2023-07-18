@@ -714,7 +714,7 @@ def list_officer(
         uc[0]
         for uc in db.session.query(Unit.description)
         .filter_by(department_id=department_id)
-        .order_by(Unit.descrip.asc())
+        .order_by(Unit.description.asc())
         .all()
     ]
     rank_selections = [
