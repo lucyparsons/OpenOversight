@@ -399,7 +399,7 @@ class EditOfficerForm(Form):
 
 
 class AddUnitForm(Form):
-    descrip = StringField(
+    description = StringField(
         "Unit name or description",
         default="",
         validators=[Regexp(r"\w*"), Length(max=120), DataRequired()],
@@ -562,7 +562,7 @@ class BrowseForm(Form):
         "unit",
         validators=[Optional()],
         get_label="descrip",
-        get_pk=lambda unit: unit.descrip,
+        get_pk=lambda unit: unit.description,
     )
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
     name = StringField("Last name")
