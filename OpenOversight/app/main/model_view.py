@@ -166,8 +166,8 @@ class ModelView(MethodView):
 
     def populate_obj(self, form, obj):
         form.populate_obj(obj)
-        if hasattr(obj, "date_updated"):
-            obj.date_updated = datetime.datetime.now()
+        if hasattr(obj, "updated"):
+            obj.updated = datetime.datetime.now()
         db.session.add(obj)
         db.session.commit()
 
