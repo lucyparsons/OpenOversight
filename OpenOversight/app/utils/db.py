@@ -26,9 +26,9 @@ def add_unit_query(form, current_user):
     if not current_user.is_administrator:
         form.unit.query = Unit.query.filter_by(
             department_id=current_user.ac_department_id
-        ).order_by(Unit.descrip.asc())
+        ).order_by(Unit.description.asc())
     else:
-        form.unit.query = Unit.query.order_by(Unit.descrip.asc()).all()
+        form.unit.query = Unit.query.order_by(Unit.description.asc()).all()
 
 
 def compute_leaderboard_stats(select_top=25):
@@ -82,7 +82,7 @@ def unit_choices(department_id: Optional[int] = None):
         return (
             db.session.query(Unit)
             .filter_by(department_id=department_id)
-            .order_by(Unit.descrip.asc())
+            .order_by(Unit.description.asc())
             .all()
         )
-    return db.session.query(Unit).order_by(Unit.descrip.asc()).all()
+    return db.session.query(Unit).order_by(Unit.description.asc()).all()
