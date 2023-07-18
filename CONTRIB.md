@@ -111,14 +111,14 @@ or
 You'll first have to start the Docker instance for the OpenOversight app using the command `make start`. To do this, you'll need to be in the base folder of the repository (the one that houses the `Makefile`).
 
 ```shell
-$ make start                              
+$ make start
 docker-compose build
 ...
 docker-compose up -d
-WARN[0000] The "APPROVE_REGISTRATIONS" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "APPROVE_REGISTRATIONS" variable is not set. Defaulting to a blank string.
 [+] Running 2/0
- ✔ Container openoversight-postgres-1  Running                                                                                                                                                             0.0s 
- ✔ Container openoversight-web-1       Running   
+ ✔ Container openoversight-postgres-1  Running                                                                                                                                                             0.0s
+ ✔ Container openoversight-web-1       Running
 ```
 
 From here on out, we'll be using the Flask CLI. First we need to 'stamp' the current version of the database:
@@ -143,7 +143,7 @@ And then you should inspect/edit the migrations. You can then apply the migratio
 $ flask db upgrade
 ```
 
-You can also downgrade the database using: 
+You can also downgrade the database using:
 ```shell
 flask db downgrade
 ```
