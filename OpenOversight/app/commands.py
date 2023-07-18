@@ -320,7 +320,7 @@ def is_equal(a, b):
 def process_assignment(row, officer, compare=False):
     assignment_fields = {
         "required": [],
-        "optional": ["job_title", "star_no", "unit_id", "star_date", "resign_date"],
+        "optional": ["job_title", "star_no", "unit_id", "start_date", "resign_date"],
     }
 
     # See if the row has assignment data
@@ -338,7 +338,7 @@ def process_assignment(row, officer, compare=False):
                 assignment_fieldnames = [
                     "star_no",
                     "unit_id",
-                    "star_date",
+                    "start_date",
                     "resign_date",
                 ]
                 i = 0
@@ -389,7 +389,7 @@ def process_assignment(row, officer, compare=False):
             assignment.job_id = job.id
             set_field_from_row(row, assignment, "star_no")
             set_field_from_row(row, assignment, "unit_id")
-            set_field_from_row(row, assignment, "star_date", allow_blank=False)
+            set_field_from_row(row, assignment, "start_date", allow_blank=False)
             set_field_from_row(row, assignment, "resign_date", allow_blank=False)
             db.session.add(assignment)
             db.session.flush()
