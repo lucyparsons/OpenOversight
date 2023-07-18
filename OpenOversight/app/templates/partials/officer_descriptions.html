@@ -3,7 +3,7 @@
   <ul class="list-group">
     {% for description in officer.descriptions %}
       <li class="list-group-item">
-        <em>{{ description.date_updated.strftime("%b %d, %Y") }}</em>
+        <em>{{ description.updated.strftime("%b %d, %Y") }}</em>
         <br />
         {{ description.text_contents | markdown }}
         {% if current_user and not current_user.is_anonymous %}<em>{{ description.creator.username }}</em>{% endif %}
