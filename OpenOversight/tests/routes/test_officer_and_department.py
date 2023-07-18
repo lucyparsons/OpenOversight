@@ -1326,7 +1326,7 @@ def test_admin_can_add_new_unit(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
 
-        form = AddUnitForm(descrip="Test", department=department.id)
+        form = AddUnitForm(description="Test", department=department.id)
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
@@ -1335,7 +1335,7 @@ def test_admin_can_add_new_unit(mockdata, client, session, department):
         assert "New unit" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the unit was added to the database
-        unit = Unit.query.filter_by(descrip="Test").one()
+        unit = Unit.query.filter_by(description="Test").one()
         assert unit.department_id == department.id
 
 
@@ -1344,7 +1344,7 @@ def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
         login_ac(client)
 
         department = Department.query.filter_by(id=AC_DEPT).first()
-        form = AddUnitForm(descrip="Test", department=department.id)
+        form = AddUnitForm(description="Test", department=department.id)
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
@@ -1353,7 +1353,7 @@ def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
         assert "New unit" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the unit was added to the database
-        unit = Unit.query.filter_by(descrip="Test").one()
+        unit = Unit.query.filter_by(description="Test").one()
         assert unit.department_id == department.id
 
 
@@ -1364,12 +1364,12 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         department = Department.query.except_(
             Department.query.filter_by(id=AC_DEPT)
         ).first()
-        form = AddUnitForm(descrip="Test", department=department.id)
+        form = AddUnitForm(description="Test", department=department.id)
 
         client.post(url_for("main.add_unit"), data=form.data, follow_redirects=True)
 
         # Check the unit was not added to the database
-        unit = Unit.query.filter_by(descrip="Test").first()
+        unit = Unit.query.filter_by(description="Test").first()
         assert unit is None
 
 
@@ -1691,7 +1691,9 @@ def test_browse_filtering_allows_good(client, mockdata, session):
         )
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
-        assert any("<dd>{}</dd>".format(unit.descrip) in token for token in filter_list)
+        assert any(
+            "<dd>{}</dd>".format(unit.description) in token for token in filter_list
+        )
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
         assert any("<dd>White</dd>" in token for token in filter_list)
