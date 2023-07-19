@@ -175,8 +175,8 @@ def build_note(officer, user, content=None):
         text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
-        created=date,
-        updated=date,
+        created_at=date,
+        updated_at=date,
     )
 
 
@@ -188,8 +188,8 @@ def build_description(officer, user, content=None):
         text_contents=content,
         officer_id=officer.id,
         creator_id=user.id,
-        created=date,
-        updated=date,
+        created_at=date,
+        updated_at=date,
     )
 
 
