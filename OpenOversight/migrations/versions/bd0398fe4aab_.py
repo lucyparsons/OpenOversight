@@ -1,4 +1,4 @@
-"""empty message
+"""rename user_id to creator_id in incidents
 
 Revision ID: bd0398fe4aab
 Revises: f4a41e328a06

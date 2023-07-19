@@ -1,4 +1,4 @@
-"""empty message
+"""add department column to incidents
 
 Revision ID: ca95c047bf42
 Revises: 6065d7cdcbf8

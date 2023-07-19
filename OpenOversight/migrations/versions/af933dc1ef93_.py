@@ -1,4 +1,4 @@
-"""empty message
+"""add preferred department column
 
 Revision ID: af933dc1ef93
 Revises: 42233d18ac7b

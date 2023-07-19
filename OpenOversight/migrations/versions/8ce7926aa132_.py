@@ -1,4 +1,4 @@
-"""empty message
+"""add explicit ondelete for notes
 
 Revision ID: 8ce7926aa132
 Revises: cfc5f3fd5efe

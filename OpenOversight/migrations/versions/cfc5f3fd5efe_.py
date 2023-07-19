@@ -1,4 +1,4 @@
-"""empty message
+"""rename user_id to creator_id in notes
 
 Revision ID: cfc5f3fd5efe
 Revises: 2040f0c804b0

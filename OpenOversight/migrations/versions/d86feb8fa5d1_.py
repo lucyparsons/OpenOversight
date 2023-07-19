@@ -1,4 +1,4 @@
-"""empty message
+"""add incidents table
 
 Revision ID: d86feb8fa5d1
 Revises: e14a1aa4b58f
