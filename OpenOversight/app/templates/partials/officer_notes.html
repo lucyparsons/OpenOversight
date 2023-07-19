@@ -2,7 +2,7 @@
 <ul class="list-group">
   {% for note in officer.notes %}
     <li class="list-group-item">
-      <em>{{ note.updated.strftime("%b %d, %Y") }}</em>
+      <em>{{ note.updated_at.strftime("%b %d, %Y") }}</em>
       <br />
       {{ note.text_contents | markdown }}
       <em>{{ note.creator.username }}</em>
