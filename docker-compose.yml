@@ -39,6 +39,8 @@ services:
      OO_HELP_EMAIL: "info@lucyparsonslabs.com"
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+     # Update with your application's respective Olson-style timezone:
+     # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#list
      TIMEZONE: "America/Chicago"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
