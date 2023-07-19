@@ -157,7 +157,7 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated > original_date
+        assert description.updated_at > original_date
 
 
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
@@ -194,7 +194,7 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated > original_date
+        assert description.updated_at > original_date
 
 
 def test_ac_can_edit_others_descriptions(mockdata, client, session):
@@ -231,7 +231,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated > original_date
+        assert description.updated_at > original_date
 
 
 def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):
