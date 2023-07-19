@@ -89,8 +89,8 @@ def add_officer_profile(form, current_user):
                     note=note["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    created=datetime.datetime.now(),
-                    updated=datetime.datetime.now(),
+                    created_at=datetime.datetime.now(),
+                    updated_at=datetime.datetime.now(),
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -101,8 +101,8 @@ def add_officer_profile(form, current_user):
                     description=description["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    created=datetime.datetime.now(),
-                    updated=datetime.datetime.now(),
+                    created_at=datetime.datetime.now(),
+                    updated_at=datetime.datetime.now(),
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -127,8 +127,8 @@ def create_description(self, form):
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
-        created=datetime.datetime.now(),
-        updated=datetime.datetime.now(),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
     )
 
 
@@ -190,8 +190,8 @@ def create_note(self, form):
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
-        created=datetime.datetime.now(),
-        updated=datetime.datetime.now(),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
     )
 
 
