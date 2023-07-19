@@ -1,4 +1,4 @@
-"""empty message
+"""add columns to incidents and links
 
 Revision ID: f4a41e328a06
 Revises: ca95c047bf42
