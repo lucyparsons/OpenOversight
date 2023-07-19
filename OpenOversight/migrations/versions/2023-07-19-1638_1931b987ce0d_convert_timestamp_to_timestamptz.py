@@ -85,13 +85,13 @@ def downgrade():
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
             existing_nullable=True,
-            postgresql_using="taken_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"taken_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
         batch_op.alter_column(
             "created_at",
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
-            postgresql_using="created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
 
     with op.batch_alter_table("notes", schema=None) as batch_op:
@@ -100,14 +100,14 @@ def downgrade():
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
             existing_nullable=True,
-            postgresql_using="updated_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"updated_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
         batch_op.alter_column(
             "created_at",
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
             nullable=True,
-            postgresql_using="created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
 
     with op.batch_alter_table("descriptions", schema=None) as batch_op:
@@ -116,14 +116,14 @@ def downgrade():
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
             existing_nullable=True,
-            postgresql_using="updated_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"updated_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
         batch_op.alter_column(
             "created_at",
             existing_type=sa.DateTime(timezone=True),
             type_=postgresql.TIMESTAMP(),
             nullable=True,
-            postgresql_using="created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
+            postgresql_using=f"created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
 
     # ### end Alembic commands ###
