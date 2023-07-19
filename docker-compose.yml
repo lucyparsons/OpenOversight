@@ -39,6 +39,7 @@ services:
      OO_HELP_EMAIL: "info@lucyparsonslabs.com"
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+     TIMEZONE: "America/Chicago"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
    secrets:
