@@ -1,4 +1,4 @@
-"""empty message
+"""change type of star_no to string
 
 Revision ID: 42233d18ac7b
 Revises: 114919b27a9f

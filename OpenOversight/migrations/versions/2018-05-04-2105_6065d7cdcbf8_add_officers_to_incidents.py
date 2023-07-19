@@ -1,4 +1,4 @@
-"""empty message
+"""add officers to incidents
 
 Revision ID: 6065d7cdcbf8
 Revises: d86feb8fa5d1

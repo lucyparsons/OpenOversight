@@ -1,4 +1,4 @@
-"""empty message
+"""create notes table
 
 Revision ID: 2040f0c804b0
 Revises: bd0398fe4aab

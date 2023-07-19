@@ -1,4 +1,4 @@
-"""empty message
+"""change datetime to date officer details
 
 Revision ID: 0acbb0f0b1ef
 Revises: af933dc1ef93
