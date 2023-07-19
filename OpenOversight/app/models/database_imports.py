@@ -129,7 +129,7 @@ def create_assignment_from_dict(
         star_no=parse_str(data.get("star_no"), None),
         job_id=int(data["job_id"]),
         unit_id=parse_int(data.get("unit_id")),
-        star_date=parse_date(data.get("star_date")),
+        start_date=parse_date(data.get("start_date")),
         resign_date=parse_date(data.get("resign_date")),
     )
     if force_id and data.get("id"):
@@ -150,8 +150,8 @@ def update_assignment_from_dict(
         assignment.job_id = int(data["job_id"])
     if "unit_id" in data.keys():
         assignment.unit_id = parse_int(data.get("unit_id"))
-    if "star_date" in data.keys():
-        assignment.star_date = parse_date(data.get("star_date"))
+    if "start_date" in data.keys():
+        assignment.start_date = parse_date(data.get("start_date"))
     if "resign_date" in data.keys():
         assignment.resign_date = parse_date(data.get("resign_date"))
     db.session.flush()

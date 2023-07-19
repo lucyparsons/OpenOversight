@@ -246,26 +246,26 @@ class Officer(BaseModel):
     def job_title(self):
         if self.assignments_lazy:
             return max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).job.job_title
 
-    def unit_descrip(self):
+    def unit_description(self):
         if self.assignments_lazy:
             unit = max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).unit
-            return unit.descrip if unit else None
+            return unit.description if unit else None
 
     def badge_number(self):
         if self.assignments_lazy:
             return max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             ).star_no
 
     def currently_on_force(self):
         if self.assignments_lazy:
             most_recent = max(
-                self.assignments_lazy, key=lambda x: x.star_date or date.min
+                self.assignments_lazy, key=lambda x: x.start_date or date.min
             )
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
@@ -337,7 +337,7 @@ class Assignment(BaseModel):
     job = db.relationship("Job")
     unit_id = db.Column(db.Integer, db.ForeignKey("unit_types.id"), nullable=True)
     unit = db.relationship("Unit")
-    star_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     date_created = db.Column(db.DateTime, default=func.now())
     date_updated = db.Column(
@@ -352,14 +352,14 @@ class Unit(BaseModel):
     __tablename__ = "unit_types"
 
     id = db.Column(db.Integer, primary_key=True)
-    descrip = db.Column(db.String(120), index=True, unique=False)
+    description = db.Column(db.String(120), index=True, unique=False)
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship(
-        "Department", backref="unit_types", order_by="Unit.descrip.asc()"
+        "Department", backref="unit_types", order_by="Unit.description.asc()"
     )
 
     def __repr__(self):
-        return "Unit: {}".format(self.descrip)
+        return "Unit: {}".format(self.description)
 
 
 class Face(BaseModel):

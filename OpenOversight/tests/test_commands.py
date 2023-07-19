@@ -369,7 +369,7 @@ def test_csv_new_officer(csvfile):
                 "star_no": 666,
                 "job_title": "CAPTAIN",
                 "unit": None,
-                "star_date": None,
+                "start_date": None,
                 "resign_date": None,
                 "salary": 1.23,
                 "salary_year": 2019,
@@ -782,7 +782,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         id=77021,
         officer_id=officer.id,
         star_no="4567",
-        star_date=datetime.date(2020, 1, 1),
+        start_date=datetime.date(2020, 1, 1),
         job_id=department.jobs[0].id,
     )
     session.add(assignment)
@@ -856,10 +856,10 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert salary_2019.salary == 10001
 
     assignment_po, assignment_cap = sorted(
-        cop1.assignments, key=operator.attrgetter("star_date")
+        cop1.assignments, key=operator.attrgetter("start_date")
     )
     assert assignment_po.star_no == "1234"
-    assert assignment_po.star_date == datetime.date(2019, 7, 12)
+    assert assignment_po.start_date == datetime.date(2019, 7, 12)
     assert assignment_po.resign_date == datetime.date(2020, 1, 1)
     assert assignment_po.job.job_title == "Police Officer"
     assert assignment_po.unit_id is None
@@ -894,13 +894,13 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
 
     assert len(cop4.assignments.all()) == 2
     updated_assignment, new_assignment = sorted(
-        cop4.assignments, key=operator.attrgetter("star_date")
+        cop4.assignments, key=operator.attrgetter("start_date")
     )
     assert updated_assignment.job.job_title == "Police Officer"
     assert updated_assignment.resign_date == datetime.date(2020, 7, 10)
     assert updated_assignment.star_no == "4567"
     assert new_assignment.job.job_title == "Captain"
-    assert new_assignment.star_date == datetime.date(2020, 7, 10)
+    assert new_assignment.start_date == datetime.date(2020, 7, 10)
     assert new_assignment.star_no == "54321"
 
     incident = cop4.incidents[0]

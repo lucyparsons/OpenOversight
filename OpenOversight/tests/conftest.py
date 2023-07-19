@@ -165,7 +165,7 @@ def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
         job_id=random.choice(jobs).id,
         officer=officer,
         unit_id=unit_id,
-        star_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
+        start_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
         resign_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
     )
 
@@ -347,11 +347,11 @@ def add_mockdata(session):
     random.seed(current_app.config["SEED"])
 
     test_units = [
-        Unit(descrip="test", department_id=1),
-        Unit(descrip="District 13", department_id=1),
-        Unit(descrip="Donut Devourers", department_id=1),
-        Unit(descrip="Bureau of Organized Crime", department_id=2),
-        Unit(descrip="Porky's BBQ: Rub Division", department_id=2),
+        Unit(description="test", department_id=1),
+        Unit(description="District 13", department_id=1),
+        Unit(description="Donut Devourers", department_id=1),
+        Unit(description="Bureau of Organized Crime", department_id=2),
+        Unit(description="Porky's BBQ: Rub Division", department_id=2),
     ]
     session.add_all(test_units)
     session.commit()
@@ -670,7 +670,7 @@ def csvfile(mockdata, tmp_path, request):
         "star_no",
         "job_title",
         "unit_id",
-        "star_date",
+        "start_date",
         "resign_date",
         "salary",
         "salary_year",
@@ -701,7 +701,7 @@ def csvfile(mockdata, tmp_path, request):
                         if assignment.job
                         else None,
                         "unit_id": assignment.unit_id,
-                        "star_date": assignment.star_date,
+                        "start_date": assignment.start_date,
                         "resign_date": assignment.resign_date,
                     },
                 )
