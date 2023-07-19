@@ -62,8 +62,8 @@ def validate_money(form, field):
 
 
 def validate_end_date(form, field):
-    if form.data["star_date"] and field.data:
-        if form.data["star_date"] > field.data:
+    if form.data["start_date"] and field.data:
+        if form.data["start_date"] > field.data:
             raise ValidationError("End date must come after start date.")
 
 
@@ -153,11 +153,11 @@ class AssignmentForm(Form):
         "Unit",
         validators=[Optional()],
         query_factory=unit_choices,
-        get_label="descrip",
+        get_label="description",
         allow_blank=True,
         blank_text="None",
     )
-    star_date = DateField("Assignment start date", validators=[Optional()])
+    start_date = DateField("Assignment start date", validators=[Optional()])
     resign_date = DateField(
         "Assignment end date", validators=[Optional(), validate_end_date]
     )
@@ -319,7 +319,7 @@ class AddOfficerForm(Form):
         "Unit",
         validators=[Optional()],
         query_factory=unit_choices,
-        get_label="descrip",
+        get_label="description",
         allow_blank=True,
         blank_text="None",
     )
@@ -399,7 +399,7 @@ class EditOfficerForm(Form):
 
 
 class AddUnitForm(Form):
-    descrip = StringField(
+    description = StringField(
         "Unit name or description",
         default="",
         validators=[Regexp(r"\w*"), Length(max=120), DataRequired()],
@@ -561,8 +561,8 @@ class BrowseForm(Form):
     unit = QuerySelectField(
         "unit",
         validators=[Optional()],
-        get_label="descrip",
-        get_pk=lambda unit: unit.descrip,
+        get_label="description",
+        get_pk=lambda unit: unit.description,
     )
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
     name = StringField("Last name")

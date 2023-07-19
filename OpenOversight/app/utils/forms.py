@@ -39,7 +39,7 @@ def add_new_assignment(officer_id, form):
         star_no=form.star_no.data,
         job_id=job.id,
         unit_id=unit_id,
-        star_date=form.star_date.data,
+        start_date=form.start_date.data,
         resign_date=form.resign_date.data,
     )
     db.session.add(new_assignment)
@@ -71,7 +71,7 @@ def add_officer_profile(form, current_user):
         star_no=form.star_no.data,
         job_id=form.job_id.data,
         unit=officer_unit,
-        star_date=form.employment_date.data,
+        start_date=form.employment_date.data,
     )
     db.session.add(assignment)
     if form.links.data:
@@ -207,7 +207,7 @@ def edit_existing_assignment(assignment, form):
         officer_unit = None
 
     assignment.unit_id = officer_unit
-    assignment.star_date = form.star_date.data
+    assignment.start_date = form.start_date.data
     assignment.resign_date = form.resign_date.data
     db.session.add(assignment)
     db.session.commit()
@@ -290,7 +290,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
         unit_ids = [
             unit.id
             for unit in Unit.query.filter_by(department_id=department_id)
-            .filter(Unit.descrip.in_(form_data.get("unit")))
+            .filter(Unit.description.in_(form_data.get("unit")))
             .all()
         ]
 
