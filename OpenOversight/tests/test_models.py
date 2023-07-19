@@ -372,9 +372,9 @@ def test_images_added_with_user_id(mockdata):
         filepath="http://www.example.com",
         hash_img="1234",
         is_tagged=False,
-        created=datetime.datetime.now(),
+        created_at=datetime.datetime.now(),
         department_id=1,
-        taken=datetime.datetime.now(),
+        taken_at=datetime.datetime.now(),
         user_id=user_id,
     )
     db.session.add(new_image)
