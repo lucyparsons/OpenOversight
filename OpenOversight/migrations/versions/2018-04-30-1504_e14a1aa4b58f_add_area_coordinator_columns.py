@@ -1,4 +1,4 @@
-"""empty message
+"""add area coordinator columns
 
 Revision ID: e14a1aa4b58f
 Revises: af933dc1ef93
