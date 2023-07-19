@@ -50,7 +50,7 @@ class Department(BaseModel):
     def __repr__(self):
         return "<Department ID {}: {}>".format(self.id, self.name)
 
-    def toCustomDict(self):
+    def to_custom_dict(self):
         return {
             "id": self.id,
             "name": self.name,

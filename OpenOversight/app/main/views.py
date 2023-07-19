@@ -147,7 +147,7 @@ def get_officer():
     js_loads = ["js/find_officer.js"]
     form = FindOfficerForm()
 
-    departments_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+    departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
 
     if getattr(current_user, "dept_pref_rel", None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
