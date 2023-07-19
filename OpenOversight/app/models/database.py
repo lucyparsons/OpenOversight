@@ -90,8 +90,8 @@ class Note(BaseModel):
     creator = db.relationship("User", backref="notes")
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
-    created = db.Column(db.DateTime)
-    updated = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
 
 class Description(BaseModel):
@@ -103,8 +103,8 @@ class Description(BaseModel):
     text_contents = db.Column(db.Text())
     creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    created = db.Column(db.DateTime)
-    updated = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
 
 class Officer(BaseModel):
@@ -322,10 +322,10 @@ class Image(BaseModel):
     hash_img = db.Column(db.String(120), unique=False, nullable=True)
 
     # Track when the image was put into our database
-    created = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    created_at = db.Column(db.DateTime, index=True, unique=False, nullable=True)
 
     # We might know when the image was taken e.g. through EXIF data
-    taken = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    taken_at = db.Column(db.DateTime, index=True, unique=False, nullable=True)
     contains_cops = db.Column(db.Boolean, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
 
