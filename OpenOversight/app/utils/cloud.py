@@ -136,9 +136,9 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         new_image = Image(
             filepath=url,
             hash_img=hash_img,
-            created=datetime.datetime.now(),
+            created_at=datetime.datetime.now(),
             department_id=department_id,
-            taken=date_taken,
+            taken_at=date_taken,
             user_id=user_id,
         )
         db.session.add(new_image)
