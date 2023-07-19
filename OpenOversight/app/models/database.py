@@ -131,9 +131,11 @@ class Officer(BaseModel):
     links = db.relationship(
         "Link", secondary=officer_links, backref=db.backref("officers", lazy=True)
     )
-    notes = db.relationship("Note", back_populates="officer", order_by="Note.created")
+    notes = db.relationship(
+        "Note", back_populates="officer", order_by="Note.created_at"
+    )
     descriptions = db.relationship(
-        "Description", back_populates="officer", order_by="Description.created"
+        "Description", back_populates="officer", order_by="Description.created_at"
     )
     salaries = db.relationship(
         "Salary", back_populates="officer", order_by="Salary.year.desc()"
