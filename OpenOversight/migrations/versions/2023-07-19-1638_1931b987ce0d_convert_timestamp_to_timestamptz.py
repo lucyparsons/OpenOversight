@@ -74,8 +74,6 @@ def upgrade():
             postgresql_using=f"taken_at::timestamptz AT TIME ZONE '{TIMEZONE}'",
         )
 
-    op.add_column("users", sa.Column("timezone", sa.String(64), nullable=True))
-
     # ### end Alembic commands ###
 
 
@@ -127,7 +125,5 @@ def downgrade():
             nullable=True,
             postgresql_using=f"created_at::timestamp AT TIME ZONE '{TIMEZONE}'",
         )
-
-    op.drop_column("users", "timezone")
 
     # ### end Alembic commands ###
