@@ -73,6 +73,7 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -106,6 +107,27 @@ from OpenOversight.app.utils.general import (
 SAVED_UMASK = os.umask(0o077)
 
 sitemap_endpoints = []
+
+
+@current_app.before_request
+def make_session_permanent():
+    """Set how long the session should last after the last request.
+
+    The session is created before the first request and expires the configured
+    amount of minutes after the last request.
+    """
+    with current_app.app_context():
+        session.permanent = True
+        current_app.permanent_session_lifetime = datetime.timedelta(
+            minutes=current_app.config.get("SESSION_LIFETIME_MINUTES")
+        )
+
+
+@main.route("/timezone", methods=[HTTPMethod.POST])
+def set_session_timezone():
+    with current_app.app_context():
+        timezone = request.data.decode(ENCODING_UTF_8)
+        session["TIMEZONE"] = timezone
 
 
 def sitemap_include(view):
