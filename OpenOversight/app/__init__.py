@@ -12,8 +12,19 @@ from flask_migrate import Migrate
 from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
+from OpenOversight.app.auth import auth as auth_blueprint
+from OpenOversight.app.commands import (
+    add_department,
+    add_job_title,
+    advanced_csv_import,
+    bulk_add_officers,
+    link_images_to_department,
+    link_officers_to_department,
+    make_admin_user,
+)
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
+from OpenOversight.app.main import main as main_blueprint
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
@@ -53,13 +64,11 @@ def create_app(config_name="default"):
     login_manager.init_app(app)
     sitemap.init_app(app)
 
-    from .main import main as main_blueprint
-
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
-
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
+
+    instantiate_filters(app)
 
     max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
     num_logs_to_keep = 5
@@ -117,22 +126,10 @@ def create_app(config_name="default"):
         # Pass generated errorhandler function to @app.errorhandler decorator
         app.errorhandler(code)(create_errorhandler(code, error, template))
 
-    # Instantiate filters
-    instantiate_filters(app)
-
     # Add commands
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
     )  # Adds 'db' command
-    from .commands import (
-        add_department,
-        add_job_title,
-        advanced_csv_import,
-        bulk_add_officers,
-        link_images_to_department,
-        link_officers_to_department,
-        make_admin_user,
-    )
 
     app.cli.add_command(make_admin_user)
     app.cli.add_command(link_images_to_department)
