@@ -1,6 +1,5 @@
 """Contains all templates filters."""
 import datetime
-import parser
 
 import bleach
 import markdown as _markdown
@@ -51,9 +50,8 @@ def instantiate_filters(app: Flask):
         app.logger.info("!!!!!!")
         app.logger.info(type(value))
         tz = pytz.timezone(session[KEY_TIMEZONE])
-        dt = parser.parse(value)
-        if dt.tzinfo is None:
-            dt = tz.localize(dt)
+        if value.tzinfo is None:
+            value = tz.localize(value)
         return dt.strftime("%I:%M %p on %b %d, %Y")
 
     @app.template_filter("local_time")
