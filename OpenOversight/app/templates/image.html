@@ -32,7 +32,7 @@
                   </td>
                   <td>
                     {% if image.created_at %}
-                      {{ image.created_at }}
+                      {{ image.created_at | local_date_time }}
                     {% else %}
                       Not provided
                     {% endif %}
@@ -44,7 +44,7 @@
                   </td>
                   <td>
                     {% if image.taken_at %}
-                      {{ image.taken_at }}
+                      {{ image.taken_at | local_date_time }}
                     {% else %}
                       Not provided
                     {% endif %}
