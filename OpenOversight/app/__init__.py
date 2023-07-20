@@ -1,12 +1,8 @@
-import datetime
 import logging
 import os
 from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
-import bleach
-import markdown as _markdown
-from bleach_allowlist import markdown_attrs, markdown_tags
 from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
@@ -15,9 +11,9 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
-from markupsafe import Markup
 
 from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
@@ -121,29 +117,8 @@ def create_app(config_name="default"):
         # Pass generated errorhandler function to @app.errorhandler decorator
         app.errorhandler(code)(create_errorhandler(code, error, template))
 
-    # create jinja2 filter for titles with multiple capitals
-    @app.template_filter("capfirst")
-    def capfirst_filter(s):
-        return s[0].capitalize() + s[1:]  # only change 1st letter
-
-    @app.template_filter("get_age")
-    def get_age_from_birth_year(birth_year):
-        if birth_year:
-            return int(datetime.datetime.now().year - birth_year)
-
-    @app.template_filter("field_in_query")
-    def field_in_query(form_data, field):
-        """
-        Determine if a field is specified in the form data, and if so return a Bootstrap
-        class which will render the field accordion open.
-        """
-        return " in " if form_data.get(field) else ""
-
-    @app.template_filter("markdown")
-    def markdown(text):
-        text = text.replace("\n", "  \n")  # make markdown not ignore new lines.
-        html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
-        return Markup(html)
+    # Instantiate filters
+    instantiate_filters(app)
 
     # Add commands
     Migrate(
