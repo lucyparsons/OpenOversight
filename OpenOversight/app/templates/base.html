@@ -20,7 +20,6 @@
       <script type="text/javascript">
           // Send browser's timezone to server for displaying dates/times in local timezone.
           const timezone = Intl.DateTimeFormat() ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
-          console.log("!!!!!!!!!")
           fetch("/timezone", {method: 'POST', body: timezone});
       </script>
     {% endif %}
