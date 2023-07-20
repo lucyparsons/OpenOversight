@@ -1,11 +1,12 @@
 """Contains all templates filters."""
-from datetime import datetime
+import datetime
+import parser
 
 import bleach
 import markdown as _markdown
 import pytz as pytz
 from bleach_allowlist import markdown_attrs, markdown_tags
-from flask import Flask, current_app, session
+from flask import Flask, session
 from markupsafe import Markup
 
 from OpenOversight.app.utils.constants import KEY_TIMEZONE
@@ -14,7 +15,6 @@ from OpenOversight.app.utils.constants import KEY_TIMEZONE
 def instantiate_filters(app: Flask):
     """Instantiate all template filters"""
 
-    # create jinja2 filter for titles with multiple capitals
     @app.template_filter("capfirst")
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
@@ -38,32 +38,25 @@ def instantiate_filters(app: Flask):
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
         return Markup(html)
 
-    @current_app.template_filter("local_date")
-    def local_date(value: datetime.datetime):
+    @app.template_filter("local_date")
+    def local_date(value):
         """Convert UTC datetime.datetime into a localized date string."""
-        with current_app.app_context():
-            return (
-                pytz.timezone(session[KEY_TIMEZONE])
-                .localize(value)
-                .strftime("%b %d, %Y")
-            )
+        return (
+            pytz.timezone(session[KEY_TIMEZONE]).localize(value).strftime("%b %d, %Y")
+        )
 
     @app.template_filter("local_date_time")
-    def local_date_time(value: datetime.datetime):
+    def local_date_time(value):
         """Convert UTC datetime.datetime into a localized date time string."""
-        with current_app.app_context():
-            return (
-                pytz.timezone(session[KEY_TIMEZONE])
-                .localize(value)
-                .strftime("%I:%M %p on %b %d, %Y")
-            )
+        app.logger.info("!!!!!!")
+        app.logger.info(type(value))
+        tz = pytz.timezone(session[KEY_TIMEZONE])
+        dt = parser.parse(value)
+        if dt.tzinfo is None:
+            dt = tz.localize(dt)
+        return dt.strftime("%I:%M %p on %b %d, %Y")
 
     @app.template_filter("local_time")
-    def local_time(value: datetime.datetime):
+    def local_time(value):
         """Convert UTC datetime.datetime into a localized time string."""
-        with current_app.app_context():
-            return (
-                pytz.timezone(session[KEY_TIMEZONE])
-                .localize(value)
-                .strftime("%I:%M %p")
-            )
+        return pytz.timezone(session[KEY_TIMEZONE]).localize(value).strftime("%I:%M %p")
