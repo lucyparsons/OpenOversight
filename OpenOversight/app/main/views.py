@@ -109,27 +109,18 @@ SAVED_UMASK = os.umask(0o077)
 sitemap_endpoints = []
 
 
-@current_app.before_request
-def make_session_permanent():
-    """Set how long the session should last after the last request.
-
-    The session is created before the first request and expires the configured
-    amount of minutes after the last request.
-    """
-    with current_app.app_context():
-        session.permanent = True
-        current_app.permanent_session_lifetime = datetime.timedelta(
-            minutes=current_app.config.get("SESSION_LIFETIME_MINUTES")
-        )
-
-
 @main.route("/timezone", methods=[HTTPMethod.POST])
 def set_session_timezone():
     with current_app.app_context():
-        timezone = request.data.decode(ENCODING_UTF_8)
-        session[KEY_TIMEZONE] = (
-            timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
-        )
+        if KEY_TIMEZONE not in session:
+            session.permanent = True
+            current_app.permanent_session_lifetime = datetime.timedelta(
+                minutes=current_app.config.get("SESSION_LIFETIME_MINUTES")
+            )
+            timezone = request.data.decode(ENCODING_UTF_8)
+            session[KEY_TIMEZONE] = (
+                timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
+            )
 
 
 def sitemap_include(view):
