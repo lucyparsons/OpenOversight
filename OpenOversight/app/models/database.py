@@ -522,6 +522,7 @@ class User(UserMixin, BaseModel):
     )
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
+    timezone = db.Column(db.String(64))
     dept_pref = db.Column(db.Integer, db.ForeignKey("departments.id"))
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
     classifications = db.relationship("Image", backref="users")
