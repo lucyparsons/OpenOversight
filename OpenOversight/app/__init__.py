@@ -59,11 +59,11 @@ def create_app(config_name="default"):
     login_manager.init_app(app)
     sitemap.init_app(app)
 
-    from .main import main as main_blueprint
+    from OpenOversight.app.main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
+    from OpenOversight.app.auth import auth as auth_blueprint
 
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
@@ -130,7 +130,7 @@ def create_app(config_name="default"):
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
     )  # Adds 'db' command
-    from .commands import (
+    from OpenOversight.app.commands import (
         add_department,
         add_job_title,
         advanced_csv_import,
