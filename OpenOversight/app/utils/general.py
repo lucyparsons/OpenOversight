@@ -1,15 +1,12 @@
-import datetime
 import random
 import sys
 from distutils.util import strtobool
 from typing import Optional
 from urllib.parse import urlparse
 
-import pytz
-from flask import current_app, session, url_for
+from flask import current_app, url_for
 
 from OpenOversight.app.custom import add_jpeg_patch
-from OpenOversight.app.utils.constants import KEY_TIMEZONE
 
 
 # Call JPEG patch function
@@ -28,28 +25,6 @@ def allowed_file(filename):
         and filename.rsplit(".", 1)[1].lower()
         in current_app.config["ALLOWED_EXTENSIONS"]
     )
-
-
-def local_date(value: datetime.datetime):
-    """Convert UTC datetime.datetime into a localized date string."""
-    with current_app.app_context():
-        return pytz.timezone(session[KEY_TIMEZONE]).localize(value).strftime("%m/%d/%Y")
-
-
-def local_date_time(value: datetime.datetime):
-    """Convert UTC datetime.datetime into a localized date time string."""
-    with current_app.app_context():
-        return (
-            pytz.timezone(session[KEY_TIMEZONE])
-            .localize(value)
-            .strftime("%m/%d/%Y %I:%M %p")
-        )
-
-
-def local_time(value: datetime.datetime):
-    """Convert UTC datetime.datetime into a localized time string."""
-    with current_app.app_context():
-        return pytz.timezone(session[KEY_TIMEZONE]).localize(value).strftime("%I:%M %p")
 
 
 # This function is also used in the `utils/forms.py` file, so there's potential
