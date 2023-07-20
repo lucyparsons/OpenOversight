@@ -16,7 +16,7 @@
         OpenOversight - a Lucy Parsons Labs project
       {% endblock title %}
     </title>
-    {% if 'TIMEZONE' not in session %}
+    {% if session['TIMEZONE'] %}
       <script type="text/javascript">
           // Send browser's timezone to server for displaying dates/times in local timezone.
           const timezone = Intl.DateTimeFormat() ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
