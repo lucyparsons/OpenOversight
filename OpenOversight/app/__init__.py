@@ -1,10 +1,9 @@
-import datetime
 import logging
 import os
-from http import HTTPMethod, HTTPStatus
+from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, jsonify, render_template, request, session
+from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -17,12 +16,7 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
-from OpenOversight.app.utils.constants import (
-    ENCODING_UTF_8,
-    KEY_TIMEZONE,
-    MEGABYTE,
-    SERVICE_ACCOUNT_FILE,
-)
+from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
 
 
 bootstrap = Bootstrap()
@@ -147,20 +141,6 @@ def create_app(config_name="default"):
     app.cli.add_command(add_department)
     app.cli.add_command(add_job_title)
     app.cli.add_command(advanced_csv_import)
-
-    @app.before_request
-    @app.route("/timezone", methods=[HTTPMethod.POST])
-    def set_session_timezone():
-        if KEY_TIMEZONE not in session:
-            session.permanent = True
-            app.permanent_session_lifetime = datetime.timedelta(
-                minutes=app.config.get("SESSION_LIFETIME_MINUTES")
-            )
-            timezone = request.data.decode(ENCODING_UTF_8)
-            session[KEY_TIMEZONE] = (
-                timezone if timezone != "" else app.config.get(KEY_TIMEZONE)
-            )
-        return
 
     return app
 
