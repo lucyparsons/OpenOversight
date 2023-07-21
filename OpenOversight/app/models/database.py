@@ -41,6 +41,7 @@ class Department(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
+    state = db.Column(db.String(2), index=True)
 
     # See https://github.com/lucyparsons/OpenOversight/issues/462
     unique_internal_identifier_label = db.Column(
@@ -55,6 +56,7 @@ class Department(BaseModel):
             "id": self.id,
             "name": self.name,
             "short_name": self.short_name,
+            "state": self.state,
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
