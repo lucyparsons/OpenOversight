@@ -6,6 +6,7 @@ from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 
 from flask import (
+    Response,
     abort,
     current_app,
     flash,
@@ -146,7 +147,7 @@ def set_session_timezone():
         session[KEY_TIMEZONE] = (
             timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
         )
-    return
+    return Response("User timezone saved", status=HTTPStatus.OK)
 
 
 @sitemap_include
