@@ -5,8 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-
-from .route_helpers import login_user
+from OpenOversight.tests.routes.route_helpers import login_user
 
 
 @pytest.mark.parametrize(
