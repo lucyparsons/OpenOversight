@@ -40,20 +40,29 @@ def instantiate_filters(app: Flask):
     @app.template_filter("local_date")
     def local_date(value):
         """Convert UTC datetime.datetime into a localized date string."""
-        return value.astimezone(pytz.timezone(session[KEY_TIMEZONE])).strftime(
-            "%b %d, %Y"
+        tz = (
+            session[KEY_TIMEZONE]
+            if session[KEY_TIMEZONE]
+            else app.config.get(KEY_TIMEZONE)
         )
+        return value.astimezone(pytz.timezone(tz)).strftime("%b %d, %Y")
 
     @app.template_filter("local_date_time")
     def local_date_time(value):
         """Convert UTC datetime.datetime into a localized date time string."""
-        return value.astimezone(pytz.timezone(session[KEY_TIMEZONE])).strftime(
-            "%I:%M %p on %b %d, %Y"
+        tz = (
+            session[KEY_TIMEZONE]
+            if session[KEY_TIMEZONE]
+            else app.config.get(KEY_TIMEZONE)
         )
+        return value.astimezone(pytz.timezone(tz)).strftime("%I:%M %p on %b %d, %Y")
 
     @app.template_filter("local_time")
     def local_time(value):
         """Convert UTC datetime.datetime into a localized time string."""
-        return value.astimezone(pytz.timezone(session[KEY_TIMEZONE])).strftime(
-            "%I:%M %p"
+        tz = (
+            session[KEY_TIMEZONE]
+            if session[KEY_TIMEZONE]
+            else app.config.get(KEY_TIMEZONE)
         )
+        return value.astimezone(pytz.timezone(tz)).strftime("%I:%M %p")
