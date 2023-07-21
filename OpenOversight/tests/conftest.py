@@ -300,20 +300,20 @@ def add_mockdata(session):
     department = Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
         unique_internal_identifier_label="homer_number",
     )
     session.add(department)
     department2 = Department(
         name=OTHER_DEPARTMENT_NAME,
         short_name="CPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(department2)
     empty_department = Department(
         name=DEPARTMENT_WITHOUT_OFFICERS_NAME,
         short_name="EPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(empty_department)
     session.commit()
