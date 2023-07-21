@@ -18,7 +18,7 @@ def instantiate_filters(app: Flask):
         """Return the applicable timezone for the filter."""
         return (
             session[KEY_TIMEZONE]
-            if session[KEY_TIMEZONE]
+            if KEY_TIMEZONE in session
             else app.config.get(KEY_TIMEZONE)
         )
 
