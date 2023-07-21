@@ -18,9 +18,9 @@
     </title>
     {% if 'TIMEZONE' not in session %}
       <script type="text/javascript">
-          // Send browser's timezone to server for displaying dates/times in local timezone.
-          const timezone = Intl.DateTimeFormat() ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
-          fetch("/timezone", {method: 'POST', body: timezone});
+        // Send browser's timezone to server for displaying dates/times in local timezone.
+        const timezone = Intl.DateTimeFormat() ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+        fetch("/timezone", { headers:{ 'X-CSRF-Token': '{{ csrf_token() }}', }, method: 'POST', body: timezone});
       </script>
     {% endif %}
     <!-- Bundled CSS -->
