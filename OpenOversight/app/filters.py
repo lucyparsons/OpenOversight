@@ -14,6 +14,14 @@ from OpenOversight.app.utils.constants import KEY_TIMEZONE
 def instantiate_filters(app: Flask):
     """Instantiate all template filters"""
 
+    def get_timezone():
+        """Return the applicable timezone for the filter."""
+        return (
+            session[KEY_TIMEZONE]
+            if session[KEY_TIMEZONE]
+            else app.config.get(KEY_TIMEZONE)
+        )
+
     @app.template_filter("capfirst")
     def capfirst_filter(s):
         return s[0].capitalize() + s[1:]  # only change 1st letter
@@ -21,7 +29,9 @@ def instantiate_filters(app: Flask):
     @app.template_filter("get_age")
     def get_age_from_birth_year(birth_year):
         if birth_year:
-            return int(datetime.datetime.now().year - birth_year)
+            return int(
+                datetime.datetime.now(pytz.timezone(get_timezone())).year - birth_year
+            )
 
     @app.template_filter("field_in_query")
     def field_in_query(form_data, field):
@@ -40,29 +50,16 @@ def instantiate_filters(app: Flask):
     @app.template_filter("local_date")
     def local_date(value):
         """Convert UTC datetime.datetime into a localized date string."""
-        tz = (
-            session[KEY_TIMEZONE]
-            if session[KEY_TIMEZONE]
-            else app.config.get(KEY_TIMEZONE)
-        )
-        return value.astimezone(pytz.timezone(tz)).strftime("%b %d, %Y")
+        return value.astimezone(pytz.timezone(get_timezone())).strftime("%b %d, %Y")
 
     @app.template_filter("local_date_time")
     def local_date_time(value):
         """Convert UTC datetime.datetime into a localized date time string."""
-        tz = (
-            session[KEY_TIMEZONE]
-            if session[KEY_TIMEZONE]
-            else app.config.get(KEY_TIMEZONE)
+        return value.astimezone(pytz.timezone(get_timezone())).strftime(
+            "%I:%M %p on %b %d, %Y"
         )
-        return value.astimezone(pytz.timezone(tz)).strftime("%I:%M %p on %b %d, %Y")
 
     @app.template_filter("local_time")
     def local_time(value):
         """Convert UTC datetime.datetime into a localized time string."""
-        tz = (
-            session[KEY_TIMEZONE]
-            if session[KEY_TIMEZONE]
-            else app.config.get(KEY_TIMEZONE)
-        )
-        return value.astimezone(pytz.timezone(tz)).strftime("%I:%M %p")
+        return value.astimezone(pytz.timezone(get_timezone())).strftime("%I:%M %p")
