@@ -128,6 +128,13 @@ def redirect_url(default="index"):
     )
 
 
+@sitemap_include
+@main.route("/")
+@main.route("/index")
+def index():
+    return render_template("index.html")
+
+
 @main.route("/timezone", methods=[HTTPMethod.POST])
 def set_session_timezone():
     if KEY_TIMEZONE not in session:
@@ -140,13 +147,6 @@ def set_session_timezone():
             timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
         )
     return
-
-
-@sitemap_include
-@main.route("/")
-@main.route("/index")
-def index():
-    return render_template("index.html")
 
 
 @sitemap_include
