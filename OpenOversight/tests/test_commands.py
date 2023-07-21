@@ -80,7 +80,7 @@ def test_add_department__duplicate(session):
     name = "Duplicate Department"
     short_name = "DPD"
     department = Department(
-        name=name, short_name=short_name, state=random.sample(US_STATE_ABBREVIATIONS, 1)
+        name=name, short_name=short_name, state=random.sample(US_STATE_ABBREVIATIONS, 1)[0]
     )
     session.add(department)
     session.commit()
@@ -155,7 +155,7 @@ def test_add_job_title__different_departments(session, department):
     other_department = Department(
         name="Other Police Department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(other_department)
     session.commit()
@@ -979,7 +979,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(other_department)
 
@@ -1103,7 +1103,7 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(other_department)
 
@@ -1252,7 +1252,7 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(other_department)
 
@@ -1288,7 +1288,7 @@ def test_advanced_csv_import__update_officer_different_department(
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(other_department)
     officer = Officer(
