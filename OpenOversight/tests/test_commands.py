@@ -80,7 +80,9 @@ def test_add_department__duplicate(session):
     name = "Duplicate Department"
     short_name = "DPD"
     department = Department(
-        name=name, short_name=short_name, state=random.sample(US_STATE_ABBREVIATIONS, 1)[0]
+        name=name,
+        short_name=short_name,
+        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
     )
     session.add(department)
     session.commit()
