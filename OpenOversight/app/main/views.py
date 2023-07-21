@@ -73,6 +73,7 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -125,6 +126,20 @@ def redirect_url(default="index"):
         or request.referrer
         or url_for(default)
     )
+
+
+@main.route("/timezone", methods=[HTTPMethod.POST])
+def set_session_timezone():
+    if KEY_TIMEZONE not in session:
+        session.permanent = True
+        current_app.permanent_session_lifetime = datetime.timedelta(
+            minutes=current_app.config.get("SESSION_LIFETIME_MINUTES")
+        )
+        timezone = request.data.decode(ENCODING_UTF_8)
+        session[KEY_TIMEZONE] = (
+            timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
+        )
+    return
 
 
 @sitemap_include
