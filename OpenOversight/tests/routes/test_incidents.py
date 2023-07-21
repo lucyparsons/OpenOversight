@@ -62,7 +62,7 @@ def test_route_admin_or_required(route, client, mockdata):
 def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        date = datetime(2000, 5, 25, 1, 45)
+        test_date = datetime(2000, 5, 25, 1, 45)
 
         address_form = LocationForm(
             street_name="AAAAA",
@@ -71,12 +71,13 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             state="IA",
             zip_code="03435",
         )
-        # These have to have a dropdown selected because if not, an empty Unicode string is sent, which does not mach the '' selector.
+        # These have to have a dropdown selected because if not, an empty Unicode
+        # string is sent, which does not mach the '' selector.
         link_form = LinkForm(link_type="video")
         license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
-            date_field=str(date.date()),
-            time_field=str(date.time()),
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
             report_number=report_number,
             description="Something happened",
             department="1",
@@ -93,7 +94,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
 
-        inc = Incident.query.filter_by(date=date.date()).first()
+        inc = Incident.query.filter_by(date=test_date.date()).first()
         assert inc is not None
 
 
@@ -112,7 +113,8 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             state="IA",
             zip_code="03435",
         )
-        # These have to have a dropdown selected because if not, an empty Unicode string is sent, which does not mach the '' selector.
+        # These have to have a dropdown selected because if not, an empty Unicode
+        # string is sent, which does not mach the '' selector.
         link_form = LinkForm(link_type="video")
         license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
@@ -213,8 +215,8 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         old_links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
         ]
-        new_url = "http://rachel.com"
-        link_form = LinkForm(url="http://rachel.com", link_type="video")
+        new_url = "https://rachel.com"
+        link_form = LinkForm(url="https://rachel.com", link_type="video")
         old_license_plates = inc.license_plates
         new_number = "453893"
         license_plates_form = LicensePlateForm(number=new_number, state="IA")
@@ -657,7 +659,8 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
         rv = client.get(url_for("main.incident_api", department_id=department.id))
 
         # Requires that report numbers in test data not include other report numbers
-        # Tests for report numbers in table formatting, because testing for the raw report number can get false positives due to html encoding
+        # Tests for report numbers in table formatting, because testing for the raw
+        # report number can get false positives due to html encoding
         for incident in department_incidents:
             assert "<td>{}</td>".format(incident.report_number) in rv.data.decode(
                 ENCODING_UTF_8
