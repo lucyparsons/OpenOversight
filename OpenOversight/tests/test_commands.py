@@ -2,6 +2,7 @@ import csv
 import datetime
 import operator
 import os
+import random
 import traceback
 import uuid
 
@@ -27,6 +28,7 @@ from OpenOversight.app.models.database import (
     Salary,
     Unit,
 )
+from OpenOversight.app.utils.constants import US_STATE_ABBREVIATIONS
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
@@ -77,7 +79,9 @@ def test_add_department__success(session):
 def test_add_department__duplicate(session):
     name = "Duplicate Department"
     short_name = "DPD"
-    department = Department(name=name, short_name=short_name)
+    department = Department(
+        name=name, short_name=short_name, state=random.sample(US_STATE_ABBREVIATIONS, 1)
+    )
     session.add(department)
     session.commit()
 
@@ -148,7 +152,11 @@ def test_add_job_title__duplicate(session, department):
 
 
 def test_add_job_title__different_departments(session, department):
-    other_department = Department(name="Other Police Department", short_name="OPD")
+    other_department = Department(
+        name="Other Police Department",
+        short_name="OPD",
+        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+    )
     session.add(other_department)
     session.commit()
     other_department_id = other_department.id
@@ -968,7 +976,11 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
 
     department_name = department.name
 
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+    )
     session.add(other_department)
 
     officer = Officer(
@@ -1088,7 +1100,11 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
 
     department_name = department.name
 
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+    )
     session.add(other_department)
 
     cop1_id = 999001
@@ -1233,7 +1249,11 @@ def test_advanced_csv_import__missing_required_field_officers(
 
 def test_advanced_csv_import__wrong_department(session, department, tmp_path):
     department_name = department.name
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+    )
     session.add(other_department)
 
     # create csv
@@ -1265,7 +1285,11 @@ def test_advanced_csv_import__update_officer_different_department(
     department_name = department.name
 
     # set up data
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.sample(US_STATE_ABBREVIATIONS, 1),
+    )
     session.add(other_department)
     officer = Officer(
         id=99021, department_id=other_department.id, first_name="Chris", last_name="Doe"
