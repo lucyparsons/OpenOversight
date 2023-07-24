@@ -723,7 +723,10 @@ def test_admin_can_edit_rank_order(mockdata, client, session, department):
         )
 
         updated_ranks = Department.query.filter_by(name=department.name).one().jobs
-        assert f"Department {department.name} edited" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"Department {department.name} in {department.state} edited"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
         assert (
             updated_ranks[0].job_title == original_first_rank.job_title
             and updated_ranks[0].order != original_first_rank.order
@@ -954,8 +957,15 @@ def test_admin_cannot_duplicate_police_department_during_edit(
     with current_app.test_request_context():
         login_admin(client)
 
+        class ExistingPD:
+            name = "Existing Police Department"
+            short_name = "EPD"
+            state = random.choice(us.STATES).abbr
+
         existing_dep_form = DepartmentForm(
-            name="Existing Police Department", short_name="EPD"
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
         )
 
         existing_dep_rv = client.post(
@@ -964,9 +974,19 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "New department" in existing_dep_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {ExistingPD.name} in {ExistingPD.state} added to "
+            "OpenOversight"
+        ) in existing_dep_rv.data.decode(ENCODING_UTF_8)
 
-        new_dep_form = DepartmentForm(name="New Police Department", short_name="NPD")
+        class NewPD:
+            name = "New Police Department"
+            short_name = "NPD"
+            state = ExistingPD.state
+
+        new_dep_form = DepartmentForm(
+            name=NewPD.name, short_name=NewPD.short_name, state=NewPD.state
+        )
 
         new_dep_rv = client.post(
             url_for("main.add_department"),
@@ -974,12 +994,14 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "New department" in new_dep_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {NewPD.name} in {NewPD.state} added to OpenOversight"
+        ) in new_dep_rv.data.decode(ENCODING_UTF_8)
 
-        new_department = Department.query.filter_by(name="New Police Department").one()
+        new_department = Department.query.filter_by(name=NewPD.name).one()
 
         edit_form = EditDepartmentForm(
-            name="Existing Police Department", short_name="EPD2"
+            name=ExistingPD.name, short_name="EPD2", state=ExistingPD.state
         )
 
         rv = client.post(
@@ -988,17 +1010,17 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "already exists" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"Department {ExistingPD.name} in {ExistingPD.state} already exists"
+        ) in rv.data.decode(ENCODING_UTF_8)
 
         # make sure original department is still here
-        existing_department = Department.query.filter_by(
-            name="Existing Police Department"
-        ).one()
-        assert existing_department.short_name == "EPD"
+        existing_department = Department.query.filter_by(name=ExistingPD.name).one()
+        assert existing_department.short_name == ExistingPD.short_name
 
         # make sure new department is left unchanged
         new_department = Department.query.filter_by(name="New Police Department").one()
-        assert new_department.short_name == "NPD"
+        assert new_department.short_name == NewPD.short_name
 
 
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, session):
