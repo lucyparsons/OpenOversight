@@ -951,16 +951,31 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
         )
 
 
-def test_admin_cannot_duplicate_police_department_during_edit(
+class ExistingPD:
+    name = "Existing Police Department"
+    short_name = "EPD"
+    state = random.choice(us.STATES).abbr
+
+
+def test_admin_can_create_department_with_same_name_in_different_state(
     mockdata, client, session
 ):
     with current_app.test_request_context():
         login_admin(client)
 
-        class ExistingPD:
+        class ExistingDiffStatePD:
             name = "Existing Police Department"
             short_name = "EPD"
-            state = random.choice(us.STATES).abbr
+            state = random.choice(
+                [st for st in us.STATES if st.abbr != ExistingPD.state]
+            ).abbr
+
+
+def test_admin_cannot_duplicate_police_department_during_edit(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_admin(client)
 
         existing_dep_form = DepartmentForm(
             name=ExistingPD.name,
