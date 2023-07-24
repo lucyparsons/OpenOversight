@@ -521,7 +521,7 @@ def classify_submission(image_id, contains_cops):
 @login_required
 @admin_required
 def add_department():
-    jsloads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
+    js_loads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     form = DepartmentForm()
     if form.validate_on_submit():
         departments = [x[0] for x in db.session.query(Department.name).all()]
@@ -556,7 +556,7 @@ def add_department():
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
-        return render_template("department_add_edit.html", form=form, jsloads=jsloads)
+        return render_template("department_add_edit.html", form=form, jsloads=js_loads)
 
 
 @main.route(
