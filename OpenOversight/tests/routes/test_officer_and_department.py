@@ -633,9 +633,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             ENCODING_UTF_8
         )
 
-        edit_state_department = Department.query.filter_by(
-            name=CorrectedPD.name
-        ).one()
+        edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert edit_state_department.short_name == CorrectedPD.short_name
         assert edit_state_department.state == MisspelledPD.state
         # Check that the old short is no longer present:
@@ -657,9 +655,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             ENCODING_UTF_8
         )
 
-        edit_state_department = Department.query.filter_by(
-            name=CorrectedPD.name
-        ).one()
+        edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert edit_state_department.short_name == CorrectedPD.short_name
         assert edit_state_department.state == CorrectedPD.state
         # Check that the old short is no longer present:
