@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
+from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
@@ -49,7 +50,7 @@ class Department(BaseModel):
     def __repr__(self):
         return "<Department ID {}: {}>".format(self.id, self.name)
 
-    def toCustomDict(self):
+    def to_custom_dict(self):
         return {
             "id": self.id,
             "name": self.name,
@@ -90,8 +91,13 @@ class Note(BaseModel):
     creator = db.relationship("User", backref="notes")
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
-    date_created = db.Column(db.DateTime)
-    date_updated = db.Column(db.DateTime)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
 class Description(BaseModel):
@@ -103,8 +109,13 @@ class Description(BaseModel):
     text_contents = db.Column(db.Text())
     creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    date_created = db.Column(db.DateTime)
-    date_updated = db.Column(db.DateTime)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
 class Officer(BaseModel):
@@ -132,10 +143,10 @@ class Officer(BaseModel):
         "Link", secondary=officer_links, backref=db.backref("officers", lazy=True)
     )
     notes = db.relationship(
-        "Note", back_populates="officer", order_by="Note.date_created"
+        "Note", back_populates="officer", order_by="Note.created_at"
     )
     descriptions = db.relationship(
-        "Description", back_populates="officer", order_by="Description.date_created"
+        "Description", back_populates="officer", order_by="Description.created_at"
     )
     salaries = db.relationship(
         "Salary", back_populates="officer", order_by="Salary.year.desc()"
@@ -324,12 +335,17 @@ class Image(BaseModel):
     hash_img = db.Column(db.String(120), unique=False, nullable=True)
 
     # Track when the image was put into our database
-    date_image_inserted = db.Column(
-        db.DateTime, index=True, unique=False, nullable=True
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        index=True,
+        unique=False,
+        server_default=sql_func.now(),
     )
 
     # We might know when the image was taken e.g. through EXIF data
-    date_image_taken = db.Column(db.DateTime, index=True, unique=False, nullable=True)
+    taken_at = db.Column(
+        db.DateTime(timezone=True), index=True, unique=False, nullable=True
+    )
     contains_cops = db.Column(db.Boolean, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
 

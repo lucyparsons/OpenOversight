@@ -85,7 +85,7 @@ def test_admins_can_create_notes(mockdata, client, session):
 
         created_note = Note.query.filter_by(text_contents=text_contents).first()
         assert created_note is not None
-        assert created_note.date_created is not None
+        assert created_note.created_at is not None
 
 
 def test_acs_can_create_notes(mockdata, client, session):
@@ -107,7 +107,7 @@ def test_acs_can_create_notes(mockdata, client, session):
 
         created_note = Note.query.filter_by(text_contents=note).first()
         assert created_note is not None
-        assert created_note.date_created is not None
+        assert created_note.created_at is not None
 
 
 def test_admins_can_edit_notes(mockdata, client, session):
@@ -121,8 +121,8 @@ def test_admins_can_edit_notes(mockdata, client, session):
             text_contents=old_note,
             officer_id=officer.id,
             creator_id=1,
-            date_created=original_date,
-            date_updated=original_date,
+            created_at=original_date,
+            updated_at=original_date,
         )
         db.session.add(note)
         db.session.commit()
@@ -140,7 +140,7 @@ def test_admins_can_edit_notes(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated_at > original_date
 
 
 def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
@@ -155,8 +155,8 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
             text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id,
-            date_created=original_date,
-            date_updated=original_date,
+            created_at=original_date,
+            updated_at=original_date,
         )
         db.session.add(note)
         db.session.commit()
@@ -174,7 +174,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated_at > original_date
 
 
 def test_ac_can_edit_others_notes(mockdata, client, session):
@@ -189,8 +189,8 @@ def test_ac_can_edit_others_notes(mockdata, client, session):
             text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id - 1,
-            date_created=original_date,
-            date_updated=original_date,
+            created_at=original_date,
+            updated_at=original_date,
         )
         db.session.add(note)
         db.session.commit()
@@ -208,7 +208,7 @@ def test_ac_can_edit_others_notes(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert note.text_contents == new_note
-        assert note.date_updated > original_date
+        assert note.updated_at > original_date
 
 
 def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session):
@@ -226,8 +226,8 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
             text_contents=old_note,
             officer_id=officer.id,
             creator_id=ac.id,
-            date_created=original_date,
-            date_updated=original_date,
+            created_at=original_date,
+            updated_at=original_date,
         )
         db.session.add(note)
         db.session.commit()
@@ -268,8 +268,8 @@ def test_acs_can_delete_their_notes_in_their_department(mockdata, client, sessio
             text_contents="Hello",
             officer_id=officer.id,
             creator_id=ac.id,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -293,8 +293,8 @@ def test_acs_cannot_delete_notes_not_in_their_department(mockdata, client, sessi
             text_contents="Hello",
             officer_id=officer.id,
             creator_id=2,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -318,8 +318,8 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
             text_contents="Hello",
             officer_id=officer.id,
             creator_id=ac.id,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -340,8 +340,8 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
             text_contents="Hello",
             officer_id=officer.id,
             creator_id=ac.id - 1,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -363,8 +363,8 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             text_contents="Hello",
             officer_id=officer.id,
             creator_id=2,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -383,8 +383,8 @@ def test_users_cannot_see_notes(mockdata, client, session):
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -407,8 +407,8 @@ def test_admins_can_see_notes(mockdata, client, session):
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -430,8 +430,8 @@ def test_acs_can_see_notes_in_their_department(mockdata, client, session):
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()
@@ -455,8 +455,8 @@ def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session)
             text_contents=text_contents,
             officer_id=officer.id,
             creator_id=1,
-            date_created=datetime.now(),
-            date_updated=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.session.add(note)
         db.session.commit()

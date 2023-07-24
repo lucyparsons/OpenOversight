@@ -6,6 +6,7 @@ from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 
 from flask import (
+    Response,
     abort,
     current_app,
     flash,
@@ -73,6 +74,7 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -134,6 +136,17 @@ def index():
     return render_template("index.html")
 
 
+@main.route("/timezone", methods=[HTTPMethod.POST])
+def set_session_timezone():
+    if KEY_TIMEZONE not in session:
+        session.permanent = True
+        timezone = request.data.decode(ENCODING_UTF_8)
+        session[KEY_TIMEZONE] = (
+            timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
+        )
+    return Response("User timezone saved", status=HTTPStatus.OK)
+
+
 @sitemap_include
 @main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
@@ -147,7 +160,7 @@ def get_officer():
     js_loads = ["js/find_officer.js"]
     form = FindOfficerForm()
 
-    departments_dict = [dept_choice.toCustomDict() for dept_choice in dept_choices()]
+    departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
 
     if getattr(current_user, "dept_pref_rel", None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
@@ -1338,8 +1351,8 @@ def download_dept_descriptions_csv(department_id):
         "text_contents",
         "creator_id",
         "officer_id",
-        "date_created",
-        "date_updated",
+        "created_at",
+        "updated_at",
     ]
     return make_downloadable_csv(
         notes, department_id, "Notes", field_names, descriptions_record_maker
@@ -1637,7 +1650,7 @@ def sitemap_incidents():
 
 
 class TextApi(ModelView):
-    order_by = "date_created"
+    order_by = "created_at"
     descending = True
     department_check = True
     form = TextForm

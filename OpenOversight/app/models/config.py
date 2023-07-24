@@ -1,6 +1,6 @@
 import os
 
-from OpenOversight.app.utils.constants import MEGABYTE
+from OpenOversight.app.utils.constants import KEY_TIMEZONE, MEGABYTE
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -12,6 +12,7 @@ class BaseConfig:
         self.DEBUG = False
         self.ENV = os.environ.get("ENV", "development")
         self.SEED = 666
+        self.TIMEZONE = os.environ.get(KEY_TIMEZONE, "America/Chicago")
         self.TESTING = False
         # Use session cookie to store URL to redirect to after login
         # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process

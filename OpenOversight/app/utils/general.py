@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from flask import current_app, url_for
 
-from ...app.custom import add_jpeg_patch
+from OpenOversight.app.custom import add_jpeg_patch
 
 
 # Call JPEG patch function

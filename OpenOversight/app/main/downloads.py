@@ -161,6 +161,6 @@ def descriptions_record_maker(description: Description) -> _Record:
         "text_contents": description.text_contents,
         "creator_id": description.creator_id,
         "officer_id": description.officer_id,
-        "date_created": description.date_created,
-        "date_updated": description.date_updated,
+        "created_at": description.created_at,
+        "updated_at": description.updated_at,
     }

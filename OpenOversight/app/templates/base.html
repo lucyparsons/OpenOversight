@@ -16,6 +16,13 @@
         OpenOversight - a Lucy Parsons Labs project
       {% endblock title %}
     </title>
+    {% if 'TIMEZONE' not in session %}
+      <script type="text/javascript">
+        // Send browser's timezone to server for displaying dates/times in local timezone.
+        const timezone = Intl.DateTimeFormat() ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+        fetch("/timezone", { headers:{ 'X-CSRF-Token': '{{ csrf_token() }}', }, method: 'POST', body: timezone});
+      </script>
+    {% endif %}
     <!-- Bundled CSS -->
     <link href="{{ url_for('static', filename='dist/index.css') }}"
           rel="stylesheet">
