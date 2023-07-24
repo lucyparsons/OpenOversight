@@ -528,7 +528,9 @@ def add_department():
 
         if form.name.data not in departments:
             department = Department(
-                name=form.name.data, short_name=form.short_name.data
+                name=form.name.data,
+                short_name=form.short_name.data,
+                state=form.state.data,
             )
             db.session.add(department)
             db.session.flush()
