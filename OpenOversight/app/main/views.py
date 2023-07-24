@@ -521,7 +521,6 @@ def classify_submission(image_id, contains_cops):
 @login_required
 @admin_required
 def add_department():
-    js_loads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     form = DepartmentForm()
     if form.validate_on_submit():
         departments = [x[0] for x in db.session.query(Department.name).all()]
@@ -561,7 +560,11 @@ def add_department():
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
-        return render_template("department_add_edit.html", form=form, jsloads=js_loads)
+        return render_template(
+            "department_add_edit.html",
+            form=form,
+            jsloads=["js/jquery-ui.min.js", "js/deptRanks.js"],
+        )
 
 
 @main.route(
@@ -570,7 +573,6 @@ def add_department():
 @login_required
 @admin_required
 def edit_department(department_id):
-    js_loads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
@@ -652,7 +654,10 @@ def edit_department(department_id):
     else:
         current_app.logger.info(form.errors)
         return render_template(
-            "department_add_edit.html", form=form, update=True, jsloads=js_loads
+            "department_add_edit.html",
+            form=form,
+            update=True,
+            jsloads=["js/jquery-ui.min.js", "js/deptRanks.js"],
         )
 
 
