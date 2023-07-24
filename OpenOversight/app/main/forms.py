@@ -1,6 +1,7 @@
 import datetime
 import re
 
+import us as us
 from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import (
@@ -196,6 +197,11 @@ class DepartmentForm(Form):
         "Shortened acronym for law enforcement agency, e.g. CPD",
         default="",
         validators=[Regexp(r"\w*"), Length(max=100), DataRequired()],
+    )
+    state = SelectField(
+        "The law enforcement agency's home state",
+        choices=[(state.abbr, state.name) for state in us.STATES],
+        validators=[Length(max=2), DataRequired()],
     )
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"
