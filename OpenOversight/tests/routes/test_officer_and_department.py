@@ -508,7 +508,10 @@ def test_admin_can_add_police_department(mockdata, client, session):
             url_for("main.add_department"), data=form.data, follow_redirects=True
         )
 
-        assert "New department" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to OpenOversight"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
 
         # Check the department was added to the database
         department = Department.query.filter_by(name=TestPD.name).one()
@@ -543,7 +546,10 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
             url_for("main.add_department"), data=form.data, follow_redirects=True
         )
 
-        assert "New department" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to OpenOversight"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
 
         # Try to add the same police department again
         rv = client.post(
@@ -590,7 +596,10 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "New department" in misspelled_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {MisspelledPD.name} in {MisspelledPD.state} added to "
+            "OpenOversight" in misspelled_rv.data.decode(ENCODING_UTF_8)
+        )
 
         department = Department.query.filter_by(name=MisspelledPD.name).one()
 
@@ -606,8 +615,9 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert f"Department {CorrectedPD.name} edited" in corrected_rv.data.decode(
-            ENCODING_UTF_8
+        assert (
+            f"Department {CorrectedPD.name} in {MisspelledPD.state} edited"
+            in corrected_rv.data.decode(ENCODING_UTF_8)
         )
 
         # Check the department with the new name is now in the database.
@@ -630,8 +640,9 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert f"Department {CorrectedPD.name} edited" in edit_state_rv.data.decode(
-            ENCODING_UTF_8
+        assert (
+            f"Department {CorrectedPD.name} in {MisspelledPD.state} edited"
+            in edit_state_rv.data.decode(ENCODING_UTF_8)
         )
 
         edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
@@ -652,8 +663,9 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert f"Department {CorrectedPD.name} edited" in edit_state_rv.data.decode(
-            ENCODING_UTF_8
+        assert (
+            f"Department {CorrectedPD.name} in {CorrectedPD.state} edited"
+            in edit_state_rv.data.decode(ENCODING_UTF_8)
         )
 
         edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
@@ -1192,8 +1204,8 @@ def test_admin_can_edit_existing_officer(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
         unit = random.choice(unit_choices())
-        link_url0 = "http://pleasework.com"
-        link_url1 = "http://avideo/?v=2345jk"
+        link_url0 = FAKER.url()
+        link_url1 = FAKER.url()
         links = [
             LinkForm(url=link_url0, link_type="link").data,
             LinkForm(url=link_url0, link_type="video").data,
@@ -1453,8 +1465,8 @@ def test_admin_can_add_new_officer_with_suffix(mockdata, client, session, depart
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=FAKER.url(), link_type="link").data,
+            LinkForm(url=FAKER.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1507,7 +1519,7 @@ def test_officer_csv(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
+            LinkForm(url=FAKER.url(), link_type="link").data,
         ]
         job = (
             Job.query.filter_by(department_id=department.id)
