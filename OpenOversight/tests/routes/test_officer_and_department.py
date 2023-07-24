@@ -9,6 +9,7 @@ from http import HTTPStatus
 from io import BytesIO
 
 import pytest
+import us
 from flask import current_app, url_for
 from mock import MagicMock, patch
 from sqlalchemy.sql.operators import Operators
@@ -45,9 +46,13 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
-
-from ..conftest import AC_DEPT, DEPARTMENT_NAME, RANK_CHOICES_1
-from .route_helpers import login_ac, login_admin, login_user, process_form_data
+from OpenOversight.tests.conftest import AC_DEPT, DEPARTMENT_NAME, RANK_CHOICES_1
+from OpenOversight.tests.routes.route_helpers import (
+    login_ac,
+    login_admin,
+    login_user,
+    process_form_data,
+)
 
 
 @pytest.mark.parametrize(
@@ -488,7 +493,10 @@ def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        state = random.choice(us.STATES).abbr
+        form = DepartmentForm(
+            name="Test Police Department", short_name="TPD", state=state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
@@ -499,6 +507,7 @@ def test_admin_can_add_police_department(mockdata, client, session):
         # Check the department was added to the database
         department = Department.query.filter_by(name="Test Police Department").one()
         assert department.short_name == "TPD"
+        assert department.state == state
 
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
