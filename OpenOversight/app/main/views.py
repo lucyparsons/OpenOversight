@@ -552,9 +552,12 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
-            flash(f"New department {department.name} added to OpenOversight")
+            flash(
+                f"New department {department.name} in {department.state} added to "
+                "OpenOversight"
+            )
         else:
-            flash("Department {} already exists".format(form.name.data))
+            flash(f"Department {form.name.data} in {form.state.data} already exists")
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
@@ -644,7 +647,7 @@ def edit_department(department_id):
                     )
             db.session.commit()
 
-        flash("Department {} edited".format(department.name))
+        flash(f"Department {department.name} in {department.state} edited")
         return redirect(url_for("main.list_officer", department_id=department.id))
     else:
         current_app.logger.info(form.errors)
