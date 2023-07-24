@@ -971,6 +971,69 @@ def test_admin_can_create_department_with_same_name_in_different_state(
                 [st for st in us.STATES if st.abbr != ExistingPD.state]
             ).abbr
 
+        existing_duplicate_form = DepartmentForm(
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
+        )
+
+        existing_duplicate_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_duplicate_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {ExistingPD.name} in {ExistingPD.state} added to "
+            "OpenOversight"
+        ) in existing_duplicate_rv.data.decode(ENCODING_UTF_8)
+
+        existing_department = Department.query.filter_by(
+            name=ExistingPD.name, state=ExistingPD.state
+        ).one()
+        assert existing_department.short_name == ExistingPD.short_name
+        assert existing_department.state == ExistingPD.state
+
+        existing_diff_state_form = DepartmentForm(
+            name=ExistingDiffStatePD.name,
+            short_name=ExistingDiffStatePD.short_name,
+            state=ExistingDiffStatePD.state,
+        )
+
+        existing_diff_state_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_diff_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {ExistingDiffStatePD.name} in "
+            f"{ExistingDiffStatePD.state} added to OpenOversight"
+        ) in existing_diff_state_rv.data.decode(ENCODING_UTF_8)
+
+        existing_diff_state_department = Department.query.filter_by(
+            name=ExistingDiffStatePD.name, state=ExistingDiffStatePD.state
+        ).one()
+        assert existing_diff_state_department.short_name == ExistingPD.short_name
+        assert existing_diff_state_department.state == ExistingPD.state
+
+        # Duplicate existing test
+        existing_duplicate_form = DepartmentForm(
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
+        )
+
+        existing_duplicate_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_duplicate_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"Department {ExistingPD.name} in {ExistingPD.state} already exists"
+        ) in existing_duplicate_rv.data.decode(ENCODING_UTF_8)
+
 
 def test_admin_cannot_duplicate_police_department_during_edit(
     mockdata, client, session
