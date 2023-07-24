@@ -2,6 +2,7 @@
   "devDependencies": {
     "sass": "^1.66.1"
   },
+  "license": "GPL-3.0-only",
   "name": "openoversight",
   "repository": "https://github.com/OrcaCollective/OpenOversight",
   "scripts": {
