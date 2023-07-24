@@ -1363,7 +1363,7 @@ def download_dept_descriptions_csv(department_id):
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
-    return render_template("all_depts.html", departments=departments)
+    return render_template("all_departments.html", departments=departments)
 
 
 @main.route(
