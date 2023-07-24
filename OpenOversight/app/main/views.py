@@ -138,9 +138,9 @@ def index():
 
 @main.route("/timezone", methods=[HTTPMethod.POST])
 def set_session_timezone():
-    if KEY_TIMEZONE not in session:
+    timezone = request.data.decode(ENCODING_UTF_8)
+    if KEY_TIMEZONE not in session or session[KEY_TIMEZONE] != timezone:
         session.permanent = True
-        timezone = request.data.decode(ENCODING_UTF_8)
         session[KEY_TIMEZONE] = (
             timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
         )
