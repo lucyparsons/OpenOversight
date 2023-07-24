@@ -17,6 +17,7 @@ from OpenOversight.app.models.database import Department, Incident, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.routes.route_helpers import (
+    FAKER,
     login_ac,
     login_admin,
     login_user,
@@ -215,8 +216,8 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         old_links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
         ]
-        new_url = "https://rachel.com"
-        link_form = LinkForm(url="https://rachel.com", link_type="video")
+        new_url = FAKER.url()
+        link_form = LinkForm(url=new_url, link_type="video")
         old_license_plates = inc.license_plates
         new_number = "453893"
         license_plates_form = LicensePlateForm(number=new_number, state="IA")
