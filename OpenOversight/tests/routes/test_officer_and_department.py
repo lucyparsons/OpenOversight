@@ -489,13 +489,18 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
+class TestPD:
+    name = "Test Police Department"
+    short_name = "TPD"
+    state = random.choice(us.STATES).abbr
+
+
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        state = random.choice(us.STATES).abbr
         form = DepartmentForm(
-            name="Test Police Department", short_name="TPD", state=state
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
         )
 
         rv = client.post(
@@ -505,16 +510,18 @@ def test_admin_can_add_police_department(mockdata, client, session):
         assert "New department" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the department was added to the database
-        department = Department.query.filter_by(name="Test Police Department").one()
-        assert department.short_name == "TPD"
-        assert department.state == state
+        department = Department.query.filter_by(name=TestPD.name).one()
+        assert department.short_name == TestPD.short_name
+        assert department.state == TestPD.state
 
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
@@ -527,7 +534,9 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
     with current_app.test_request_context():
         login_admin(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
@@ -544,16 +553,34 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
 
         # Check that only one department was added to the database
         # one() method will throw exception if more than one department found
-        department = Department.query.filter_by(name="Test Police Department").one()
-        assert department.short_name == "TPD"
+        department = Department.query.filter_by(name=TestPD.name).one()
+        assert department.short_name == TestPD.short_name
+        assert department.state == TestPD.state
+
+
+class CorrectedPD:
+    name = "Corrected Police Department"
+    short_name = "CPD"
+    state = random.choice(us.STATES).abbr
 
 
 def test_admin_can_edit_police_department(mockdata, client, session):
     with current_app.test_request_context():
+
+        class MisspelledPD:
+            name = "Misspelled Police Department"
+            short_name = "MPD"
+            # Prevent CorrectedPD and MisspelledPD from having the same state
+            state = random.choice(
+                [st for st in us.STATES if st.abbr != CorrectedPD.state]
+            ).abbr
+
         login_admin(client)
 
         misspelled_form = DepartmentForm(
-            name="Misspelled Police Department", short_name="MPD"
+            name=MisspelledPD.name,
+            short_name=MisspelledPD.short_name,
+            state=MisspelledPD.state,
         )
 
         misspelled_rv = client.post(
@@ -564,12 +591,12 @@ def test_admin_can_edit_police_department(mockdata, client, session):
 
         assert "New department" in misspelled_rv.data.decode(ENCODING_UTF_8)
 
-        department = Department.query.filter_by(
-            name="Misspelled Police Department"
-        ).one()
+        department = Department.query.filter_by(name=MisspelledPD.name).one()
 
         corrected_form = EditDepartmentForm(
-            name="Corrected Police Department", short_name="MPD"
+            name=CorrectedPD.name,
+            short_name=MisspelledPD.short_name,
+            state=MisspelledPD.state,
         )
 
         corrected_rv = client.post(
@@ -578,48 +605,81 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert (
-            "Department Corrected Police Department edited"
-            in corrected_rv.data.decode(ENCODING_UTF_8)
+        assert f"Department {CorrectedPD.name} edited" in corrected_rv.data.decode(
+            ENCODING_UTF_8
         )
 
         # Check the department with the new name is now in the database.
-        corrected_department = Department.query.filter_by(
-            name="Corrected Police Department"
-        ).one()
-        assert corrected_department.short_name == "MPD"
+        corrected_department = Department.query.filter_by(name=CorrectedPD.name).one()
+        assert corrected_department.short_name == MisspelledPD.short_name
+        assert corrected_department.state == MisspelledPD.state
 
         # Check that the old name is no longer present:
-        assert (
-            Department.query.filter_by(name="Misspelled Police Department").count() == 0
+        assert Department.query.filter_by(name=MisspelledPD.name).count() == 0
+
+        edit_state_form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=MisspelledPD.state,
         )
 
-        edit_short_name_form = EditDepartmentForm(
-            name="Corrected Police Department", short_name="CPD"
-        )
-
-        edit_short_name_rv = client.post(
+        edit_state_rv = client.post(
             url_for("main.edit_department", department_id=department.id),
-            data=edit_short_name_form.data,
+            data=edit_state_form.data,
             follow_redirects=True,
         )
 
-        assert (
-            "Department Corrected Police Department edited"
-            in edit_short_name_rv.data.decode(ENCODING_UTF_8)
+        assert f"Department {CorrectedPD.name} edited" in edit_state_rv.data.decode(
+            ENCODING_UTF_8
         )
 
-        edit_short_name_department = Department.query.filter_by(
-            name="Corrected Police Department"
+        edit_state_department = Department.query.filter_by(
+            name=CorrectedPD.name
         ).one()
-        assert edit_short_name_department.short_name == "CPD"
+        assert edit_state_department.short_name == CorrectedPD.short_name
+        assert edit_state_department.state == MisspelledPD.state
+        # Check that the old short is no longer present:
+        assert Department.query.filter_by(name=MisspelledPD.short_name).count() == 0
+
+        edit_state_form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=CorrectedPD.state,
+        )
+
+        edit_state_rv = client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=edit_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert f"Department {CorrectedPD.name} edited" in edit_state_rv.data.decode(
+            ENCODING_UTF_8
+        )
+
+        edit_state_department = Department.query.filter_by(
+            name=CorrectedPD.name
+        ).one()
+        assert edit_state_department.short_name == CorrectedPD.short_name
+        assert edit_state_department.state == CorrectedPD.state
+        # Check that the old short is no longer present:
+        assert (
+            Department.query.filter_by(
+                name=CorrectedPD.short_name, state=MisspelledPD.state
+            ).count()
+            == 0
+        )
 
 
 def test_ac_cannot_edit_police_department(mockdata, client, session, department):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = EditDepartmentForm(name="Corrected Police Department", short_name="CPD")
+        form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=CorrectedPD.state,
+        )
 
         rv = client.post(
             url_for("main.edit_department", department_id=department.id),
