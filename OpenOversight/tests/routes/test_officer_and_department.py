@@ -48,6 +48,7 @@ from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
 from OpenOversight.tests.conftest import AC_DEPT, DEPARTMENT_NAME, RANK_CHOICES_1
 from OpenOversight.tests.routes.route_helpers import (
+    FAKER,
     login_ac,
     login_admin,
     login_user,
@@ -405,7 +406,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             follow_redirects=True,
         )
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-01-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-12-31" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == star_no
@@ -434,7 +435,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         )
 
         assert "Edited officer assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(new_star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{new_star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-02-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-11-30" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == new_star_no
@@ -465,7 +466,7 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
             follow_redirects=True,
         )
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
 
         login_ac(client)
 
@@ -689,7 +690,6 @@ def test_ac_cannot_edit_police_department(mockdata, client, session, department)
 def test_admin_can_edit_rank_order(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department_name = department.name
         ranks = department.jobs
         ranks_update = ranks.copy()
         original_first_rank = copy.deepcopy(ranks_update[0])
@@ -697,8 +697,9 @@ def test_admin_can_edit_rank_order(mockdata, client, session, department):
         ranks_stringified = [rank.job_title for rank in ranks_update]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name,
+            name=department.name,
             short_name=department.short_name,
+            state=department.state,
             jobs=ranks_stringified,
         )
         processed_data = process_form_data(rank_change_form.data)
@@ -709,8 +710,8 @@ def test_admin_can_edit_rank_order(mockdata, client, session, department):
             follow_redirects=True,
         )
 
-        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
-        assert f"Department {department_name} edited" in rv.data.decode(ENCODING_UTF_8)
+        updated_ranks = Department.query.filter_by(name=department.name).one().jobs
+        assert f"Department {department.name} edited" in rv.data.decode(ENCODING_UTF_8)
         assert (
             updated_ranks[0].job_title == original_first_rank.job_title
             and updated_ranks[0].order != original_first_rank.order
@@ -722,12 +723,14 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
         login_admin(client)
 
         ranks = department.jobs
-        department_name = department.name
         original_ranks = ranks.copy()
         ranks_update = RANK_CHOICES_1.copy()[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -737,7 +740,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
             follow_redirects=True,
         )
 
-        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
+        updated_ranks = Department.query.filter_by(name=department.name).one().jobs
         assert (
             "You attempted to delete a rank, Commander, that is still in use"
             in result.data.decode(ENCODING_UTF_8)
@@ -748,7 +751,6 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
 def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department_name = department.name
         ranks_update = RANK_CHOICES_1.copy()
         original_ranks_length = len(ranks_update)
         ranks_update.append(
@@ -761,7 +763,10 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
         )
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -774,18 +779,21 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -798,7 +806,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length
         )
 
@@ -814,10 +822,11 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
         ranks_update.append("Temporary Rank 1")
         ranks_update.append("Temporary Rank 2")
 
-        department_name = department.name
-
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -830,18 +839,21 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 2
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -854,7 +866,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length
         )
 
@@ -875,9 +887,11 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
                 department_id=1,
             )
         )
-        department_name = department.name
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -890,19 +904,22 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
 
         # attempt to delete multiple ranks
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -914,7 +931,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
         )
 
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
 
@@ -985,8 +1002,8 @@ def test_admin_can_add_new_officer(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=FAKER.url(), link_type="link").data,
+            LinkForm(url=FAKER.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1020,8 +1037,8 @@ def test_admin_can_add_new_officer_with_unit(mockdata, client, session, departme
         login_admin(client)
         unit = random.choice(unit_choices())
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=FAKER.url(), link_type="link").data,
+            LinkForm(url=FAKER.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1079,9 +1096,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1125,9 +1140,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1314,9 +1327,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "Officer {} edited".format(new_last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"Officer {new_last_name} edited" in rv.data.decode(ENCODING_UTF_8)
         assert last_name not in rv.data.decode(ENCODING_UTF_8)
 
         # Check the changes were added to the database
@@ -1751,14 +1762,10 @@ def test_browse_filtering_allows_good(client, mockdata, session):
             return parsed_list
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Rank</dt>")
-        assert any(
-            "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
-        )
+        assert any(f"<dd>{job.job_title}</dd>" in token for token in filter_list)
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
-        assert any(
-            "<dd>{}</dd>".format(unit.description) in token for token in filter_list
-        )
+        assert any(f"<dd>{unit.description}</dd>" in token for token in filter_list)
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
         assert any("<dd>White</dd>" in token for token in filter_list)
@@ -1803,7 +1810,7 @@ def test_find_officer_redirect(client, mockdata, session):
 
         # Check that the parameters are added correctly to the response url
         assert rv.status_code == HTTPStatus.FOUND, "Expected redirect."
-        assert "department/{}".format(department_id) in rv.location
+        assert f"department/{department_id}" in rv.location
         parameters = [
             ("first_name", "A"),
             ("last_name", "B"),
@@ -1816,7 +1823,7 @@ def test_find_officer_redirect(client, mockdata, session):
             ("max_age", max_age),
         ]
         for name, value in parameters:
-            assert "{}={}".format(name, value) in rv.location
+            assert f"{name}={value}" in rv.location
 
 
 def test_admin_can_upload_photos_of_dept_officers(
