@@ -523,7 +523,6 @@ def classify_submission(image_id, contains_cops):
 @admin_required
 def add_department():
     form = DepartmentForm()
-    form.choices = get_state_choices()
     if form.validate_on_submit():
         departments = [
             x[0] for x in db.session.query(Department.name, Department.state).all()
