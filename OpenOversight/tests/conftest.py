@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import pytest
+import us
 from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
@@ -38,7 +39,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.utils.constants import ENCODING_UTF_8, US_STATE_ABBREVIATIONS
+from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
@@ -300,20 +301,20 @@ def add_mockdata(session):
     department = Department(
         name=DEPARTMENT_NAME,
         short_name="SPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
         unique_internal_identifier_label="homer_number",
     )
     session.add(department)
     department2 = Department(
         name=OTHER_DEPARTMENT_NAME,
         short_name="CPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(department2)
     empty_department = Department(
         name=DEPARTMENT_WITHOUT_OFFICERS_NAME,
         short_name="EPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(empty_department)
     session.commit()
