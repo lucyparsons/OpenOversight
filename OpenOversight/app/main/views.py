@@ -52,6 +52,7 @@ from OpenOversight.app.main.forms import (
     OfficerLinkForm,
     SalaryForm,
     TextForm,
+    get_state_choices,
 )
 from OpenOversight.app.main.model_view import ModelView
 from OpenOversight.app.models.database import (
@@ -522,8 +523,14 @@ def classify_submission(image_id, contains_cops):
 @admin_required
 def add_department():
     form = DepartmentForm()
+    form.choices = get_state_choices()
     if form.validate_on_submit():
-        departments = [x[0] for x in db.session.query(Department.name).all()]
+        departments = [
+            x[0]
+            for x in db.session.query(
+                name=Department.name, state=Department.state
+            ).all()
+        ]
 
         if form.name.data not in departments:
             department = Department(
@@ -576,6 +583,7 @@ def edit_department(department_id):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
+    form.choices = get_state_choices()
     original_ranks = department.jobs
     if form.validate_on_submit():
         new_name = form.name.data
