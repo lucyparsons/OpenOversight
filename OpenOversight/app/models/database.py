@@ -39,13 +39,19 @@ officer_incidents = db.Table(
 class Department(BaseModel):
     __tablename__ = "departments"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), index=True, unique=True, nullable=False)
+    name = db.Column(db.String(255), index=False, unique=False, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
-    state = db.Column(db.String(2), index=True)
+    state = db.Column(db.String(2), index=True, server_default="")
 
     # See https://github.com/lucyparsons/OpenOversight/issues/462
     unique_internal_identifier_label = db.Column(
         db.String(100), unique=False, nullable=True
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "name", "state", name="departments_name_state"
+        ),
     )
 
     def __repr__(self):
