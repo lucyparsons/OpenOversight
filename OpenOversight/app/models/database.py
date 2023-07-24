@@ -48,11 +48,7 @@ class Department(BaseModel):
         db.String(100), unique=False, nullable=True
     )
 
-    __table_args__ = (
-        UniqueConstraint(
-            "name", "state", name="departments_name_state"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
         return f"<Department ID {self.id}: {self.name} {self.state}>"
