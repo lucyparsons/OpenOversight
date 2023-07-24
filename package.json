@@ -2,6 +2,7 @@
   "devDependencies": {
     "sass": "^1.54.4"
   },
+  "license": "GPL-3.0-only",
   "name": "openoversight",
   "repository": "https://github.com/lucyparsons/OpenOversight",
   "scripts": {
