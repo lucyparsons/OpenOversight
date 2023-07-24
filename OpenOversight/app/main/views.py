@@ -556,7 +556,7 @@ def add_department():
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
-        return render_template("add_edit_department.html", form=form, jsloads=jsloads)
+        return render_template("department_add_edit.html", form=form, jsloads=jsloads)
 
 
 @main.route(
@@ -646,7 +646,7 @@ def edit_department(department_id):
     else:
         current_app.logger.info(form.errors)
         return render_template(
-            "add_edit_department.html", form=form, update=True, jsloads=jsloads
+            "department_add_edit.html", form=form, update=True, jsloads=jsloads
         )
 
 
@@ -1363,7 +1363,7 @@ def download_dept_descriptions_csv(department_id):
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
-    return render_template("all_departments.html", departments=departments)
+    return render_template("departments_all.html", departments=departments)
 
 
 @main.route(
