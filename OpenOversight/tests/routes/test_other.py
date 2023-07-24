@@ -5,7 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
-from OpenOversight.tests.routes.route_helpers import login_user
+from OpenOversight.tests.routes.route_helpers import FAKER, login_user
 
 
 @pytest.mark.parametrize(
@@ -58,12 +58,58 @@ def test_user_can_access_profile_differently_cased(mockdata, client, session):
 
 def test_timezone_setting(client):
     with current_app.test_request_context():
+        test_tz = FAKER.timezone()
         with client.session_transaction() as session:
             assert KEY_TIMEZONE not in session
         rv = client.post(
             url_for("main.set_session_timezone"),
-            data="A TIMEZONE".encode(ENCODING_UTF_8),
+            data=test_tz.encode(ENCODING_UTF_8),
         )
         assert rv.status_code == HTTPStatus.OK
         with client.session_transaction() as session:
-            assert session[KEY_TIMEZONE] == "A TIMEZONE"
+            assert session[KEY_TIMEZONE] == test_tz
+
+
+def test_timezone_setting_empty_string(client):
+    with current_app.test_request_context():
+        with client.session_transaction() as session:
+            assert KEY_TIMEZONE not in session
+        rv = client.post(
+            url_for("main.set_session_timezone"),
+            data="".encode(ENCODING_UTF_8),
+        )
+        assert rv.status_code == HTTPStatus.OK
+        with client.session_transaction() as session:
+            assert session[KEY_TIMEZONE] == current_app.config.get(KEY_TIMEZONE)
+
+
+def test_timezone_setting_multiple_calls_different_timezone(client):
+    with current_app.test_request_context():
+        initial_tz = FAKER.timezone()
+        alternate_tz = FAKER.timezone()
+
+        with client.session_transaction() as session:
+            assert KEY_TIMEZONE not in session
+        rv_one = client.post(
+            url_for("main.set_session_timezone"),
+            data=initial_tz.encode(ENCODING_UTF_8),
+        )
+        assert rv_one.status_code == HTTPStatus.OK
+        with client.session_transaction() as session:
+            assert session[KEY_TIMEZONE] == initial_tz
+
+        rv_two = client.post(
+            url_for("main.set_session_timezone"),
+            data=alternate_tz.encode(ENCODING_UTF_8),
+        )
+        assert rv_two.status_code == HTTPStatus.OK
+        with client.session_transaction() as session:
+            assert session[KEY_TIMEZONE] == alternate_tz
+
+        rv_two = client.post(
+            url_for("main.set_session_timezone"),
+            data=alternate_tz.encode(ENCODING_UTF_8),
+        )
+        assert rv_two.status_code == HTTPStatus.OK
+        with client.session_transaction() as session:
+            assert session[KEY_TIMEZONE] == alternate_tz
