@@ -526,10 +526,7 @@ def add_department():
     form.choices = get_state_choices()
     if form.validate_on_submit():
         departments = [
-            x[0]
-            for x in db.session.query(
-                name=Department.name, state=Department.state
-            ).all()
+            x[0] for x in db.session.query(Department.name, Department.state).all()
         ]
 
         if form.name.data not in departments:
