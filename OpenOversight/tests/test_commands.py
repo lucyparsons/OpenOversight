@@ -8,6 +8,7 @@ import uuid
 
 import pandas as pd
 import pytest
+import us
 from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
@@ -28,7 +29,6 @@ from OpenOversight.app.models.database import (
     Salary,
     Unit,
 )
-from OpenOversight.app.utils.constants import US_STATE_ABBREVIATIONS
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
 
@@ -82,7 +82,7 @@ def test_add_department__duplicate(session):
     department = Department(
         name=name,
         short_name=short_name,
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(department)
     session.commit()
@@ -157,7 +157,7 @@ def test_add_job_title__different_departments(session, department):
     other_department = Department(
         name="Other Police Department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(other_department)
     session.commit()
@@ -981,7 +981,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(other_department)
 
@@ -1105,7 +1105,7 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(other_department)
 
@@ -1254,7 +1254,7 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(other_department)
 
@@ -1290,7 +1290,7 @@ def test_advanced_csv_import__update_officer_different_department(
     other_department = Department(
         name="Other department",
         short_name="OPD",
-        state=random.sample(US_STATE_ABBREVIATIONS, 1)[0],
+        state=random.choice(us.STATES).abbr,
     )
     session.add(other_department)
     officer = Officer(
