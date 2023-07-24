@@ -5,7 +5,6 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from flask import current_app, url_for
-from future.utils import iteritems
 
 
 def ac_can_edit_officer(officer, ac):
@@ -49,7 +48,7 @@ def get_or_create(session, model, defaults=None, **kwargs):
     if instance:
         return instance, False
     else:
-        params = dict((k, v) for k, v in iteritems(filter_params))
+        params = dict((k, v) for k, v in filter_params.items())
         params.update(defaults or {})
         instance = model(**params)
         session.add(instance)

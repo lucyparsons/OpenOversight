@@ -1,6 +1,5 @@
 import datetime
 
-from future.utils import iteritems
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
@@ -90,8 +89,8 @@ def add_officer_profile(form, current_user):
                     note=note["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    date_created=datetime.datetime.now(),
-                    date_updated=datetime.datetime.now(),
+                    created_at=datetime.datetime.now(),
+                    updated_at=datetime.datetime.now(),
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -102,8 +101,8 @@ def add_officer_profile(form, current_user):
                     description=description["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    date_created=datetime.datetime.now(),
-                    date_updated=datetime.datetime.now(),
+                    created_at=datetime.datetime.now(),
+                    updated_at=datetime.datetime.now(),
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -128,8 +127,8 @@ def create_description(self, form):
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
-        date_created=datetime.datetime.now(),
-        date_updated=datetime.datetime.now(),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
     )
 
 
@@ -191,8 +190,8 @@ def create_note(self, form):
         text_contents=form.text_contents.data,
         creator_id=form.creator_id.data,
         officer_id=form.officer_id.data,
-        date_created=datetime.datetime.now(),
-        date_updated=datetime.datetime.now(),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
     )
 
 
@@ -216,7 +215,7 @@ def edit_existing_assignment(assignment, form):
 
 
 def edit_officer_profile(officer, form):
-    for field, data in iteritems(form.data):
+    for field, data in form.data.items():
         setattr(officer, field, data)
 
     db.session.add(officer)

@@ -7,6 +7,7 @@ from OpenOversight.app.utils.constants import (
     KEY_MAIL_USE_TLS,
     KEY_MAIL_USERNAME,
     KEY_OO_HELP_EMAIL,
+    KEY_TIMEZONE,
     MEGABYTE,
 )
 from OpenOversight.app.utils.general import str_is_true
@@ -21,6 +22,7 @@ class BaseConfig:
         self.DEBUG = False
         self.ENV = os.environ.get("ENV", "development")
         self.SEED = 666
+        self.TIMEZONE = os.environ.get(KEY_TIMEZONE, "America/Chicago")
         self.TESTING = False
         # Use session cookie to store URL to redirect to after login
         # https://flask-login.readthedocs.io/en/latest/#customizing-the-login-process

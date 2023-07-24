@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 from http import HTTPStatus
@@ -14,6 +13,7 @@ from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
 from OpenOversight.app.email_client import EmailClient
+from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import MEGABYTE
@@ -47,11 +47,11 @@ def create_app(config_name="default"):
     login_manager.init_app(app)
     sitemap.init_app(app)
 
-    from .main import main as main_blueprint
+    from OpenOversight.app.main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
 
-    from .auth import auth as auth_blueprint
+    from OpenOversight.app.auth import auth as auth_blueprint
 
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
@@ -111,29 +111,14 @@ def create_app(config_name="default"):
         # Pass generated errorhandler function to @app.errorhandler decorator
         app.errorhandler(code)(create_errorhandler(code, error, template))
 
-    # create jinja2 filter for titles with multiple capitals
-    @app.template_filter("capfirst")
-    def capfirst_filter(s):
-        return s[0].capitalize() + s[1:]  # only change 1st letter
-
-    @app.template_filter("get_age")
-    def get_age_from_birth_year(birth_year):
-        if birth_year:
-            return int(datetime.datetime.now().year - birth_year)
-
-    @app.template_filter("field_in_query")
-    def field_in_query(form_data, field):
-        """
-        Determine if a field is specified in the form data, and if so return a Bootstrap
-        class which will render the field accordion open.
-        """
-        return " in " if form_data.get(field) else ""
+    # Instantiate filters
+    instantiate_filters(app)
 
     # Add commands
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
     )  # Adds 'db' command
-    from .commands import (
+    from OpenOversight.app.commands import (
         add_department,
         add_job_title,
         advanced_csv_import,

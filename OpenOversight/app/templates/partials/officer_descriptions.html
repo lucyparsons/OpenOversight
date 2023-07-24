@@ -3,7 +3,7 @@
   <ul class="list-group">
     {% for description in officer.descriptions %}
       <li class="list-group-item">
-        <em>{{ description.date_updated.strftime("%b %d, %Y") }}</em>
+        <em>{{ description.updated_at | local_date }}</em>
         <br />
         {% for paragraph in description.text_contents.split('\n') %}
           {{ paragraph | safe }}

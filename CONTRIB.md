@@ -123,6 +123,8 @@ In the event that you need to create or delete the test data, you can do that wi
 or
 `$ python test_data.py --cleanup` to delete the data
 
+Within the database we use [`timestamptz`](https://stackoverflow.com/a/48069726) fields for timestamps. To make sure that you are setting timestamps in the correct timezone, set the environment variable `TIMEZONE` to your respective [Olson-style timezone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#list) so that you can make sure any DST conversions are handled by PostgreSQL.
+
 ### Migrating the Database
 You'll first have to start the Docker instance for the OpenOversight app using the command `make start`. To do this, you'll need to be in the base folder of the repository (the one that houses the `Makefile`).
 

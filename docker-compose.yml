@@ -21,6 +21,9 @@ services:
       - .env
     environment:
       FLASK_APP: OpenOversight.app
+      # Update with your application's respective Olson-style timezone:
+      # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#list
+      TIMEZONE: "America/Chicago"
     volumes:
       - ./data:/data/
     secrets:
