@@ -966,6 +966,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
         class ExistingDiffStatePD:
             name = "Existing Police Department"
             short_name = "EPD"
+            # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
             state = random.choice(
                 [st for st in us.STATES if st.abbr != ExistingPD.state]
             ).abbr
