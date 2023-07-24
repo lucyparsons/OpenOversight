@@ -49,7 +49,7 @@ class Department(BaseModel):
     )
 
     def __repr__(self):
-        return "<Department ID {}: {} {}>".format(self.id, self.name, self.state)
+        return f"<Department ID {self.id}: {self.name} {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -78,7 +78,7 @@ class Job(BaseModel):
     )
 
     def __repr__(self):
-        return "<Job ID {}: {}>".format(self.id, self.job_title)
+        return f"<Job ID {self.id,}: {self.job_title}>"
 
     def __str__(self):
         return self.job_title
@@ -166,16 +166,14 @@ class Officer(BaseModel):
                 else self.middle_initial
             )
             if self.suffix:
-                return "{} {} {} {}".format(
-                    self.first_name, middle_initial, self.last_name, self.suffix
+                return (
+                    f"{self.first_name} {middle_initial} {self.last_name} {self.suffix}"
                 )
             else:
-                return "{} {} {}".format(
-                    self.first_name, middle_initial, self.last_name
-                )
+                return f"{self.first_name} {middle_initial} {self.last_name}"
         if self.suffix:
-            return "{} {} {}".format(self.first_name, self.last_name, self.suffix)
-        return "{} {}".format(self.first_name, self.last_name)
+            return f"{self.first_name} {self.last_name} {self.suffix}"
+        return f"{self.first_name} {self.last_name}"
 
     def race_label(self):
         if self.race is None:
@@ -224,16 +222,13 @@ class Officer(BaseModel):
 
     def __repr__(self):
         if self.unique_internal_identifier:
-            return "<Officer ID {}: {} {} {} {} ({})>".format(
-                self.id,
-                self.first_name,
-                self.middle_initial,
-                self.last_name,
-                self.suffix,
-                self.unique_internal_identifier,
+            return (
+                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+                + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
             )
-        return "<Officer ID {}: {} {} {} {}>".format(
-            self.id, self.first_name, self.middle_initial, self.last_name, self.suffix
+        return (
+            f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+            + f"{self.last_name} {self.suffix}>"
         )
 
 
@@ -249,7 +244,7 @@ class Salary(BaseModel):
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return "<Salary: ID {} : {}".format(self.officer_id, self.salary)
+        return f"<Salary: ID {self.officer_id} : {self.salary}"
 
 
 class Assignment(BaseModel):
@@ -267,7 +262,7 @@ class Assignment(BaseModel):
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
-        return "<Assignment: ID {} : {}>".format(self.officer_id, self.star_no)
+        return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
 
 
 class Unit(BaseModel):
@@ -281,7 +276,7 @@ class Unit(BaseModel):
     )
 
     def __repr__(self):
-        return "Unit: {}".format(self.description)
+        return f"Unit: {self.description}"
 
 
 class Face(BaseModel):
@@ -326,7 +321,7 @@ class Face(BaseModel):
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
     def __repr__(self):
-        return "<Tag ID {}: {} - {}>".format(self.id, self.officer_id, self.img_id)
+        return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
 
 
 class Image(BaseModel):
@@ -358,7 +353,7 @@ class Image(BaseModel):
     department = db.relationship("Department", backref="raw_images")
 
     def __repr__(self):
-        return "<Image ID {}: {}>".format(self.id, self.filepath)
+        return f"<Image ID {self.id}: {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -418,23 +413,22 @@ class Location(BaseModel):
 
     def __repr__(self):
         if self.street_name and self.cross_street2:
-            return "Intersection of {} and {}, {} {}".format(
-                self.street_name, self.cross_street2, self.city, self.state
+            return (
+                f"Intersection of {self.street_name} and {self.cross_street2}, "
+                + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1:
-            return "Intersection of {} and {}, {} {}".format(
-                self.street_name, self.cross_street1, self.city, self.state
+            return (
+                f"Intersection of {self.street_name} and {self.cross_street1}, "
+                + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1 and self.cross_street2:
-            return "Intersection of {} between {} and {}, {} {}".format(
-                self.street_name,
-                self.cross_street1,
-                self.cross_street2,
-                self.city,
-                self.state,
+            return (
+                f"Intersection of {self.street_name} between {self.cross_street1} "
+                f"and {self.cross_street2}, {self.city} {self.state}"
             )
         else:
-            return "{} {}".format(self.city, self.state)
+            return f"{self.city} {self.state}"
 
 
 class LicensePlate(BaseModel):
