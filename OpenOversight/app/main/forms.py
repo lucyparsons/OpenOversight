@@ -187,6 +187,13 @@ class SalaryForm(Form):
     # raise Exception(args[0])
 
 
+def get_state_choices():
+    """Return list of choices for state field."""
+    states_list = [(state.abbr, state.name) for state in us.STATES]
+    states_list.append(("", "Please Select a State"))
+    return states_list
+
+
 class DepartmentForm(Form):
     name = StringField(
         "Full name of law enforcement agency, e.g. Chicago Police Department",
@@ -200,8 +207,9 @@ class DepartmentForm(Form):
     )
     state = SelectField(
         "The law enforcement agency's home state",
-        choices=[(state.abbr, state.name) for state in us.STATES],
-        validators=[Length(max=2), DataRequired()],
+        coerce=str,
+        choices=get_state_choices(),
+        validators=[Length(min=0, max=2), DataRequired()],
     )
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"
