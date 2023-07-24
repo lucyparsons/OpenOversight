@@ -552,7 +552,7 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
-            flash("New department {} added to OpenOversight".format(department.name))
+            flash(f"New department {department.name} added to OpenOversight")
         else:
             flash("Department {} already exists".format(form.name.data))
         return redirect(url_for("main.get_started_labeling"))
@@ -567,21 +567,23 @@ def add_department():
 @login_required
 @admin_required
 def edit_department(department_id):
-    jsloads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
+    js_loads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
     if form.validate_on_submit():
         new_name = form.name.data
+        new_state = form.state
         if new_name != previous_name:
-            if Department.query.filter_by(name=new_name).count() > 0:
-                flash("Department {} already exists".format(new_name))
+            if Department.query.filter_by(name=new_name, state=new_state).count() > 0:
+                flash(f"Department {new_name} in {new_state} already exists")
                 return redirect(
                     url_for("main.edit_department", department_id=department_id)
                 )
         department.name = new_name
         department.short_name = form.short_name.data
+        department.state = new_state
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
@@ -617,9 +619,8 @@ def edit_department(department_id):
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
                         flash(
-                            "You attempted to delete a rank, {}, that is still in use".format(
-                                rank
-                            )
+                            f"You attempted to delete a rank, {rank}, that is still "
+                            "in use"
                         )
                     return redirect(
                         url_for("main.edit_department", department_id=department_id)
@@ -648,7 +649,7 @@ def edit_department(department_id):
     else:
         current_app.logger.info(form.errors)
         return render_template(
-            "department_add_edit.html", form=form, update=True, jsloads=jsloads
+            "department_add_edit.html", form=form, update=True, jsloads=js_loads
         )
 
 
