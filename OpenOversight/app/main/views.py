@@ -140,9 +140,6 @@ def index():
 def set_session_timezone():
     if KEY_TIMEZONE not in session:
         session.permanent = True
-        current_app.permanent_session_lifetime = datetime.timedelta(
-            minutes=current_app.config.get("SESSION_LIFETIME_MINUTES")
-        )
         timezone = request.data.decode(ENCODING_UTF_8)
         session[KEY_TIMEZONE] = (
             timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)

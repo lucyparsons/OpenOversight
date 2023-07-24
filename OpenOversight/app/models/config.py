@@ -12,9 +12,6 @@ class BaseConfig:
         self.DEBUG = False
         self.ENV = os.environ.get("ENV", "development")
         self.SEED = 666
-        self.SESSION_LIFETIME_MINUTES = int(
-            os.environ.get("SESSION_LIFETIME_MINUTES", 60)
-        )
         self.TIMEZONE = os.environ.get(KEY_TIMEZONE, "America/Chicago")
         self.TESTING = False
         # Use session cookie to store URL to redirect to after login
