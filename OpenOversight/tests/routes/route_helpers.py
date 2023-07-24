@@ -1,3 +1,4 @@
+from faker import Faker
 from flask import url_for
 
 from OpenOversight.app.auth.forms import LoginForm
@@ -5,6 +6,7 @@ from OpenOversight.app.auth.forms import LoginForm
 
 ADMIN_EMAIL = "test@example.org"
 ADMIN_PASSWORD = "testtest"
+FAKER = Faker()
 
 
 def login_user(client):
