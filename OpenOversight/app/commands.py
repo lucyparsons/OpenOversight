@@ -582,6 +582,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @with_appcontext
 def advanced_csv_import(
     department_name,
+    department_state,
     officers_csv,
     assignments_csv,
     salaries_csv,
@@ -592,7 +593,7 @@ def advanced_csv_import(
 ):
     """
     Add or update officers, assignments, salaries, links and incidents from csv
-    files in the department DEPARTMENT_NAME.
+    files in the department DEPARTMENT_NAME with the correct DEPARTMENT_STATE.
 
     The csv files are treated as the source of truth.
     Existing entries might be overwritten as a result, backing up the
@@ -605,6 +606,7 @@ def advanced_csv_import(
 
     import_csv_files(
         department_name,
+        department_state,
         officers_csv,
         assignments_csv,
         salaries_csv,
