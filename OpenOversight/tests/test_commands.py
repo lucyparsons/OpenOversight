@@ -1275,7 +1275,7 @@ def test_advanced_csv_import__extra_fields_officers(session, department, tmp_pat
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department.name), "--officers-csv", officers_csv],
+        [str(department.name), str(department.state), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because of unexpected field 'name'
@@ -1301,7 +1301,7 @@ def test_advanced_csv_import__missing_required_field_officers(
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department.name), "--officers-csv", officers_csv],
+        [str(department.name), str(department.state), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because 'id' is missing
