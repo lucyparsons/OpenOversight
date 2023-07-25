@@ -90,13 +90,13 @@ def test_add_department__duplicate(session):
         name = "Duplicate Department"
         short_name = "DPD"
         state = random.choice(us.STATES).abbr
-        unique_internal_identifier = "2320wea0s9d03eas"
+        unique_internal_identifier_label = "2320wea0s9d03eas"
 
     department = Department(
         name=DuplicatePD.name,
         short_name=DuplicatePD.short_name,
         state=DuplicatePD.state,
-        unique_internal_identifier=DuplicatePD.unique_internal_identifier,
+        unique_internal_identifier_label=DuplicatePD.unique_internal_identifier_label,
     )
     session.add(department)
     session.commit()
@@ -108,7 +108,7 @@ def test_add_department__duplicate(session):
             department.name,
             department.short_name,
             department.state,
-            department.unique_internal_identifier,
+            department.unique_internal_identifier_label,
         ],
     )
 
