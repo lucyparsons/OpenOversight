@@ -85,37 +85,6 @@ def test_add_department__success(session):
     assert department.state == AddedPD.state
 
 
-def test_add_department__success_lower_case_state(session):
-    class LowerCasePD:
-        name = "Lower Case Police Department"
-        short_name = "LCPD"
-        state = random.choice(us.STATES).abbr.lower()
-        unique_internal_identifier = "53430au239eas922asdj"
-
-    # add department via command line
-    result = run_command_print_output(
-        add_department,
-        [
-            LowerCasePD.name,
-            LowerCasePD.short_name,
-            LowerCasePD.state,
-            LowerCasePD.unique_internal_identifier,
-        ],
-    )
-
-    # command ran successful
-    assert result.exit_code == 0
-    # department was added to database
-    departments = Department.query.filter_by(
-        unique_internal_identifier_label=LowerCasePD.unique_internal_identifier
-    ).all()
-    assert len(departments) == 1
-    department = departments[0]
-    assert department.name == LowerCasePD.name
-    assert department.short_name == LowerCasePD.short_name
-    assert department.state == LowerCasePD.state.upper()
-
-
 def test_add_department__duplicate(session):
     class DuplicatePD:
         name = "Duplicate Department"
@@ -170,6 +139,18 @@ def test_add_department__invalid_state_value(session):
     # running add-department command missing one argument
     result = run_command_print_output(
         add_department, ["Name of Department", "NPD", "XYZ"]
+    )
+
+    # fails because invalid state value
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__lower_case_state_value(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(
+        add_department,
+        ["Name of Department", "NPD", random.choice(us.STATES).abbr.lower()],
     )
 
     # fails because invalid state value
