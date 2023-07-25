@@ -22,8 +22,9 @@ from OpenOversight.app.models.database import (
 
 def test_department_repr(mockdata):
     department = Department.query.first()
-    assert department.__repr__() == "<Department ID {}: {} {}>".format(
-        department.id, department.name, department.state
+    assert (
+        repr(department)
+        == f"<Department ID {department.id}: {department.name} {department.state}"
     )
 
 
