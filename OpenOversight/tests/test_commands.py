@@ -1030,8 +1030,6 @@ def _create_csv(data, path, csv_file_name):
 def test_advanced_csv_import__force_create(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department.name
-
     other_department = Department(
         name="Other department",
         short_name="OPD",
@@ -1052,19 +1050,22 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     officers_data = [
         {
             "id": 99001,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "First",
         },
         {
             "id": 99002,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Second",
         },
         {
             "id": 99003,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Third",
         },
@@ -1090,7 +1091,8 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
         {
             "id": 66001,
             "officer_ids": "99002|99001",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "street_name": "Fake Street",
         }
     ]
