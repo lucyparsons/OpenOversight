@@ -35,58 +35,49 @@ def test_department_repr(mockdata):
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
     if officer.unique_internal_identifier:
-        assert repr(officer) == "<Officer ID {}: {} {} {} {} ({})>".format(
-            officer.id,
-            officer.first_name,
-            officer.middle_initial,
-            officer.last_name,
-            officer.suffix,
-            officer.unique_internal_identifier,
+        assert (
+            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
+            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
+            f"({officer.unique_internal_identifier})>"
         )
     else:
-        assert repr(officer) == "<Officer ID {}: {} {} {} {}>".format(
-            officer.id,
-            officer.first_name,
-            officer.middle_initial,
-            officer.last_name,
-            officer.suffix,
+        assert (
+            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
+            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
         )
 
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert repr(assignment) == "<Assignment: ID {} : {}>".format(
-        assignment.officer.id, assignment.star_no
+    assert (
+        repr(assignment)
+        == f"<Assignment: ID {assignment.officer.id} : {assignment.star_no}>"
     )
 
 
 def test_image_repr(mockdata):
     image = Image.query.first()
-    assert repr(image) == "<Image ID {}: {}>".format(image.id, image.filepath)
+    assert repr(image) == f"<Image ID {image.id}: {image.filepath}>"
 
 
 def test_face_repr(mockdata):
     face = Face.query.first()
-    assert repr(face) == "<Tag ID {}: {} - {}>".format(
-        face.id, face.officer_id, face.img_id
-    )
+    assert repr(face) == f"<Tag ID {face.id}: {face.officer_id} - {face.img_id}>"
 
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert repr(unit) == "Unit: {}".format(unit.description)
+    assert repr(unit) == f"Unit: {unit.description}"
 
 
 def test_user_repr(mockdata):
     user = User(username="bacon")
-    assert repr(user) == "<User '{}'>".format(user.username)
+    assert repr(user) == f"<User '{user.username}'>"
 
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert repr(salary) == "<Salary: ID {} : {}".format(
-        salary.officer_id, salary.salary
-    )
+    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}"
 
 
 def test_password_not_printed(mockdata):
