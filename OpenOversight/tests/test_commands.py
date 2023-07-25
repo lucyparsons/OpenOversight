@@ -30,7 +30,7 @@ from OpenOversight.app.models.database import (
     Unit,
 )
 from OpenOversight.app.utils.db import get_officer
-from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
+from OpenOversight.tests.conftest import RANK_CHOICES_1, SpringfieldPD, generate_officer
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -835,7 +835,8 @@ def test_bulk_add_officers__no_create_flag(
 
 def test_advanced_csv_import__success(session, department, test_csv_dir):
     # make sure department name aligns with the csv files
-    assert department.name == "Springfield Police Department"
+    assert department.name == SpringfieldPD.name
+    assert department.state == SpringfieldPD.state
 
     # set up existing data
     officer = Officer(
@@ -884,6 +885,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             os.path.join(test_csv_dir, "officers.csv"),
             "--assignments-csv",
@@ -1109,6 +1111,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
