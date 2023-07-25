@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import List, Optional
 
 import pytest
-import us
 from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
@@ -42,6 +41,7 @@ from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 factory = Faker()
@@ -66,26 +66,10 @@ RANK_CHOICES_2 = [
 ]
 
 
-class SpringfieldPD:
-    name = "Springfield Police Department"
-    short_name = "SPD"
-    state = "IL"
-    unique_internal_identifier_label = "homer_number"
-
-
-class OtherPD:
-    name = "Chicago Police Department"
-    short_name = "CPD"
-    state = random.choice(us.STATES).abbr
-
-
-class NoOfficerPD:
-    name = "Empty Police Department"
-    short_name = "EPD"
-    state = random.choice(us.STATES).abbr
-
-
 AC_DEPT = 1
+NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD")
+OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD")
+SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "IL")
 
 
 def pick_birth_date():
@@ -313,22 +297,22 @@ def test_csv_dir():
 def add_mockdata(session):
     assert current_app.config["NUM_OFFICERS"] >= 5
     department = Department(
-        name=SpringfieldPD.name,
-        short_name=SpringfieldPD.short_name,
-        state=SpringfieldPD.state,
-        unique_internal_identifier_label=SpringfieldPD.unique_internal_identifier_label,
+        name=SPRINGFIELD_PD.name,
+        short_name=SPRINGFIELD_PD.short_name,
+        state=SPRINGFIELD_PD.state,
+        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
     )
     session.add(department)
     department2 = Department(
-        name=OtherPD.name,
-        short_name=OtherPD.short_name,
-        state=OtherPD.state,
+        name=OTHER_PD.name,
+        short_name=OTHER_PD.short_name,
+        state=OTHER_PD.state,
     )
     session.add(department2)
     empty_department = Department(
-        name=NoOfficerPD.name,
-        short_name=NoOfficerPD.short_name,
-        state=NoOfficerPD.state,
+        name=NO_OFFICER_PD.name,
+        short_name=NO_OFFICER_PD.short_name,
+        state=NO_OFFICER_PD.state,
     )
     session.add(empty_department)
     session.commit()
@@ -640,14 +624,14 @@ def mockdata(session):
 @pytest.fixture
 def department(session):
     return Department.query.filter_by(
-        name=SpringfieldPD.name, state=SpringfieldPD.state
+        name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state
     ).one()
 
 
 @pytest.fixture
 def department_without_officers(session):
     return Department.query.filter_by(
-        name=NoOfficerPD.name, state=NoOfficerPD.state
+        name=NO_OFFICER_PD.name, state=NO_OFFICER_PD.state
     ).one()
 
 

@@ -45,9 +45,14 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
-
-from ..conftest import AC_DEPT, RANK_CHOICES_1, SpringfieldPD
-from .route_helpers import FAKER, login_ac, login_admin, login_user, process_form_data
+from OpenOversight.tests.conftest import AC_DEPT, RANK_CHOICES_1, SPRINGFIELD_PD
+from OpenOversight.tests.routes.route_helpers import (
+    FAKER,
+    login_ac,
+    login_admin,
+    login_user,
+    process_form_data,
+)
 
 
 @pytest.mark.parametrize(
@@ -913,7 +918,7 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
         rv = client.get(url_for("main.submit_data"), follow_redirects=True)
 
-        assert SpringfieldPD.name in rv.data.decode(ENCODING_UTF_8)
+        assert SPRINGFIELD_PD.name in rv.data.decode(ENCODING_UTF_8)
 
 
 def test_admin_can_add_new_officer(mockdata, client, session, department):

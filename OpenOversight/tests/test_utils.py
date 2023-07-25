@@ -1,6 +1,9 @@
+import random
+import string
 from io import BytesIO
 
 import pytest
+import us as us
 from flask import current_app
 from flask_login import current_user
 from mock import MagicMock, Mock, patch
@@ -19,11 +22,22 @@ from OpenOversight.tests.routes.route_helpers import login_user
 
 
 # Utils tests
-
 upload_s3_patch = patch(
     "OpenOversight.app.utils.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
+
+
+class PoliceDepartment:
+    """Base Police Department class."""
+
+    def __init__(self, name, short_name, state=random.choice(us.STATES).abbr):
+        self.name = name
+        self.short_name = short_name
+        self.state = state
+        self.unique_internal_identifier_label = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=10)
+        )
 
 
 def test_department_filter(mockdata):

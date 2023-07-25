@@ -30,7 +30,11 @@ from OpenOversight.app.models.database import (
     Unit,
 )
 from OpenOversight.app.utils.db import get_officer
-from OpenOversight.tests.conftest import RANK_CHOICES_1, SpringfieldPD, generate_officer
+from OpenOversight.tests.conftest import (
+    RANK_CHOICES_1,
+    SPRINGFIELD_PD,
+    generate_officer,
+)
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -835,8 +839,8 @@ def test_bulk_add_officers__no_create_flag(
 
 def test_advanced_csv_import__success(session, department, test_csv_dir):
     # make sure department name aligns with the csv files
-    assert department.name == SpringfieldPD.name
-    assert department.state == SpringfieldPD.state
+    assert department.name == SPRINGFIELD_PD.name
+    assert department.state == SPRINGFIELD_PD.state
 
     # set up existing data
     officer = Officer(
