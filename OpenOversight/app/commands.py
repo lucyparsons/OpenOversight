@@ -568,7 +568,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @click.command()
 @click.argument("department-name", required=True)
 @click.argument(
-    "state",
+    "department-state",
     required=True,
     type=click.Choice([state.abbr for state in us.STATES]),
 )
