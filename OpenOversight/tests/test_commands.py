@@ -1157,8 +1157,6 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
 def test_advanced_csv_import__overwrite_assignments(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department.name
-
     other_department = Department(
         name="Other department",
         short_name="OPD",
@@ -1202,7 +1200,8 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     officers_data = [
         {
             "id": "#1",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Second",
         },
@@ -1233,6 +1232,7 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
@@ -1261,10 +1261,14 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
 
 
 def test_advanced_csv_import__extra_fields_officers(session, department, tmp_path):
-    department_name = department.name
     # create csv with invalid field 'name'
     officers_data = [
-        {"id": "", "department_name": department_name, "name": "John Smith"},
+        {
+            "id": "",
+            "department_name": department.name,
+            "department_state": department.state,
+            "name": "John Smith",
+        },
     ]
     officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
 
@@ -1283,11 +1287,11 @@ def test_advanced_csv_import__extra_fields_officers(session, department, tmp_pat
 def test_advanced_csv_import__missing_required_field_officers(
     session, department, tmp_path
 ):
-    department_name = department.name
     # create csv with missing field 'id'
     officers_data = [
         {
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },
@@ -1307,7 +1311,6 @@ def test_advanced_csv_import__missing_required_field_officers(
 
 
 def test_advanced_csv_import__wrong_department(session, department, tmp_path):
-    department_name = department.name
     other_department = Department(
         name="Other department",
         short_name="OPD",
@@ -1319,7 +1322,8 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
     officers_data = [
         {
             "id": "",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },
@@ -1341,8 +1345,6 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
 def test_advanced_csv_import__update_officer_different_department(
     session, department, tmp_path
 ):
-    department_name = department.name
-
     # set up data
     other_department = Department(
         name="Other department",
@@ -1359,7 +1361,8 @@ def test_advanced_csv_import__update_officer_different_department(
     officers_data = [
         {
             "id": 99021,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },
