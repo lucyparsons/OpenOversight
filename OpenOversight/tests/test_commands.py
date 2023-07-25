@@ -41,7 +41,7 @@ def run_command_print_output(cli, args=None, **kwargs):
     any other value signifies a failure.
 
     Additionally, this function will send all generated logs to stdout
-    and will print exceptions and strack-trace to make it easier to debug
+    and will print exceptions and stack-trace to make it easier to debug
     a failing
     """
     runner = CliRunner()
@@ -55,41 +55,92 @@ def run_command_print_output(cli, args=None, **kwargs):
 
 
 def test_add_department__success(session):
-    name = "Added Police Department"
-    short_name = "APD"
-    unique_internal_identifier = "30ad0au239eas939asdj"
+    class AddedPD:
+        name = "Added Police Department"
+        short_name = "APD"
+        state = random.choice(us.STATES).abbr
+        unique_internal_identifier = "30ad0au239eas939asdj"
 
     # add department via command line
     result = run_command_print_output(
-        add_department, [name, short_name, unique_internal_identifier]
+        add_department,
+        [
+            AddedPD.name,
+            AddedPD.short_name,
+            AddedPD.state,
+            AddedPD.unique_internal_identifier,
+        ],
     )
 
     # command ran successful
     assert result.exit_code == 0
     # department was added to database
     departments = Department.query.filter_by(
-        unique_internal_identifier_label=unique_internal_identifier
+        unique_internal_identifier_label=AddedPD.unique_internal_identifier
     ).all()
     assert len(departments) == 1
     department = departments[0]
-    assert department.name == name
-    assert department.short_name == short_name
+    assert department.name == AddedPD.name
+    assert department.short_name == AddedPD.short_name
+    assert department.state == AddedPD.state
+
+
+def test_add_department__success_lower_case_state(session):
+    class LowerCasePD:
+        name = "Lower Case Police Department"
+        short_name = "LCPD"
+        state = random.choice(us.STATES).abbr.lower()
+        unique_internal_identifier = "53430au239eas922asdj"
+
+    # add department via command line
+    result = run_command_print_output(
+        add_department,
+        [
+            LowerCasePD.name,
+            LowerCasePD.short_name,
+            LowerCasePD.state,
+            LowerCasePD.unique_internal_identifier,
+        ],
+    )
+
+    # command ran successful
+    assert result.exit_code == 0
+    # department was added to database
+    departments = Department.query.filter_by(
+        unique_internal_identifier_label=LowerCasePD.unique_internal_identifier
+    ).all()
+    assert len(departments) == 1
+    department = departments[0]
+    assert department.name == LowerCasePD.name
+    assert department.short_name == LowerCasePD.short_name
+    assert department.state == LowerCasePD.state.upper()
 
 
 def test_add_department__duplicate(session):
-    name = "Duplicate Department"
-    short_name = "DPD"
+    class DuplicatePD:
+        name = ("Duplicate Department",)
+        short_name = ("DPD",)
+        state = (random.choice(us.STATES).abbr,)
+        unique_internal_identifier = "2320wea0s9d03eas"
+
     department = Department(
-        name=name,
-        short_name=short_name,
-        state=random.choice(us.STATES).abbr,
+        name=DuplicatePD.name,
+        short_name=DuplicatePD.short_name,
+        state=DuplicatePD.state,
+        unique_internal_identifier=DuplicatePD.unique_internal_identifier,
     )
     session.add(department)
     session.commit()
 
     # adding department of same name via command
     result = run_command_print_output(
-        add_department, [name, short_name, "2320wea0s9d03eas"]
+        add_department,
+        [
+            department.name,
+            department.short_name,
+            department.state,
+            department.unique_internal_identifier,
+        ],
     )
 
     # fails because Department with this name already exists
@@ -97,11 +148,31 @@ def test_add_department__duplicate(session):
     assert result.exception is not None
 
 
-def test_add_department__missing_argument(session):
+def test_add_department__short_name_missing_argument(session):
     # running add-department command missing one argument
     result = run_command_print_output(add_department, ["Name of Department"])
 
     # fails because short name is required argument
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__state_missing_argument(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(add_department, ["Name of Department", "NPD"])
+
+    # fails because state is required argument
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__invalid_state_value(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(
+        add_department, ["Name of Department", "NPD", "XYZ"]
+    )
+
+    # fails because invalid state value
     assert result.exit_code != 0
     assert result.exception is not None
 
