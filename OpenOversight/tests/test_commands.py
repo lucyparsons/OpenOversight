@@ -118,9 +118,9 @@ def test_add_department__success_lower_case_state(session):
 
 def test_add_department__duplicate(session):
     class DuplicatePD:
-        name = ("Duplicate Department",)
-        short_name = ("DPD",)
-        state = (random.choice(us.STATES).abbr,)
+        name = "Duplicate Department"
+        short_name = "DPD"
+        state = random.choice(us.STATES).abbr
         unique_internal_identifier = "2320wea0s9d03eas"
 
     department = Department(
