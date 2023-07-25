@@ -305,7 +305,7 @@ def test_license_plates_can_be_saved_with_valid_states(mockdata):
 
 
 def test_links_must_have_valid_urls(mockdata):
-    bad_url = "www.name-name.com"
+    bad_url = faker.safe_domain_name()
     with raises(ValueError):
         Link(link_type="video", url=bad_url)
 
