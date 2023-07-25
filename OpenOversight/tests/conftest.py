@@ -69,7 +69,7 @@ RANK_CHOICES_2 = [
 class SpringfieldPD:
     name = "Springfield Police Department"
     short_name = "SPD"
-    state = random.choice(us.STATES).abbr
+    state = "IL"
     unique_internal_identifier_label = "homer_number"
 
 
