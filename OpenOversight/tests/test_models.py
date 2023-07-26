@@ -1,7 +1,6 @@
 import datetime
 import time
 
-from faker import Faker
 from pytest import raises
 
 from OpenOversight.app.models.database import (
@@ -19,9 +18,6 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-
-
-faker = Faker()
 
 
 def test_department_repr(mockdata):
@@ -304,13 +300,13 @@ def test_license_plates_can_be_saved_with_valid_states(mockdata):
     assert saved is not None
 
 
-def test_links_must_have_valid_urls(mockdata):
+def test_links_must_have_valid_urls(mockdata, faker):
     bad_url = faker.safe_domain_name()
     with raises(ValueError):
         Link(link_type="video", url=bad_url)
 
 
-def test_links_can_be_saved_with_valid_urls(mockdata):
+def test_links_can_be_saved_with_valid_urls(mockdata, faker):
     good_url = faker.url()
     li = Link(link_type="video", url=good_url)
     db.session.add(li)
@@ -337,7 +333,7 @@ def test_incident_m2m_officers(mockdata):
     assert incident in officer.incidents
 
 
-def test_incident_m2m_links(mockdata):
+def test_incident_m2m_links(mockdata, faker):
     incident = Incident.query.first()
     link = Link(link_type="video", url=faker.url())
     incident.links.append(link)
@@ -362,7 +358,7 @@ def test_incident_m2m_license_plates(mockdata):
     assert incident in license_plate.incidents
 
 
-def test_images_added_with_user_id(mockdata):
+def test_images_added_with_user_id(mockdata, faker):
     user_id = 1
     new_image = Image(
         filepath=faker.url(),
