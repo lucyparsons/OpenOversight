@@ -35,6 +35,7 @@ from OpenOversight.tests.conftest import (
     SPRINGFIELD_PD,
     generate_officer,
 )
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -59,11 +60,7 @@ def run_command_print_output(cli, args=None, **kwargs):
 
 
 def test_add_department__success(session):
-    class AddedPD:
-        name = "Added Police Department"
-        short_name = "APD"
-        state = random.choice(us.STATES).abbr
-        unique_internal_identifier = "30ad0au239eas939asdj"
+    AddedPD = PoliceDepartment("Added Police Department", "APD")
 
     # add department via command line
     result = run_command_print_output(
@@ -90,11 +87,7 @@ def test_add_department__success(session):
 
 
 def test_add_department__duplicate(session):
-    class DuplicatePD:
-        name = "Duplicate Department"
-        short_name = "DPD"
-        state = random.choice(us.STATES).abbr
-        unique_internal_identifier_label = "2320wea0s9d03eas"
+    DuplicatePD = PoliceDepartment("Duplicate Department", "DPD")
 
     department = Department(
         name=DuplicatePD.name,
