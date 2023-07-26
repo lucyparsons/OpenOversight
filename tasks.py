@@ -12,8 +12,8 @@ as the defined user.
 * deploy env github_user github_token
     downloading the most recent image and code for the given environment,
     then migrating the database if any migrations are necessary,
-    finally restarting the docker containers. The github user and token are
-    used to download the docker image from the github containe registry.
+    finally restarting the docker containers. The GitHub user and token are
+    used to download the docker image from the GitHub container registry.
 * cleanup env
     do cleanup tasks. At the moment this consists of removing unused docker
     to free up space.
@@ -46,7 +46,7 @@ for h in logging.getLogger().handlers:
 
 @dataclass
 class HostConfig:
-    """HostConfig collects various parameters for each deployment (prod, staging, etc)"""
+    """HostConfig collects parameters for each deployment (prod, staging, etc)"""
 
     host_name: str
     git_branch: str
@@ -69,8 +69,8 @@ def get_configs(
     env: str, github_user: str = None, github_token: str = None
 ) -> HostConfig:
     """
-    Return a HostConfig based on given environment and github user and token.
-    Github user and token can be omitted if no connection to github is needed.
+    Return a HostConfig based on given environment and GitHub user and token.
+    The GitHub user and token can be omitted if no connection to GitHub is needed.
     """
     configs = {
         "staging": HostConfig(
@@ -140,7 +140,7 @@ def deploy_(c: Connection, config: HostConfig):
 @task(
     help={
         "environment": "'staging' or 'prod' indicating which environment to target",
-        "github_user": "github user name to authenticate with",
+        "github_user": "GitHub user name to authenticate with",
         "github_token": "token to use together with github_user",
     }
 )
