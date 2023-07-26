@@ -259,9 +259,9 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "A new confirmation email has been sent to {}.".format(
-            email
-        ) in rv.data.decode(ENCODING_UTF_8)
+        assert f"A new confirmation email has been sent to {email}." in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
 
 def test_register_user_approval_required(mockdata, client, session):
