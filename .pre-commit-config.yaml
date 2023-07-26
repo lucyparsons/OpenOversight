@@ -90,7 +90,6 @@ repos:
         - id: black
           args:
             - --safe
-            - "--target-version=py310"
             - "--target-version=py311"
 
   - repo: https://github.com/Riverside-Healthcare/djLint
