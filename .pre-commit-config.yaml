@@ -73,7 +73,8 @@ repos:
         - id: flynt
           exclude: ^build/.*$|^.tox/.*$|^venv/.*$
           files: \.py$
-
+          args:
+            - --quiet
 
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
