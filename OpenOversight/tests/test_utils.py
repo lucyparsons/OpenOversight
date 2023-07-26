@@ -36,7 +36,7 @@ class PoliceDepartment:
         self.short_name = short_name
         self.state = state
         self.unique_internal_identifier_label = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=10)
+            random.choices(string.ascii_uppercase + string.digits, k=20)
         )
 
 
