@@ -197,7 +197,7 @@ class DepartmentForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=100), DataRequired()],
     )
-    state = QuerySelectField(
+    state = SelectField(
         "The law enforcement agency's home state",
         choices=STATE_CHOICES,
         default="",
