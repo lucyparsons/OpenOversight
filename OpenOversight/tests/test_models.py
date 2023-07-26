@@ -22,66 +22,58 @@ from OpenOversight.app.models.database import (
 
 def test_department_repr(mockdata):
     department = Department.query.first()
-    assert department.__repr__() == "<Department ID {}: {}>".format(
-        department.id, department.name
+    assert (
+        repr(department)
+        == f"<Department ID {department.id}: {department.name} {department.state}>"
     )
 
 
 def test_officer_repr(mockdata):
     officer = Officer.query.first()
     if officer.unique_internal_identifier:
-        assert officer.__repr__() == "<Officer ID {}: {} {} {} {} ({})>".format(
-            officer.id,
-            officer.first_name,
-            officer.middle_initial,
-            officer.last_name,
-            officer.suffix,
-            officer.unique_internal_identifier,
+        assert (
+            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
+            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
+            f"({officer.unique_internal_identifier})>"
         )
     else:
-        assert officer.__repr__() == "<Officer ID {}: {} {} {} {}>".format(
-            officer.id,
-            officer.first_name,
-            officer.middle_initial,
-            officer.last_name,
-            officer.suffix,
+        assert (
+            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
+            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
         )
 
 
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
-    assert assignment.__repr__() == "<Assignment: ID {} : {}>".format(
-        assignment.officer.id, assignment.star_no
+    assert (
+        repr(assignment)
+        == f"<Assignment: ID {assignment.officer.id} : {assignment.star_no}>"
     )
 
 
 def test_image_repr(mockdata):
     image = Image.query.first()
-    assert image.__repr__() == "<Image ID {}: {}>".format(image.id, image.filepath)
+    assert repr(image) == f"<Image ID {image.id}: {image.filepath}>"
 
 
 def test_face_repr(mockdata):
     face = Face.query.first()
-    assert face.__repr__() == "<Tag ID {}: {} - {}>".format(
-        face.id, face.officer_id, face.img_id
-    )
+    assert repr(face) == f"<Tag ID {face.id}: {face.officer_id} - {face.img_id}>"
 
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert unit.__repr__() == "Unit: {}".format(unit.description)
+    assert repr(unit) == f"Unit: {unit.description}"
 
 
 def test_user_repr(mockdata):
     user = User(username="bacon")
-    assert user.__repr__() == "<User '{}'>".format(user.username)
+    assert repr(user) == f"<User '{user.username}'>"
 
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert salary.__repr__() == "<Salary: ID {} : {}".format(
-        salary.officer_id, salary.salary
-    )
+    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}"
 
 
 def test_password_not_printed(mockdata):
@@ -308,14 +300,14 @@ def test_license_plates_can_be_saved_with_valid_states(mockdata):
     assert saved is not None
 
 
-def test_links_must_have_valid_urls(mockdata):
-    bad_url = "www.rachel.com"
+def test_links_must_have_valid_urls(mockdata, faker):
+    bad_url = faker.safe_domain_name()
     with raises(ValueError):
         Link(link_type="video", url=bad_url)
 
 
-def test_links_can_be_saved_with_valid_urls(mockdata):
-    good_url = "http://www.rachel.com"
+def test_links_can_be_saved_with_valid_urls(mockdata, faker):
+    good_url = faker.url()
     li = Link(link_type="video", url=good_url)
     db.session.add(li)
     db.session.commit()
@@ -341,9 +333,9 @@ def test_incident_m2m_officers(mockdata):
     assert incident in officer.incidents
 
 
-def test_incident_m2m_links(mockdata):
+def test_incident_m2m_links(mockdata, faker):
     incident = Incident.query.first()
-    link = Link(link_type="video", url="http://www.lulz.com")
+    link = Link(link_type="video", url=faker.url())
     incident.links.append(link)
     db.session.add(incident)
     db.session.add(link)
@@ -366,10 +358,10 @@ def test_incident_m2m_license_plates(mockdata):
     assert incident in license_plate.incidents
 
 
-def test_images_added_with_user_id(mockdata):
+def test_images_added_with_user_id(mockdata, faker):
     user_id = 1
     new_image = Image(
-        filepath="http://www.example.com",
+        filepath=faker.url(),
         hash_img="1234",
         is_tagged=False,
         created_at=datetime.datetime.now(),

@@ -2,11 +2,13 @@ import csv
 import datetime
 import operator
 import os
+import random
 import traceback
 import uuid
 
 import pandas as pd
 import pytest
+import us
 from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
@@ -28,7 +30,12 @@ from OpenOversight.app.models.database import (
     Unit,
 )
 from OpenOversight.app.utils.db import get_officer
-from OpenOversight.tests.conftest import RANK_CHOICES_1, generate_officer
+from OpenOversight.tests.conftest import (
+    RANK_CHOICES_1,
+    SPRINGFIELD_PD,
+    generate_officer,
+)
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -39,7 +46,7 @@ def run_command_print_output(cli, args=None, **kwargs):
     any other value signifies a failure.
 
     Additionally, this function will send all generated logs to stdout
-    and will print exceptions and strack-trace to make it easier to debug
+    and will print exceptions and stack-trace to make it easier to debug
     a failing
     """
     runner = CliRunner()
@@ -53,37 +60,53 @@ def run_command_print_output(cli, args=None, **kwargs):
 
 
 def test_add_department__success(session):
-    name = "Added Police Department"
-    short_name = "APD"
-    unique_internal_identifier = "30ad0au239eas939asdj"
+    AddedPD = PoliceDepartment("Added Police Department", "APD")
 
     # add department via command line
     result = run_command_print_output(
-        add_department, [name, short_name, unique_internal_identifier]
+        add_department,
+        [
+            AddedPD.name,
+            AddedPD.short_name,
+            AddedPD.state,
+            AddedPD.unique_internal_identifier_label,
+        ],
     )
 
     # command ran successful
     assert result.exit_code == 0
     # department was added to database
     departments = Department.query.filter_by(
-        unique_internal_identifier_label=unique_internal_identifier
+        unique_internal_identifier_label=AddedPD.unique_internal_identifier_label
     ).all()
     assert len(departments) == 1
     department = departments[0]
-    assert department.name == name
-    assert department.short_name == short_name
+    assert department.name == AddedPD.name
+    assert department.short_name == AddedPD.short_name
+    assert department.state == AddedPD.state
 
 
 def test_add_department__duplicate(session):
-    name = "Duplicate Department"
-    short_name = "DPD"
-    department = Department(name=name, short_name=short_name)
+    DuplicatePD = PoliceDepartment("Duplicate Department", "DPD")
+
+    department = Department(
+        name=DuplicatePD.name,
+        short_name=DuplicatePD.short_name,
+        state=DuplicatePD.state,
+        unique_internal_identifier_label=DuplicatePD.unique_internal_identifier_label,
+    )
     session.add(department)
     session.commit()
 
     # adding department of same name via command
     result = run_command_print_output(
-        add_department, [name, short_name, "2320wea0s9d03eas"]
+        add_department,
+        [
+            department.name,
+            department.short_name,
+            department.state,
+            department.unique_internal_identifier_label,
+        ],
     )
 
     # fails because Department with this name already exists
@@ -91,11 +114,43 @@ def test_add_department__duplicate(session):
     assert result.exception is not None
 
 
-def test_add_department__missing_argument(session):
+def test_add_department__short_name_missing_argument(session):
     # running add-department command missing one argument
     result = run_command_print_output(add_department, ["Name of Department"])
 
     # fails because short name is required argument
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__state_missing_argument(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(add_department, ["Name of Department", "NPD"])
+
+    # fails because state is required argument
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__invalid_state_value(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(
+        add_department, ["Name of Department", "NPD", "XYZ"]
+    )
+
+    # fails because invalid state value
+    assert result.exit_code != 0
+    assert result.exception is not None
+
+
+def test_add_department__lower_case_state_value(session):
+    # running add-department command missing one argument
+    result = run_command_print_output(
+        add_department,
+        ["Name of Department", "NPD", random.choice(us.STATES).abbr.lower()],
+    )
+
+    # fails because invalid state value
     assert result.exit_code != 0
     assert result.exception is not None
 
@@ -148,7 +203,11 @@ def test_add_job_title__duplicate(session, department):
 
 
 def test_add_job_title__different_departments(session, department):
-    other_department = Department(name="Other Police Department", short_name="OPD")
+    other_department = Department(
+        name="Other Police Department",
+        short_name="OPD",
+        state=random.choice(us.STATES).abbr,
+    )
     session.add(other_department)
     session.commit()
     other_department_id = other_department.id
@@ -773,7 +832,8 @@ def test_bulk_add_officers__no_create_flag(
 
 def test_advanced_csv_import__success(session, department, test_csv_dir):
     # make sure department name aligns with the csv files
-    assert department.name == "Springfield Police Department"
+    assert department.name == SPRINGFIELD_PD.name
+    assert department.state == SPRINGFIELD_PD.state
 
     # set up existing data
     officer = Officer(
@@ -822,6 +882,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             os.path.join(test_csv_dir, "officers.csv"),
             "--assignments-csv",
@@ -966,9 +1027,11 @@ def _create_csv(data, path, csv_file_name):
 def test_advanced_csv_import__force_create(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department.name
-
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.choice(us.STATES).abbr,
+    )
     session.add(other_department)
 
     officer = Officer(
@@ -984,19 +1047,22 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     officers_data = [
         {
             "id": 99001,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "First",
         },
         {
             "id": 99002,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Second",
         },
         {
             "id": 99003,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Third",
         },
@@ -1022,7 +1088,8 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
         {
             "id": 66001,
             "officer_ids": "99002|99001",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "street_name": "Fake Street",
         }
     ]
@@ -1043,6 +1110,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
@@ -1086,9 +1154,11 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
 def test_advanced_csv_import__overwrite_assignments(session, department, tmp_path):
     tmp_path = str(tmp_path)
 
-    department_name = department.name
-
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.choice(us.STATES).abbr,
+    )
     session.add(other_department)
 
     cop1_id = 999001
@@ -1127,7 +1197,8 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     officers_data = [
         {
             "id": "#1",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "last_name": "Test",
             "first_name": "Second",
         },
@@ -1158,6 +1229,7 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
         advanced_csv_import,
         [
             str(department.name),
+            str(department.state),
             "--officers-csv",
             officers_csv,
             "--assignments-csv",
@@ -1186,17 +1258,21 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
 
 
 def test_advanced_csv_import__extra_fields_officers(session, department, tmp_path):
-    department_name = department.name
     # create csv with invalid field 'name'
     officers_data = [
-        {"id": "", "department_name": department_name, "name": "John Smith"},
+        {
+            "id": "",
+            "department_name": department.name,
+            "department_state": department.state,
+            "name": "John Smith",
+        },
     ]
     officers_csv = _create_csv(officers_data, tmp_path, "officers.csv")
 
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department.name), "--officers-csv", officers_csv],
+        [str(department.name), str(department.state), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because of unexpected field 'name'
@@ -1208,11 +1284,11 @@ def test_advanced_csv_import__extra_fields_officers(session, department, tmp_pat
 def test_advanced_csv_import__missing_required_field_officers(
     session, department, tmp_path
 ):
-    department_name = department.name
     # create csv with missing field 'id'
     officers_data = [
         {
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },
@@ -1222,7 +1298,7 @@ def test_advanced_csv_import__missing_required_field_officers(
     # run command
     result = run_command_print_output(
         advanced_csv_import,
-        [str(department.name), "--officers-csv", officers_csv],
+        [str(department.name), str(department.state), "--officers-csv", officers_csv],
     )
 
     # expect the command to fail because 'id' is missing
@@ -1232,15 +1308,19 @@ def test_advanced_csv_import__missing_required_field_officers(
 
 
 def test_advanced_csv_import__wrong_department(session, department, tmp_path):
-    department_name = department.name
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.choice(us.STATES).abbr,
+    )
     session.add(other_department)
 
     # create csv
     officers_data = [
         {
             "id": "",
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },
@@ -1262,10 +1342,12 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
 def test_advanced_csv_import__update_officer_different_department(
     session, department, tmp_path
 ):
-    department_name = department.name
-
     # set up data
-    other_department = Department(name="Other department", short_name="OPD")
+    other_department = Department(
+        name="Other department",
+        short_name="OPD",
+        state=random.choice(us.STATES).abbr,
+    )
     session.add(other_department)
     officer = Officer(
         id=99021, department_id=other_department.id, first_name="Chris", last_name="Doe"
@@ -1276,7 +1358,8 @@ def test_advanced_csv_import__update_officer_different_department(
     officers_data = [
         {
             "id": 99021,
-            "department_name": department_name,
+            "department_name": department.name,
+            "department_state": department.state,
             "first_name": "John",
             "last_name": "Smith",
         },

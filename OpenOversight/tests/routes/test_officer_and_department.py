@@ -45,9 +45,13 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
-
-from ..conftest import AC_DEPT, DEPARTMENT_NAME, RANK_CHOICES_1
-from .route_helpers import login_ac, login_admin, login_user, process_form_data
+from OpenOversight.tests.conftest import AC_DEPT, RANK_CHOICES_1, SPRINGFIELD_PD
+from OpenOversight.tests.routes.route_helpers import (
+    login_ac,
+    login_admin,
+    login_user,
+    process_form_data,
+)
 
 
 @pytest.mark.parametrize(
@@ -913,15 +917,15 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
         rv = client.get(url_for("main.submit_data"), follow_redirects=True)
 
-        assert DEPARTMENT_NAME in rv.data.decode(ENCODING_UTF_8)
+        assert SPRINGFIELD_PD.name in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_admin_can_add_new_officer(mockdata, client, session, department):
+def test_admin_can_add_new_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link").data,
+            LinkForm(url=faker.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -950,13 +954,15 @@ def test_admin_can_add_new_officer(mockdata, client, session, department):
         assert officer.gender == "M"
 
 
-def test_admin_can_add_new_officer_with_unit(mockdata, client, session, department):
+def test_admin_can_add_new_officer_with_unit(
+    mockdata, client, session, department, faker
+):
     with current_app.test_request_context():
         login_admin(client)
         unit = random.choice(unit_choices())
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link").data,
+            LinkForm(url=faker.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1110,12 +1116,12 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
         assert officer is None
 
 
-def test_admin_can_edit_existing_officer(mockdata, client, session, department):
+def test_admin_can_edit_existing_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
         unit = random.choice(unit_choices())
-        link_url0 = "http://pleasework.com"
-        link_url1 = "http://avideo/?v=2345jk"
+        link_url0 = faker.url()
+        link_url1 = faker.url()
         links = [
             LinkForm(url=link_url0, link_type="link").data,
             LinkForm(url=link_url0, link_type="video").data,
@@ -1373,12 +1379,14 @@ def test_ac_cannot_add_new_unit_not_in_their_dept(mockdata, client, session):
         assert unit is None
 
 
-def test_admin_can_add_new_officer_with_suffix(mockdata, client, session, department):
+def test_admin_can_add_new_officer_with_suffix(
+    mockdata, client, session, department, faker
+):
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link").data,
+            LinkForm(url=faker.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1427,11 +1435,11 @@ def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_officer_csv(mockdata, client, session, department):
+def test_officer_csv(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
+            LinkForm(url=faker.url(), link_type="link").data,
         ]
         job = (
             Job.query.filter_by(department_id=department.id)
@@ -1515,7 +1523,7 @@ def test_assignments_csv(mockdata, client, session, department):
         assert new_assignment[0]["job title"] == job.job_title
 
 
-def test_incidents_csv(mockdata, client, session, department):
+def test_incidents_csv(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -1526,7 +1534,7 @@ def test_incidents_csv(mockdata, client, session, department):
         report_number = "42"
 
         address_form = LocationForm(street_name="ABCDE", city="FGHI", state="IA")
-        link_form = LinkForm(url="http://example.com", link_type="video")
+        link_form = LinkForm(url=faker.url(), link_type="video")
         license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
             date_field=str(incident_date.date()),
@@ -1617,15 +1625,15 @@ def test_browse_filtering_filters_bad(client, mockdata, session):
                     assert not any(bad_substr in token for token in filter_list)
 
 
-def test_browse_filtering_allows_good(client, mockdata, session):
+def test_browse_filtering_allows_good(client, mockdata, session, faker):
     with current_app.test_request_context():
         department_id = Department.query.first().id
 
         # Add an officer with a specific race, gender, rank and age to the first page
         login_admin(client)
         links = [
-            LinkForm(url="http://www.pleasework.com", link_type="link").data,
-            LinkForm(url="http://www.avideo/?v=2345jk", link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link").data,
+            LinkForm(url=faker.url(), link_type="video").data,
         ]
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         job = Job.query.filter_by(department_id=officer.department_id).first()
