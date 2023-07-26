@@ -195,7 +195,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         assert updated.address.street_name == street_name
 
 
-def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
+def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, faker):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.options(
@@ -216,7 +216,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session):
         old_links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
         ]
-        new_url = FAKER.url()
+        new_url = faker.url()
         link_form = LinkForm(url=new_url, link_type="video")
         old_license_plates = inc.license_plates
         new_number = "453893"

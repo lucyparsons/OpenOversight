@@ -42,10 +42,10 @@ from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 factory = Faker()
-
 
 OFFICERS = [
     ("IVANA", "", "TINKLE"),
@@ -66,12 +66,11 @@ RANK_CHOICES_2 = [
     "Chief",
 ]
 
-DEPARTMENT_NAME = "Springfield Police Department"
-OTHER_DEPARTMENT_NAME = "Chicago Police Department"
-DEPARTMENT_WITHOUT_OFFICERS_NAME = "Empty Police Department"
-
 
 AC_DEPT = 1
+NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD")
+OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD")
+SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "IL")
 
 
 def pick_birth_date():
@@ -299,22 +298,22 @@ def test_csv_dir():
 def add_mockdata(session):
     assert current_app.config["NUM_OFFICERS"] >= 5
     department = Department(
-        name=DEPARTMENT_NAME,
-        short_name="SPD",
-        state=random.choice(us.STATES).abbr,
-        unique_internal_identifier_label="homer_number",
+        name=SPRINGFIELD_PD.name,
+        short_name=SPRINGFIELD_PD.short_name,
+        state=SPRINGFIELD_PD.state,
+        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
     )
     session.add(department)
     department2 = Department(
-        name=OTHER_DEPARTMENT_NAME,
-        short_name="CPD",
-        state=random.choice(us.STATES).abbr,
+        name=OTHER_PD.name,
+        short_name=OTHER_PD.short_name,
+        state=OTHER_PD.state,
     )
     session.add(department2)
     empty_department = Department(
-        name=DEPARTMENT_WITHOUT_OFFICERS_NAME,
-        short_name="EPD",
-        state=random.choice(us.STATES).abbr,
+        name=NO_OFFICER_PD.name,
+        short_name=NO_OFFICER_PD.short_name,
+        state=NO_OFFICER_PD.state,
     )
     session.add(empty_department)
     session.commit()
@@ -364,13 +363,13 @@ def add_mockdata(session):
 
     test_images = [
         Image(
-            filepath=f"/static/images/test_cop{x+1}.png",
+            filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department.id,
         )
         for x in range(5)
     ] + [
         Image(
-            filepath=f"/static/images/test_cop{x+1}.png",
+            filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department2.id,
         )
         for x in range(5)
@@ -625,12 +624,16 @@ def mockdata(session):
 
 @pytest.fixture
 def department(session):
-    return Department.query.filter_by(name=DEPARTMENT_NAME).one()
+    return Department.query.filter_by(
+        name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state
+    ).one()
 
 
 @pytest.fixture
 def department_without_officers(session):
-    return Department.query.filter_by(name=DEPARTMENT_WITHOUT_OFFICERS_NAME).one()
+    return Department.query.filter_by(
+        name=NO_OFFICER_PD.name, state=NO_OFFICER_PD.state
+    ).one()
 
 
 @pytest.fixture
