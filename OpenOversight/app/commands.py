@@ -591,8 +591,8 @@ def advanced_csv_import(
     overwrite_assignments,
 ):
     """
-    Add or update officers, assignments, salaries, links and incidents from csv
-    files in the department DEPARTMENT_NAME with the correct DEPARTMENT_STATE.
+    Add or update officers, assignments, salaries, links and incidents from
+    csv files in the department using the DEPARTMENT_NAME and DEPARTMENT_STATE.
 
     The csv files are treated as the source of truth.
     Existing entries might be overwritten as a result, backing up the
