@@ -958,7 +958,9 @@ def test_admin_can_create_department_with_same_name_in_different_state(
         ExistingDiffStatePD = PoliceDepartment(
             "Existing Police Department",
             "EPD",
-            random.choice([st for st in us.STATES if st.abbr != ExistingPD.state]).abbr,
+            random.choice(
+                [st.abbr for st in us.STATES if st.abbr != ExistingPD.state]
+            ),
         )
 
         existing_duplicate_form = DepartmentForm(
