@@ -31,12 +31,14 @@ upload_s3_patch = patch(
 class PoliceDepartment:
     """Base Police Department class."""
 
-    def __init__(self, name, short_name, state=random.choice(us.STATES).abbr):
+    def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
         self.name = name
         self.short_name = short_name
-        self.state = state
-        self.unique_internal_identifier_label = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=20)
+        self.state = state if state else random.choice(us.STATES).abbr
+        self.unique_internal_identifier_label = (
+            unique_internal_identifier_label
+            if unique_internal_identifier_label
+            else "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
         )
 
 
