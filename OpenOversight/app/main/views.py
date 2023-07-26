@@ -1077,8 +1077,8 @@ def label_data(department_id=None, image_id=None):
             flash("Invalid officer ID. Please select a valid OpenOversight ID!")
         elif department and officer_exists.department_id != department_id:
             flash(
-                f"The officer is not in {department.name}. Are you sure that is the "
-                "correct OpenOversight ID?"
+                f"The officer is not in {department.name}, {department.state}. "
+                "Are you sure that is the correct OpenOversight ID?"
             )
         elif not existing_tag:
             left = form.dataX.data
