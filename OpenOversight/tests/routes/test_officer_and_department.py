@@ -53,6 +53,7 @@ from OpenOversight.tests.routes.route_helpers import (
     login_user,
     process_form_data,
 )
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 @pytest.mark.parametrize(
@@ -489,10 +490,7 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-class TestPD:
-    name = "Test Police Department"
-    short_name = "TPD"
-    state = random.choice(us.STATES).abbr
+TestPD = PoliceDepartment("Test Police Department", "TPD")
 
 
 def test_admin_can_add_police_department(mockdata, client, session):
@@ -564,22 +562,19 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
         assert department.state == TestPD.state
 
 
-class CorrectedPD:
-    name = "Corrected Police Department"
-    short_name = "CPD"
-    state = random.choice(us.STATES).abbr
+CorrectedPD = PoliceDepartment("Corrected Police Department", "CPD")
 
 
 def test_admin_can_edit_police_department(mockdata, client, session):
     with current_app.test_request_context():
-
-        class MisspelledPD:
-            name = "Misspelled Police Department"
-            short_name = "MPD"
-            # Prevent CorrectedPD and MisspelledPD from having the same state
-            state = random.choice(
+        # Prevent CorrectedPD and MisspelledPD from having the same state
+        MisspelledPD = PoliceDepartment(
+            "Misspelled Police Department",
+            "MPD",
+            random.choice(
                 [st for st in us.STATES if st.abbr != CorrectedPD.state]
-            ).abbr
+            ).abbr,
+        )
 
         login_admin(client)
 
@@ -950,10 +945,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
         )
 
 
-class ExistingPD:
-    name = "Existing Police Department"
-    short_name = "EPD"
-    state = random.choice(us.STATES).abbr
+ExistingPD = PoliceDepartment("Existing Police Department", "EPD")
 
 
 def test_admin_can_create_department_with_same_name_in_different_state(
@@ -962,13 +954,12 @@ def test_admin_can_create_department_with_same_name_in_different_state(
     with current_app.test_request_context():
         login_admin(client)
 
-        class ExistingDiffStatePD:
-            name = "Existing Police Department"
-            short_name = "EPD"
-            # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
-            state = random.choice(
-                [st for st in us.STATES if st.abbr != ExistingPD.state]
-            ).abbr
+        # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
+        ExistingDiffStatePD = PoliceDepartment(
+            "Existing Police Department",
+            "EPD",
+            random.choice([st for st in us.STATES if st.abbr != ExistingPD.state]).abbr,
+        )
 
         existing_duplicate_form = DepartmentForm(
             name=ExistingPD.name,
@@ -1057,10 +1048,7 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             "OpenOversight"
         ) in existing_dep_rv.data.decode(ENCODING_UTF_8)
 
-        class NewPD:
-            name = "New Police Department"
-            short_name = "NPD"
-            state = ExistingPD.state
+        NewPD = PoliceDepartment("New Police Department", "NPD", ExistingPD.state)
 
         new_dep_form = DepartmentForm(
             name=NewPD.name, short_name=NewPD.short_name, state=NewPD.state
