@@ -52,7 +52,6 @@ from OpenOversight.app.main.forms import (
     OfficerLinkForm,
     SalaryForm,
     TextForm,
-    get_state_choices,
 )
 from OpenOversight.app.main.model_view import ModelView
 from OpenOversight.app.models.database import (
@@ -579,7 +578,6 @@ def edit_department(department_id):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
-    form.choices = get_state_choices()
     original_ranks = department.jobs
     if form.validate_on_submit():
         new_name = form.name.data
