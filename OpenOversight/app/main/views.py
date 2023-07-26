@@ -523,11 +523,15 @@ def classify_submission(image_id, contains_cops):
 def add_department():
     form = DepartmentForm()
     if form.validate_on_submit():
-        departments = [
-            x[0] for x in db.session.query(Department.name, Department.state).all()
-        ]
 
-        if form.name.data not in departments:
+        department_does_not_exist = (
+            Department.query.filter_by(
+                name=form.name.data, state=form.state.data
+            ).count()
+            == 0
+        )
+
+        if department_does_not_exist:
             department = Department(
                 name=form.name.data,
                 short_name=form.short_name.data,
