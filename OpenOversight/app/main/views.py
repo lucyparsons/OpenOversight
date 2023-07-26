@@ -74,7 +74,11 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
-from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    KEY_OFFICERS_PER_PAGE,
+    KEY_TIMEZONE,
+)
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -761,7 +765,7 @@ def list_officer(
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
 
     officers = officers.paginate(
-        page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
+        page=page, per_page=current_app.config[KEY_OFFICERS_PER_PAGE], error_out=False
     )
 
     for officer in officers.items:

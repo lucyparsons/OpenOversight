@@ -1,6 +1,10 @@
 import os
 
-from OpenOversight.app.utils.constants import KEY_TIMEZONE, MEGABYTE
+from OpenOversight.app.utils.constants import (
+    KEY_OFFICERS_PER_PAGE,
+    KEY_TIMEZONE,
+    MEGABYTE,
+)
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -26,7 +30,7 @@ class BaseConfig:
         self.SITEMAP_URL_SCHEME = "http"
 
         # Pagination Settings
-        self.OFFICERS_PER_PAGE = int(os.environ.get("OFFICERS_PER_PAGE", 20))
+        self.OFFICERS_PER_PAGE = int(os.environ.get(KEY_OFFICERS_PER_PAGE, 20))
         self.USERS_PER_PAGE = int(os.environ.get("USERS_PER_PAGE", 20))
 
         # Form Settings
