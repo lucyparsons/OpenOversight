@@ -69,7 +69,7 @@ def test_add_department__success(session):
             AddedPD.name,
             AddedPD.short_name,
             AddedPD.state,
-            AddedPD.unique_internal_identifier,
+            AddedPD.unique_internal_identifier_label,
         ],
     )
 
@@ -77,7 +77,7 @@ def test_add_department__success(session):
     assert result.exit_code == 0
     # department was added to database
     departments = Department.query.filter_by(
-        unique_internal_identifier_label=AddedPD.unique_internal_identifier
+        unique_internal_identifier_label=AddedPD.unique_internal_identifier_label
     ).all()
     assert len(departments) == 1
     department = departments[0]
