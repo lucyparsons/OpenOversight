@@ -610,8 +610,7 @@ def edit_department(department_id):
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
                         flash(
-                            f"You attempted to delete a rank, {rank}, that is still in "
-                            "use"
+                            f"You attempted to delete a rank, {rank}, that is still in use"
                         )
                     return redirect(
                         url_for("main.edit_department", department_id=department_id)
