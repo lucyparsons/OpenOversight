@@ -267,11 +267,8 @@ def officer_profile(officer_id):
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error finding officer: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error finding officer: {error_str}")
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -293,11 +290,8 @@ def officer_profile(officer_id):
             face_paths = [url_for("static", filename="images/placeholder.png")]
     except:  # noqa: E722
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error loading officer profile: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error loading officer profile: {error_str}")
     if faces:
         officer.image_url = faces[0].image.filepath
         if not officer.image_url.startswith("http"):
@@ -512,11 +506,8 @@ def classify_submission(image_id, contains_cops):
     except:  # noqa: E722
         flash("Unknown error occurred")
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error classifying image: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error classifying image: {error_str}")
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
 
@@ -619,9 +610,8 @@ def edit_department(department_id):
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
                         flash(
-                            "You attempted to delete a rank, {}, that is still in use".format(
-                                rank
-                            )
+                            f"You attempted to delete a rank, {rank}, that is still in "
+                            "use"
                         )
                     return redirect(
                         url_for("main.edit_department", department_id=department_id)
@@ -1013,12 +1003,9 @@ def set_featured_tag(tag_id):
         flash("Successfully set this tag as featured")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error setting featured tag: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        exception_type, value, full_traceback = sys.exc_info()
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error setting featured tag: {error_str}")
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
@@ -1091,8 +1078,8 @@ def label_data(department_id=None, image_id=None):
             flash("Invalid officer ID. Please select a valid OpenOversight ID!")
         elif department and officer_exists.department_id != department_id:
             flash(
-                "The officer is not in {}. Are you sure that is the correct "
-                "OpenOversight ID?".format(department.name)
+                f"The officer is not in {department.name}. Are you sure that is the "
+                "correct OpenOversight ID?"
             )
         elif not existing_tag:
             left = form.dataX.data
