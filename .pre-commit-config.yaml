@@ -67,6 +67,14 @@ repos:
         exclude: bin|cli|manage.py|app.py|setup.py|docs|create_db.py|test_data.py
         files: \.py$
 
+  - repo: https://github.com/ikamensh/flynt/
+    rev: ''
+    hooks:
+        - id: flynt
+          exclude: ^build/.*$|^.tox/.*$|^venv/.*$
+          files: \.py$
+
+
   - repo: https://github.com/PyCQA/flake8
     rev: 5.0.4
     hooks:
@@ -81,10 +89,8 @@ repos:
         - id: black
           args:
             - --safe
-            - "--target-version=py35"
-            - "--target-version=py36"
-            - "--target-version=py37"
-            - "--target-version=py38"
+            - "--target-version=py310"
+            - "--target-version=py311"
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.31.1
