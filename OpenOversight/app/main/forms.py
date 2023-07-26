@@ -1,7 +1,6 @@
 import datetime
 import re
 
-import us as us
 from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import (
@@ -187,13 +186,6 @@ class SalaryForm(Form):
     # raise Exception(args[0])
 
 
-def get_state_choices():
-    """Return list of choices for state field."""
-    states_list = [(state.abbr, state.name) for state in us.STATES]
-    states_list.append(("", "Please Select a State"))
-    return states_list
-
-
 class DepartmentForm(Form):
     name = StringField(
         "Full name of law enforcement agency, e.g. Chicago Police Department",
@@ -205,11 +197,11 @@ class DepartmentForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=100), DataRequired()],
     )
-    state = SelectField(
+    state = QuerySelectField(
         "The law enforcement agency's home state",
-        coerce=str,
-        choices=get_state_choices(),
-        validators=[Length(min=0, max=2), DataRequired()],
+        choices=STATE_CHOICES,
+        default="",
+        validators=[AnyOf(allowed_values(STATE_CHOICES))],
     )
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"
