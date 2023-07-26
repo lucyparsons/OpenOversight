@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import List, Optional
 
 import pytest
-import us
 from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
