@@ -1,12 +1,9 @@
 import datetime
 from http import HTTPMethod
-from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_login import current_user, login_required
-from flask_sqlalchemy.model import DefaultMeta
-from flask_wtf import FlaskForm as Form
 
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.auth import ac_or_admin_required

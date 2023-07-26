@@ -3,7 +3,6 @@ import sys
 from builtins import input
 from datetime import date, datetime
 from getpass import getpass
-from typing import Dict, List
 
 import click
 import us
