@@ -954,37 +954,35 @@ def test_admin_can_create_department_with_same_name_in_different_state(
     with current_app.test_request_context():
         login_admin(client)
 
-        # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
-        ExistingDiffStatePD = PoliceDepartment(
-            "Existing Police Department",
-            "EPD",
-            random.choice(
-                [st.abbr for st in us.STATES if st.abbr != ExistingPD.state]
-            ),
-        )
-
-        existing_duplicate_form = DepartmentForm(
+        existing_form = DepartmentForm(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
         )
 
-        existing_duplicate_rv = client.post(
+        existing_rv = client.post(
             url_for("main.add_department"),
-            data=existing_duplicate_form.data,
+            data=existing_form.data,
             follow_redirects=True,
         )
 
         assert (
             f"New department {ExistingPD.name} in {ExistingPD.state} added to "
             "OpenOversight"
-        ) in existing_duplicate_rv.data.decode(ENCODING_UTF_8)
+        ) in existing_rv.data.decode(ENCODING_UTF_8)
 
         existing_department = Department.query.filter_by(
             name=ExistingPD.name, state=ExistingPD.state
         ).one()
         assert existing_department.short_name == ExistingPD.short_name
         assert existing_department.state == ExistingPD.state
+
+        # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
+        ExistingDiffStatePD = PoliceDepartment(
+            "Existing Police Department",
+            "EPD",
+            random.choice([st.abbr for st in us.STATES if st.abbr != ExistingPD.state]),
+        )
 
         existing_diff_state_form = DepartmentForm(
             name=ExistingDiffStatePD.name,
@@ -1007,7 +1005,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             name=ExistingDiffStatePD.name, state=ExistingDiffStatePD.state
         ).one()
         assert existing_diff_state_department.short_name == ExistingPD.short_name
-        assert existing_diff_state_department.state == ExistingPD.state
+        assert existing_diff_state_department.state == ExistingDiffStatePD.state
 
         # Duplicate existing test
         existing_duplicate_form = DepartmentForm(
