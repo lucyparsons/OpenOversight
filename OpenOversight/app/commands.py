@@ -9,6 +9,7 @@ from getpass import getpass
 from typing import Dict, List
 
 import click
+import us
 from dateutil.parser import parse
 from flask import current_app
 from flask.cli import with_appcontext
@@ -566,7 +567,11 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
 
 @click.command()
-@click.argument("department-name")
+@click.argument("department-name", required=True)
+@click.argument(
+    "department-state",
+    type=click.Choice([state.abbr for state in us.STATES]),
+)
 @click.option("--officers-csv", type=click.Path(exists=True))
 @click.option("--assignments-csv", type=click.Path(exists=True))
 @click.option("--salaries-csv", type=click.Path(exists=True))
@@ -577,6 +582,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @with_appcontext
 def advanced_csv_import(
     department_name,
+    department_state,
     officers_csv,
     assignments_csv,
     salaries_csv,
@@ -586,8 +592,8 @@ def advanced_csv_import(
     overwrite_assignments,
 ):
     """
-    Add or update officers, assignments, salaries, links and incidents from csv
-    files in the department DEPARTMENT_NAME.
+    Add or update officers, assignments, salaries, links and incidents from
+    csv files in the department using the DEPARTMENT_NAME and DEPARTMENT_STATE.
 
     The csv files are treated as the source of truth.
     Existing entries might be overwritten as a result, backing up the
@@ -600,6 +606,7 @@ def advanced_csv_import(
 
     import_csv_files(
         department_name,
+        department_state,
         officers_csv,
         assignments_csv,
         salaries_csv,
@@ -611,20 +618,25 @@ def advanced_csv_import(
 
 
 @click.command()
-@click.argument("name")
-@click.argument("short_name")
+@click.argument("name", required=True)
+@click.argument("short_name", required=True)
+@click.argument(
+    "state",
+    type=click.Choice([state.abbr for state in us.STATES]),
+)
 @click.argument("unique_internal_identifier", required=False)
 @with_appcontext
-def add_department(name, short_name, unique_internal_identifier):
+def add_department(name, short_name, state, unique_internal_identifier):
     """Add a new department to OpenOversight."""
     dept = Department(
         name=name,
         short_name=short_name,
+        state=state.upper(),
         unique_internal_identifier_label=unique_internal_identifier,
     )
     db.session.add(dept)
     db.session.commit()
-    print("Department added with id {}".format(dept.id))
+    print(f"Department added with id {dept.id}")
 
 
 @click.command()

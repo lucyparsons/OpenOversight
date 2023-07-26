@@ -1,5 +1,5 @@
-id,department name,first name,last name,middle initial,suffix,race,gender,employment date,birth year,unique_internal_identifier
-#1,Springfield Police Department,Mark,Smith,O,,White,M,07-12-2019,1984,UID-1
-#2,Springfield Police Department,Claire,Fuller,,III,White,F,02-29-2020,1980,UID-2
-,Springfield Police Department,Robert,Brown,J,,Black,M,01-01-2018,1982,UID-3
-49483,Springfield Police Department,Already,InDatabase,,,Hispanic,Other,,1952,UID-4
+id,department name,department state,first name,last name,middle initial,suffix,race,gender,employment date,birth year,unique_internal_identifier
+#1,Springfield Police Department,IL,Mark,Smith,O,,White,M,07-12-2019,1984,UID-1
+#2,Springfield Police Department,IL,Claire,Fuller,,III,White,F,02-29-2020,1980,UID-2
+,Springfield Police Department,IL,Robert,Brown,J,,Black,M,01-01-2018,1982,UID-3
+49483,Springfield Police Department,IL,Already,InDatabase,,,Hispanic,Other,,1952,UID-4

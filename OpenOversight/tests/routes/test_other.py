@@ -5,7 +5,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
-from OpenOversight.tests.routes.route_helpers import FAKER, login_user
+from OpenOversight.tests.routes.route_helpers import login_user
 
 
 @pytest.mark.parametrize(
@@ -56,9 +56,9 @@ def test_user_can_access_profile_differently_cased(mockdata, client, session):
         assert "TEST_USER" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_timezone_setting(client):
+def test_timezone_setting(client, faker):
     with current_app.test_request_context():
-        test_tz = FAKER.timezone()
+        test_tz = faker.timezone()
         with client.session_transaction() as session:
             assert KEY_TIMEZONE not in session
         rv = client.post(
