@@ -662,11 +662,11 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
         # Tests for report numbers in table formatting, because testing for the raw
         # report number can get false positives due to html encoding
         for incident in department_incidents:
-            assert "<td>{}</td>".format(incident.report_number) in rv.data.decode(
+            assert f"<td>{incident.report_number}</td>" in rv.data.decode(
                 ENCODING_UTF_8
             )
         for incident in non_department_incidents:
-            assert "<td>{}</td>".format(incident.report_number) not in rv.data.decode(
+            assert f"<td>{incident.report_number}</td>" not in rv.data.decode(
                 ENCODING_UTF_8
             )
 
@@ -696,9 +696,7 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer_id = "1234"
-        rv = client.get(
-            url_for("main.incident_api") + "new?officer_id={}".format(officer_id)
-        )
+        rv = client.get(url_for("main.incident_api") + f"new?officer_id={officer_id}")
         assert officer_id in rv.data.decode(ENCODING_UTF_8)
 
 
@@ -784,9 +782,7 @@ def test_users_can_search_incidents(
         rv = client.get(url_for("main.incident_api", **params))
 
         for report_num in included_report_nums:
-            assert "<td>{}</td>".format(report_num) in rv.data.decode(ENCODING_UTF_8)
+            assert f"<td>{report_num}</td>" in rv.data.decode(ENCODING_UTF_8)
 
         for report_num in excluded_report_nums:
-            assert "<td>{}</td>".format(report_num) not in rv.data.decode(
-                ENCODING_UTF_8
-            )
+            assert f"<td>{report_num}</td>" not in rv.data.decode(ENCODING_UTF_8)

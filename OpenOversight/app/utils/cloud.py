@@ -85,8 +85,8 @@ def upload_obj_to_s3(file_obj, dest_filename):
     s3_filename = dest_filename[2:]
     file_ending = imghdr.what(None, h=file_obj.read())
     file_obj.seek(0)
-    s3_content_type = "image/%s" % file_ending
-    s3_path = "{}/{}".format(s3_folder, s3_filename)
+    s3_content_type = f"image/{file_ending}"
+    s3_path = f"{s3_folder}/{s3_filename}"
     s3_client.upload_fileobj(
         file_obj,
         current_app.config["S3_BUCKET_NAME"],
@@ -113,7 +113,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     image_buf.seek(0)
     image_type = imghdr.what(image_buf)
     if image_type not in current_app.config["ALLOWED_EXTENSIONS"]:
-        raise ValueError("Attempted to pass invalid data type: {}".format(image_type))
+        raise ValueError(f"Attempted to pass invalid data type: {image_type}")
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
     date_taken = find_date_taken(pimage)
@@ -130,7 +130,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     if existing_image:
         return existing_image
     try:
-        new_filename = "{}.{}".format(hash_img, image_type)
+        new_filename = f"{hash_img}.{image_type}"
         scrubbed_image_buf.seek(0)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(

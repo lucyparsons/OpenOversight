@@ -30,7 +30,7 @@ def validate_choice(
         for label, choice_value in given_choices:
             if value.lower() in [choice_value.lower(), label.lower()]:
                 return label
-        print("'{}' no valid choice of {}".format(value, str(given_choices)))
+        print(f"'{value}' no valid choice of {str(given_choices)}")
     return None
 
 

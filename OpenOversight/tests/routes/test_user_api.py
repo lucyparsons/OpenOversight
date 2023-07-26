@@ -138,9 +138,7 @@ def test_admin_can_delete_user(mockdata, client, session):
             url_for("auth.delete_user", user_id=user_id), follow_redirects=True
         )
 
-        assert "User {} has been deleted!".format(username) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"User {username} has been deleted!" in rv.data.decode(ENCODING_UTF_8)
         assert not User.query.get(user_id)
 
 
