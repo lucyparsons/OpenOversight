@@ -570,6 +570,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @click.argument(
     "department-state",
     type=click.Choice([state.abbr for state in us.STATES]),
+    required=True,
 )
 @click.option("--officers-csv", type=click.Path(exists=True))
 @click.option("--assignments-csv", type=click.Path(exists=True))
@@ -620,8 +621,7 @@ def advanced_csv_import(
 @click.argument("name", required=True)
 @click.argument("short_name", required=True)
 @click.argument(
-    "state",
-    type=click.Choice([state.abbr for state in us.STATES]),
+    "state", type=click.Choice([state.abbr for state in us.STATES]), required=True
 )
 @click.argument("unique_internal_identifier", required=False)
 @with_appcontext
