@@ -868,7 +868,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         report_number="Old_Report_Number",
         department_id=1,
         description="description",
-        time=datetime.time(23, 45, 16),
+        occurred_at=datetime.datetime(2019, 3, 15, 23, 45, 16),
     )
     incident.officers = [officer]
     session.add(incident)
