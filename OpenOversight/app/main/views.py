@@ -1633,12 +1633,12 @@ class IncidentApi(ModelView):
             replace_list(license_plates, obj, "license_plates", LicensePlate, db)
 
         if form.time_field.raw_data and form.time_field.raw_data != [""]:
-            obj.occurred_at = datetime.datetime(
+            obj.occurred_at = datetime.datetime.combine(
                 form.date_field.data, form.time_field.data
             )
         else:
-            obj.occurred_at = datetime.datetime(
-                form.date_field.data, datetime.time(0, 0)
+            obj.occurred_at = datetime.datetime.combine(
+                form.date_field.data.date(), datetime.time(0, 0)
             )
         super(IncidentApi, self).populate_obj(form, obj)
 
