@@ -3,7 +3,6 @@ import sys
 from builtins import input
 from datetime import date, datetime
 from getpass import getpass
-from typing import Dict, List
 
 import click
 import us
@@ -65,10 +64,8 @@ def make_admin_user():
     )
     db.session.add(u)
     db.session.commit()
-    print("Administrator {} successfully added".format(username))
-    current_app.logger.info(
-        "Administrator {} added with email {}".format(username, email)
-    )
+    print(f"Administrator {username} successfully added")
+    current_app.logger.info(f"Administrator {username} added with email {email}")
 
 
 @click.command()
@@ -127,7 +124,7 @@ class ImportLog:
             Officer.id.in_(cls.created_officers.keys())
         ).all()
         for officer in officers:
-            print("Created officer {}".format(officer))
+            print(f"Created officer {officer}")
             for msg in cls.created_officers[officer.id]:
                 print(" --->", msg)
 
@@ -137,7 +134,7 @@ class ImportLog:
             Officer.id.in_(cls.updated_officers.keys())
         ).all()
         for officer in officers:
-            print("Updates to officer {}:".format(officer))
+            print(f"Updates to officer {officer}:")
             for msg in cls.updated_officers[officer.id]:
                 print(" --->", msg)
 
@@ -189,7 +186,6 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             row[officer_field_name]
             and getattr(officer, officer_field_name) != row[officer_field_name]
         ):
-
             ImportLog.log_change(
                 officer,
                 "Updated {}: {} --> {}".format(
@@ -335,7 +331,7 @@ def process_assignment(row, officer, compare=False):
                 .filter_by(officer_id=officer.id)
                 .all()
             )
-            for (assignment, job) in assignments:
+            for assignment, job in assignments:
                 assignment_fieldnames = [
                     "star_no",
                     "unit_id",
@@ -395,7 +391,7 @@ def process_assignment(row, officer, compare=False):
             db.session.add(assignment)
             db.session.flush()
 
-            ImportLog.log_change(officer, "Added assignment: {}".format(assignment))
+            ImportLog.log_change(officer, f"Added assignment: {assignment}")
 
 
 def process_salary(row, officer, compare=False):
@@ -418,16 +414,16 @@ def process_salary(row, officer, compare=False):
                 print(vars(salary))
                 print(row)
                 if (
-                    Decimal("%.2f" % salary.salary)
-                    == Decimal("%.2f" % float(row["salary"]))
+                    Decimal(f"{salary.salary:.2f}")
+                    == Decimal(f"{float(row['salary']):.2f}")
                     and salary.year == int(row["salary_year"])
                     and salary.is_fiscal_year == is_fiscal_year
                     and (
                         (
                             salary.overtime_pay
                             and "overtime_pay" in row
-                            and Decimal("%.2f" % salary.overtime_pay)
-                            == Decimal("%.2f" % float(row["overtime_pay"]))
+                            and Decimal(f"{salary.overtime_pay:.2f}")
+                            == Decimal(f"{float(row['overtime_pay']):.2f}")
                         )
                         or (
                             not salary.overtime_pay
@@ -451,7 +447,7 @@ def process_salary(row, officer, compare=False):
             db.session.add(salary)
             db.session.flush()
 
-            ImportLog.log_change(officer, "Added salary: {}".format(salary))
+            ImportLog.log_change(officer, f"Added salary: {salary}")
 
 
 @click.command()
@@ -495,7 +491,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
         # Assert required fields are in CSV file
         for field in required_fields:
             if field not in csvfile.fieldnames:
-                raise Exception("Missing required field {}".format(field))
+                raise Exception(f"Missing required field {field}")
         if (
             not update_by_name
             and "star_no" not in csvfile.fieldnames
@@ -514,7 +510,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                 if department:
                     departments[department_id] = department
                 else:
-                    raise Exception("Department ID {} not found".format(department_id))
+                    raise Exception(f"Department ID {department_id} not found")
 
             if not update_by_name:
                 # Check for existing officer based on unique ID or name/badge
@@ -657,5 +653,5 @@ def add_job_title(department_id, job_title, is_sworn_officer, order):
         department=department,
     )
     db.session.add(job)
-    print("Added {} to {}".format(job.job_title, department.name))
+    print(f"Added {job.job_title} to {department.name}")
     db.session.commit()

@@ -51,4 +51,4 @@ class EmailClient(object):
                     .execute()
                 )
             except errors.HttpError as error:
-                print("An error occurred: %s" % error)
+                print(f"An error occurred: {error}")

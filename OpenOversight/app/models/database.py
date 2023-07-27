@@ -6,7 +6,6 @@ from authlib.jose import JoseError, JsonWebToken
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
@@ -627,4 +626,4 @@ class User(UserMixin, BaseModel):
         return not self.is_disabled
 
     def __repr__(self):
-        return "<User %r>" % self.username
+        return f"<User {self.username!r}>"

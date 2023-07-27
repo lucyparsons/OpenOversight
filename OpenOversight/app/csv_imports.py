@@ -58,18 +58,14 @@ def _check_provided_fields(dict_reader, required_fields, optional_fields, csv_na
     missing_required = set(required_fields) - set(dict_reader.fieldnames)
     if len(missing_required) > 0:
         raise Exception(
-            "Missing mandatory field(s) {} in {} csv.".format(
-                list(missing_required), csv_name
-            )
+            f"Missing mandatory field(s) {list(missing_required)} in {csv_name} csv."
         )
     unexpected_fields = set(dict_reader.fieldnames) - set(
         required_fields + optional_fields
     )
     if len(unexpected_fields) > 0:
         raise Exception(
-            "Received unexpected field(s) {} in {} csv.".format(
-                list(unexpected_fields), csv_name
-            )
+            f"Received unexpected field(s) {list(unexpected_fields)} in {csv_name} csv."
         )
 
 
@@ -152,8 +148,8 @@ def _handle_officers_csv(
                 new_officers[connection_id] = officer
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} officers.".format(counter))
-    print("Done with officers. Processed {} rows.".format(counter))
+                print(f"Processed {counter} officers.")
+    print(f"Done with officers. Processed {counter} rows.")
     return new_officers
 
 
@@ -307,8 +303,8 @@ def _handle_assignments_csv(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} assignments.".format(counter))
-    print("Done with assignments. Processed {} rows.".format(counter))
+                print(f"Processed {counter} assignments.")
+    print(f"Done with assignments. Processed {counter} rows.")
 
 
 def _handle_salaries(
@@ -350,8 +346,8 @@ def _handle_salaries(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} salaries.".format(counter))
-    print("Done with salaries. Processed {} rows.".format(counter))
+                print(f"Processed {counter} salaries.")
+    print(f"Done with salaries. Processed {counter} rows.")
 
 
 def _handle_incidents_csv(
@@ -424,8 +420,8 @@ def _handle_incidents_csv(
                 new_incidents[connection_id] = incident
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} incidents.".format(counter))
-        print("Done with incidents. Processed {} rows.".format(counter))
+                print(f"Processed {counter} incidents.")
+        print(f"Done with incidents. Processed {counter} rows.")
     return new_incidents
 
 
@@ -482,8 +478,8 @@ def _handle_links_csv(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} links.".format(counter))
-        print("Done with links. Processed {} rows.".format(counter))
+                print(f"Processed {counter} links.")
+        print(f"Done with links. Processed {counter} rows.")
 
 
 def import_csv_files(
