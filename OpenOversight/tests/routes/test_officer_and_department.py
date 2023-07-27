@@ -516,6 +516,21 @@ def test_admin_can_add_police_department(mockdata, client, session):
         assert department.state == TestPD.state
 
 
+def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+
+        rv = client.post(
+            url_for("main.add_department"), data=form.data, follow_redirects=True
+        )
+
+        assert f"You must select a valid state for {TestPD.name}." in rv.data.decode(
+            ENCODING_UTF_8
+        )
+
+
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
@@ -595,7 +610,9 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "OpenOversight" in misspelled_rv.data.decode(ENCODING_UTF_8)
         )
 
-        department = Department.query.filter_by(name=MisspelledPD.name).one()
+        department = Department.query.filter_by(
+            name=MisspelledPD.name, state=MisspelledPD.state
+        ).one()
 
         corrected_form = EditDepartmentForm(
             name=CorrectedPD.name,
@@ -671,6 +688,47 @@ def test_admin_can_edit_police_department(mockdata, client, session):
                 name=CorrectedPD.short_name, state=MisspelledPD.state
             ).count()
             == 0
+        )
+
+
+def test_admin_cannot_edit_police_department_without_state(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        add_department_form = DepartmentForm(
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+        )
+
+        add_department_rv = client.post(
+            url_for("main.add_department"),
+            data=add_department_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to "
+            "OpenOversight" in add_department_rv.data.decode(ENCODING_UTF_8)
+        )
+
+        department = Department.query.filter_by(
+            name=TestPD.name, state=TestPD.state
+        ).one()
+
+        without_state_form = EditDepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=""
+        )
+
+        without_state_rv = client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=without_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"You must select a valid state for {TestPD.name}."
+            in without_state_rv.data.decode(ENCODING_UTF_8)
         )
 
 
