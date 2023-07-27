@@ -868,7 +868,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         report_number="Old_Report_Number",
         department_id=1,
         description="description",
-        occurred_at=datetime.datetime(2019, 3, 15, 23, 45, 16),
+        occurred_at=datetime.datetime(2020, 7, 26, 23, 45, 16),
     )
     incident.officers = [officer]
     session.add(incident)
@@ -991,7 +991,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.report_number == "CR-39283"
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
-    assert incident3.occurred_at == datetime.date(2020, 7, 26)
+    assert incident3.occurred_at == datetime.datetime(2020, 7, 26, 0, 0)
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
     assert lp.state is None
