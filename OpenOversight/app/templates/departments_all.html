@@ -5,7 +5,8 @@
     <div class="text-center frontpage-leads">
       {% for dept in departments %}
         <p>
-          <h2>{{ dept.name }}</h2>
+          {% if dept.state %}<h2>[{{ dept.state }}] {{ dept.name }}</h2>{% endif %}
+          {% if not dept.state %}<h2>{{ dept.name }}</h2>{% endif %}
           <ul class="list-group">
             <a href={{ url_for('main.download_dept_officers_csv',department_id=dept.id) }}>
               <li class="list-group-item">officers.csv</li>

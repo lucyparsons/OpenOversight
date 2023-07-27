@@ -515,14 +515,24 @@ def classify_submission(image_id, contains_cops):
 @login_required
 @admin_required
 def add_department():
-    jsloads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     form = DepartmentForm()
     if form.validate_on_submit():
-        departments = [x[0] for x in db.session.query(Department.name).all()]
+        if not form.state.data:
+            flash(f"You must select a valid state for {form.name.data}.")
+            return redirect(url_for("main.add_department"))
 
-        if form.name.data not in departments:
+        department_does_not_exist = (
+            Department.query.filter_by(
+                name=form.name.data, state=form.state.data
+            ).count()
+            == 0
+        )
+
+        if department_does_not_exist:
             department = Department(
-                name=form.name.data, short_name=form.short_name.data
+                name=form.name.data,
+                short_name=form.short_name.data,
+                state=form.state.data,
             )
             db.session.add(department)
             db.session.flush()
@@ -544,13 +554,19 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
-            flash(f"New department {department.name} added to OpenOversight")
+            flash(
+                f"New department {department.name} in {department.state} added to OpenOversight"
+            )
         else:
-            flash(f"Department {form.name.data} already exists")
+            flash(f"Department {form.name.data} in {form.state.data} already exists")
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
-        return render_template("add_edit_department.html", form=form, jsloads=jsloads)
+        return render_template(
+            "department_add_edit.html",
+            form=form,
+            jsloads=["js/jquery-ui.min.js", "js/deptRanks.js"],
+        )
 
 
 @main.route(
@@ -559,21 +575,36 @@ def add_department():
 @login_required
 @admin_required
 def edit_department(department_id):
-    jsloads = ["js/jquery-ui.min.js", "js/deptRanks.js"]
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
     if form.validate_on_submit():
-        new_name = form.name.data
-        if new_name != previous_name:
-            if Department.query.filter_by(name=new_name).count() > 0:
-                flash(f"Department {new_name} already exists")
+        if not form.state.data:
+            flash(f"You must select a valid state for {form.name.data}.")
+            return redirect(
+                url_for("main.edit_department", department_id=department_id)
+            )
+
+        if form.name.data != previous_name:
+            does_already_department_exist = (
+                Department.query.filter_by(
+                    name=form.name.data, state=form.state.data
+                ).count()
+                > 0
+            )
+
+            if does_already_department_exist:
+                flash(
+                    f"Department {form.name.data} in {form.state.data} already exists"
+                )
                 return redirect(
                     url_for("main.edit_department", department_id=department_id)
                 )
-        department.name = new_name
+
+        department.name = form.name.data
         department.short_name = form.short_name.data
+        department.state = form.state.data
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
@@ -633,12 +664,15 @@ def edit_department(department_id):
                     )
             db.session.commit()
 
-        flash(f"Department {department.name} edited")
+        flash(f"Department {department.name} in {department.state} edited")
         return redirect(url_for("main.list_officer", department_id=department.id))
     else:
         current_app.logger.info(form.errors)
         return render_template(
-            "add_edit_department.html", form=form, update=True, jsloads=jsloads
+            "department_add_edit.html",
+            form=form,
+            update=True,
+            jsloads=["js/jquery-ui.min.js", "js/deptRanks.js"],
         )
 
 
@@ -1374,7 +1408,7 @@ def download_dept_descriptions_csv(department_id):
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
-    return render_template("all_depts.html", departments=departments)
+    return render_template("departments_all.html", departments=departments)
 
 
 @main.route(

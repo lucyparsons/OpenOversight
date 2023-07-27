@@ -332,6 +332,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     wait_for_page_load(browser)
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
+    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
     browser.find_element(By.ID, "submit").click()
     wait_for_page_load(browser)
 
