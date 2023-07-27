@@ -189,8 +189,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         updated = Incident.query.get(inc_id)
-        assert updated.date == new_date
-        assert updated.time == new_time
+        assert updated.occurred_at == datetime.combine(new_date, new_time)
         assert updated.address.street_name == street_name
 
 
@@ -529,8 +528,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         )
         assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
-        assert inc.date == new_date.date()
-        assert inc.time == new_date.time()
+        assert inc.occurred_at == new_date
         assert inc.address.street_name == street_name
 
 
