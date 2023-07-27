@@ -2,16 +2,14 @@
   <td>
     <strong>Date</strong>
   </td>
-  <td>{{ incident.date.strftime("%b %d, %Y") }}</td>
+  <td>{{ incident.occurred_at | local_date }}</td>
 </tr>
-{% if incident.time %}
-  <tr>
-    <td>
-      <strong>Time</strong>
-    </td>
-    <td>{{ incident.time.strftime("%l:%M %p") }}</td>
-  </tr>
-{% endif %}
+<tr>
+  <td>
+    <strong>Time</strong>
+  </td>
+  <td>{{ incident.occurred_at | local_time }}</td>
+</tr>
 {% if incident.report_number %}
   <tr>
     <td>
