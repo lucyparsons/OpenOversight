@@ -134,12 +134,8 @@ def create_description(self, form):
 
 def create_incident(self, form):
     fields = {
-        "occurred_at": datetime.datetime(
-            form.date_field.data.year,
-            form.date_field.data.month,
-            form.date_field.data.day,
-            form.time_field.data.hour,
-            form.time_field.data.minute,
+        "occurred_at": datetime.datetime.combine(
+            form.date_field.data, form.time_field.data
         ),
         "officers": [],
         "license_plates": [],
