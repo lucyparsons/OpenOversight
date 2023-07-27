@@ -134,8 +134,13 @@ def create_description(self, form):
 
 def create_incident(self, form):
     fields = {
-        "date": form.date_field.data,
-        "time": form.time_field.data,
+        "occurred_at": datetime.datetime(
+            form.date_field.data.year,
+            form.date_field.data.month,
+            form.date_field.data.day,
+            form.time_field.data.hour,
+            form.time_field.data.minute,
+        ),
         "officers": [],
         "license_plates": [],
         "links": [],
@@ -171,8 +176,7 @@ def create_incident(self, form):
                     fields["links"].append(li)
 
     return Incident(
-        date=fields["date"],
-        time=fields["time"],
+        occurred_at=fields["occurred_at"],
         description=form.data["description"],
         department=form.data["department"],
         address=fields["address"],
