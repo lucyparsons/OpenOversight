@@ -518,6 +518,10 @@ def classify_submission(image_id, contains_cops):
 def add_department():
     form = DepartmentForm()
     if form.validate_on_submit():
+        if not form.state.data:
+            flash(f"You must select a valid state for {form.name.data}.")
+            return redirect(url_for("main.add_department"))
+
         department_does_not_exist = (
             Department.query.filter_by(
                 name=form.name.data, state=form.state.data
@@ -577,17 +581,31 @@ def edit_department(department_id):
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
     if form.validate_on_submit():
-        new_name = form.name.data
-        new_state = form.state.data
-        if new_name != previous_name:
-            if Department.query.filter_by(name=new_name, state=new_state).count() > 0:
-                flash(f"Department {new_name} in {new_state} already exists")
+        if not form.state.data:
+            flash(f"You must select a valid state for {form.name.data}.")
+            return redirect(
+                url_for("main.edit_department", department_id=department_id)
+            )
+
+        if form.name.data != previous_name:
+            does_already_department_exist = (
+                Department.query.filter_by(
+                    name=form.name.data, state=form.state.data
+                ).count()
+                > 0
+            )
+
+            if does_already_department_exist:
+                flash(
+                    f"Department {form.name.data} in {form.state.data} already exists"
+                )
                 return redirect(
                     url_for("main.edit_department", department_id=department_id)
                 )
-        department.name = new_name
+
+        department.name = form.name.data
         department.short_name = form.short_name.data
-        department.state = new_state
+        department.state = form.state.data
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
