@@ -540,8 +540,7 @@ def add_mockdata(session):
 
     test_incidents = [
         Incident(
-            date=datetime.date(2016, 3, 16),
-            time=datetime.time(4, 20),
+            occurred_at=datetime.datetime(2016, 3, 16, 4, 20),
             report_number="42",
             description="### A thing happened\n **Markup** description",
             department_id=1,
@@ -553,8 +552,7 @@ def add_mockdata(session):
             last_updated_id=1,
         ),
         Incident(
-            date=datetime.date(2017, 12, 11),
-            time=datetime.time(2, 40),
+            occurred_at=datetime.datetime(2017, 12, 11, 2, 40),
             report_number="38",
             description="A thing happened",
             department_id=2,
@@ -566,7 +564,7 @@ def add_mockdata(session):
             last_updated_id=1,
         ),
         Incident(
-            date=datetime.datetime(2019, 1, 15),
+            occurred_at=datetime.datetime(2019, 1, 15),
             report_number="39",
             description=(
                 Path(__file__).parent / "description_overflow.txt"
