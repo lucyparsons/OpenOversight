@@ -42,7 +42,9 @@ def parse_date(date_str: Optional[str]) -> Optional["datetime.date"]:
 
 def parse_date_time(date_time_str: Optional[str]) -> Optional["datetime.datetime"]:
     if date_time_str:
-        return dateutil.parser.parse(date_time_str)
+        return datetime.datetime.combine(
+            parse_date(date_time_str), parse_time(date_time_str)
+        )
     return None
 
 
@@ -279,6 +281,9 @@ def get_or_create_location_from_dict(
 
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
+    print('!!!!!"')
+    print(data.get("date"))
+    print(data.get("time"))
     incident = Incident(
         occurred_at=parse_date_time(" ".join([data.get("date"), data.get("time")])),
         report_number=parse_str(data.get("report_number"), None),
@@ -302,12 +307,17 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
+        print("!!!!!")
         if "time" in data:
+            print(" ".join([data.get("date"), data.get("time")]))
             incident.occurred_at = parse_date_time(
                 " ".join([data.get("date"), data.get("time")])
             )
         else:
-            incident.occurred_at = parse_date_time(" ".join([data.get("date"), "00:00"]))
+            print(" ".join([data.get("date"), "00:00"]))
+            incident.occurred_at = parse_date_time(
+                " ".join([data.get("date"), "00:00"])
+            )
     if "report_number" in data:
         incident.report_number = parse_str(data.get("report_number"), None)
     if "description" in data:
