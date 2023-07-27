@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
+from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
 
 
 DESCRIPTION_CUTOFF = 700
@@ -119,25 +120,22 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element("tag name", "body").text
-    expected = "Showing 1-{} of {}".format(
-        current_app.config["OFFICERS_PER_PAGE"], total
-    )
+    expected = f"Showing 1-{current_app.config['OFFICERS_PER_PAGE']} of {total}"
     assert expected in page_text
 
     # last page of results
-    last_page_index = (total // current_app.config["OFFICERS_PER_PAGE"]) + 1
+    last_page_index = (total // current_app.config[KEY_OFFICERS_PER_PAGE]) + 1
     browser.get(
         f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element("tag name", "body").text
-    expected = "Showing {}-{} of {}".format(
-        current_app.config["OFFICERS_PER_PAGE"]
-        * (total // current_app.config["OFFICERS_PER_PAGE"])
-        + 1,
-        total,
-        total,
+    start_of_page = (
+        current_app.config[KEY_OFFICERS_PER_PAGE]
+        * (total // current_app.config[KEY_OFFICERS_PER_PAGE])
+        + 1
     )
+    expected = f"Showing {start_of_page}-{total} of {total}"
     assert expected in page_text
 
 

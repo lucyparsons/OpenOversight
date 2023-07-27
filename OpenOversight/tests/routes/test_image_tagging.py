@@ -291,7 +291,34 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             data=form.data,
             follow_redirects=True,
         )
-        assert b"Invalid officer serial number" in rv.data
+        assert b"Are you sure that is the correct officer serial number?" in rv.data
+
+
+def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        tag = Face.query.first()
+        form = FaceTag(
+            department_id=tag.officer.department_id,
+            star_no=tag.officer.assignments[0].star_no,
+            officer_id=tag.officer_id,
+            image_id=tag.original_image_id,
+            dataX=34,
+            dataY=32,
+            dataWidth=3,
+            dataHeight=33,
+        )
+
+        rv = client.post(
+            url_for("main.label_data", department_id=2, image_id=tag.original_image_id),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        department = Department.query.filter_by(id=2).one_or_none()
+        assert (f"The officer is not in {department.name}, {department.state}.").encode(
+            ENCODING_UTF_8
+        ) in rv.data
 
 
 def test_user_can_finish_tagging(mockdata, client, session):

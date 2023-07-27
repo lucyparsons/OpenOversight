@@ -722,4 +722,4 @@ class User(UserMixin, BaseModel):
         return not self.is_disabled
 
     def __repr__(self):
-        return "<User %r>" % self.username
+        return f"<User {self.username!r}>"

@@ -1,12 +1,9 @@
 import datetime
 from http import HTTPMethod
-from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_login import current_user, login_required
-from flask_sqlalchemy.model import DefaultMeta
-from flask_wtf import FlaskForm as Form
 
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.auth import ac_or_admin_required
@@ -45,14 +42,14 @@ class ModelView(MethodView):
                 )
 
             return render_template(
-                "{}_list.html".format(self.model_name),
+                f"{self.model_name}_list.html",
                 objects=objects,
-                url="main.{}_api".format(self.model_name),
+                url=f"main.{self.model_name}_api",
             )
         else:
             obj = self.model.query.get_or_404(obj_id)
             return render_template(
-                "{}_detail.html".format(self.model_name),
+                f"{self.model_name}_detail.html",
                 obj=obj,
                 current_user=current_user,
             )
@@ -75,12 +72,12 @@ class ModelView(MethodView):
             new_obj = self.create_function(form)
             db.session.add(new_obj)
             db.session.commit()
-            flash("{} created!".format(self.model_name))
+            flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
             current_app.logger.info(form.errors)
 
-        return render_template("{}_new.html".format(self.model_name), form=form)
+        return render_template(f"{self.model_name}_new.html", form=form)
 
     @login_required
     @ac_or_admin_required
@@ -114,12 +111,10 @@ class ModelView(MethodView):
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
-            flash("{} successfully updated!".format(self.model_name))
+            flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
 
-        return render_template(
-            "{}_edit.html".format(self.model_name), obj=obj, form=form
-        )
+        return render_template(f"{self.model_name}_edit.html", obj=obj, form=form)
 
     @login_required
     @ac_or_admin_required
@@ -135,10 +130,10 @@ class ModelView(MethodView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            flash("{} successfully deleted!".format(self.model_name))
+            flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
-        return render_template("{}_delete.html".format(self.model_name), obj=obj)
+        return render_template(f"{self.model_name}_delete.html", obj=obj)
 
     def get_edit_form(self, obj):
         form = self.form(obj=obj)
@@ -151,7 +146,7 @@ class ModelView(MethodView):
         # returns user to the show view
         return redirect(
             url_for(
-                "main.{}_api".format(self.model_name),
+                f"main.{self.model_name}_api",
                 obj_id=kwargs["obj_id"],
                 _method=HTTPMethod.GET,
             )
@@ -159,7 +154,7 @@ class ModelView(MethodView):
 
     def get_post_delete_url(self, *args, **kwargs):
         # returns user to the list view
-        return redirect(url_for("main.{}_api".format(self.model_name)))
+        return redirect(url_for(f"main.{self.model_name}_api"))
 
     def get_department_id(self, obj):
         return obj.department_id
@@ -186,5 +181,5 @@ class ModelView(MethodView):
             if request.method == HTTPMethod.GET:
                 meth = getattr(self, "get", None)
             else:
-                assert meth is not None, "Unimplemented method %r" % request.method
+                assert meth is not None, f"Unimplemented method {request.method!r}"
         return meth(*args, **kwargs)

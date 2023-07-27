@@ -63,7 +63,7 @@ fresh-start:
 	# Start up and populate fields
 	{{ RUN_WEB }} python create_db.py
 	{{ RUN_WEB }} flask make-admin-user
-	{{ RUN_WEB }} flask add-department "Seattle Police Department" "SPD"
+	{{ RUN_WEB }} flask add-department "Seattle Police Department" "SPD" "WA"
 	{{ RUN_WEB }} flask bulk-add-officers /data/init_data.csv
 
 	# Start containers

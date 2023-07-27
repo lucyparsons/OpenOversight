@@ -100,7 +100,7 @@ def prompt_yes_no(prompt, default="no"):
     elif default == "no":
         yn = " [y/N] "
     else:
-        raise ValueError("invalid default answer: {}".format(default))
+        raise ValueError(f"invalid default answer: {default}")
 
     while True:
         sys.stdout.write(prompt + yn)
@@ -125,7 +125,7 @@ def replace_list(items, obj, attr, model, db):
     """
     new_list = []
     if not hasattr(obj, attr):
-        raise LookupError("The object does not have the {} attribute".format(attr))
+        raise LookupError(f"The object does not have the {attr} attribute")
 
     for item in items:
         new_item, _ = get_or_create(db.session, model, **item)

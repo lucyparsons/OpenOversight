@@ -12,7 +12,7 @@ def main():
     account_file = open(accounts_file_location, "r")
     accounts = account_file.readlines()
     for account in tqdm(accounts):
-        print("[*] Scraping {}".format(account))
+        print(f"[*] Scraping {account}")
         subprocess.call(
             [
                 "python3",

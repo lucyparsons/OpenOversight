@@ -137,9 +137,7 @@ def test_admin_can_delete_user(mockdata, client, session):
             url_for("auth.delete_user", user_id=user_id), follow_redirects=True
         )
 
-        assert "User {} has been deleted!".format(username) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"User {username} has been deleted!" in rv.data.decode(ENCODING_UTF_8)
         assert not User.query.get(user_id)
 
 
@@ -260,9 +258,9 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "A new confirmation email has been sent to {}.".format(
-            email
-        ) in rv.data.decode(ENCODING_UTF_8)
+        assert f"A new confirmation email has been sent to {email}." in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
 
 def test_register_user_approval_required(mockdata, client, session):
