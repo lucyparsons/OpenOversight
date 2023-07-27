@@ -1524,12 +1524,12 @@ class IncidentApi(ModelView):
         if occurred_before := request.args.get("occurred_before"):
             before_date = datetime.datetime.strptime(occurred_before, "%Y-%m-%d").date()
             form.occurred_before.data = before_date
-            incidents = incidents.filter(self.model.date < before_date)
+            incidents = incidents.filter(self.model.occurred_at < before_date)
 
         if occurred_after := request.args.get("occurred_after"):
             after_date = datetime.datetime.strptime(occurred_after, "%Y-%m-%d").date()
             form.occurred_after.data = after_date
-            incidents = incidents.filter(self.model.date > after_date)
+            incidents = incidents.filter(self.model.occurred_at > after_date)
 
         incidents = incidents.order_by(
             getattr(self.model, self.order_by).desc()
@@ -1632,11 +1632,14 @@ class IncidentApi(ModelView):
         if license_plates and license_plates[0]["number"]:
             replace_list(license_plates, obj, "license_plates", LicensePlate, db)
 
-        obj.date = form.date_field.data
         if form.time_field.raw_data and form.time_field.raw_data != [""]:
-            obj.time = form.time_field.data
+            obj.occurred_at = datetime.datetime(
+                form.date_field.data, form.time_field.data
+            )
         else:
-            obj.time = None
+            obj.occurred_at = datetime.datetime(
+                form.date_field.data, datetime.time(0, 0)
+            )
         super(IncidentApi, self).populate_obj(form, obj)
 
 
