@@ -1289,8 +1289,7 @@ def download_incidents_csv(department_id):
     field_names = [
         "id",
         "report_num",
-        "date",
-        "time",
+        "occurred_at",
         "description",
         "location",
         "licenses",
