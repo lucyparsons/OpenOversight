@@ -274,8 +274,7 @@ def get_or_create_location_from_dict(
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     incident = Incident(
-        date=parse_date(data.get("date")),
-        time=parse_time(data.get("time")),
+        occurred_at=data,
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
