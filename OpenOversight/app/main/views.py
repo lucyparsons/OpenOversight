@@ -1638,7 +1638,7 @@ class IncidentApi(ModelView):
             )
         else:
             obj.occurred_at = datetime.datetime.combine(
-                form.date_field.data.date(), datetime.time(0, 0)
+                form.date_field.data, datetime.time(0, 0)
             )
         super(IncidentApi, self).populate_obj(form, obj)
 
