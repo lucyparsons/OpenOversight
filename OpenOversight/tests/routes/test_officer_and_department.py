@@ -9,6 +9,7 @@ from http import HTTPStatus
 from io import BytesIO
 
 import pytest
+import us
 from flask import current_app, url_for
 from mock import MagicMock, patch
 from sqlalchemy.sql.operators import Operators
@@ -52,6 +53,7 @@ from OpenOversight.tests.routes.route_helpers import (
     login_user,
     process_form_data,
 )
+from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 @pytest.mark.parametrize(
@@ -488,28 +490,54 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
+TestPD = PoliceDepartment("Test Police Department", "TPD")
+
+
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
         )
 
-        assert "New department" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to OpenOversight"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
 
         # Check the department was added to the database
-        department = Department.query.filter_by(name="Test Police Department").one()
-        assert department.short_name == "TPD"
+        department = Department.query.filter_by(name=TestPD.name).one()
+        assert department.short_name == TestPD.short_name
+        assert department.state == TestPD.state
+
+
+def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+
+        rv = client.post(
+            url_for("main.add_department"), data=form.data, follow_redirects=True
+        )
+
+        assert f"You must select a valid state for {TestPD.name}." in rv.data.decode(
+            ENCODING_UTF_8
+        )
 
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
@@ -522,13 +550,18 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
     with current_app.test_request_context():
         login_admin(client)
 
-        form = DepartmentForm(name="Test Police Department", short_name="TPD")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+        )
 
         rv = client.post(
             url_for("main.add_department"), data=form.data, follow_redirects=True
         )
 
-        assert "New department" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to OpenOversight"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
 
         # Try to add the same police department again
         rv = client.post(
@@ -539,16 +572,31 @@ def test_admin_cannot_add_duplicate_police_department(mockdata, client, session)
 
         # Check that only one department was added to the database
         # one() method will throw exception if more than one department found
-        department = Department.query.filter_by(name="Test Police Department").one()
-        assert department.short_name == "TPD"
+        department = Department.query.filter_by(name=TestPD.name).one()
+        assert department.short_name == TestPD.short_name
+        assert department.state == TestPD.state
+
+
+CorrectedPD = PoliceDepartment("Corrected Police Department", "CPD")
 
 
 def test_admin_can_edit_police_department(mockdata, client, session):
     with current_app.test_request_context():
+        # Prevent CorrectedPD and MisspelledPD from having the same state
+        MisspelledPD = PoliceDepartment(
+            "Misspelled Police Department",
+            "MPD",
+            random.choice(
+                [st for st in us.STATES if st.abbr != CorrectedPD.state]
+            ).abbr,
+        )
+
         login_admin(client)
 
         misspelled_form = DepartmentForm(
-            name="Misspelled Police Department", short_name="MPD"
+            name=MisspelledPD.name,
+            short_name=MisspelledPD.short_name,
+            state=MisspelledPD.state,
         )
 
         misspelled_rv = client.post(
@@ -557,14 +605,19 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "New department" in misspelled_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {MisspelledPD.name} in {MisspelledPD.state} added to "
+            "OpenOversight" in misspelled_rv.data.decode(ENCODING_UTF_8)
+        )
 
         department = Department.query.filter_by(
-            name="Misspelled Police Department"
+            name=MisspelledPD.name, state=MisspelledPD.state
         ).one()
 
         corrected_form = EditDepartmentForm(
-            name="Corrected Police Department", short_name="MPD"
+            name=CorrectedPD.name,
+            short_name=MisspelledPD.short_name,
+            state=MisspelledPD.state,
         )
 
         corrected_rv = client.post(
@@ -574,47 +627,120 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         )
 
         assert (
-            "Department Corrected Police Department edited"
+            f"Department {CorrectedPD.name} in {MisspelledPD.state} edited"
             in corrected_rv.data.decode(ENCODING_UTF_8)
         )
 
         # Check the department with the new name is now in the database.
-        corrected_department = Department.query.filter_by(
-            name="Corrected Police Department"
-        ).one()
-        assert corrected_department.short_name == "MPD"
+        corrected_department = Department.query.filter_by(name=CorrectedPD.name).one()
+        assert corrected_department.short_name == MisspelledPD.short_name
+        assert corrected_department.state == MisspelledPD.state
 
         # Check that the old name is no longer present:
-        assert (
-            Department.query.filter_by(name="Misspelled Police Department").count() == 0
+        assert Department.query.filter_by(name=MisspelledPD.name).count() == 0
+
+        edit_state_form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=MisspelledPD.state,
         )
 
-        edit_short_name_form = EditDepartmentForm(
-            name="Corrected Police Department", short_name="CPD"
-        )
-
-        edit_short_name_rv = client.post(
+        edit_state_rv = client.post(
             url_for("main.edit_department", department_id=department.id),
-            data=edit_short_name_form.data,
+            data=edit_state_form.data,
             follow_redirects=True,
         )
 
         assert (
-            "Department Corrected Police Department edited"
-            in edit_short_name_rv.data.decode(ENCODING_UTF_8)
+            f"Department {CorrectedPD.name} in {MisspelledPD.state} edited"
+            in edit_state_rv.data.decode(ENCODING_UTF_8)
         )
 
-        edit_short_name_department = Department.query.filter_by(
-            name="Corrected Police Department"
+        edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
+        assert edit_state_department.short_name == CorrectedPD.short_name
+        assert edit_state_department.state == MisspelledPD.state
+        # Check that the old short is no longer present:
+        assert Department.query.filter_by(name=MisspelledPD.short_name).count() == 0
+
+        edit_state_form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=CorrectedPD.state,
+        )
+
+        edit_state_rv = client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=edit_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"Department {CorrectedPD.name} in {CorrectedPD.state} edited"
+            in edit_state_rv.data.decode(ENCODING_UTF_8)
+        )
+
+        edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
+        assert edit_state_department.short_name == CorrectedPD.short_name
+        assert edit_state_department.state == CorrectedPD.state
+        # Check that the old short is no longer present:
+        assert (
+            Department.query.filter_by(
+                name=CorrectedPD.short_name, state=MisspelledPD.state
+            ).count()
+            == 0
+        )
+
+
+def test_admin_cannot_edit_police_department_without_state(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        add_department_form = DepartmentForm(
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+        )
+
+        add_department_rv = client.post(
+            url_for("main.add_department"),
+            data=add_department_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {TestPD.name} in {TestPD.state} added to "
+            "OpenOversight" in add_department_rv.data.decode(ENCODING_UTF_8)
+        )
+
+        department = Department.query.filter_by(
+            name=TestPD.name, state=TestPD.state
         ).one()
-        assert edit_short_name_department.short_name == "CPD"
+
+        without_state_form = EditDepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state=""
+        )
+
+        without_state_rv = client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=without_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"You must select a valid state for {TestPD.name}."
+            in without_state_rv.data.decode(ENCODING_UTF_8)
+        )
 
 
 def test_ac_cannot_edit_police_department(mockdata, client, session, department):
     with current_app.test_request_context():
         login_ac(client)
 
-        form = EditDepartmentForm(name="Corrected Police Department", short_name="CPD")
+        form = EditDepartmentForm(
+            name=CorrectedPD.name,
+            short_name=CorrectedPD.short_name,
+            state=CorrectedPD.state,
+        )
 
         rv = client.post(
             url_for("main.edit_department", department_id=department.id),
@@ -628,7 +754,6 @@ def test_ac_cannot_edit_police_department(mockdata, client, session, department)
 def test_admin_can_edit_rank_order(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department_name = department.name
         ranks = department.jobs
         ranks_update = ranks.copy()
         original_first_rank = copy.deepcopy(ranks_update[0])
@@ -636,8 +761,9 @@ def test_admin_can_edit_rank_order(mockdata, client, session, department):
         ranks_stringified = [rank.job_title for rank in ranks_update]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name,
+            name=department.name,
             short_name=department.short_name,
+            state=department.state,
             jobs=ranks_stringified,
         )
         processed_data = process_form_data(rank_change_form.data)
@@ -648,8 +774,11 @@ def test_admin_can_edit_rank_order(mockdata, client, session, department):
             follow_redirects=True,
         )
 
-        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
-        assert f"Department {department_name} edited" in rv.data.decode(ENCODING_UTF_8)
+        updated_ranks = Department.query.filter_by(name=department.name).one().jobs
+        assert (
+            f"Department {department.name} in {department.state} edited"
+            in rv.data.decode(ENCODING_UTF_8)
+        )
         assert (
             updated_ranks[0].job_title == original_first_rank.job_title
             and updated_ranks[0].order != original_first_rank.order
@@ -661,12 +790,14 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
         login_admin(client)
 
         ranks = department.jobs
-        department_name = department.name
         original_ranks = ranks.copy()
         ranks_update = RANK_CHOICES_1.copy()[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -676,7 +807,7 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
             follow_redirects=True,
         )
 
-        updated_ranks = Department.query.filter_by(name=department_name).one().jobs
+        updated_ranks = Department.query.filter_by(name=department.name).one().jobs
         assert (
             "You attempted to delete a rank, Commander, that is still in use"
             in result.data.decode(ENCODING_UTF_8)
@@ -687,7 +818,6 @@ def test_admin_cannot_delete_rank_in_use(mockdata, client, session, department):
 def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
-        department_name = department.name
         ranks_update = RANK_CHOICES_1.copy()
         original_ranks_length = len(ranks_update)
         ranks_update.append(
@@ -700,7 +830,10 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
         )
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -713,18 +846,21 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-1]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -737,7 +873,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length
         )
 
@@ -753,10 +889,11 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
         ranks_update.append("Temporary Rank 1")
         ranks_update.append("Temporary Rank 2")
 
-        department_name = department.name
-
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -769,18 +906,21 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 2
         )
 
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -793,7 +933,7 @@ def test_admin_can_delete_multiple_ranks_not_in_use(
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length
         )
 
@@ -814,9 +954,11 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
                 department_id=1,
             )
         )
-        department_name = department.name
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -829,19 +971,22 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
 
         assert rv.status_code == HTTPStatus.OK
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
 
         # attempt to delete multiple ranks
         ranks_update = [
             job.job_title
-            for job in Department.query.filter_by(name=department_name).one().jobs
+            for job in Department.query.filter_by(name=department.name).one().jobs
         ]
         ranks_update = ranks_update[:-2]
 
         rank_change_form = EditDepartmentForm(
-            name=department_name, short_name=department.short_name, jobs=ranks_update
+            name=department.name,
+            short_name=department.short_name,
+            state=department.state,
+            jobs=ranks_update,
         )
         processed_data = process_form_data(rank_change_form.data)
 
@@ -853,9 +998,89 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
         )
 
         assert (
-            len(Department.query.filter_by(name=department_name).one().jobs)
+            len(Department.query.filter_by(name=department.name).one().jobs)
             == original_ranks_length + 1
         )
+
+
+ExistingPD = PoliceDepartment("Existing Police Department", "EPD")
+
+
+def test_admin_can_create_department_with_same_name_in_different_state(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        existing_form = DepartmentForm(
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
+        )
+
+        existing_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {ExistingPD.name} in {ExistingPD.state} added to "
+            "OpenOversight"
+        ) in existing_rv.data.decode(ENCODING_UTF_8)
+
+        existing_department = Department.query.filter_by(
+            name=ExistingPD.name, state=ExistingPD.state
+        ).one()
+        assert existing_department.short_name == ExistingPD.short_name
+        assert existing_department.state == ExistingPD.state
+
+        # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
+        ExistingDiffStatePD = PoliceDepartment(
+            "Existing Police Department",
+            "EPD",
+            random.choice([st.abbr for st in us.STATES if st.abbr != ExistingPD.state]),
+        )
+
+        existing_diff_state_form = DepartmentForm(
+            name=ExistingDiffStatePD.name,
+            short_name=ExistingDiffStatePD.short_name,
+            state=ExistingDiffStatePD.state,
+        )
+
+        existing_diff_state_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_diff_state_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"New department {ExistingDiffStatePD.name} in "
+            f"{ExistingDiffStatePD.state} added to OpenOversight"
+        ) in existing_diff_state_rv.data.decode(ENCODING_UTF_8)
+
+        existing_diff_state_department = Department.query.filter_by(
+            name=ExistingDiffStatePD.name, state=ExistingDiffStatePD.state
+        ).one()
+        assert existing_diff_state_department.short_name == ExistingPD.short_name
+        assert existing_diff_state_department.state == ExistingDiffStatePD.state
+
+        # Duplicate existing test
+        existing_duplicate_form = DepartmentForm(
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
+        )
+
+        existing_duplicate_rv = client.post(
+            url_for("main.add_department"),
+            data=existing_duplicate_form.data,
+            follow_redirects=True,
+        )
+
+        assert (
+            f"Department {ExistingPD.name} in {ExistingPD.state} already exists"
+        ) in existing_duplicate_rv.data.decode(ENCODING_UTF_8)
 
 
 def test_admin_cannot_duplicate_police_department_during_edit(
@@ -865,7 +1090,9 @@ def test_admin_cannot_duplicate_police_department_during_edit(
         login_admin(client)
 
         existing_dep_form = DepartmentForm(
-            name="Existing Police Department", short_name="EPD"
+            name=ExistingPD.name,
+            short_name=ExistingPD.short_name,
+            state=ExistingPD.state,
         )
 
         existing_dep_rv = client.post(
@@ -874,9 +1101,16 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "New department" in existing_dep_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {ExistingPD.name} in {ExistingPD.state} added to "
+            "OpenOversight"
+        ) in existing_dep_rv.data.decode(ENCODING_UTF_8)
 
-        new_dep_form = DepartmentForm(name="New Police Department", short_name="NPD")
+        NewPD = PoliceDepartment("New Police Department", "NPD", ExistingPD.state)
+
+        new_dep_form = DepartmentForm(
+            name=NewPD.name, short_name=NewPD.short_name, state=NewPD.state
+        )
 
         new_dep_rv = client.post(
             url_for("main.add_department"),
@@ -884,12 +1118,14 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "New department" in new_dep_rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"New department {NewPD.name} in {NewPD.state} added to OpenOversight"
+        ) in new_dep_rv.data.decode(ENCODING_UTF_8)
 
-        new_department = Department.query.filter_by(name="New Police Department").one()
+        new_department = Department.query.filter_by(name=NewPD.name).one()
 
         edit_form = EditDepartmentForm(
-            name="Existing Police Department", short_name="EPD2"
+            name=ExistingPD.name, short_name="EPD2", state=ExistingPD.state
         )
 
         rv = client.post(
@@ -898,17 +1134,17 @@ def test_admin_cannot_duplicate_police_department_during_edit(
             follow_redirects=True,
         )
 
-        assert "already exists" in rv.data.decode(ENCODING_UTF_8)
+        assert (
+            f"Department {ExistingPD.name} in {ExistingPD.state} already exists"
+        ) in rv.data.decode(ENCODING_UTF_8)
 
         # make sure original department is still here
-        existing_department = Department.query.filter_by(
-            name="Existing Police Department"
-        ).one()
-        assert existing_department.short_name == "EPD"
+        existing_department = Department.query.filter_by(name=ExistingPD.name).one()
+        assert existing_department.short_name == ExistingPD.short_name
 
         # make sure new department is left unchanged
         new_department = Department.query.filter_by(name="New Police Department").one()
-        assert new_department.short_name == "NPD"
+        assert new_department.short_name == NewPD.short_name
 
 
 def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, session):

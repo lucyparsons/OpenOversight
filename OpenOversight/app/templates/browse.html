@@ -18,7 +18,8 @@
         <p>
           <div class="btn-group">
             <h2>
-              {{ department.name }}
+              {% if department.state %}[{{ department.state }}] {{ department.name }}{% endif %}
+              {% if not department.state %}{{ department.name }}{% endif %}
               {% if current_user.is_administrator %}
                 <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
                   <i class="fa fa-pencil-square-o" aria-hidden="true"></i>

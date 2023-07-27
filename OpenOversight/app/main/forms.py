@@ -197,6 +197,12 @@ class DepartmentForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=100), DataRequired()],
     )
+    state = SelectField(
+        "The law enforcement agency's home state",
+        choices=STATE_CHOICES,
+        default="",
+        validators=[AnyOf(allowed_values(STATE_CHOICES))],
+    )
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"
     )

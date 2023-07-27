@@ -27,6 +27,7 @@
         {{ wtf.form_errors(form, hiddens="only") }}
         {{ wtf.form_field(form.name, autofocus="autofocus") }}
         {{ wtf.form_field(form.short_name) }}
+        {{ wtf.form_field(form.state) }}
         <div class="sortable sortable-fields">
           <legend>{{ form.jobs.label }}</legend>
           <div>
