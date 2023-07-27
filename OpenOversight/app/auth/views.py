@@ -331,7 +331,7 @@ def edit_user(user_id):
                 ):
                     admin_resend_confirmation(user)
 
-                flash("{} has been updated!".format(user.username))
+                flash(f"{user.username} has been updated!")
 
                 return redirect(url_for("auth.edit_user", user_id=user.id))
             else:
@@ -349,7 +349,7 @@ def delete_user(user_id):
         username = user.username
         db.session.delete(user)
         db.session.commit()
-        flash("User {} has been deleted!".format(username))
+        flash(f"User {username} has been deleted!")
         return redirect(url_for("auth.get_users"))
 
     return render_template("auth/user_delete.html", user=user)
@@ -357,9 +357,9 @@ def delete_user(user_id):
 
 def admin_resend_confirmation(user):
     if user.confirmed:
-        flash("User {} is already confirmed.".format(user.username))
+        flash(f"User {user.username} is already confirmed.")
     else:
         token = user.generate_confirmation_token()
         EmailClient.send_email(ConfirmAccountEmail(user.email, user=user, token=token))
-        flash("A new confirmation email has been sent to {}.".format(user.email))
+        flash(f"A new confirmation email has been sent to {user.email}.")
     return redirect(url_for("auth.get_users"))

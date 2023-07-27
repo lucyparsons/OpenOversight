@@ -10,14 +10,12 @@ class BootstrapListWidget(ListWidget):
 
     def __call__(self, field, **kwargs):
         c = kwargs.pop("classes", "") or kwargs.pop("class_", "")
-        kwargs["class"] = "%s %s" % (self.classes, c)
+        kwargs["class"] = f"{self.classes} {c}"
         kwargs.setdefault("id", field.id)
-        html = ["<%s %s>" % (self.html_tag, html_params(**kwargs))]
+        html = [f"<{self.html_tag} {html_params(**kwargs)}>"]
         for subfield in field:
             if type(subfield) == FormField:
-                html.append(
-                    "<li><h6>%s</h6> %s</li>" % (subfield.label.text, subfield())
-                )
+                html.append(f"<li><h6>{subfield.label.text}</h6> {subfield()}</li>")
             if self.prefix_label:
                 html.append(
                     '<li><div class="form-group">%s %s</div></li>'
@@ -28,7 +26,7 @@ class BootstrapListWidget(ListWidget):
                     '<li><div class="form-group">%s %s</div><</li>'
                     % (subfield(), subfield.label)
                 )
-        html.append("</%s>" % self.html_tag)
+        html.append(f"</{self.html_tag}>")
         return Markup("".join(html))
 
 

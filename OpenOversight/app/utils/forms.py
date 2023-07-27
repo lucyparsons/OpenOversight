@@ -226,11 +226,11 @@ def edit_officer_profile(officer, form):
 def filter_by_form(form_data, officer_query, department_id=None):
     if form_data.get("last_name"):
         officer_query = officer_query.filter(
-            Officer.last_name.ilike("%%{}%%".format(form_data["last_name"]))
+            Officer.last_name.ilike(f"%%{form_data['last_name']}%%")
         )
     if form_data.get("first_name"):
         officer_query = officer_query.filter(
-            Officer.first_name.ilike("%%{}%%".format(form_data["first_name"]))
+            Officer.first_name.ilike(f"%%{form_data['first_name']}%%")
         )
     if not department_id and form_data.get("dept"):
         department_id = form_data["dept"].id
@@ -239,7 +239,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
     if form_data.get("unique_internal_identifier"):
         officer_query = officer_query.filter(
             Officer.unique_internal_identifier.ilike(
-                "%%{}%%".format(form_data["unique_internal_identifier"])
+                f"%%{form_data['unique_internal_identifier']}%%"
             )
         )
 
@@ -307,7 +307,7 @@ def filter_by_form(form_data, officer_query, department_id=None):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
-                Assignment.star_no.like("%%{}%%".format(form_data["badge"]))
+                Assignment.star_no.like(f"%%{form_data['badge']}%%")
             )
 
         if unit_ids or include_null_unit:
@@ -334,13 +334,13 @@ def filter_by_form(form_data, officer_query, department_id=None):
 def filter_roster(form, officer_query):
     if "name" in form and form["name"]:
         officer_query = officer_query.filter(
-            Officer.last_name.ilike("%%{}%%".format(form["name"]))
+            Officer.last_name.ilike(f"%%{form['name']}%%")
         )
 
     officer_query = officer_query.outerjoin(Assignment)
     if "badge" in form and form["badge"]:
         officer_query = officer_query.filter(
-            cast(Assignment.star_no, db.String).like("%%{}%%".format(form["badge"]))
+            cast(Assignment.star_no, db.String).like(f"%%{form['badge']}%%")
         )
     if "dept" in form and form["dept"]:
         officer_query = officer_query.filter(Officer.department_id == form["dept"].id)

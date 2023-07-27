@@ -9,6 +9,7 @@ SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator on
 SERVICE_ACCOUNT_FILE = "service_account_key.json"
 
 # Key Constants
+KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
 KEY_TIMEZONE = "TIMEZONE"
 
 # Numerical Constants

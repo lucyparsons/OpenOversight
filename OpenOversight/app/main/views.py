@@ -74,7 +74,11 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
-from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    KEY_OFFICERS_PER_PAGE,
+    KEY_TIMEZONE,
+)
 from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
@@ -263,11 +267,8 @@ def officer_profile(officer_id):
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error finding officer: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error finding officer: {error_str}")
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -289,11 +290,8 @@ def officer_profile(officer_id):
             face_paths = [url_for("static", filename="images/placeholder.png")]
     except:  # noqa: E722
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error loading officer profile: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error loading officer profile: {error_str}")
     if faces:
         officer.image_url = faces[0].image.filepath
         if not officer.image_url.startswith("http"):
@@ -389,7 +387,7 @@ def edit_assignment(officer_id, assignment_id):
             id=int(form.job_title.raw_data[0])
         ).one()
         assignment = edit_existing_assignment(assignment, form)
-        flash("Edited officer assignment ID {}".format(assignment.id))
+        flash(f"Edited officer assignment ID {assignment.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
         current_app.logger.info(form.errors)
@@ -427,7 +425,7 @@ def add_salary(officer_id):
             flash("Added new salary!")
         except IntegrityError as e:
             db.session.rollback()
-            flash("Error adding new salary: {}".format(e))
+            flash(f"Error adding new salary: {e}")
         return redirect(
             url_for("main.officer_profile", officer_id=officer_id),
             code=HTTPStatus.FOUND,
@@ -459,7 +457,7 @@ def edit_salary(officer_id, salary_id):
         form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
-        flash("Edited officer salary ID {}".format(salary.id))
+        flash(f"Edited officer salary ID {salary.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
         current_app.logger.info(form.errors)
@@ -508,11 +506,8 @@ def classify_submission(image_id, contains_cops):
     except:  # noqa: E722
         flash("Unknown error occurred")
         exception_type, value, full_traceback = sys.exc_info()
-        current_app.logger.error(
-            "Error classifying image: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error classifying image: {error_str}")
     return redirect(redirect_url())
     # return redirect(url_for('main.display_submission', image_id=image_id))
 
@@ -550,9 +545,9 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
-            flash("New department {} added to OpenOversight".format(department.name))
+            flash(f"New department {department.name} added to OpenOversight")
         else:
-            flash("Department {} already exists".format(form.name.data))
+            flash(f"Department {form.name.data} already exists")
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
@@ -574,7 +569,7 @@ def edit_department(department_id):
         new_name = form.name.data
         if new_name != previous_name:
             if Department.query.filter_by(name=new_name).count() > 0:
-                flash("Department {} already exists".format(new_name))
+                flash(f"Department {new_name} already exists")
                 return redirect(
                     url_for("main.edit_department", department_id=department_id)
                 )
@@ -615,15 +610,13 @@ def edit_department(department_id):
                             failed_deletions.append(rank)
                     for rank in failed_deletions:
                         flash(
-                            "You attempted to delete a rank, {}, that is still in use".format(
-                                rank
-                            )
+                            f"You attempted to delete a rank, {rank}, that is still in use"
                         )
                     return redirect(
                         url_for("main.edit_department", department_id=department_id)
                     )
 
-            for (new_rank, order) in new_ranks:
+            for new_rank, order in new_ranks:
                 existing_rank = Job.query.filter_by(
                     department_id=department_id, job_title=new_rank
                 ).one_or_none()
@@ -641,7 +634,7 @@ def edit_department(department_id):
                     )
             db.session.commit()
 
-        flash("Department {} edited".format(department.name))
+        flash(f"Department {department.name} edited")
         return redirect(url_for("main.list_officer", department_id=department.id))
     else:
         current_app.logger.info(form.errors)
@@ -761,7 +754,7 @@ def list_officer(
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
 
     officers = officers.paginate(
-        page=page, per_page=current_app.config["OFFICERS_PER_PAGE"], error_out=False
+        page=page, per_page=current_app.config[KEY_OFFICERS_PER_PAGE], error_out=False
     )
 
     for officer in officers.items:
@@ -901,7 +894,7 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        flash("New Officer {} added to OpenOversight".format(officer.last_name))
+        flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
@@ -930,7 +923,7 @@ def edit_officer(officer_id):
 
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
-        flash("Officer {} edited".format(officer.last_name))
+        flash(f"Officer {officer.last_name} edited")
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
@@ -951,7 +944,7 @@ def add_unit():
         )
         db.session.add(unit)
         db.session.commit()
-        flash("New unit {} added to OpenOversight".format(unit.description))
+        flash(f"New unit {unit.description} added to OpenOversight")
         return redirect(url_for("main.get_started_labeling"))
     else:
         current_app.logger.info(form.errors)
@@ -1009,12 +1002,9 @@ def set_featured_tag(tag_id):
         flash("Successfully set this tag as featured")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_tback = sys.exc_info()
-        current_app.logger.error(
-            "Error setting featured tag: {}".format(
-                " ".join([str(exception_type), str(value), format_exc()])
-            )
-        )
+        exception_type, value, full_traceback = sys.exc_info()
+        error_str = " ".join([str(exception_type), str(value), format_exc()])
+        current_app.logger.error(f"Error setting featured tag: {error_str}")
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
@@ -1087,8 +1077,8 @@ def label_data(department_id=None, image_id=None):
             flash("Invalid officer ID. Please select a valid OpenOversight ID!")
         elif department and officer_exists.department_id != department_id:
             flash(
-                "The officer is not in {}. Are you sure that is the correct "
-                "OpenOversight ID?".format(department.name)
+                f"The officer is not in {department.name}, {department.state}. "
+                "Are you sure that is the correct OpenOversight ID?"
             )
         elif not existing_tag:
             left = form.dataX.data
@@ -1511,7 +1501,7 @@ class IncidentApi(ModelView):
             getattr(self.model, self.order_by).desc()
         ).paginate(page=page, per_page=self.per_page, error_out=False)
 
-        url = "main.{}_api".format(self.model_name)
+        url = f"main.{self.model_name}_api"
         next_url = url_for(
             url,
             page=incidents.next_num,
@@ -1530,7 +1520,7 @@ class IncidentApi(ModelView):
         )
 
         return render_template(
-            "{}_list.html".format(self.model_name),
+            f"{self.model_name}_list.html",
             form=form,
             incidents=incidents,
             url=url,
@@ -1790,10 +1780,10 @@ class OfficerLinkApi(ModelView):
             self.officer.links.append(link)
             db.session.add(link)
             db.session.commit()
-            flash("{} created!".format(self.model_name))
+            flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=link.id)
 
-        return render_template("{}_new.html".format(self.model_name), form=form)
+        return render_template(f"{self.model_name}_new.html", form=form)
 
     @login_required
     @ac_or_admin_required
@@ -1808,11 +1798,11 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            flash("{} successfully deleted!".format(self.model_name))
+            flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
         return render_template(
-            "{}_delete.html".format(self.model_name),
+            f"{self.model_name}_delete.html",
             obj=obj,
             officer_id=self.officer_id,
         )

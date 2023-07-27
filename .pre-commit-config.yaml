@@ -67,8 +67,17 @@ repos:
         exclude: bin|cli|manage.py|app.py|setup.py|docs|create_db.py|test_data.py
         files: \.py$
 
+  - repo: https://github.com/ikamensh/flynt/
+    rev: '1.0.0'
+    hooks:
+        - id: flynt
+          exclude: ^build/.*$|^.tox/.*$|^venv/.*$
+          files: \.py$
+          args:
+            - --quiet
+
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
         - id: flake8
           args:
@@ -76,18 +85,15 @@ repos:
             - --select=B,C,E,F,W,T4,B9
 
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.7.0
     hooks:
         - id: black
           args:
             - --safe
-            - "--target-version=py35"
-            - "--target-version=py36"
-            - "--target-version=py37"
-            - "--target-version=py38"
+            - "--target-version=py311"
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.31.1
+    rev: v1.32.1
     hooks:
       - id: djlint-reformat
         pass_filenames: false

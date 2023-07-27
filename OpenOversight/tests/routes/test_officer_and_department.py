@@ -404,7 +404,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             follow_redirects=True,
         )
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-01-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-12-31" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == star_no
@@ -433,7 +433,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
         )
 
         assert "Edited officer assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(new_star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{new_star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-02-01" in rv.data.decode(ENCODING_UTF_8)
         assert "2019-11-30" in rv.data.decode(ENCODING_UTF_8)
         assert officer.assignments[0].star_no == new_star_no
@@ -464,7 +464,7 @@ def test_ac_cannot_edit_assignment_outside_their_dept(mockdata, client, session)
             follow_redirects=True,
         )
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert "<td>{}</td>".format(star_no) in rv.data.decode(ENCODING_UTF_8)
+        assert f"<td>{star_no}</td>" in rv.data.decode(ENCODING_UTF_8)
 
         login_ac(client)
 
@@ -1020,9 +1020,7 @@ def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1066,9 +1064,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
         rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         assert rv.status_code == HTTPStatus.OK
-        assert "New Officer {} added".format(last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
 
         # Check the officer was added to the database
         officer = Officer.query.filter_by(last_name=last_name).one()
@@ -1255,9 +1251,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
             follow_redirects=True,
         )
 
-        assert "Officer {} edited".format(new_last_name) in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"Officer {new_last_name} edited" in rv.data.decode(ENCODING_UTF_8)
         assert last_name not in rv.data.decode(ENCODING_UTF_8)
 
         # Check the changes were added to the database
@@ -1694,14 +1688,10 @@ def test_browse_filtering_allows_good(client, mockdata, session, faker):
             return parsed_list
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Rank</dt>")
-        assert any(
-            "<dd>{}</dd>".format(job.job_title) in token for token in filter_list
-        )
+        assert any(f"<dd>{job.job_title}</dd>" in token for token in filter_list)
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Unit</dt>")
-        assert any(
-            "<dd>{}</dd>".format(unit.description) in token for token in filter_list
-        )
+        assert any(f"<dd>{unit.description}</dd>" in token for token in filter_list)
 
         filter_list = normalize_tokens_for_comparison(rv, "<dt>Race</dt>")
         assert any("<dd>White</dd>" in token for token in filter_list)
@@ -1746,7 +1736,7 @@ def test_find_officer_redirect(client, mockdata, session):
 
         # Check that the parameters are added correctly to the response url
         assert rv.status_code == HTTPStatus.FOUND, "Expected redirect."
-        assert "department/{}".format(department_id) in rv.location
+        assert f"department/{department_id}" in rv.location
         parameters = [
             ("first_name", "A"),
             ("last_name", "B"),
@@ -1759,7 +1749,7 @@ def test_find_officer_redirect(client, mockdata, session):
             ("max_age", max_age),
         ]
         for name, value in parameters:
-            assert "{}={}".format(name, value) in rv.location
+            assert f"{name}={value}" in rv.location
 
 
 def test_admin_can_upload_photos_of_dept_officers(

@@ -33,7 +33,6 @@ def login_modified_disabled_user(client):
 
 
 def login_admin(client):
-
     form = LoginForm(email=ADMIN_EMAIL, password=ADMIN_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv
@@ -51,16 +50,15 @@ def process_form_data(form_dict):
     in the way that it is flattened in the browser"""
     new_dict = {}
     for key, value in form_dict.items():
-
         if type(value) == list:
             if value[0]:
                 if type(value[0]) is dict:
                     for idx, item in enumerate(value):
                         for subkey, subvalue in item.items():
-                            new_dict["{}-{}-{}".format(key, idx, subkey)] = subvalue
+                            new_dict[f"{key}-{idx}-{subkey}"] = subvalue
                 elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
-                        new_dict["{}-{}".format(key, idx)] = item
+                        new_dict[f"{key}-{idx}"] = item
                 else:
                     raise ValueError(
                         "Lists must contain dicts, strings or ints. {} submitted".format(
@@ -69,7 +67,7 @@ def process_form_data(form_dict):
                     )
         elif type(value) == dict:
             for subkey, subvalue in value.items():
-                new_dict["{}-{}".format(key, subkey)] = subvalue
+                new_dict[f"{key}-{subkey}"] = subvalue
         else:
             new_dict[key] = value
 
