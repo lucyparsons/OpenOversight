@@ -94,7 +94,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
 
-        inc = Incident.query.filter_by(date=test_date.date()).first()
+        inc = Incident.query.filter_by(occurred_at=test_date).first()
         assert inc is not None
 
 
@@ -223,8 +223,8 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(inc.date),
-            time_field=str(inc.time),
+            date_field=str(inc.occurred_at.date()),
+            time_field=str(inc.occurred_at.time()),
             report_number=inc.report_number,
             description=inc.description,
             department="1",
@@ -273,7 +273,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
 
         form = IncidentForm(
             date_field=date(1899, 12, 5),
-            time_field=str(inc.time),
+            time_field=str(inc.occurred_at.time()),
             report_number=inc.report_number,
             description=inc.description,
             department="1",
@@ -408,8 +408,8 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         new_ooid_form = OOIdForm(oo_id=new_officer.id)
 
         form = IncidentForm(
-            date_field=str(inc.date),
-            time_field=str(inc.time),
+            date_field=str(inc.occurred_at.date()),
+            time_field=str(inc.occurred_at.time()),
             report_number=inc.report_number,
             description=inc.description,
             department="1",
@@ -464,8 +464,8 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
         new_ooid_form = OOIdForm(oo_id="99999999999999999")
 
         form = IncidentForm(
-            date_field=str(inc.date),
-            time_field=str(inc.time),
+            date_field=str(inc.occurred_at.date()),
+            time_field=str(inc.occurred_at.time()),
             report_number=inc.report_number,
             description=inc.description,
             department="1",
@@ -692,7 +692,7 @@ def test_users_cannot_see_who_created_incidents(mockdata, client, session):
         assert "Creator" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_form_with_officer_id_prepopulates(mockdata, client, session):
+def test_form_with_officer_id_pre_populate(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer_id = "1234"
