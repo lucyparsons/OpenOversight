@@ -1591,10 +1591,10 @@ class IncidentApi(ModelView):
         form.license_plates.min_entries = no_license_plates
         form.links.min_entries = no_links
         form.officers.min_entries = no_officers
-        if not form.date_field.data and obj.date:
-            form.date_field.data = obj.date
-        if not form.time_field.data and obj.time:
-            form.time_field.data = obj.time
+        if not form.date_field.data and obj.occurred_at:
+            form.date_field.data = obj.occurred_at.date()
+        if not form.time_field.data and obj.occurred_at:
+            form.time_field.data = obj.occurred_at.time()
         return form
 
     def populate_obj(self, form, obj):
