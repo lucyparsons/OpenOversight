@@ -1386,7 +1386,9 @@ def download_dept_descriptions_csv(department_id):
 @sitemap_include
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
-    departments = Department.query.filter(Department.officers.any())
+    departments = Department.query.filter_by(Department.officers.any()).order_by(
+        Department.state.desc(), Department.name.desc()
+    )
     return render_template("departments_all.html", departments=departments)
 
 
