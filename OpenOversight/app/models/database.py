@@ -61,6 +61,24 @@ class Department(BaseModel):
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
+    def total_documented_officers(self):
+        return (
+            db.session.query(Officer).filter(Officer.department_id == self.id).count()
+        )
+
+    def total_documented_assignments(self):
+        return (
+            db.session.query(Assignment.id)
+            .join(Officer, Assignment.officer_id == Officer.id)
+            .filter(Officer.department_id == self.id)
+            .count()
+        )
+
+    def total_documented_incidents(self):
+        return (
+            db.session.query(Incident).filter(Incident.department_id == self.id).count()
+        )
+
 
 class Job(BaseModel):
     __tablename__ = "jobs"
