@@ -364,9 +364,8 @@ def _handle_incidents_csv(
     with _csv_reader(incidents_csv) as csv_reader:
         _check_provided_fields(
             csv_reader,
-            required_fields=["id", "department_name", "department_state"],
+            required_fields=["id", "department_name", "department_state", "date"],
             optional_fields=[
-                "date",
                 "time",
                 "report_number",
                 "description",
