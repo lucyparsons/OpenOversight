@@ -735,8 +735,8 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
         ooid_forms = [OOIdForm(oo_id=the_id) for the_id in old_officer_ids]
 
         form = IncidentForm(
-            date_field=str(inc.date),
-            time_field=str(inc.time),
+            date_field=str(inc.occurred_at.date()),
+            time_field=str(inc.occurred_at.time()),
             report_number=inc.report_number,
             description="<script>alert();</script>",
             department="1",
