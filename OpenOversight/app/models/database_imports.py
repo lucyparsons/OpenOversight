@@ -276,10 +276,10 @@ def get_or_create_location_from_dict(
 
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
-    print("+++++++")
-    print(data.get("date"))
-    print(data.get("time", "00:00"))
     incident = Incident(
+        occurred_at=parse_date_time(
+            " ".join([data.get("date"), data.get("time", "00:00")])
+        ),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
@@ -287,11 +287,6 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         creator_id=parse_int(data.get("creator_id")),
         last_updated_id=parse_int(data.get("last_updated_id")),
     )
-
-    if "date" in data:
-        incident.occurred_at = parse_date_time(
-            " ".join([data.get("date"), data.get("time", "00:00")])
-        )
 
     incident.officers = data.get("officers", [])
     incident.license_plates = data.get("license_plate_objects", [])
