@@ -1087,6 +1087,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     incidents_data = [
         {
             "id": 66001,
+            "date": "2021-08-12",
             "officer_ids": "99002|99001",
             "department_name": department.name,
             "department_state": department.state,
