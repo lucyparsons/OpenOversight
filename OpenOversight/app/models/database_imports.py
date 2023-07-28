@@ -308,16 +308,9 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
         print("!!!!!")
-        if "time" in data:
-            print(" ".join([data.get("date"), data.get("time")]))
-            incident.occurred_at = parse_date_time(
-                " ".join([data.get("date"), data.get("time")])
-            )
-        else:
-            print(" ".join([data.get("date"), "00:00"]))
-            incident.occurred_at = parse_date_time(
-                " ".join([data.get("date"), "00:00"])
-            )
+        incident.occurred_at = parse_date_time(
+            " ".join([data.get("date"), data.get("time", "00:00")])
+        )
     if "report_number" in data:
         incident.report_number = parse_str(data.get("report_number"), None)
     if "description" in data:
