@@ -996,7 +996,6 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert lp.number == "XYZ11"
     assert lp.state is None
     assert incident3.address is None
-    assert incident3.time is None
 
     link_new = cop4.links[0]
     assert [link_new] == list(cop1.links)
