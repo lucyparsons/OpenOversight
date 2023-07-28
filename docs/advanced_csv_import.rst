@@ -148,8 +148,8 @@ Details:
 
 Incidents csv
 ^^^^^^^^^^^^^
-- Required: ``id, department_name, department_state``
-- Optional: ``date, time, report_number, description, street_name, cross_street1, cross_street2, city, state, zip_code,
+- Required: ``id, department_name, department_state, date``
+- Optional: ``time, report_number, description, street_name, cross_street1, cross_street2, city, state, zip_code,
   creator_id, last_updated_id, officer_ids, license_plates``
 
 Details:
@@ -159,7 +159,7 @@ Details:
 -  ``department_state`` Name of department state exactly as it is in the server database, which will be the
    `standard two-letter abbreviation <https://www.faa.gov/air_traffic/publications/atpubs/cnt_html/appendix_a.html>`_ for the department's respective location.
 - ``date`` :ref:`Date <ref-aci-formats>` of the incident
-- ``time`` :ref:`Time <ref-aci-formats>` of the incident
+- ``time`` :ref:`Time <ref-aci-formats>` of the incident. If this field is left blank, it will be defaulted to midnight of that day.
 - ``report_number`` String representing any kind of number assigned to complaints or incidents by the police department.
 - ``description`` Text description of the incident.
 - ``street_name`` Name of the street the incident occurred, but should not include the street number.
