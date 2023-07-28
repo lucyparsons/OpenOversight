@@ -45,17 +45,15 @@ def login_ac(client):
 
 
 def process_form_data(form_dict):
-    """Takes the dict from a form with embedded formd and flattens it
-
-    in the way that it is flattened in the browser"""
+    """Mock the browser-flattening of a form containing embedded data."""
     new_dict = {}
     for key, value in form_dict.items():
         if type(value) == list:
             if value[0]:
                 if type(value[0]) is dict:
                     for idx, item in enumerate(value):
-                        for subkey, subvalue in item.items():
-                            new_dict[f"{key}-{idx}-{subkey}"] = subvalue
+                        for sub_key, sub_value in item.items():
+                            new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
                 elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
                         new_dict[f"{key}-{idx}"] = item
@@ -66,8 +64,8 @@ def process_form_data(form_dict):
                         )
                     )
         elif type(value) == dict:
-            for subkey, subvalue in value.items():
-                new_dict[f"{key}-{subkey}"] = subvalue
+            for sub_key, sub_value in value.items():
+                new_dict[f"{key}-{sub_key}"] = sub_value
         else:
             new_dict[key] = value
 
