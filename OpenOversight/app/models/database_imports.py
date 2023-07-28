@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
+from datetime import date, datetime, time
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
@@ -19,10 +20,6 @@ from OpenOversight.app.utils.general import get_or_create, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
 
-if TYPE_CHECKING:
-    import datetime
-
-
 def validate_choice(
     value: Optional[str], given_choices: Sequence[Tuple[str, str]]
 ) -> Optional[str]:
@@ -34,21 +31,19 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> Optional["datetime.date"]:
+def parse_date(date_str: Optional[str]) -> Optional[date]:
     if date_str:
         return dateutil.parser.parse(date_str).date()
     return None
 
 
-def parse_date_time(date_time_str: Optional[str]) -> Optional["datetime.datetime"]:
+def parse_date_time(date_time_str: Optional[str]) -> Optional[datetime]:
     if date_time_str:
-        return datetime.datetime.combine(
-            parse_date(date_time_str), parse_time(date_time_str)
-        )
+        return datetime.combine(parse_date(date_time_str), parse_time(date_time_str))
     return None
 
 
-def parse_time(time_str: Optional[str]) -> Optional["datetime.time"]:
+def parse_time(time_str: Optional[str]) -> Optional[time]:
     if time_str:
         return dateutil.parser.parse(time_str).time()
     return None
@@ -281,11 +276,10 @@ def get_or_create_location_from_dict(
 
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
-    print('!!!!!"')
+    print("+++++++")
     print(data.get("date"))
-    print(data.get("time"))
+    print(data.get("time", "00:00"))
     incident = Incident(
-        occurred_at=parse_date_time(" ".join([data.get("date"), data.get("time")])),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
@@ -293,6 +287,11 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         creator_id=parse_int(data.get("creator_id")),
         last_updated_id=parse_int(data.get("last_updated_id")),
     )
+
+    if "date" in data:
+        incident.occurred_at = parse_date_time(
+            " ".join([data.get("date"), data.get("time", "00:00")])
+        )
 
     incident.officers = data.get("officers", [])
     incident.license_plates = data.get("license_plate_objects", [])
@@ -307,7 +306,6 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
-        print("!!!!!")
         incident.occurred_at = parse_date_time(
             " ".join([data.get("date"), data.get("time", "00:00")])
         )
