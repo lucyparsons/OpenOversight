@@ -14,7 +14,7 @@
       </h1>
     </div>
     <div class="text-center frontpage-leads">
-      {% for department in departments %}
+      {% for department in departments | sort(attribute="state,name") %}
         <p>
           <div class="btn-group">
             <h2>
@@ -26,6 +26,13 @@
                 </a>
               {% endif %}
             </h2>
+            <div>
+              <i class="dept-{{ department.id }}">Officers Documented: {{ department.total_documented_officers() }}</i>
+              <br>
+              <i class="dept-{{ department.id }}">Assignments Documented: {{ department.total_documented_assignments() }}</i>
+              <br>
+              <i class="dept-{{ department.id }}">Incidents Documented: {{ department.total_documented_incidents() }}</i>
+            </div>
             <p>
               <a class="btn btn-lg btn-primary"
                  href="{{ url_for('main.list_officer', department_id=department.id) }}">Officers</a>
