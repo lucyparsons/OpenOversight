@@ -1,5 +1,3 @@
-import random
-import string
 from io import BytesIO
 
 import pytest
@@ -8,7 +6,6 @@ from flask_login import current_user
 from mock import MagicMock, Mock, patch
 
 from OpenOversight.app.models.database import Department, Image, Officer, Unit
-from OpenOversight.app.utils.choices import STATE_CHOICES
 from OpenOversight.app.utils.cloud import (
     compute_hash,
     crop_image,
@@ -26,20 +23,6 @@ upload_s3_patch = patch(
     "OpenOversight.app.utils.cloud.upload_obj_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
-
-
-class PoliceDepartment:
-    """Base Police Department class."""
-
-    def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
-        self.name = name
-        self.short_name = short_name
-        self.state = state if state else random.choice(STATE_CHOICES)[0]
-        self.unique_internal_identifier_label = (
-            unique_internal_identifier_label
-            if unique_internal_identifier_label
-            else "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
-        )
 
 
 def test_department_filter(mockdata):
