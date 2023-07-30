@@ -8,6 +8,7 @@ bleach-allowlist==1.0.3
 blinker~=1.6.2
 boto3==1.28.1
 botocore==1.31.1
+cachetools==5.3.1
 certifi~=2023.5.7
 cffi~=1.15.1
 click==8.1.4
