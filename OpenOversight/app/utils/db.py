@@ -54,7 +54,9 @@ def compute_leaderboard_stats(select_top=25):
 
 
 def sorted_dept_choices():
-    return db.session.query(Department).order_by(Department.name).all()
+    return (
+        db.session.query(Department).order_by(Department.name, Department.state).all()
+    )
 
 
 def dept_choices():
