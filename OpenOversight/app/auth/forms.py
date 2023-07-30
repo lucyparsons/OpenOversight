@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, R
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.db import dept_choices
+from OpenOversight.app.utils.db import sorted_dept_choices
 
 
 class LoginForm(Form):
@@ -106,7 +106,7 @@ class ChangeDefaultDepartmentForm(Form):
     dept_pref = QuerySelectField(
         "Default Department (Optional)",
         validators=[Optional()],
-        query_factory=dept_choices,
+        query_factory=sorted_dept_choices,
         get_label="name",
         allow_blank=True,
     )
@@ -120,7 +120,7 @@ class EditUserForm(Form):
     ac_department = QuerySelectField(
         "Department",
         validators=[Optional()],
-        query_factory=dept_choices,
+        query_factory=sorted_dept_choices,
         get_label="name",
         allow_blank=True,
     )

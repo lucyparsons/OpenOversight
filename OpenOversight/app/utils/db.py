@@ -53,6 +53,10 @@ def compute_leaderboard_stats(select_top=25):
     return top_sorters, top_taggers
 
 
+def sorted_dept_choices():
+    return db.session.query(Department).order_by(Department.name).all()
+
+
 def dept_choices():
     return db.session.query(Department).all()
 
