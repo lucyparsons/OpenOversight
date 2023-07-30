@@ -93,7 +93,6 @@ def test_add_department__duplicate(session):
         name=DuplicatePD.name,
         short_name=DuplicatePD.short_name,
         state=DuplicatePD.state,
-        unique_internal_identifier_label=DuplicatePD.unique_internal_identifier_label,
     )
     session.add(department)
     session.commit()
