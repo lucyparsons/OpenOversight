@@ -40,7 +40,7 @@ from OpenOversight.app.utils.choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.db import sorted_dept_choices, unit_choices
+from OpenOversight.app.utils.db import dept_choices, unit_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 
@@ -100,7 +100,7 @@ class FindOfficerForm(Form):
     dept = QuerySelectField(
         "dept",
         validators=[DataRequired()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
@@ -277,7 +277,7 @@ class AddOfficerForm(Form):
     department = QuerySelectField(
         "Department",
         validators=[DataRequired()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
     first_name = StringField(
@@ -399,7 +399,7 @@ class EditOfficerForm(Form):
     department = QuerySelectField(
         "Department",
         validators=[Optional()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
     submit = SubmitField(label="Update")
@@ -414,7 +414,7 @@ class AddUnitForm(Form):
     department = QuerySelectField(
         "Department",
         validators=[DataRequired()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
     submit = SubmitField(label="Add")
@@ -424,7 +424,7 @@ class AddImageForm(Form):
     department = QuerySelectField(
         "Department",
         validators=[DataRequired()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
 
@@ -523,7 +523,7 @@ class IncidentForm(DateFieldForm):
     department = QuerySelectField(
         "Department*",
         validators=[DataRequired()],
-        query_factory=sorted_dept_choices,
+        query_factory=dept_choices,
         get_label="name",
     )
     address = FormField(LocationForm)
