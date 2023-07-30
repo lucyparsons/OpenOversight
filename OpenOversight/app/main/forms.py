@@ -30,7 +30,8 @@ from wtforms.validators import (
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from OpenOversight.app.formfields import TimeField
-from OpenOversight.app.main.choices import (
+from OpenOversight.app.models.database import Officer
+from OpenOversight.app.utils.choices import (
     AGE_CHOICES,
     GENDER_CHOICES,
     LINK_CHOICES,
@@ -38,7 +39,6 @@ from OpenOversight.app.main.choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.models.database import Officer
 from OpenOversight.app.utils.db import dept_choices, unit_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 

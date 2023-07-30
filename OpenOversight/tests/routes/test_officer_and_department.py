@@ -9,12 +9,10 @@ from http import HTTPStatus
 from io import BytesIO
 
 import pytest
-import us
 from flask import current_app, url_for
 from mock import MagicMock, patch
 from sqlalchemy.sql.operators import Operators
 
-from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
     AddUnitForm,
@@ -43,6 +41,7 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
 )
+from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
@@ -587,7 +586,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department",
             "MPD",
             random.choice(
-                [st for st in us.STATES if st.abbr != CorrectedPD.state]
+                [st for st in STATE_CHOICES if st[0] != CorrectedPD.state]
             ).abbr,
         )
 
@@ -1039,7 +1038,9 @@ def test_admin_can_create_department_with_same_name_in_different_state(
         ExistingDiffStatePD = PoliceDepartment(
             "Existing Police Department",
             "EPD",
-            random.choice([st.abbr for st in us.STATES if st.abbr != ExistingPD.state]),
+            random.choice(
+                [st.abbr for st in STATE_CHOICES if st[0] != ExistingPD.state]
+            ),
         )
 
         existing_diff_state_form = DepartmentForm(

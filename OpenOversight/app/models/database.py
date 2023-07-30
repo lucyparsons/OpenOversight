@@ -233,7 +233,7 @@ class Officer(BaseModel):
     def race_label(self):
         if self.race is None:
             return "Data Missing"
-        from OpenOversight.app.main.choices import RACE_CHOICES
+        from OpenOversight.app.utils.choices import RACE_CHOICES
 
         for race, label in RACE_CHOICES:
             if self.race == race:
@@ -242,7 +242,7 @@ class Officer(BaseModel):
     def gender_label(self):
         if self.gender is None:
             return "Data Missing"
-        from OpenOversight.app.main.choices import GENDER_CHOICES
+        from OpenOversight.app.utils.choices import GENDER_CHOICES
 
         for gender, label in GENDER_CHOICES:
             if self.gender == gender:
