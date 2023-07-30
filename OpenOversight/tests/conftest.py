@@ -39,7 +39,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.utils.choices import STATE_CHOICES
+from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
@@ -54,7 +54,7 @@ class PoliceDepartment:
     def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
         self.name = name
         self.short_name = short_name
-        self.state = state if state else random.choice(STATE_CHOICES)[0]
+        self.state = state if state else random.choice(DEPARTMENT_STATE_CHOICES)[0]
         self.unique_internal_identifier_label = (
             unique_internal_identifier_label
             if unique_internal_identifier_label
