@@ -29,9 +29,9 @@ GENDER_CHOICES = [
     ("Other", "Other"),
 ]
 
-STATE_CHOICES = [("", "Please Select a State")] + [
-    (state.abbr, state.name) for state in states.STATES
-]
+STATE_CHOICES = [("FA", "Federal Agency")].extend(
+    [(state.abbr, state.name) for state in states.STATES]
+)
 LINK_CHOICES = [
     ("", ""),
     ("link", "Link"),
