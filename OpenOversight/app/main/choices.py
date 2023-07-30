@@ -1,7 +1,7 @@
+"""Contains choice lists of (value, label) tuples for form Select fields."""
 from us import states
 
 
-# Choices are a list of (value, label) tuples
 SUFFIX_CHOICES = [
     ("", "-"),
     ("Jr", "Jr"),
@@ -11,6 +11,7 @@ SUFFIX_CHOICES = [
     ("IV", "IV"),
     ("V", "V"),
 ]
+
 RACE_CHOICES = [
     ("BLACK", "Black"),
     ("WHITE", "White"),
@@ -32,10 +33,12 @@ GENDER_CHOICES = [
 STATE_CHOICES = [("FA", "Federal Agency")].extend(
     [(state.abbr, state.name) for state in states.STATES]
 )
+
 LINK_CHOICES = [
     ("", ""),
     ("link", "Link"),
     ("video", "YouTube Video"),
     ("other_video", "Other Video"),
 ]
+
 AGE_CHOICES = [(str(age), str(age)) for age in range(16, 101)]
