@@ -154,7 +154,9 @@ def set_session_timezone():
 @sitemap_include
 @main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
-    departments = Department.query.filter(Department.officers.any())
+    departments = Department.query.filter(Department.officers.any()).order_by(
+        Department.state.asc(), Department.name.asc()
+    )
     return render_template("browse.html", departments=departments)
 
 
