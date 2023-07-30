@@ -1038,7 +1038,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             "EPD",
             random.choice(
                 [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != ExistingPD.state]
-            ),
+            )[0],
         )
 
         existing_diff_state_form = DepartmentForm(
