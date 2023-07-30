@@ -592,8 +592,8 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department",
             "MPD",
             random.choice(
-                [st for st in DEPARTMENT_STATE_CHOICES if st[0] != CorrectedPD.state]
-            )[0],
+                [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != CorrectedPD.state]
+            ),
         )
 
         login_admin(client)
