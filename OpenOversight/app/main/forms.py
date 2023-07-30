@@ -199,7 +199,7 @@ class DepartmentForm(Form):
     )
     state = SelectField(
         "The law enforcement agency's home state",
-        choices=[("", "Please Select a State")].extend(STATE_CHOICES),
+        choices=[("", "Please Select a State")] + STATE_CHOICES,
         default="",
         validators=[AnyOf(allowed_values(STATE_CHOICES))],
     )
