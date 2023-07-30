@@ -524,14 +524,12 @@ def test_admin_cannot_add_police_department_without_state(mockdata, client, sess
         login_admin(client)
 
         form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+        form.validate()
+        errors = form.errors
 
-        rv = client.post(
-            url_for("main.add_department"), data=form.data, follow_redirects=True
-        )
-
-        assert f"You must select a valid state for {TestPD.name}." in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert len(errors.items()) == 1
+        assert "state" in errors.keys()
+        assert "Invalid value, must be one of: FA, AL, AK, AZ" in errors.get("state")[0]
 
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
@@ -715,24 +713,16 @@ def test_admin_cannot_edit_police_department_without_state(mockdata, client, ses
             "OpenOversight" in add_department_rv.data.decode(ENCODING_UTF_8)
         )
 
-        department = Department.query.filter_by(
-            name=TestPD.name, state=TestPD.state
-        ).one()
-
         without_state_form = EditDepartmentForm(
             name=TestPD.name, short_name=TestPD.short_name, state=""
         )
 
-        without_state_rv = client.post(
-            url_for("main.edit_department", department_id=department.id),
-            data=without_state_form.data,
-            follow_redirects=True,
-        )
+        without_state_form.validate()
+        errors = without_state_form.errors
 
-        assert (
-            f"You must select a valid state for {TestPD.name}."
-            in without_state_rv.data.decode(ENCODING_UTF_8)
-        )
+        assert len(errors.items()) == 1
+        assert "state" in errors.keys()
+        assert "Invalid value, must be one of: FA, AL, AK, AZ" in errors.get("state")[0]
 
 
 def test_ac_cannot_edit_police_department(mockdata, client, session, department):
