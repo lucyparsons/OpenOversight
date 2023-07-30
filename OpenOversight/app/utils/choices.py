@@ -29,9 +29,9 @@ RACE_CHOICES = [
     ("Not Sure", "Not Sure"),
 ]
 
-STATE_CHOICES = [("FA", "Federal Agency")].extend(
-    [(state.abbr, state.name) for state in states.STATES]
-)
+STATE_CHOICES = [("FA", "Federal Agency")] + [
+    (state.abbr, state.name) for state in states.STATES
+]
 
 SUFFIX_CHOICES = [
     ("", "-"),
