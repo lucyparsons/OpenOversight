@@ -12,7 +12,6 @@ from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
-from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
 DESCRIPTION_CUTOFF = 700
@@ -141,7 +140,9 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
 ):
     browser.get(f"http://localhost:{server_port}/find")
 
-    dept_with_uii = Department.query.filter_by(name=SPRINGFIELD_PD.name).first()
+    dept_with_uii = Department.query.filter(
+        Department.unique_internal_identifier_label.isnot(None)
+    ).first()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
