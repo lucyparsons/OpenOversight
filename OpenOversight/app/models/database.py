@@ -3,6 +3,8 @@ import time
 from datetime import date
 
 from authlib.jose import JoseError, JsonWebToken
+from cachetools import TTLCache, cached
+from cachetools.keys import hashkey
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -11,7 +13,13 @@ from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    HOUR,
+    KEY_TOTAL_ASSIGNMENTS,
+    KEY_TOTAL_INCIDENTS,
+    KEY_TOTAL_OFFICERS,
+)
 from OpenOversight.app.validators import state_validator, url_validator
 
 
@@ -33,6 +41,31 @@ officer_incidents = db.Table(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
 )
+
+
+# This is a last recently used cache that also utilizes a time-to-live function for each
+# value saved in it (12 hours).
+# TODO: Change this into a singleton so that we can clear values when updates happen
+DATABASE_CACHE = TTLCache(maxsize=1024, ttl=12 * HOUR)
+
+
+# TODO: In the singleton create functions for other model types.
+def _date_updated_cache_key(update_type: str):
+    """Return a key function to calculate the cache key for Department
+    methods using the department id and a given update type.
+
+    Department.id is used instead of a Department obj because the default Python
+    __hash__ is unique per obj instance, meaning multiple instances of the same
+    department will have different hashes.
+
+    Update type is used in the hash to differentiate between the update types we compute
+    per department.
+    """
+
+    def _cache_key(dept: "Department"):
+        return hashkey(dept.id, update_type)
+
+    return _cache_key
 
 
 class Department(BaseModel):
@@ -60,6 +93,27 @@ class Department(BaseModel):
             "state": self.state,
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
+
+    @cached(cache=DATABASE_CACHE, key=_date_updated_cache_key(KEY_TOTAL_ASSIGNMENTS))
+    def total_documented_assignments(self):
+        return (
+            db.session.query(Assignment.id)
+            .join(Officer, Assignment.officer_id == Officer.id)
+            .filter(Officer.department_id == self.id)
+            .count()
+        )
+
+    @cached(cache=DATABASE_CACHE, key=_date_updated_cache_key(KEY_TOTAL_INCIDENTS))
+    def total_documented_incidents(self):
+        return (
+            db.session.query(Incident).filter(Incident.department_id == self.id).count()
+        )
+
+    @cached(cache=DATABASE_CACHE, key=_date_updated_cache_key(KEY_TOTAL_OFFICERS))
+    def total_documented_officers(self):
+        return (
+            db.session.query(Officer).filter(Officer.department_id == self.id).count()
+        )
 
 
 class Job(BaseModel):

@@ -18,6 +18,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
 def test_department_repr(mockdata):
@@ -26,6 +27,55 @@ def test_department_repr(mockdata):
         repr(department)
         == f"<Department ID {department.id}: {department.name} {department.state}>"
     )
+
+
+def test_department_total_documented_officers(mockdata):
+    springfield_officers = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .join(Officer, Department.id == Officer.department_id)
+        .count()
+    )
+
+    test_count = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .first()
+        .total_documented_officers()
+    )
+
+    assert springfield_officers == test_count
+
+
+def test_department_total_documented_assignments(mockdata):
+    springfield_assignments = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .join(Officer, Department.id == Officer.department_id)
+        .join(Assignment, Officer.id == Assignment.officer_id)
+        .count()
+    )
+
+    test_count = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .first()
+        .total_documented_assignments()
+    )
+
+    assert springfield_assignments == test_count
+
+
+def test_department_total_documented_incidents(mockdata):
+    springfield_incidents = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .join(Incident, Department.id == Incident.department_id)
+        .count()
+    )
+
+    test_count = (
+        Department.query.filter_by(name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state)
+        .first()
+        .total_documented_incidents()
+    )
+
+    assert springfield_incidents == test_count
 
 
 def test_officer_repr(mockdata):

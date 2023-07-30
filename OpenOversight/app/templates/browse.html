@@ -26,6 +26,13 @@
                 </a>
               {% endif %}
             </h2>
+            <div>
+              <b class="dept-{{ department.id }}">Officers Documented:</b> {{ department.total_documented_officers() }}
+              <br>
+              <b class="dept-{{ department.id }}">Assignments Documented:</b> {{ department.total_documented_assignments() }}
+              <br>
+              <b class="dept-{{ department.id }}">Incidents Documented:</b> {{ department.total_documented_incidents() }}
+            </div>
             <p>
               <a class="btn btn-lg btn-primary"
                  href="{{ url_for('main.list_officer', department_id=department.id) }}">Officers</a>
