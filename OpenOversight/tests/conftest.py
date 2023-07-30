@@ -83,9 +83,9 @@ RANK_CHOICES_2 = [
 
 
 AC_DEPT = 1
-NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD")
-OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD")
-SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "IL")
+NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD", "TX")
+OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD", "IL")
+SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "MA")
 
 
 def pick_birth_date():
