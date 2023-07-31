@@ -9,10 +9,9 @@ setup(
     author_email="jen@redshiftzero.com",
     classifiers=(
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
     ),
-    python_requires=">=3.5",
+    python_requires=">=3.11",
     install_requires=["flask", "werkzeug", "Flask-WTF", "psycopg2", "sqlalchemy"],
 )
