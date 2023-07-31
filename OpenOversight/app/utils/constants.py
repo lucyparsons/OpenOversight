@@ -8,7 +8,6 @@ KEY_TOTAL_OFFICERS = "total_officers"
 
 # Config Key Constants
 KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
-KEY_TESTING = "TESTING"
 KEY_TIMEZONE = "TIMEZONE"
 
 # File Handling Constants
