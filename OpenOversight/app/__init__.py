@@ -9,6 +9,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_minify import Minify
 from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
@@ -16,7 +17,11 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
-from OpenOversight.app.utils.constants import MEGABYTE, SERVICE_ACCOUNT_FILE
+from OpenOversight.app.utils.constants import (
+    KEY_TESTING,
+    MEGABYTE,
+    SERVICE_ACCOUNT_FILE,
+)
 
 
 bootstrap = Bootstrap()
@@ -38,6 +43,8 @@ def create_app(config_name="default"):
     # Creates and adds the Config object of the correct type to app.config
     app.config.from_object(config[config_name])
 
+    if not app.config.get(KEY_TESTING):
+        Minify(app=app, cssless=True, html=True, js=True)
     bootstrap.init_app(app)
     csrf.init_app(app)
     db.init_app(app)
