@@ -18,7 +18,6 @@ from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import (
-    KEY_TESTING,
     MEGABYTE,
     SERVICE_ACCOUNT_FILE,
 )
