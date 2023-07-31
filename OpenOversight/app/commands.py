@@ -22,7 +22,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV, KEY_ENV_TESTING
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.app.utils.general import normalize_gender, prompt_yes_no, str_is_true
 
@@ -548,10 +548,10 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                 create_officer_from_row(row, department_id)
 
         ImportLog.print_logs()
-        if current_app.config["ENV"] == "testing" or prompt_yes_no(
+        if current_app.config[KEY_ENV] == KEY_ENV_TESTING or prompt_yes_no(
             "Do you want to commit the above changes?"
         ):
-            print("Commiting changes.")
+            print("Committing changes.")
             db.session.commit()
         else:
             print("Aborting changes.")

@@ -38,7 +38,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 from OpenOversight.tests.test_utils import PoliceDepartment
@@ -218,7 +218,7 @@ def assign_faces(officer, images):
 @pytest.fixture(scope="session")
 def app(request):
     """Session-wide test `Flask` application."""
-    app = create_app("testing")
+    app = create_app(KEY_ENV_TESTING)
     app.config["WTF_CSRF_ENABLED"] = False
 
     yield app
