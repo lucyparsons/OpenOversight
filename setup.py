@@ -3,8 +3,9 @@ from setuptools import setup
 
 setup(
     name="OpenOversight",
-    version="1.0",
-    description="Oversight of Police Departments",
+    version="0.6.7",
+    description="OpenOversight is a Lucy Parsons Labs project to improve law "
+    + "enforcement accountability through public and crowdsourced data.",
     author="redshiftzero",
     author_email="jen@redshiftzero.com",
     classifiers=(
