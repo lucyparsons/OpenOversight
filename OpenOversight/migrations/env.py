@@ -5,19 +5,16 @@ from alembic import context
 from flask import current_app
 from sqlalchemy import engine_from_config, pool
 
+from OpenOversight.app import create_app, db
 
+
+app = create_app("development")
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 fileConfig(config.config_file_name)
 logger = logging.getLogger("alembic.env")
-
-
-config.set_main_option(
-    "sqlalchemy.url", current_app.config.get("SQLALCHEMY_DATABASE_URI")
-)
-target_metadata = current_app.extensions["migrate"].db.metadata
 
 
 def run_migrations_offline():
@@ -78,7 +75,16 @@ def run_migrations_online():
         connection.close()
 
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+with app.app_context():
+    config.set_main_option(
+        "sqlalchemy.url", current_app.config.get("SQLALCHEMY_DATABASE_URI")
+    )
+    target_metadata = current_app.extensions["migrate"].db.metadata
+
+    db.app = app
+    db.create_all()
+
+    if context.is_offline_mode():
+        run_migrations_offline()
+    else:
+        run_migrations_online()
