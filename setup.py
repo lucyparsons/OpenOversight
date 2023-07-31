@@ -14,5 +14,4 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
     ),
     python_requires=">=3.11",
-    install_requires=["flask", "werkzeug", "Flask-WTF", "psycopg2", "sqlalchemy"],
 )
