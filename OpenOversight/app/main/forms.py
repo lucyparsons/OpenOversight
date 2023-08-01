@@ -30,15 +30,16 @@ from wtforms.validators import (
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from OpenOversight.app.formfields import TimeField
-from OpenOversight.app.main.choices import (
+from OpenOversight.app.models.database import Officer
+from OpenOversight.app.utils.choices import (
     AGE_CHOICES,
+    DEPARTMENT_STATE_CHOICES,
     GENDER_CHOICES,
     LINK_CHOICES,
     RACE_CHOICES,
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.models.database import Officer
 from OpenOversight.app.utils.db import dept_choices, unit_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
@@ -201,9 +202,9 @@ class DepartmentForm(Form):
     )
     state = SelectField(
         "The law enforcement agency's home state",
-        choices=STATE_CHOICES,
+        choices=[("", "Please Select a State")] + DEPARTMENT_STATE_CHOICES,
         default="",
-        validators=[AnyOf(allowed_values(STATE_CHOICES))],
+        validators=[AnyOf(allowed_values(DEPARTMENT_STATE_CHOICES))],
     )
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"

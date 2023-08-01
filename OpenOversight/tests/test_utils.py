@@ -4,7 +4,7 @@ from io import BytesIO
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import us as us
+import us
 from flask import current_app
 from flask_login import current_user
 from PIL import Image as Pimage

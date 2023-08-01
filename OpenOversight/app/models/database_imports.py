@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 import dateutil.parser
 
 from OpenOversight.app import login_manager
-from OpenOversight.app.main import choices
 from OpenOversight.app.models.database import (
     Assignment,
     Incident,
@@ -15,6 +14,12 @@ from OpenOversight.app.models.database import (
     Salary,
     User,
     db,
+)
+from OpenOversight.app.utils.choices import (
+    GENDER_CHOICES,
+    LINK_CHOICES,
+    RACE_CHOICES,
+    SUFFIX_CHOICES,
 )
 from OpenOversight.app.utils.general import get_or_create, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
@@ -77,9 +82,9 @@ def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Of
         last_name=parse_str(data.get("last_name", "")),
         first_name=parse_str(data.get("first_name", "")),
         middle_initial=parse_str(data.get("middle_initial", "")),
-        suffix=validate_choice(data.get("suffix", ""), choices.SUFFIX_CHOICES),
-        race=validate_choice(data.get("race"), choices.RACE_CHOICES),
-        gender=validate_choice(data.get("gender"), choices.GENDER_CHOICES),
+        suffix=validate_choice(data.get("suffix", ""), SUFFIX_CHOICES),
+        race=validate_choice(data.get("race"), RACE_CHOICES),
+        gender=validate_choice(data.get("gender"), GENDER_CHOICES),
         employment_date=parse_date(data.get("employment_date")),
         birth_year=parse_int(data.get("birth_year")),
         unique_internal_identifier=parse_str(
@@ -104,11 +109,11 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
     if "middle_initial" in data.keys():
         officer.middle_initial = parse_str(data.get("middle_initial", ""))
     if "suffix" in data.keys():
-        officer.suffix = validate_choice(data.get("suffix", ""), choices.SUFFIX_CHOICES)
+        officer.suffix = validate_choice(data.get("suffix", ""), SUFFIX_CHOICES)
     if "race" in data.keys():
-        officer.race = validate_choice(data.get("race"), choices.RACE_CHOICES)
+        officer.race = validate_choice(data.get("race"), RACE_CHOICES)
     if "gender" in data.keys():
-        officer.gender = validate_choice(data.get("gender"), choices.GENDER_CHOICES)
+        officer.gender = validate_choice(data.get("gender"), GENDER_CHOICES)
     if "employment_date" in data.keys():
         officer.employment_date = parse_date(data.get("employment_date"))
     if "birth_year" in data.keys():
@@ -194,7 +199,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
     link = Link(
         title=data.get("title", ""),
         url=url_validator(data["url"]),
-        link_type=validate_choice(data.get("link_type"), choices.LINK_CHOICES),
+        link_type=validate_choice(data.get("link_type"), LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
         creator_id=parse_int(data.get("creator_id")),
@@ -217,7 +222,7 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
     if "url" in data:
         link.url = url_validator(data["url"])
     if "link_type" in data:
-        link.link_type = validate_choice(data.get("link_type"), choices.LINK_CHOICES)
+        link.link_type = validate_choice(data.get("link_type"), LINK_CHOICES)
     if "description" in data:
         link.description = parse_str(data.get("description"), None)
     if "author" in data:
