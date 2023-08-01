@@ -234,7 +234,7 @@ def _handle_assignments_csv(
             csv_reader = rows
         else:
             existing_assignments = (
-                Assignment.query.join(Assignment.baseofficer)
+                Assignment.query.join(Assignment.base_officer)
                 .filter(Officer.department_id == department_id)
                 .all()
             )

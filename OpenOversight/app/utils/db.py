@@ -72,8 +72,8 @@ def get_officer(department_id, star_no, first_name, last_name):
     else:
         star_no = str(star_no)
         for assignment in Assignment.query.filter_by(star_no=star_no).all():
-            if assignment.baseofficer in officers:
-                return assignment.baseofficer
+            if assignment.base_officer in officers:
+                return assignment.base_officer
     return None
 
 

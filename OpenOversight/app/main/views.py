@@ -1255,9 +1255,9 @@ def download_dept_officers_csv(department_id):
 def download_dept_assignments_csv(department_id):
     assignments = (
         db.session.query(Assignment)
-        .join(Assignment.baseofficer)
+        .join(Assignment.base_officer)
         .filter(Officer.department_id == department_id)
-        .options(contains_eager(Assignment.baseofficer))
+        .options(contains_eager(Assignment.base_officer))
         .options(joinedload(Assignment.unit))
         .options(joinedload(Assignment.job))
     )
