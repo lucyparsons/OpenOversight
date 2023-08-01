@@ -7,6 +7,11 @@ KEY_TOTAL_INCIDENTS = "total_incidents"
 KEY_TOTAL_OFFICERS = "total_officers"
 
 # Config Key Constants
+KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
+KEY_ENV = "ENV"
+KEY_ENV_DEV = "development"
+KEY_ENV_TESTING = "testing"
+KEY_ENV_PROD = "production"
 KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
 KEY_TIMEZONE = "TIMEZONE"
 

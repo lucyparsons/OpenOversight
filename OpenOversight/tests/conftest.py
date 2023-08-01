@@ -40,7 +40,7 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
@@ -51,10 +51,23 @@ factory = Faker()
 class PoliceDepartment:
     """Base Police Department class."""
 
-    def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
+    def __init__(
+        self,
+        name,
+        short_name,
+        state="",
+        unique_internal_identifier_label="",
+        exclude_state="",
+    ):
         self.name = name
         self.short_name = short_name
-        self.state = state if state else random.choice(DEPARTMENT_STATE_CHOICES)[0]
+        self.state = (
+            state
+            if state
+            else random.choice(
+                [s for s in DEPARTMENT_STATE_CHOICES if s[0] != exclude_state]
+            )[0]
+        )
         self.unique_internal_identifier_label = (
             unique_internal_identifier_label
             if unique_internal_identifier_label
@@ -84,7 +97,7 @@ RANK_CHOICES_2 = [
 
 AC_DEPT = 1
 NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD")
-OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD")
+OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD", exclude_state="IL")
 SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "IL")
 
 
@@ -234,7 +247,7 @@ def assign_faces(officer, images):
 @pytest.fixture(scope="session")
 def app(request):
     """Session-wide test `Flask` application."""
-    app = create_app("testing")
+    app = create_app(KEY_ENV_TESTING)
     app.config["WTF_CSRF_ENABLED"] = False
 
     yield app
