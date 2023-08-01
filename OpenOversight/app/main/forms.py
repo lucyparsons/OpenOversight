@@ -235,7 +235,7 @@ class LinkForm(Form):
         default="",
         validators=[AnyOf(allowed_values(LINK_CHOICES))],
     )
-    creator_id = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
+    creator_by = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
 
     def validate(self, extra_validators=None):
         success = super(LinkForm, self).validate(extra_validators=extra_validators)
