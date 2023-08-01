@@ -550,7 +550,7 @@ def add_mockdata(session):
             links=test_incident_links,
             officers=[all_officers[o] for o in range(4)],
             created_by=1,
-            last_updated_id=1,
+            last_updated_by=1,
         ),
         Incident(
             date=datetime.date(2017, 12, 11),
@@ -563,7 +563,7 @@ def add_mockdata(session):
             links=test_incident_links,
             officers=[all_officers[o] for o in range(3)],
             created_by=2,
-            last_updated_id=1,
+            last_updated_by=1,
         ),
         Incident(
             date=datetime.datetime(2019, 1, 15),
@@ -577,7 +577,7 @@ def add_mockdata(session):
             links=test_incident_links,
             officers=[all_officers[o] for o in range(1)],
             created_by=2,
-            last_updated_id=1,
+            last_updated_by=1,
         ),
     ]
     session.add_all(test_incidents)

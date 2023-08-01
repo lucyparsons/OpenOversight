@@ -281,7 +281,7 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
         created_by=parse_int(data.get("created_by")),
-        last_updated_id=parse_int(data.get("last_updated_id")),
+        last_updated_by=parse_int(data.get("last_updated_by")),
     )
 
     incident.officers = data.get("officers", [])
@@ -311,7 +311,7 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "created_by" in data:
         incident.created_by = parse_int(data.get("created_by"))
     if "last_updated_by" in data:
-        incident.last_updated_by = parse_int(data.get("last_updated_id"))
+        incident.last_updated_by = parse_int(data.get("last_updated_by"))
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:

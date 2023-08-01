@@ -181,7 +181,7 @@ def create_incident(self, form):
         license_plates=fields["license_plates"],
         links=fields["links"],
         created_by=fields["created_by"],
-        last_updated_id=fields["last_updated_id"],
+        last_updated_by=fields["last_updated_by"],
     )
 
 
