@@ -421,5 +421,5 @@ def test_images_added_with_user_id(mockdata, faker):
     )
     db.session.add(new_image)
     db.session.commit()
-    saved = Image.query.filter_by(user_id=user_id).first()
+    saved = Image.query.filter_by(created_by=user_id).first()
     assert saved is not None
