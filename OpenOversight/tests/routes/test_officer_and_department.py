@@ -9,12 +9,10 @@ from http import HTTPStatus
 from io import BytesIO
 
 import pytest
-import us
 from flask import current_app, url_for
 from mock import MagicMock, patch
 from sqlalchemy.sql.operators import Operators
 
-from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
     AddUnitForm,
@@ -43,17 +41,26 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
 )
+from OpenOversight.app.utils.choices import (
+    DEPARTMENT_STATE_CHOICES,
+    GENDER_CHOICES,
+    RACE_CHOICES,
+)
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
-from OpenOversight.tests.conftest import AC_DEPT, RANK_CHOICES_1, SPRINGFIELD_PD
+from OpenOversight.tests.conftest import (
+    AC_DEPT,
+    RANK_CHOICES_1,
+    SPRINGFIELD_PD,
+    PoliceDepartment,
+)
 from OpenOversight.tests.routes.route_helpers import (
     login_ac,
     login_admin,
     login_user,
     process_form_data,
 )
-from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 @pytest.mark.parametrize(
@@ -521,14 +528,12 @@ def test_admin_cannot_add_police_department_without_state(mockdata, client, sess
         login_admin(client)
 
         form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+        form.validate()
+        errors = form.errors
 
-        rv = client.post(
-            url_for("main.add_department"), data=form.data, follow_redirects=True
-        )
-
-        assert f"You must select a valid state for {TestPD.name}." in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert len(errors.items()) == 1
+        assert "state" in errors.keys()
+        assert "Invalid value, must be one of: FA, AL, AK, AZ" in errors.get("state")[0]
 
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
@@ -587,8 +592,8 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department",
             "MPD",
             random.choice(
-                [st for st in us.STATES if st.abbr != CorrectedPD.state]
-            ).abbr,
+                [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != CorrectedPD.state]
+            ),
         )
 
         login_admin(client)
@@ -712,24 +717,16 @@ def test_admin_cannot_edit_police_department_without_state(mockdata, client, ses
             "OpenOversight" in add_department_rv.data.decode(ENCODING_UTF_8)
         )
 
-        department = Department.query.filter_by(
-            name=TestPD.name, state=TestPD.state
-        ).one()
-
         without_state_form = EditDepartmentForm(
             name=TestPD.name, short_name=TestPD.short_name, state=""
         )
 
-        without_state_rv = client.post(
-            url_for("main.edit_department", department_id=department.id),
-            data=without_state_form.data,
-            follow_redirects=True,
-        )
+        without_state_form.validate()
+        errors = without_state_form.errors
 
-        assert (
-            f"You must select a valid state for {TestPD.name}."
-            in without_state_rv.data.decode(ENCODING_UTF_8)
-        )
+        assert len(errors.items()) == 1
+        assert "state" in errors.keys()
+        assert "Invalid value, must be one of: FA, AL, AK, AZ" in errors.get("state")[0]
 
 
 def test_ac_cannot_edit_police_department(mockdata, client, session, department):
@@ -1039,7 +1036,9 @@ def test_admin_can_create_department_with_same_name_in_different_state(
         ExistingDiffStatePD = PoliceDepartment(
             "Existing Police Department",
             "EPD",
-            random.choice([st.abbr for st in us.STATES if st.abbr != ExistingPD.state]),
+            random.choice(
+                [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != ExistingPD.state]
+            ),
         )
 
         existing_diff_state_form = DepartmentForm(

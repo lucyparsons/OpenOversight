@@ -1,5 +1,5 @@
 """Contains all templates filters."""
-import datetime
+from datetime import datetime
 
 import bleach
 import markdown as _markdown
@@ -14,7 +14,7 @@ from OpenOversight.app.utils.constants import KEY_TIMEZONE
 def instantiate_filters(app: Flask):
     """Instantiate all template filters"""
 
-    def get_timezone():
+    def get_timezone() -> str:
         """Return the applicable timezone for the filter."""
         return (
             session[KEY_TIMEZONE]
@@ -23,15 +23,13 @@ def instantiate_filters(app: Flask):
         )
 
     @app.template_filter("capfirst")
-    def capfirst_filter(s):
+    def capfirst_filter(s: str) -> str:
         return s[0].capitalize() + s[1:]  # only change 1st letter
 
     @app.template_filter("get_age")
-    def get_age_from_birth_year(birth_year):
+    def get_age_from_birth_year(birth_year) -> int:
         if birth_year:
-            return int(
-                datetime.datetime.now(pytz.timezone(get_timezone())).year - birth_year
-            )
+            return int(datetime.now(pytz.timezone(get_timezone())).year - birth_year)
 
     @app.template_filter("field_in_query")
     def field_in_query(form_data, field):
@@ -42,24 +40,29 @@ def instantiate_filters(app: Flask):
         return " in " if form_data.get(field) else ""
 
     @app.template_filter("markdown")
-    def markdown(text):
+    def markdown(text: str) -> Markup:
         text = text.replace("\n", "  \n")  # make markdown not ignore new lines.
         html = bleach.clean(_markdown.markdown(text), markdown_tags, markdown_attrs)
         return Markup(html)
 
     @app.template_filter("local_date")
-    def local_date(value):
+    def local_date(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date string."""
         return value.astimezone(pytz.timezone(get_timezone())).strftime("%b %d, %Y")
 
     @app.template_filter("local_date_time")
-    def local_date_time(value):
+    def local_date_time(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date time string."""
         return value.astimezone(pytz.timezone(get_timezone())).strftime(
             "%I:%M %p on %b %d, %Y"
         )
 
     @app.template_filter("local_time")
-    def local_time(value):
+    def local_time(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized time string."""
         return value.astimezone(pytz.timezone(get_timezone())).strftime("%I:%M %p")
+
+    @app.template_filter("thousands_seperator")
+    def thousands_seperator(value: int) -> str:
+        """Convert int to string with the appropriately applied commas."""
+        return f"{value:,}"

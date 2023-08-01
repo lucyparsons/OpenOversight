@@ -4,7 +4,6 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
 
-from OpenOversight.app.main.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.models.database import (
     Assignment,
     Description,
@@ -20,6 +19,7 @@ from OpenOversight.app.models.database import (
     Unit,
     db,
 )
+from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.general import get_or_create
 
 
