@@ -43,8 +43,6 @@ RUN pip3 install -r requirements.txt
 # Packages to install with yarn.
 COPY package.json /usr/src/app/
 RUN yarn
-# Copy python script to initialize database.
-COPY /usr/src/app/
 
 WORKDIR /usr/src/app/
 
