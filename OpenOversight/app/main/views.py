@@ -1801,8 +1801,8 @@ class OfficerLinkApi(ModelView):
             abort(HTTPStatus.FORBIDDEN)
         if not form:
             form = self.get_new_form()
-            if hasattr(form, "created_by") and not form.creator_id.data:
-                form.creator_id.data = current_user.get_id()
+            if hasattr(form, "created_by") and not form.created_by.data:
+                form.created_by.data = current_user.get_id()
 
         if form.validate_on_submit():
             link = Link(
@@ -1811,7 +1811,7 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
-                created_by=form.creator_id.data,
+                created_by=form.created_by.data,
             )
             self.officer.links.append(link)
             db.session.add(link)
