@@ -1139,7 +1139,7 @@ def label_data(department_id=None, image_id=None):
                     face_position_y=upper,
                     face_width=form.dataWidth.data,
                     face_height=form.dataHeight.data,
-                    user_id=current_user.get_id(),
+                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_tag)
                 db.session.commit()

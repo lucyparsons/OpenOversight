@@ -139,7 +139,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
             created_at=datetime.datetime.now(),
             department_id=department_id,
             taken_at=date_taken,
-            user_id=user_id,
+            created_by=user_id,
         )
         db.session.add(new_image)
         db.session.commit()
