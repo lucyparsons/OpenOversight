@@ -26,7 +26,7 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker-compose run --rm web python ./create_db.py
+	docker-compose run --rm web alembic --config=./OpenOversight/migrations/alembic.ini stamp head
 
 .PHONY: assets
 assets:

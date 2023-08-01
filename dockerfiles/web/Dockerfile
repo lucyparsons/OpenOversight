@@ -47,7 +47,7 @@ RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r de
 COPY package.json /usr/src/app/
 RUN yarn
 
-COPY create_db.py test_data.py /usr/src/app/
+COPY test_data.py /usr/src/app/
 COPY .flake8 /usr/src/app/
 COPY mypy.ini /usr/src/app/
 EXPOSE 3000

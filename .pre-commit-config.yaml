@@ -64,7 +64,7 @@ repos:
         description: Only executable files should have shebangs (e.g. '#!/usr/bin/env python')
         entry: "#!/"
         pass_filenames: true
-        exclude: bin|cli|manage.py|app.py|setup.py|docs|create_db.py|test_data.py
+        exclude: bin|cli|manage.py|app.py|setup.py|docs|test_data.py
         files: \.py$
 
   - repo: https://github.com/ikamensh/flynt/
