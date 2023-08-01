@@ -5,6 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap
+from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
@@ -20,6 +21,7 @@ from OpenOversight.app.utils.constants import MEGABYTE
 
 
 bootstrap = Bootstrap()
+compress = Compress()
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
@@ -46,6 +48,7 @@ def create_app(config_name="default"):
     limiter.init_app(app)
     login_manager.init_app(app)
     sitemap.init_app(app)
+    compress.init_app(app)
 
     from OpenOversight.app.main import main as main_blueprint
 
