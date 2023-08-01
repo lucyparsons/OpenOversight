@@ -1453,7 +1453,7 @@ def upload(department_id, officer_id=None):
                 # we set both images to the uploaded one
                 img_id=image.id,
                 original_image_id=image.id,
-                user_id=current_user.get_id(),
+                created_by=current_user.get_id(),
             )
             db.session.add(face)
             db.session.commit()
