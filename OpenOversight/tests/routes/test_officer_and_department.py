@@ -1226,7 +1226,7 @@ def test_admin_can_add_new_officer_with_unit(
         assert officer.first_name == "Test"
         assert officer.race == "WHITE"
         assert officer.gender == "M"
-        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+        assert Assignment.query.filter_by(base_officer=officer, unit=unit).one()
 
 
 def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
@@ -1313,7 +1313,7 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
             )
         else:
             assert officer.gender == gender
-        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+        assert Assignment.query.filter_by(base_officer=officer, unit=unit).one()
 
 
 def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):

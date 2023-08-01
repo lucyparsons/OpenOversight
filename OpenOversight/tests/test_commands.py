@@ -505,7 +505,7 @@ def test_bulk_add_officers__success(
     fo_ln = first_officer.last_name
     session.add(first_officer)
     session.commit()
-    assignment = Assignment(baseofficer=first_officer, job_id=job.id)
+    assignment = Assignment(base_officer=first_officer, job_id=job.id)
     session.add(assignment)
     session.commit()
     different_officer = generate_officer(department_without_officers)
@@ -513,7 +513,7 @@ def test_bulk_add_officers__success(
     do_fn = different_officer.first_name
     do_ln = different_officer.last_name
     session.add(different_officer)
-    assignment = Assignment(baseofficer=different_officer, job=job)
+    assignment = Assignment(base_officer=different_officer, job=job)
     session.add(assignment)
     session.commit()
 

@@ -67,7 +67,7 @@ def add_officer_profile(form, current_user):
         officer_unit = None
 
     assignment = Assignment(
-        baseofficer=officer,
+        base_officer=officer,
         star_no=form.star_no.data,
         job_id=form.job_id.data,
         unit=officer_unit,
