@@ -42,11 +42,11 @@ def compute_leaderboard_stats(select_top=25):
         .all()
     )
     top_taggers = (
-        db.session.query(User, func.count(Face.user_id))
+        db.session.query(User, func.count(Face.created_by))
         .select_from(Face)
         .join(User)
         .group_by(User)
-        .order_by(func.count(Face.user_id).desc())
+        .order_by(func.count(Face.created_by).desc())
         .limit(select_top)
         .all()
     )

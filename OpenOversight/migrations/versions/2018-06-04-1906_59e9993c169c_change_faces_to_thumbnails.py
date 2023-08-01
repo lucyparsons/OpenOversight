@@ -44,7 +44,7 @@ def upgrade():
                     face_position_y=face.face_position_y,
                     face_height=face.face_height,
                     face_width=face.face_width,
-                    user_id=face.user_id,
+                    user_id=face.created_by,
                 )
 
                 db.session.add(cropped_image)

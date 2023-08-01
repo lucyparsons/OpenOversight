@@ -498,7 +498,7 @@ def classify_submission(image_id, contains_cops):
         if image.contains_cops is not None and not current_user.is_administrator:
             flash("Only administrator can re-classify image")
             return redirect(redirect_url())
-        image.user_id = current_user.get_id()
+        image.created_by = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
         elif contains_cops == 0:
