@@ -377,7 +377,7 @@ def _handle_incidents_csv(
                 "state",
                 "zip_code",
                 "created_by",
-                "last_updated_id",
+                "last_updated_by",
                 "officer_ids",
                 "license_plates",
             ],

@@ -141,7 +141,7 @@ def create_incident(self, form):
         "links": [],
         "address": "",
         "created_by": form.created_by.data,
-        "last_updated_id": form.last_updated_id.data,
+        "last_updated_by": form.last_updated_by.data,
     }
 
     if "address" in form.data:

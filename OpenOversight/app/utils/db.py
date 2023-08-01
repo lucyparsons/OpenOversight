@@ -33,11 +33,11 @@ def add_unit_query(form, current_user):
 
 def compute_leaderboard_stats(select_top=25):
     top_sorters = (
-        db.session.query(User, func.count(Image.user_id))
+        db.session.query(User, func.count(Image.created_by))
         .select_from(Image)
         .join(User)
         .group_by(User)
-        .order_by(func.count(Image.user_id).desc())
+        .order_by(func.count(Image.created_by).desc())
         .limit(select_top)
         .all()
     )

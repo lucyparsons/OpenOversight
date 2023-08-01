@@ -222,7 +222,7 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
     if "author" in data:
         link.author = parse_str(data.get("author"), None)
     if "created_by" in data:
-        link.creator_id = parse_int(data.get("created_by"))
+        link.created_by = parse_int(data.get("created_by"))
     if "officers" in data:
         link.officers = data.get("officers") or []
     if "incidents" in data:
@@ -309,9 +309,9 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "department_id" in data:
         incident.department_id = parse_int(data.get("department_id"))
     if "created_by" in data:
-        incident.creator_id = parse_int(data.get("created_by"))
-    if "last_updated_id" in data:
-        incident.last_updated_id = parse_int(data.get("last_updated_id"))
+        incident.created_by = parse_int(data.get("created_by"))
+    if "last_updated_by" in data:
+        incident.last_updated_by = parse_int(data.get("last_updated_id"))
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
