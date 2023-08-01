@@ -41,11 +41,7 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
 )
-from OpenOversight.app.utils.choices import (
-    DEPARTMENT_STATE_CHOICES,
-    GENDER_CHOICES,
-    RACE_CHOICES,
-)
+from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import add_new_assignment
@@ -589,11 +585,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
     with current_app.test_request_context():
         # Prevent CorrectedPD and MisspelledPD from having the same state
         MisspelledPD = PoliceDepartment(
-            "Misspelled Police Department",
-            "MPD",
-            random.choice(
-                [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != CorrectedPD.state]
-            ),
+            "Misspelled Police Department", "MPD", exclude_state=CorrectedPD.state
         )
 
         login_admin(client)
@@ -1034,11 +1026,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
 
         # Make sure ExistingPD and ExistingDiffStatePD don't exist in the same state
         ExistingDiffStatePD = PoliceDepartment(
-            "Existing Police Department",
-            "EPD",
-            random.choice(
-                [st[0] for st in DEPARTMENT_STATE_CHOICES if st[0] != ExistingPD.state]
-            ),
+            "Existing Police Department", "EPD", exclude_state=ExistingPD.state
         )
 
         existing_diff_state_form = DepartmentForm(
