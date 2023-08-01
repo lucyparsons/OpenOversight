@@ -39,8 +39,8 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
@@ -51,10 +51,23 @@ factory = Faker()
 class PoliceDepartment:
     """Base Police Department class."""
 
-    def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
+    def __init__(
+        self,
+        name,
+        short_name,
+        state="",
+        unique_internal_identifier_label="",
+        exclude_state="",
+    ):
         self.name = name
         self.short_name = short_name
-        self.state = state if state else random.choice(DEPARTMENT_STATE_CHOICES)[0]
+        self.state = (
+            state
+            if state
+            else random.choice(
+                [s for s in DEPARTMENT_STATE_CHOICES if s[0] != exclude_state]
+            )[0]
+        )
         self.unique_internal_identifier_label = (
             unique_internal_identifier_label
             if unique_internal_identifier_label
