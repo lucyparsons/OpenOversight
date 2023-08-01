@@ -544,10 +544,10 @@ class IncidentForm(DateFieldForm):
         min_entries=1,
         widget=BootstrapListWidget(),
     )
-    creator_id = HiddenField(
+    created_by = HiddenField(
         validators=[DataRequired(message="Incidents must have a creator id.")]
     )
-    last_updated_id = HiddenField(
+    last_updated_by = HiddenField(
         validators=[DataRequired(message="Incidents must have a user id for editing.")]
     )
 
