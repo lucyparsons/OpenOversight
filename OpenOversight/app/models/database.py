@@ -22,6 +22,7 @@ from OpenOversight.app.utils.constants import (
 )
 from OpenOversight.app.validators import state_validator, url_validator
 
+
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
 
@@ -31,12 +32,13 @@ officer_links = db.Table(
     "officer_links",
     db.Column("officer_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
-    db.Column("created_at",
-              db.DateTime(timezone=True),
-              nullable=False,
-              server_default=sql_func.now(),
-              unique=False,
-              )
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 officer_incidents = db.Table(
@@ -45,12 +47,13 @@ officer_incidents = db.Table(
     db.Column(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
-    db.Column("created_at",
-              db.DateTime(timezone=True),
-              nullable=False,
-              server_default=sql_func.now(),
-              unique=False,
-              )
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 # This is a last recently used cache that also utilizes a time-to-live function for each
@@ -306,12 +309,12 @@ class Officer(BaseModel):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                    f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-                    + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
+                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+                + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
             )
         return (
-                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-                + f"{self.last_name} {self.suffix}>"
+            f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+            + f"{self.last_name} {self.suffix}>"
         )
 
 
@@ -469,12 +472,13 @@ incident_links = db.Table(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
-    db.Column("created_at",
-              db.DateTime(timezone=True),
-              nullable=False,
-              server_default=sql_func.now(),
-              unique=False,
-              )
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 incident_license_plates = db.Table(
@@ -488,12 +492,13 @@ incident_license_plates = db.Table(
         db.ForeignKey("license_plates.id"),
         primary_key=True,
     ),
-    db.Column("created_at",
-              db.DateTime(timezone=True),
-              nullable=False,
-              server_default=sql_func.now(),
-              unique=False,
-              )
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 incident_officers = db.Table(
@@ -504,12 +509,13 @@ incident_officers = db.Table(
     db.Column(
         "officers_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True
     ),
-    db.Column("created_at",
-              db.DateTime(timezone=True),
-              nullable=False,
-              server_default=sql_func.now(),
-              unique=False,
-              )
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 
@@ -545,13 +551,13 @@ class Location(BaseModel):
     def __repr__(self):
         if self.street_name and self.cross_street2:
             return (
-                    f"Intersection of {self.street_name} and {self.cross_street2}, "
-                    + f"{self.city} {self.state}"
+                f"Intersection of {self.street_name} and {self.cross_street2}, "
+                + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1:
             return (
-                    f"Intersection of {self.street_name} and {self.cross_street1}, "
-                    + f"{self.city} {self.state}"
+                f"Intersection of {self.street_name} and {self.cross_street1}, "
+                + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1 and self.cross_street2:
             return (
