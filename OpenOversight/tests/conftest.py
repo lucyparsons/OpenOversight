@@ -97,7 +97,7 @@ RANK_CHOICES_2 = [
 
 AC_DEPT = 1
 NO_OFFICER_PD = PoliceDepartment("Empty Police Department", "EPD")
-OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD")
+OTHER_PD = PoliceDepartment("Chicago Police Department", "CPD", exclude_state="IL")
 SPRINGFIELD_PD = PoliceDepartment("Springfield Police Department", "SPD", "IL")
 
 
