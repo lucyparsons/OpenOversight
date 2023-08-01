@@ -3,6 +3,7 @@ import datetime
 import math
 import os
 import random
+import string
 import sys
 import threading
 import time
@@ -39,18 +40,33 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
+from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
-from OpenOversight.tests.test_utils import PoliceDepartment
 
 
 factory = Faker()
+
+
+class PoliceDepartment:
+    """Base Police Department class."""
+
+    def __init__(self, name, short_name, state="", unique_internal_identifier_label=""):
+        self.name = name
+        self.short_name = short_name
+        self.state = state if state else random.choice(DEPARTMENT_STATE_CHOICES)[0]
+        self.unique_internal_identifier_label = (
+            unique_internal_identifier_label
+            if unique_internal_identifier_label
+            else "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
+        )
+
 
 OFFICERS = [
     ("IVANA", "", "TINKLE"),
     ("SEYMOUR", "", "BUTZ"),
     ("HAYWOOD", "U", "CUDDLEME"),
-    ("BEA", "", "O'PROBLEM"),
+    ("BEA", "", "PROBLEM"),
     ("URA", "", "SNOTBALL"),
     ("HUGH", "", "JASS"),
 ]
