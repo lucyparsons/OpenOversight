@@ -269,7 +269,7 @@ class TextForm(EditTextForm):
     officer_id = HiddenField(
         validators=[DataRequired(message="Not a valid officer ID")]
     )
-    creator_id = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
+    created_by = HiddenField(validators=[DataRequired(message="Not a valid user ID")])
 
 
 class AddOfficerForm(Form):
