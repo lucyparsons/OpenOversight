@@ -22,7 +22,6 @@ from OpenOversight.app.utils.constants import (
 )
 from OpenOversight.app.validators import state_validator, url_validator
 
-
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
 
@@ -32,6 +31,12 @@ officer_links = db.Table(
     "officer_links",
     db.Column("officer_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column("created_at",
+              db.DateTime(timezone=True),
+              nullable=False,
+              server_default=sql_func.now(),
+              unique=False,
+              )
 )
 
 officer_incidents = db.Table(
@@ -40,8 +45,13 @@ officer_incidents = db.Table(
     db.Column(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
+    db.Column("created_at",
+              db.DateTime(timezone=True),
+              nullable=False,
+              server_default=sql_func.now(),
+              unique=False,
+              )
 )
-
 
 # This is a last recently used cache that also utilizes a time-to-live function for each
 # value saved in it (12 hours).
@@ -74,6 +84,12 @@ class Department(BaseModel):
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
     state = db.Column(db.String(2), server_default="", nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     # See https://github.com/lucyparsons/OpenOversight/issues/462
     unique_internal_identifier_label = db.Column(
@@ -125,6 +141,12 @@ class Job(BaseModel):
     order = db.Column(db.Integer, index=True, unique=False, nullable=False)
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="jobs")
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -194,6 +216,12 @@ class Officer(BaseModel):
     department = db.relationship("Department", backref="officers")
     unique_internal_identifier = db.Column(
         db.String(50), index=True, unique=True, nullable=True
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     )
 
     links = db.relationship(
@@ -278,12 +306,12 @@ class Officer(BaseModel):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-                + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
+                    f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+                    + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
             )
         return (
-            f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-            + f"{self.last_name} {self.suffix}>"
+                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
+                + f"{self.last_name} {self.suffix}>"
         )
 
 
@@ -297,6 +325,12 @@ class Salary(BaseModel):
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     def __repr__(self):
         return f"<Salary: ID {self.officer_id} : {self.salary}"
@@ -315,6 +349,12 @@ class Assignment(BaseModel):
     unit = db.relationship("Unit")
     start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     def __repr__(self):
         return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
@@ -328,6 +368,12 @@ class Unit(BaseModel):
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship(
         "Department", backref="unit_types", order_by="Unit.description.asc()"
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     )
 
     def __repr__(self):
@@ -371,6 +417,12 @@ class Face(BaseModel):
     user = db.relationship("User", backref="faces")
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     )
 
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
@@ -417,6 +469,12 @@ incident_links = db.Table(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column("created_at",
+              db.DateTime(timezone=True),
+              nullable=False,
+              server_default=sql_func.now(),
+              unique=False,
+              )
 )
 
 incident_license_plates = db.Table(
@@ -430,6 +488,12 @@ incident_license_plates = db.Table(
         db.ForeignKey("license_plates.id"),
         primary_key=True,
     ),
+    db.Column("created_at",
+              db.DateTime(timezone=True),
+              nullable=False,
+              server_default=sql_func.now(),
+              unique=False,
+              )
 )
 
 incident_officers = db.Table(
@@ -440,6 +504,12 @@ incident_officers = db.Table(
     db.Column(
         "officers_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True
     ),
+    db.Column("created_at",
+              db.DateTime(timezone=True),
+              nullable=False,
+              server_default=sql_func.now(),
+              unique=False,
+              )
 )
 
 
@@ -453,6 +523,12 @@ class Location(BaseModel):
     city = db.Column(db.String(100), unique=False, index=True)
     state = db.Column(db.String(2), unique=False, index=True)
     zip_code = db.Column(db.String(5), unique=False, index=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     @validates("zip_code")
     def validate_zip_code(self, key, zip_code):
@@ -469,13 +545,13 @@ class Location(BaseModel):
     def __repr__(self):
         if self.street_name and self.cross_street2:
             return (
-                f"Intersection of {self.street_name} and {self.cross_street2}, "
-                + f"{self.city} {self.state}"
+                    f"Intersection of {self.street_name} and {self.cross_street2}, "
+                    + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1:
             return (
-                f"Intersection of {self.street_name} and {self.cross_street1}, "
-                + f"{self.city} {self.state}"
+                    f"Intersection of {self.street_name} and {self.cross_street1}, "
+                    + f"{self.city} {self.state}"
             )
         elif self.street_name and self.cross_street1 and self.cross_street2:
             return (
@@ -492,6 +568,12 @@ class LicensePlate(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
@@ -512,6 +594,12 @@ class Link(BaseModel):
     author = db.Column(db.String(255), nullable=True)
     creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     creator = db.relationship("User", backref="links", lazy=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     @validates("url")
     def validate_url(self, key, url):
@@ -556,6 +644,12 @@ class Incident(BaseModel):
     last_updated_by = db.relationship(
         "User", backref="incidents_updated", lazy=True, foreign_keys=[last_updated_id]
     )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
 
 class User(UserMixin, BaseModel):
@@ -577,6 +671,12 @@ class User(UserMixin, BaseModel):
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
     classifications = db.relationship("Image", backref="users")
     tags = db.relationship("Face", backref="users")
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     def _jwt_encode(self, payload, expiration):
         secret = current_app.config["SECRET_KEY"]
