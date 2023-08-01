@@ -1,6 +1,11 @@
 import os
 
 from OpenOversight.app.utils.constants import (
+    KEY_DATABASE_URI,
+    KEY_ENV,
+    KEY_ENV_DEV,
+    KEY_ENV_PROD,
+    KEY_ENV_TESTING,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
     MEGABYTE,
@@ -14,7 +19,7 @@ class BaseConfig:
     def __init__(self):
         # App Settings
         self.DEBUG = False
-        self.ENV = os.environ.get("ENV", "development")
+        self.ENV = os.environ.get(KEY_ENV, KEY_ENV_DEV)
         self.SEED = 666
         self.TIMEZONE = os.environ.get(KEY_TIMEZONE, "America/Chicago")
         self.TESTING = False
@@ -24,7 +29,7 @@ class BaseConfig:
 
         # DB Settings
         self.SQLALCHEMY_TRACK_MODIFICATIONS = False
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+        self.SQLALCHEMY_DATABASE_URI = os.environ.get(KEY_DATABASE_URI)
 
         # Protocol Settings
         self.SITEMAP_URL_SCHEME = "http"
@@ -85,8 +90,8 @@ class ProductionConfig(BaseConfig):
 
 
 config = {
-    "development": DevelopmentConfig(),
-    "testing": TestingConfig(),
-    "production": ProductionConfig(),
+    KEY_ENV_DEV: DevelopmentConfig(),
+    KEY_ENV_TESTING: TestingConfig(),
+    KEY_ENV_PROD: ProductionConfig(),
 }
-config["default"] = config.get(os.environ.get("ENV", ""), DevelopmentConfig())
+config["default"] = config.get(os.environ.get(KEY_ENV, ""), DevelopmentConfig())

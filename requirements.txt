@@ -57,7 +57,6 @@ requests~=2.31.0
 rich~=13.4.2
 s3transfer~=0.6.1
 selenium~=4.10.0
-setuptools==68.0.0
 six~=1.16.0
 sphinx~=7.0.1
 SQLAlchemy==1.4.47 # Updating this breaks the build for python 3.9

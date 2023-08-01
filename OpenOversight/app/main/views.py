@@ -25,7 +25,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from OpenOversight.app import limiter, sitemap
 from OpenOversight.app.auth.forms import LoginForm
 from OpenOversight.app.main import main
-from OpenOversight.app.main.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.main.downloads import (
     assignment_record_maker,
     descriptions_record_maker,
@@ -73,6 +72,7 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
+from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -520,10 +520,6 @@ def classify_submission(image_id, contains_cops):
 def add_department():
     form = DepartmentForm()
     if form.validate_on_submit():
-        if not form.state.data:
-            flash(f"You must select a valid state for {form.name.data}.")
-            return redirect(url_for("main.add_department"))
-
         department_does_not_exist = (
             Department.query.filter_by(
                 name=form.name.data, state=form.state.data
@@ -583,12 +579,6 @@ def edit_department(department_id):
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
     if form.validate_on_submit():
-        if not form.state.data:
-            flash(f"You must select a valid state for {form.name.data}.")
-            return redirect(
-                url_for("main.edit_department", department_id=department_id)
-            )
-
         if form.name.data != previous_name:
             does_already_department_exist = (
                 Department.query.filter_by(

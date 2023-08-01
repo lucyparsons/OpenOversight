@@ -27,11 +27,11 @@
               {% endif %}
             </h2>
             <div>
-              <b class="dept-{{ department.id }}">Officers Documented:</b> {{ department.total_documented_officers() }}
+              <b class="dept-{{ department.id }}">Officers Documented:</b> {{ department.total_documented_officers() | thousands_seperator }}
               <br>
-              <b class="dept-{{ department.id }}">Assignments Documented:</b> {{ department.total_documented_assignments() }}
+              <b class="dept-{{ department.id }}">Assignments Documented:</b> {{ department.total_documented_assignments() | thousands_seperator }}
               <br>
-              <b class="dept-{{ department.id }}">Incidents Documented:</b> {{ department.total_documented_incidents() }}
+              <b class="dept-{{ department.id }}">Incidents Documented:</b> {{ department.total_documented_incidents() | thousands_seperator }}
             </div>
             <p>
               <a class="btn btn-lg btn-primary"
