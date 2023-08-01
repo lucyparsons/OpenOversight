@@ -196,7 +196,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         link_type=validate_choice(data.get("link_type"), choices.LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
-        creator_id=parse_int(data.get("created_by")),
+        created_by=parse_int(data.get("created_by")),
     )
 
     if force_id and data.get("id"):
@@ -280,7 +280,7 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
-        creator_id=parse_int(data.get("created_by")),
+        created_by=parse_int(data.get("created_by")),
         last_updated_id=parse_int(data.get("last_updated_id")),
     )
 

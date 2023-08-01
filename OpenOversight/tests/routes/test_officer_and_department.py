@@ -2405,7 +2405,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 
@@ -2432,7 +2432,7 @@ def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, sess
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2463,7 +2463,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2490,7 +2490,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.created_by,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2525,7 +2525,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2546,7 +2546,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.created_by,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2583,7 +2583,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 
@@ -2606,7 +2606,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.created_by,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2664,7 +2664,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2710,7 +2710,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 

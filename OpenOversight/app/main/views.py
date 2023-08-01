@@ -1811,7 +1811,7 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
-                creator_id=form.creator_id.data,
+                created_by=form.creator_id.data,
             )
             self.officer.links.append(link)
             db.session.add(link)

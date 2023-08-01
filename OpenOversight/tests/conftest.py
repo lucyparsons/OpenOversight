@@ -173,7 +173,7 @@ def build_note(officer, user, content=None):
     return Note(
         text_contents=content,
         officer_id=officer.id,
-        creator_id=user.id,
+        created_by=user.id,
         created_at=date,
         updated_at=date,
     )
@@ -186,7 +186,7 @@ def build_description(officer, user, content=None):
     return Description(
         text_contents=content,
         officer_id=officer.id,
-        creator_id=user.id,
+        created_by=user.id,
         created_at=date,
         updated_at=date,
     )
@@ -525,13 +525,13 @@ def add_mockdata(session):
             url="https://stackoverflow.com/",
             link_type="link",
             creator=test_admin,
-            creator_id=test_admin.id,
+            created_by=test_admin.id,
         ),
         Link(
             url="http://www.youtube.com/?v=help",
             link_type="video",
             creator=test_admin,
-            creator_id=test_admin.id,
+            created_by=test_admin.id,
         ),
     ]
 
@@ -549,7 +549,7 @@ def add_mockdata(session):
             license_plates=test_license_plates,
             links=test_incident_links,
             officers=[all_officers[o] for o in range(4)],
-            creator_id=1,
+            created_by=1,
             last_updated_id=1,
         ),
         Incident(
@@ -562,7 +562,7 @@ def add_mockdata(session):
             license_plates=[test_license_plates[0]],
             links=test_incident_links,
             officers=[all_officers[o] for o in range(3)],
-            creator_id=2,
+            created_by=2,
             last_updated_id=1,
         ),
         Incident(
@@ -576,7 +576,7 @@ def add_mockdata(session):
             license_plates=[test_license_plates[0]],
             links=test_incident_links,
             officers=[all_officers[o] for o in range(1)],
-            creator_id=2,
+            created_by=2,
             last_updated_id=1,
         ),
     ]
