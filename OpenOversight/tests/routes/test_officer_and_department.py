@@ -2490,7 +2490,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            creator_id=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2546,7 +2546,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            creator_id=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2606,7 +2606,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            creator_id=link.created_by,
             officer_id=officer.id,
         )
 

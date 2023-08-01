@@ -125,7 +125,7 @@ def add_officer_profile(form, current_user):
 def create_description(self, form):
     return Description(
         text_contents=form.text_contents.data,
-        creator_id=form.creator_id.data,
+        creator_id=form.created_by.data,
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
         updated_at=datetime.datetime.now(),
@@ -140,7 +140,7 @@ def create_incident(self, form):
         "license_plates": [],
         "links": [],
         "address": "",
-        "creator_id": form.creator_id.data,
+        "created_by": form.created_by.data,
         "last_updated_id": form.last_updated_id.data,
     }
 
@@ -180,7 +180,7 @@ def create_incident(self, form):
         report_number=form.data["report_number"],
         license_plates=fields["license_plates"],
         links=fields["links"],
-        creator_id=fields["creator_id"],
+        creator_id=fields["created_by"],
         last_updated_id=fields["last_updated_id"],
     )
 
@@ -188,7 +188,7 @@ def create_incident(self, form):
 def create_note(self, form):
     return Note(
         text_contents=form.text_contents.data,
-        creator_id=form.creator_id.data,
+        creator_id=form.created_by.data,
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
         updated_at=datetime.datetime.now(),

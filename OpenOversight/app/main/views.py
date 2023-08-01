@@ -911,7 +911,7 @@ def add_officer():
     jsloads = ["js/dynamic_lists.js", "js/add_officer.js"]
     form = AddOfficerForm()
     for link in form.links:
-        link.creator_id.data = current_user.id
+        link.created_by.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -1375,7 +1375,7 @@ def download_dept_descriptions_csv(department_id):
     field_names = [
         "id",
         "text_contents",
-        "creator_id",
+        "created_by",
         "officer_id",
         "created_at",
         "updated_at",
@@ -1571,7 +1571,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get("officer_id")
 
         for link in form.links:
-            link.creator_id.data = current_user.id
+            link.created_by.data = current_user.id
         return form
 
     def get_edit_form(self, obj):
@@ -1581,10 +1581,10 @@ class IncidentApi(ModelView):
         no_links = len(obj.links)
         no_officers = len(obj.officers)
         for link in form.links:
-            if link.creator_id.data:
+            if link.created_by.data:
                 continue
             else:
-                link.creator_id.data = current_user.id
+                link.created_by.data = current_user.id
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id
@@ -1801,7 +1801,7 @@ class OfficerLinkApi(ModelView):
             abort(HTTPStatus.FORBIDDEN)
         if not form:
             form = self.get_new_form()
-            if hasattr(form, "creator_id") and not form.creator_id.data:
+            if hasattr(form, "created_by") and not form.creator_id.data:
                 form.creator_id.data = current_user.get_id()
 
         if form.validate_on_submit():

@@ -196,7 +196,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         link_type=validate_choice(data.get("link_type"), choices.LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
-        creator_id=parse_int(data.get("creator_id")),
+        creator_id=parse_int(data.get("created_by")),
     )
 
     if force_id and data.get("id"):
@@ -221,8 +221,8 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
         link.description = parse_str(data.get("description"), None)
     if "author" in data:
         link.author = parse_str(data.get("author"), None)
-    if "creator_id" in data:
-        link.creator_id = parse_int(data.get("creator_id"))
+    if "created_by" in data:
+        link.creator_id = parse_int(data.get("created_by"))
     if "officers" in data:
         link.officers = data.get("officers") or []
     if "incidents" in data:
@@ -280,7 +280,7 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
-        creator_id=parse_int(data.get("creator_id")),
+        creator_id=parse_int(data.get("created_by")),
         last_updated_id=parse_int(data.get("last_updated_id")),
     )
 
@@ -308,8 +308,8 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.address_id = data.get("address_id")
     if "department_id" in data:
         incident.department_id = parse_int(data.get("department_id"))
-    if "creator_id" in data:
-        incident.creator_id = parse_int(data.get("creator_id"))
+    if "created_by" in data:
+        incident.creator_id = parse_int(data.get("created_by"))
     if "last_updated_id" in data:
         incident.last_updated_id = parse_int(data.get("last_updated_id"))
     if "officers" in data:
