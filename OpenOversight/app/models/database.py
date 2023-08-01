@@ -732,12 +732,6 @@ class User(UserMixin, BaseModel):
         server_default=sql_func.now(),
         unique=False,
     )
-    created_by = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True,
-        unique=False,
-    )
 
     def _jwt_encode(self, payload, expiration):
         secret = current_app.config["SECRET_KEY"]
