@@ -65,6 +65,8 @@ class ModelView(MethodView):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, "created_by") and not form.created_by.data:
                 form.created_by.data = current_user.get_id()
+            if hasattr(form, "created_at"):
+                form.created_at.data = datetime.datetime.now()
             # TODO: Determine whether creating counts as updating, seems redundant
             if hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
@@ -95,7 +97,7 @@ class ModelView(MethodView):
 
         if not form:
             form = self.get_edit_form(obj)
-            # if the object doesn't have a creator id set, st it to current user
+            # if the object doesn't have a creator id set it to current user
             if (
                 hasattr(obj, "created_by")
                 and hasattr(form, "created_by")
