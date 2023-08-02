@@ -65,8 +65,6 @@ class ModelView(MethodView):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, "created_by") and not form.created_by.data:
                 form.created_by.data = current_user.get_id()
-            if hasattr(form, "last_updated_by"):
-                form.last_updated_by.data = current_user.get_id()
 
         if form.validate_on_submit():
             new_obj = self.create_function(form)
@@ -105,6 +103,8 @@ class ModelView(MethodView):
             # if the object keeps track of who updated it last, set to current user
             if hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
+            if hasattr(form, "last_updated_at"):
+                form.last_updated_at.data = datetime.datetime.now()
 
         if hasattr(form, "department"):
             add_department_query(form, current_user)
