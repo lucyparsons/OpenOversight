@@ -13,7 +13,7 @@ from OpenOversight.app.main.forms import (
     LocationForm,
     OOIdForm,
 )
-from OpenOversight.app.models.database import Department, Incident, Officer
+from OpenOversight.app.models.database import Department, Incident, Officer, User
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT, CREATING_USER
 from OpenOversight.tests.routes.route_helpers import (
@@ -107,7 +107,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        date = datetime(2000, 5, 25, 1, 45)
+        test_date = datetime(2000, 5, 25, 1, 45)
         report_number = "Will Not Work! #45"
 
         address_form = LocationForm(
@@ -123,8 +123,8 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
         link_form = LinkForm(link_type="video", created_by=CREATING_USER)
         license_plates_form = LicensePlateForm(state="AZ", created_by=CREATING_USER)
         form = IncidentForm(
-            date_field=str(date.date()),
-            time_field=str(date.time()),
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
             report_number=report_number,
             description="Something happened",
             department="1",
@@ -148,14 +148,15 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
             joinedload(Incident.officers),
         ).first()
         inc_id = inc.id
-        new_date = date(2017, 6, 25)
-        new_time = time(1, 45)
+        test_date = date(2017, 6, 25)
+        test_time = time(1, 45)
         street_name = "Newest St"
         address_form = LocationForm(
             street_name=street_name,
@@ -163,25 +164,21 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             city="Boston",
             state="NH",
             zip_code="03435",
-            created_by=CREATING_USER,
+            created_by=user.id,
         )
         links_forms = [
-            LinkForm(
-                url=link.url, link_type=link.link_type, created_by=CREATING_USER
-            ).data
+            LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
             for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(
-                number=lp.number, state=lp.state, created_by=CREATING_USER
-            ).data
+            LicensePlateForm(number=lp.number, state=lp.state, created_by=user.id).data
             for lp in inc.license_plates
         ]
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(new_date),
-            time_field=str(new_time),
+            date_field=str(test_date),
+            time_field=str(test_time),
             report_number=inc.report_number,
             description=inc.description,
             department="1",
@@ -189,6 +186,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             links=links_forms,
             license_plates=license_plates_forms,
             officers=ooid_forms,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -200,14 +198,15 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
         updated = Incident.query.get(inc_id)
-        assert updated.date == new_date
-        assert updated.time == new_time
+        assert updated.date == test_date
+        assert updated.time == test_time
         assert updated.address.street_name == street_name
 
 
 def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -225,17 +224,15 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         )
         old_links = inc.links
         old_links_forms = [
-            LinkForm(
-                url=link.url, link_type=link.link_type, created_by=CREATING_USER
-            ).data
+            LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
             for link in inc.links
         ]
         new_url = faker.url()
-        link_form = LinkForm(url=new_url, link_type="video", created_by=CREATING_USER)
+        link_form = LinkForm(url=new_url, link_type="video", created_by=user.id)
         old_license_plates = inc.license_plates
         new_number = "453893"
         license_plates_form = LicensePlateForm(
-            number=new_number, state="IA", created_by=CREATING_USER
+            number=new_number, state="IA", created_by=user.id
         )
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
@@ -249,6 +246,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
             links=old_links_forms + [link_form.data],
             license_plates=[license_plates_form.data],
             officers=ooid_forms,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -272,6 +270,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
 def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -297,6 +296,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             department="1",
             address=address_form.data,
             officers=ooid_forms,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -312,7 +312,8 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
 def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        date = datetime(2000, 5, 25, 1, 45)
+        user = User.query.filter_by(is_administrator=True).first()
+        test_date = datetime(2000, 5, 25, 1, 45)
         report_number = "42"
 
         address_form = LocationForm(
@@ -321,18 +322,19 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             city="FFFFF",
             state="",
             zip_code="03435",
-            created_by=CREATING_USER,
+            created_by=user.id,
         )
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in Officer.query.all()[:5]]
 
         form = IncidentForm(
-            date_field=str(date.date()),
-            time_field=str(date.time()),
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
             report_number=report_number,
             description="Something happened",
             department="1",
             address=address_form.data,
             officers=ooid_forms,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -350,7 +352,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        date = datetime(2000, 5, 25, 1, 45)
+        test_date = datetime(2000, 5, 25, 1, 45)
         report_number = "42"
 
         address_form = LocationForm(
@@ -372,7 +374,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
         form = IncidentForm(
             # no date given => 'This field is required.'
             date_field="",
-            time_field=str(date.time()),
+            time_field=str(test_date.time()),
             report_number=report_number,
             description="Something happened",
             # invalid department id => 'This field is required.'
@@ -522,7 +524,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         inc = Incident.query.filter_by(department_id=AC_DEPT).first()
-        new_date = datetime(2017, 6, 25, 1, 45)
+        test_date = datetime(2017, 6, 25, 1, 45)
         street_name = "Newest St"
         address_form = LocationForm(
             street_name=street_name,
@@ -547,8 +549,8 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(new_date.date()),
-            time_field=str(new_date.time()),
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
             report_number=inc.report_number,
             description=inc.description,
             department=AC_DEPT,
@@ -566,8 +568,8 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         )
         assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
-        assert inc.date == new_date.date()
-        assert inc.time == new_date.time()
+        assert inc.date == test_date.date()
+        assert inc.time == test_date.time()
         assert inc.address.street_name == street_name
 
 
@@ -578,7 +580,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         inc = Incident.query.except_(
             Incident.query.filter_by(department_id=AC_DEPT)
         ).first()
-        new_date = datetime(2017, 6, 25, 1, 45)
+        test_date = datetime(2017, 6, 25, 1, 45)
         street_name = "Not Allowed St"
         address_form = LocationForm(
             street_name=street_name,
@@ -603,8 +605,8 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
-            date_field=str(new_date.date()),
-            time_field=str(new_date.time()),
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
             report_number=inc.report_number,
             description=inc.description,
             department=AC_DEPT,
