@@ -522,8 +522,11 @@ def test_admin_can_add_police_department(mockdata, client, session):
 def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
-        form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state="", created_by=user.id
+        )
         form.validate()
         errors = form.errors
 
@@ -535,9 +538,13 @@ def test_admin_cannot_add_police_department_without_state(mockdata, client, sess
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(is_administrator=False).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -550,9 +557,13 @@ def test_ac_cannot_add_police_department(mockdata, client, session):
 def test_admin_cannot_add_duplicate_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
