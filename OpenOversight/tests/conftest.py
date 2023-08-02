@@ -75,6 +75,8 @@ class PoliceDepartment:
         )
 
 
+CREATING_USER = 1
+
 OFFICERS = [
     ("IVANA", "", "TINKLE"),
     ("SEYMOUR", "", "BUTZ"),
