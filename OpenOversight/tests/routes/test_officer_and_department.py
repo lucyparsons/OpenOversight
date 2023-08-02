@@ -499,9 +499,13 @@ TestPD = PoliceDepartment("Test Police Department", "TPD")
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -600,11 +604,13 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         )
 
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
             short_name=MisspelledPD.short_name,
             state=MisspelledPD.state,
+            created_by=user.id,
         )
 
         misspelled_rv = client.post(
