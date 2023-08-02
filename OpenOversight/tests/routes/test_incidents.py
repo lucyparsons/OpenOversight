@@ -15,7 +15,7 @@ from OpenOversight.app.main.forms import (
 )
 from OpenOversight.app.models.database import Department, Incident, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.conftest import AC_DEPT, CREATING_USER
 from OpenOversight.tests.routes.route_helpers import (
     login_ac,
     login_admin,
@@ -70,6 +70,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             city="FFFFF",
             state="IA",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
@@ -112,6 +113,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             city="FFFFF",
             state="IA",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
@@ -158,6 +160,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             city="Boston",
             state="NH",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
@@ -210,6 +213,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
+            created_by=inc.created_by,
         )
         old_links = inc.links
         old_links_forms = [
@@ -268,6 +272,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
+            created_by=inc.created_by,
         )
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
@@ -303,6 +308,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             city="FFFFF",
             state="",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in Officer.query.all()[:5]]
 
@@ -342,6 +348,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
             state="NY",
             # invalid ZIP code => 'Zip codes must have 5 digits.'
             zip_code="0343",
+            created_by=CREATING_USER,
         )
 
         # license plate number given, but no state selected => 'Must also select a state.'
@@ -389,6 +396,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
+            created_by=inc.created_by,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
@@ -448,6 +456,7 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
+            created_by=inc.created_by,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
@@ -499,6 +508,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             city="Boston",
             state="NH",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
@@ -549,6 +559,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
             city="Boston",
             state="NH",
             zip_code="03435",
+            created_by=CREATING_USER,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
@@ -724,6 +735,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
+            created_by=inc.created_by,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
