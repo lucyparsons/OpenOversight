@@ -376,6 +376,7 @@ def edit_assignment(officer_id, assignment_id):
 
     assignment = Assignment.query.filter_by(id=assignment_id).one()
     form = AssignmentForm(obj=assignment)
+    form.created_by.data = assignment.created_by
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
