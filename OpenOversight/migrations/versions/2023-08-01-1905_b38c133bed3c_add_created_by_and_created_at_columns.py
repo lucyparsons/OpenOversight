@@ -143,6 +143,13 @@ def upgrade():
                 nullable=False,
             )
         )
+        batch_op.add_column(
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                nullable=True,
+            )
+        )
         batch_op.drop_constraint("incidents_last_updated_id_fkey", type_="foreignkey")
         batch_op.drop_constraint("incidents_creator_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
@@ -522,6 +529,7 @@ def downgrade():
     with op.batch_alter_table("incidents", schema=None) as batch_op:
         batch_op.drop_column("created_at")
         batch_op.drop_column("last_updated_by")
+        batch_op.drop_column("last_updated_at")
         batch_op.drop_column("created_by")
 
     with op.batch_alter_table("incident_officers", schema=None) as batch_op:
