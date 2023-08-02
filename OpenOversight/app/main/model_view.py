@@ -65,6 +65,11 @@ class ModelView(MethodView):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, "created_by") and not form.created_by.data:
                 form.created_by.data = current_user.get_id()
+            # TODO: Determine whether creating counts as updating, seems redundant
+            if hasattr(form, "last_updated_by"):
+                form.last_updated_by.data = current_user.get_id()
+            if hasattr(form, "last_updated_at"):
+                form.last_updated_at.data = datetime.datetime.now()
 
         if form.validate_on_submit():
             new_obj = self.create_function(form)
