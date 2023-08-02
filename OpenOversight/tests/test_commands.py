@@ -32,7 +32,6 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import (
-    CREATING_USER,
     RANK_CHOICES_1,
     SPRINGFIELD_PD,
     PoliceDepartment,
@@ -497,7 +496,7 @@ def test_bulk_add_officers__success(
     session, department_without_officers, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # generate two officers with different names
     first_officer = generate_officer(department_without_officers, user)
     job = (
@@ -589,7 +588,7 @@ def test_bulk_add_officers__success(
 
 def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     # two officers with the same name
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     first_name = "James"
     last_name = "Smith"
     first_officer = generate_officer(department, user)
@@ -637,7 +636,7 @@ def test_bulk_add_officers__write_static_null_field(
     session, department, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # start with an officer whose birth_year is missing
     officer = generate_officer(department, user)
     officer.birth_year = None
@@ -681,7 +680,7 @@ def test_bulk_add_officers__write_static_null_field(
 
 
 def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_path):
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # officer with birth year set
     officer = generate_officer(department, user)
     old_birth_year = 1979
@@ -731,7 +730,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
     session, department, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # officer with birth year set
     officer = generate_officer(department, user)
     officer.birth_year = 1979
@@ -781,7 +780,7 @@ def test_bulk_add_officers__no_create_flag(
     session, department_without_officers, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # department with one officer
     department_id = department_without_officers.id
     officer = generate_officer(department_without_officers, user)
@@ -838,7 +837,7 @@ def test_bulk_add_officers__no_create_flag(
 
 
 def test_advanced_csv_import__success(session, department, test_csv_dir):
-    user = User.query.filter_by(id=CREATING_USER).one()
+    user = User.query.filter_by(is_administrator=False).first()
     # make sure department name aligns with the csv files
     assert department.name == SPRINGFIELD_PD.name
     assert department.state == SPRINGFIELD_PD.state
@@ -1041,12 +1040,14 @@ def _create_csv(data, path, csv_file_name):
 
 
 def test_advanced_csv_import__force_create(session, department, tmp_path):
+    user = User.query.filter_by(is_administrator=False).first()
     tmp_path = str(tmp_path)
 
     other_department = Department(
         name="Other department",
         short_name="OPD",
         state=random.choice(DEPARTMENT_STATE_CHOICES)[0],
+        created_by=user.id,
     )
     session.add(other_department)
 
@@ -1055,6 +1056,7 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
         department_id=other_department.id,
         first_name="Already",
         last_name="InDatabase",
+        created_by=user.id,
     )
     session.add(officer)
     session.flush()
@@ -1169,11 +1171,13 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
 
 def test_advanced_csv_import__overwrite_assignments(session, department, tmp_path):
     tmp_path = str(tmp_path)
+    user = User.query.filter_by(is_administrator=False).first()
 
     other_department = Department(
         name="Other department",
         short_name="OPD",
         state=random.choice(DEPARTMENT_STATE_CHOICES)[0],
+        created_by=user.id,
     )
     session.add(other_department)
 
@@ -1184,12 +1188,14 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
         department_id=department.id,
         first_name="Already",
         last_name="InDatabase",
+        created_by=user.id,
     )
     officer2 = Officer(
         id=cop2_id,
         department_id=department.id,
         first_name="Also",
         last_name="InDatabase",
+        created_by=user.id,
     )
     a1_id = 999101
     a2_id = 999102
@@ -1197,11 +1203,13 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
         id=a1_id,
         officer_id=officer.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+        created_by=user.id,
     )
     assignment2 = Assignment(
         id=a2_id,
         officer_id=officer2.id,
         job_id=Job.query.filter_by(job_title="Police Officer").first().id,
+        created_by=user.id,
     )
     session.add(officer)
     session.add(assignment)
@@ -1324,10 +1332,12 @@ def test_advanced_csv_import__missing_required_field_officers(
 
 
 def test_advanced_csv_import__wrong_department(session, department, tmp_path):
+    user = User.query.filter_by(is_administrator=False).first()
     other_department = Department(
         name="Other department",
         short_name="OPD",
         state=random.choice(DEPARTMENT_STATE_CHOICES)[0],
+        created_by=user.id,
     )
     session.add(other_department)
 
@@ -1358,15 +1368,21 @@ def test_advanced_csv_import__wrong_department(session, department, tmp_path):
 def test_advanced_csv_import__update_officer_different_department(
     session, department, tmp_path
 ):
+    user = User.query.filter_by(is_administrator=False).first()
     # set up data
     other_department = Department(
         name="Other department",
         short_name="OPD",
         state=random.choice(DEPARTMENT_STATE_CHOICES)[0],
+        created_by=user.id,
     )
     session.add(other_department)
     officer = Officer(
-        id=99021, department_id=other_department.id, first_name="Chris", last_name="Doe"
+        id=99021,
+        department_id=other_department.id,
+        first_name="Chris",
+        last_name="Doe",
+        created_by=user.id,
     )
     session.add(officer)
 
@@ -1397,13 +1413,14 @@ def test_advanced_csv_import__update_officer_different_department(
 def test_advanced_csv_import__unit_other_department(
     session, department, department_without_officers, tmp_path
 ):
+    user = User.query.filter_by(is_administrator=False).first()
     # set up data
-    officer = generate_officer(department)
+    officer = generate_officer(department, user)
     session.add(officer)
     session.flush()
     session.add(department_without_officers)
     session.flush()
-    unit = Unit(department_id=department_without_officers.id)
+    unit = Unit(department_id=department_without_officers.id, created_by=user.id)
     session.add(unit)
     session.flush()
 
