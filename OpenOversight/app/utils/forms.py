@@ -182,6 +182,7 @@ def create_incident(self, form):
         links=fields["links"],
         created_by=fields["created_by"],
         last_updated_by=fields["last_updated_by"],
+        last_updated_at=datetime.datetime.now(),
     )
 
 
