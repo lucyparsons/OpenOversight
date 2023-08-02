@@ -10,7 +10,7 @@ from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models.database import Department, Face, Image, Officer
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.conftest import AC_DEPT, CREATING_USER
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -158,6 +158,7 @@ def test_user_can_add_tag(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
+                created_by=CREATING_USER,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=image.id),
@@ -179,6 +180,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=CREATING_USER,
         )
 
         rv = client.post(
@@ -203,6 +205,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=CREATING_USER,
         )
 
         rv = client.post(
@@ -224,6 +227,7 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=CREATING_USER,
         )
 
         rv = client.post(
@@ -357,6 +361,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
+                created_by=CREATING_USER,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=second_image.id),
