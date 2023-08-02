@@ -3,7 +3,6 @@ import datetime
 import math
 import os
 import random
-import string
 import sys
 import threading
 import time
@@ -40,12 +39,20 @@ from OpenOversight.app.models.database import (
 )
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
-from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_ENV_TESTING
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    KEY_ENV_TESTING,
+    KEY_NUM_OFFICERS,
+)
 from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 factory = Faker()
+
+
+def pick_uid():
+    return str(uuid.uuid4())
 
 
 class PoliceDepartment:
@@ -71,7 +78,7 @@ class PoliceDepartment:
         self.unique_internal_identifier_label = (
             unique_internal_identifier_label
             if unique_internal_identifier_label
-            else "".join(random.choices(string.ascii_uppercase + string.digits, k=20))
+            else pick_uid()
         )
 
 
@@ -160,15 +167,11 @@ def pick_department():
     return random.choice(departments)
 
 
-def pick_uid():
-    return str(uuid.uuid4())
-
-
 def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
-def generate_officer(department):
+def generate_officer(department: Department, user) -> Officer:
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
     return Officer(
@@ -181,10 +184,13 @@ def generate_officer(department):
         employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=department.id,
         unique_internal_identifier=pick_uid(),
+        created_by=user.id,
     )
 
 
-def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
+def build_assignment(
+    officer: Officer, units: List[Optional[Unit]], jobs: Job, user
+) -> Assignment:
     unit = random.choice(units)
     unit_id = unit.id if unit else None
     return Assignment(
@@ -194,10 +200,11 @@ def build_assignment(officer: Officer, units: List[Optional[Unit]], jobs: Job):
         unit_id=unit_id,
         start_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
         resign_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
+        created_by=user.id,
     )
 
 
-def build_note(officer, user, content=None):
+def build_note(officer: Officer, user, content=None) -> Note:
     date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
@@ -210,7 +217,7 @@ def build_note(officer, user, content=None):
     )
 
 
-def build_description(officer, user, content=None):
+def build_description(officer: Officer, user, content=None) -> Description:
     date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
@@ -223,17 +230,18 @@ def build_description(officer, user, content=None):
     )
 
 
-def build_salary(officer):
+def build_salary(officer: Officer, user) -> Salary:
     return Salary(
         officer_id=officer.id,
         salary=pick_salary(),
         overtime_pay=pick_salary(),
         year=random.randint(2000, 2019),
         is_fiscal_year=True if random.randint(0, 1) else False,
+        created_by=user.id,
     )
 
 
-def assign_faces(officer, images):
+def assign_faces(officer: Officer, images: Image, user):
     if random.uniform(0, 1) >= 0.5:
         img_id = random.choice(images).id
         return Face(
@@ -241,6 +249,7 @@ def assign_faces(officer, images):
             img_id=img_id,
             original_image_id=img_id,
             featured=False,
+            created_by=user.id,
         )
     else:
         return False
@@ -326,150 +335,7 @@ def test_csv_dir():
 
 
 def add_mockdata(session):
-    assert current_app.config["NUM_OFFICERS"] >= 5
-    department = Department(
-        name=SPRINGFIELD_PD.name,
-        short_name=SPRINGFIELD_PD.short_name,
-        state=SPRINGFIELD_PD.state,
-        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
-    )
-    session.add(department)
-    department2 = Department(
-        name=OTHER_PD.name,
-        short_name=OTHER_PD.short_name,
-        state=OTHER_PD.state,
-    )
-    session.add(department2)
-    empty_department = Department(
-        name=NO_OFFICER_PD.name,
-        short_name=NO_OFFICER_PD.short_name,
-        state=NO_OFFICER_PD.state,
-    )
-    session.add(empty_department)
-    session.commit()
-
-    for i, rank in enumerate(RANK_CHOICES_1):
-        session.add(
-            Job(
-                job_title=rank,
-                order=i,
-                is_sworn_officer=True,
-                department_id=department.id,
-            )
-        )
-        session.add(
-            Job(
-                job_title=rank,
-                order=i,
-                is_sworn_officer=True,
-                department_id=empty_department.id,
-            )
-        )
-
-    for i, rank in enumerate(RANK_CHOICES_2):
-        session.add(
-            Job(
-                job_title=rank,
-                order=i,
-                is_sworn_officer=True,
-                department_id=department2.id,
-            )
-        )
-    session.commit()
-
-    # Ensure test data is deterministic
-    random.seed(current_app.config["SEED"])
-
-    test_units = [
-        Unit(description="test", department_id=1),
-        Unit(description="District 13", department_id=1),
-        Unit(description="Donut Devourers", department_id=1),
-        Unit(description="Bureau of Organized Crime", department_id=2),
-        Unit(description="Porky's BBQ: Rub Division", department_id=2),
-    ]
-    session.add_all(test_units)
-    session.commit()
-    test_units.append(None)
-
-    test_images = [
-        Image(
-            filepath=f"/static/images/test_cop{x + 1}.png",
-            department_id=department.id,
-        )
-        for x in range(5)
-    ] + [
-        Image(
-            filepath=f"/static/images/test_cop{x + 1}.png",
-            department_id=department2.id,
-        )
-        for x in range(5)
-    ]
-    session.add_all(test_images)
-
-    test_officer_links = [
-        Link(
-            url="https://openoversight.com/",
-            link_type="link",
-            title="OpenOversight",
-            description="A public, searchable database of law enforcement officers.",
-        ),
-        Link(
-            url="http://www.youtube.com/?v=help",
-            link_type="video",
-            title="Youtube",
-            author="the internet",
-        ),
-    ]
-
-    officers = []
-    for d in [department, department2]:
-        officers += [
-            generate_officer(d) for _ in range(current_app.config["NUM_OFFICERS"])
-        ]
-    officers[0].links = test_officer_links
-    session.add_all(officers)
-
-    session.commit()
-
-    all_officers = Officer.query.all()
-    officers_dept1 = Officer.query.filter_by(department_id=1).all()
-    officers_dept2 = Officer.query.filter_by(department_id=2).all()
-
-    # assures that there are some assigned and unassigned images in each department
-    assigned_images_dept1 = Image.query.filter_by(department_id=1).limit(3).all()
-    assigned_images_dept2 = Image.query.filter_by(department_id=2).limit(3).all()
-
-    jobs_dept1 = Job.query.filter_by(department_id=1).all()
-    jobs_dept2 = Job.query.filter_by(department_id=2).all()
-
-    # which percentage of officers have an assignment
-    assignment_ratio = 0.9  # 90%
-    num_officers_with_assignments_1 = math.ceil(len(officers_dept1) * assignment_ratio)
-    assignments_dept1 = [
-        build_assignment(officer, test_units, jobs_dept1)
-        for officer in officers_dept1[:num_officers_with_assignments_1]
-    ]
-    num_officers_with_assignments_2 = math.ceil(len(officers_dept2) * assignment_ratio)
-    assignments_dept2 = [
-        build_assignment(officer, test_units, jobs_dept2)
-        for officer in officers_dept2[:num_officers_with_assignments_2]
-    ]
-
-    salaries = [build_salary(officer) for officer in all_officers]
-    faces_dept1 = [
-        assign_faces(officer, assigned_images_dept1) for officer in officers_dept1
-    ]
-    faces_dept2 = [
-        assign_faces(officer, assigned_images_dept2) for officer in officers_dept2
-    ]
-    faces1 = [f for f in faces_dept1 if f]
-    faces2 = [f for f in faces_dept2 if f]
-    session.commit()
-    session.add_all(assignments_dept1)
-    session.add_all(assignments_dept2)
-    session.add_all(salaries)
-    session.add_all(faces1)
-    session.add_all(faces2)
+    assert current_app.config[KEY_NUM_OFFICERS] >= 5
 
     test_user = User(
         email="jen@example.org", username="test_user", password="dog", confirmed=True
@@ -521,6 +387,171 @@ def add_mockdata(session):
     session.add(test_modified_disabled_user)
     session.commit()
 
+    department = Department(
+        name=SPRINGFIELD_PD.name,
+        short_name=SPRINGFIELD_PD.short_name,
+        state=SPRINGFIELD_PD.state,
+        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
+        created_by=test_admin.id,
+    )
+    session.add(department)
+    department2 = Department(
+        name=OTHER_PD.name,
+        short_name=OTHER_PD.short_name,
+        state=OTHER_PD.state,
+        created_by=test_admin.id,
+    )
+    session.add(department2)
+    empty_department = Department(
+        name=NO_OFFICER_PD.name,
+        short_name=NO_OFFICER_PD.short_name,
+        state=NO_OFFICER_PD.state,
+        created_by=test_admin.id,
+    )
+    session.add(empty_department)
+    session.commit()
+
+    for i, rank in enumerate(RANK_CHOICES_1):
+        session.add(
+            Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=department.id,
+                created_by=test_admin.id,
+            )
+        )
+        session.add(
+            Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=empty_department.id,
+                created_by=test_admin.id,
+            )
+        )
+
+    for i, rank in enumerate(RANK_CHOICES_2):
+        session.add(
+            Job(
+                job_title=rank,
+                order=i,
+                is_sworn_officer=True,
+                department_id=department2.id,
+                created_by=test_admin.id,
+            )
+        )
+    session.commit()
+
+    # Ensure test data is deterministic
+    random.seed(current_app.config["SEED"])
+
+    test_units = [
+        Unit(description="test", department_id=1, created_by=test_admin.id),
+        Unit(description="District 13", department_id=1, created_by=test_admin.id),
+        Unit(description="Donut Devourers", department_id=1, created_by=test_admin.id),
+        Unit(
+            description="Bureau of Organized Crime",
+            department_id=2,
+            created_by=test_admin.id,
+        ),
+        Unit(
+            description="Porky's BBQ: Rub Division",
+            department_id=2,
+            created_by=test_admin.id,
+        ),
+    ]
+    session.add_all(test_units)
+    session.commit()
+    test_units.append(None)
+
+    test_images = [
+        Image(
+            filepath=f"/static/images/test_cop{x + 1}.png",
+            department_id=department.id,
+            created_by=test_admin.id,
+        )
+        for x in range(5)
+    ] + [
+        Image(
+            filepath=f"/static/images/test_cop{x + 1}.png",
+            department_id=department2.id,
+            created_by=test_admin.id,
+        )
+        for x in range(5)
+    ]
+    session.add_all(test_images)
+
+    test_officer_links = [
+        Link(
+            url="https://openoversight.com/",
+            link_type="link",
+            title="OpenOversight",
+            description="A public, searchable database of law enforcement officers.",
+            created_by=test_admin.id,
+        ),
+        Link(
+            url="http://www.youtube.com/?v=help",
+            link_type="video",
+            title="Youtube",
+            author="the internet",
+            created_by=test_admin.id,
+        ),
+    ]
+
+    officers = []
+    for d in [department, department2]:
+        officers += [
+            generate_officer(d, test_admin)
+            for _ in range(current_app.config[KEY_NUM_OFFICERS])
+        ]
+    officers[0].links = test_officer_links
+    session.add_all(officers)
+
+    session.commit()
+
+    all_officers = Officer.query.all()
+    officers_dept1 = Officer.query.filter_by(department_id=1).all()
+    officers_dept2 = Officer.query.filter_by(department_id=2).all()
+
+    # assures that there are some assigned and unassigned images in each department
+    assigned_images_dept1 = Image.query.filter_by(department_id=1).limit(3).all()
+    assigned_images_dept2 = Image.query.filter_by(department_id=2).limit(3).all()
+
+    jobs_dept1 = Job.query.filter_by(department_id=1).all()
+    jobs_dept2 = Job.query.filter_by(department_id=2).all()
+
+    # which percentage of officers have an assignment
+    assignment_ratio = 0.9  # 90%
+    num_officers_with_assignments_1 = math.ceil(len(officers_dept1) * assignment_ratio)
+    assignments_dept1 = [
+        build_assignment(officer, test_units, jobs_dept1, test_admin)
+        for officer in officers_dept1[:num_officers_with_assignments_1]
+    ]
+    num_officers_with_assignments_2 = math.ceil(len(officers_dept2) * assignment_ratio)
+    assignments_dept2 = [
+        build_assignment(officer, test_units, jobs_dept2, test_admin)
+        for officer in officers_dept2[:num_officers_with_assignments_2]
+    ]
+
+    salaries = [build_salary(officer, test_admin) for officer in all_officers]
+    faces_dept1 = [
+        assign_faces(officer, assigned_images_dept1, test_admin)
+        for officer in officers_dept1
+    ]
+    faces_dept2 = [
+        assign_faces(officer, assigned_images_dept2, test_admin)
+        for officer in officers_dept2
+    ]
+    faces1 = [f for f in faces_dept1 if f]
+    faces2 = [f for f in faces_dept2 if f]
+    session.commit()
+    session.add_all(assignments_dept1)
+    session.add_all(assignments_dept2)
+    session.add_all(salaries)
+    session.add_all(faces1)
+    session.add_all(faces2)
+
     test_addresses = [
         Location(
             street_name="Test St",
@@ -529,6 +560,7 @@ def add_mockdata(session):
             city="My City",
             state="AZ",
             zip_code="23456",
+            created_by=test_admin.id,
         ),
         Location(
             street_name="Testing St",
@@ -537,6 +569,7 @@ def add_mockdata(session):
             city="Another City",
             state="ME",
             zip_code="23456",
+            created_by=test_admin.id,
         ),
     ]
 
@@ -544,8 +577,8 @@ def add_mockdata(session):
     session.commit()
 
     test_license_plates = [
-        LicensePlate(number="603EEE", state="MA"),
-        LicensePlate(number="404301", state="WA"),
+        LicensePlate(number="603EEE", state="MA", created_by=test_admin.id),
+        LicensePlate(number="404301", state="WA", created_by=test_admin.id),
     ]
 
     session.add_all(test_license_plates)
@@ -580,8 +613,8 @@ def add_mockdata(session):
             license_plates=test_license_plates,
             links=test_incident_links,
             officers=[all_officers[o] for o in range(4)],
-            created_by=1,
-            last_updated_by=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
             last_updated_at=datetime.datetime.now(),
         ),
         Incident(
@@ -594,8 +627,8 @@ def add_mockdata(session):
             license_plates=[test_license_plates[0]],
             links=test_incident_links,
             officers=[all_officers[o] for o in range(3)],
-            created_by=2,
-            last_updated_by=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
             last_updated_at=datetime.datetime.now(),
         ),
         Incident(
@@ -609,8 +642,8 @@ def add_mockdata(session):
             license_plates=[test_license_plates[0]],
             links=test_incident_links,
             officers=[all_officers[o] for o in range(1)],
-            created_by=2,
-            last_updated_by=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
             last_updated_at=datetime.datetime.now(),
         ),
     ]
@@ -726,11 +759,11 @@ def csvfile(mockdata, tmp_path, request):
     officers_dept1 = Officer.query.filter_by(department_id=1).all()
 
     if sys.version_info.major == 2:
-        csvf = open(str(csv_path), "w")
+        csv_file = open(str(csv_path), "w")
     else:
-        csvf = open(str(csv_path), "w", newline="")
+        csv_file = open(str(csv_path), "w", newline="")
     try:
-        writer = csv.DictWriter(csvf, fieldnames=fieldnames, extrasaction="ignore")
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for officer in officers_dept1:
             if not officer.unique_internal_identifier:
@@ -763,7 +796,7 @@ def csvfile(mockdata, tmp_path, request):
                 )
             writer.writerow(towrite)
     finally:
-        csvf.close()
+        csv_file.close()
 
     request.addfinalizer(teardown)
     return str(csv_path)
@@ -800,8 +833,8 @@ def browser(app, server_port):
     time.sleep(10)
 
     # start headless webdriver
-    vdisplay = Xvfb()
-    vdisplay.start()
+    visual_display = Xvfb()
+    visual_display.start()
     driver = webdriver.Firefox(log_path="/tmp/geckodriver.log")
     # wait for browser to start up
     time.sleep(3)
@@ -809,4 +842,4 @@ def browser(app, server_port):
 
     # shutdown headless webdriver
     driver.quit()
-    vdisplay.stop()
+    visual_display.stop()
