@@ -68,7 +68,6 @@ class ModelView(MethodView):
             # TODO: Determine whether creating counts as updating, seems redundant
             if hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
-            if hasattr(form, "last_updated_at"):
                 form.last_updated_at.data = datetime.datetime.now()
 
         if form.validate_on_submit():
@@ -106,9 +105,8 @@ class ModelView(MethodView):
                 form.created_by.data = current_user.get_id()
 
             # if the object keeps track of who updated it last, set to current user
-            if hasattr(form, "last_updated_by"):
+            if hasattr(obj, "last_updated_by") and hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
-            if hasattr(form, "last_updated_at"):
                 form.last_updated_at.data = datetime.datetime.now()
 
         if hasattr(form, "department"):
