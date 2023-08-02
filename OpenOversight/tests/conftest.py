@@ -171,7 +171,7 @@ def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
-def generate_officer(department: Department, user) -> Officer:
+def generate_officer(department: Department, user: User) -> Officer:
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
     return Officer(
@@ -189,7 +189,7 @@ def generate_officer(department: Department, user) -> Officer:
 
 
 def build_assignment(
-    officer: Officer, units: List[Optional[Unit]], jobs: Job, user
+    officer: Officer, units: List[Optional[Unit]], jobs: Job, user: User
 ) -> Assignment:
     unit = random.choice(units)
     unit_id = unit.id if unit else None
@@ -204,7 +204,7 @@ def build_assignment(
     )
 
 
-def build_note(officer: Officer, user, content=None) -> Note:
+def build_note(officer: Officer, user: User, content=None) -> Note:
     date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
@@ -217,7 +217,7 @@ def build_note(officer: Officer, user, content=None) -> Note:
     )
 
 
-def build_description(officer: Officer, user, content=None) -> Description:
+def build_description(officer: Officer, user: User, content=None) -> Description:
     date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
@@ -230,7 +230,7 @@ def build_description(officer: Officer, user, content=None) -> Description:
     )
 
 
-def build_salary(officer: Officer, user) -> Salary:
+def build_salary(officer: Officer, user: User) -> Salary:
     return Salary(
         officer_id=officer.id,
         salary=pick_salary(),
@@ -241,7 +241,7 @@ def build_salary(officer: Officer, user) -> Salary:
     )
 
 
-def assign_faces(officer: Officer, images: Image, user):
+def assign_faces(officer: Officer, images: Image, user: User):
     if random.uniform(0, 1) >= 0.5:
         img_id = random.choice(images).id
         return Face(
