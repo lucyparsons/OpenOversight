@@ -324,6 +324,7 @@ def sitemap_officers():
 @ac_or_admin_required
 def add_assignment(officer_id):
     form = AssignmentForm()
+    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
