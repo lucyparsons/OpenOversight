@@ -521,6 +521,7 @@ def classify_submission(image_id, contains_cops):
 @admin_required
 def add_department():
     form = DepartmentForm()
+    form.created_by = current_user.get_id()
     if form.validate_on_submit():
         department_does_not_exist = (
             Department.query.filter_by(
@@ -581,6 +582,7 @@ def edit_department(department_id):
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
+    form.created_by.data = department.created_by
     if form.validate_on_submit():
         if form.name.data != previous_name:
             does_already_department_exist = (
