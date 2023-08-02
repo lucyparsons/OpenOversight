@@ -684,6 +684,12 @@ class Incident(BaseModel):
     )
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="incidents", lazy=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
     created_by = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="SET NULL"),
@@ -699,10 +705,9 @@ class Incident(BaseModel):
         nullable=True,
         unique=False,
     )
-    created_at = db.Column(
+    last_updated_at = db.Column(
         db.DateTime(timezone=True),
-        nullable=False,
-        server_default=sql_func.now(),
+        nullable=True,
         unique=False,
     )
 
