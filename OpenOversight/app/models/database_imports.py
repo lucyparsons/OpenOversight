@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
+import datetime
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
@@ -24,10 +25,6 @@ from OpenOversight.app.utils.general import get_or_create, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
 
-if TYPE_CHECKING:
-    import datetime
-
-
 def validate_choice(
     value: Optional[str], given_choices: Sequence[Tuple[str, str]]
 ) -> Optional[str]:
@@ -39,13 +36,13 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> Optional["datetime.date"]:
+def parse_date(date_str: Optional[str]) -> Optional[datetime.date]:
     if date_str:
         return dateutil.parser.parse(date_str).date()
     return None
 
 
-def parse_time(time_str: Optional[str]) -> Optional["datetime.time"]:
+def parse_time(time_str: Optional[str]) -> Optional[datetime.time]:
     if time_str:
         return dateutil.parser.parse(time_str).time()
     return None
@@ -286,6 +283,8 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
         created_by=parse_int(data.get("created_by")),
+        last_updated_by=parse_int(data.get("last_updated_by")),
+        last_updated_at=datetime.datetime.now(),
     )
 
     incident.officers = data.get("officers", [])
