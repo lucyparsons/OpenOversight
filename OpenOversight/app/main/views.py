@@ -532,6 +532,7 @@ def add_department():
                 name=form.name.data,
                 short_name=form.short_name.data,
                 state=form.state.data,
+                created_by=current_user.get_id(),
             )
             db.session.add(department)
             db.session.flush()
