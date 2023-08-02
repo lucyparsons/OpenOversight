@@ -74,8 +74,8 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video")
-        license_plates_form = LicensePlateForm(state="AZ")
+        link_form = LinkForm(link_type="video", created_by=CREATING_USER)
+        license_plates_form = LicensePlateForm(state="AZ", created_by=CREATING_USER)
         form = IncidentForm(
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
@@ -86,6 +86,9 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
+            created_by=CREATING_USER,
+            last_updated_by=CREATING_USER,
+            last_updated_at=datetime.now(),
         )
         data = process_form_data(form.data)
 
@@ -117,8 +120,8 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video")
-        license_plates_form = LicensePlateForm(state="AZ")
+        link_form = LinkForm(link_type="video", created_by=CREATING_USER)
+        license_plates_form = LicensePlateForm(state="AZ", created_by=CREATING_USER)
         form = IncidentForm(
             date_field=str(date.date()),
             time_field=str(date.time()),
@@ -163,10 +166,15 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             created_by=CREATING_USER,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state).data
+            LicensePlateForm(
+                number=lp.number, state=lp.state, created_by=CREATING_USER
+            ).data
             for lp in inc.license_plates
         ]
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
@@ -217,13 +225,18 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         )
         old_links = inc.links
         old_links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         new_url = faker.url()
-        link_form = LinkForm(url=new_url, link_type="video")
+        link_form = LinkForm(url=new_url, link_type="video", created_by=CREATING_USER)
         old_license_plates = inc.license_plates
         new_number = "453893"
-        license_plates_form = LicensePlateForm(number=new_number, state="IA")
+        license_plates_form = LicensePlateForm(
+            number=new_number, state="IA", created_by=CREATING_USER
+        )
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
@@ -351,7 +364,8 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
             created_by=CREATING_USER,
         )
 
-        # license plate number given, but no state selected => 'Must also select a state.'
+        # license plate number given, but no state selected =>
+        # 'Must also select a state.'
         license_plate_form = LicensePlateForm(number="ABCDE", state="")
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in Officer.query.all()[:5]]
 
@@ -399,10 +413,15 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
             created_by=inc.created_by,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state).data
+            LicensePlateForm(
+                number=lp.number, state=lp.state, created_by=CREATING_USER
+            ).data
             for lp in inc.license_plates
         ]
 
@@ -459,7 +478,10 @@ def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
             created_by=inc.created_by,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
             LicensePlateForm(number=lp.number, state=lp.state).data
@@ -511,10 +533,15 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
             created_by=CREATING_USER,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state).data
+            LicensePlateForm(
+                number=lp.number, state=lp.state, created_by=CREATING_USER
+            ).data
             for lp in inc.license_plates
         ]
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
@@ -562,10 +589,15 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
             created_by=CREATING_USER,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state).data
+            LicensePlateForm(
+                number=lp.number, state=lp.state, created_by=CREATING_USER
+            ).data
             for lp in inc.license_plates
         ]
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
@@ -738,10 +770,15 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             created_by=inc.created_by,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url, link_type=link.link_type, created_by=CREATING_USER
+            ).data
+            for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state).data
+            LicensePlateForm(
+                number=lp.number, state=lp.state, created_by=CREATING_USER
+            ).data
             for lp in inc.license_plates
         ]
 
