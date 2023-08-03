@@ -386,6 +386,7 @@ def test_admin_edit_assignment_validation_error(
 def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         star_no = "1234"
         new_star_no = "12345"
@@ -398,6 +399,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             job_title=job.id,
             start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
+            created_by=user.id,
         )
 
         # Remove existing assignments
@@ -708,11 +710,13 @@ def test_admin_can_edit_police_department(mockdata, client, session):
 def test_admin_cannot_edit_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         add_department_form = DepartmentForm(
             name=TestPD.name,
             short_name=TestPD.short_name,
             state=TestPD.state,
+            created_by=user.id,
         )
 
         add_department_rv = client.post(
@@ -1017,11 +1021,13 @@ def test_admin_can_create_department_with_same_name_in_different_state(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         existing_form = DepartmentForm(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_rv = client.post(
@@ -1050,6 +1056,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             name=ExistingDiffStatePD.name,
             short_name=ExistingDiffStatePD.short_name,
             state=ExistingDiffStatePD.state,
+            created_by=user.id,
         )
 
         existing_diff_state_rv = client.post(
@@ -1074,6 +1081,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_duplicate_rv = client.post(
@@ -1092,11 +1100,13 @@ def test_admin_cannot_duplicate_police_department_during_edit(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         existing_dep_form = DepartmentForm(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_dep_rv = client.post(
@@ -1113,7 +1123,10 @@ def test_admin_cannot_duplicate_police_department_during_edit(
         NewPD = PoliceDepartment("New Police Department", "NPD", ExistingPD.state)
 
         new_dep_form = DepartmentForm(
-            name=NewPD.name, short_name=NewPD.short_name, state=NewPD.state
+            name=NewPD.name,
+            short_name=NewPD.short_name,
+            state=NewPD.state,
+            created_by=user.id,
         )
 
         new_dep_rv = client.post(
