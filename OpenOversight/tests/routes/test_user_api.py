@@ -1,4 +1,3 @@
-# Routing and view tests
 from http import HTTPMethod, HTTPStatus
 
 import pytest
@@ -9,12 +8,7 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-from OpenOversight.tests.routes.route_helpers import (
-    ADMIN_EMAIL,
-    login_ac,
-    login_admin,
-    login_user,
-)
+from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
 routes_methods = [
@@ -185,7 +179,7 @@ def test_admin_cannot_disable_self(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(email=ADMIN_EMAIL).first()
+        user = User.query.filter_by(is_administrator=True).first()
 
         assert not user.is_disabled
 
