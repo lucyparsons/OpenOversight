@@ -40,12 +40,13 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.constants import (
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD,
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
 )
 from OpenOversight.app.utils.general import merge_dicts
-from OpenOversight.tests.routes.route_helpers import ADMIN_EMAIL, ADMIN_PASSWORD
 
 
 factory = Faker()
