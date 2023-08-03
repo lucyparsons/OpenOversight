@@ -2218,9 +2218,14 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
 def test_admin_can_add_salary(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -2239,9 +2244,14 @@ def test_admin_can_add_salary(mockdata, client, session):
 def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
@@ -2281,12 +2291,17 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
 def test_admin_can_edit_salary(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         # Remove existing salaries
         Salary.query.filter_by(officer_id=1).delete()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
