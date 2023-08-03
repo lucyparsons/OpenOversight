@@ -8,9 +8,9 @@ from mock import MagicMock, patch
 
 from OpenOversight.app.main import views
 from OpenOversight.app.main.forms import FaceTag
-from OpenOversight.app.models.database import Department, Face, Image, Officer
+from OpenOversight.app.models.database import Department, Face, Image, Officer, User
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
-from OpenOversight.tests.conftest import AC_DEPT, CREATING_USER
+from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -151,6 +151,8 @@ def test_user_can_add_tag(mockdata, client, session):
             officer = Officer.query.filter_by(department_id=1).first()
             image = Image.query.filter_by(department_id=1).first()
             login_user(client)
+            user = User.query.filter_by(is_administrator=True).first()
+
             form = FaceTag(
                 officer_id=officer.id,
                 image_id=image.id,
@@ -158,7 +160,7 @@ def test_user_can_add_tag(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
-                created_by=CREATING_USER,
+                created_by=user.id,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=image.id),
@@ -172,6 +174,8 @@ def test_user_can_add_tag(mockdata, client, session):
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         tag = Face.query.first()
         form = FaceTag(
             officer_id=tag.officer_id,
@@ -180,7 +184,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
-            created_by=CREATING_USER,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -197,6 +201,8 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
 def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         tag = Face.query.first()
         form = FaceTag(
             officer_id=999999999999999999,
@@ -205,7 +211,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
-            created_by=CREATING_USER,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -220,6 +226,8 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
     with current_app.test_request_context():
         login_user(client)
         tag = Face.query.first()
+        user = User.query.filter_by(is_administrator=True).first()
+
         form = FaceTag(
             officer_id=tag.officer_id,
             image_id=tag.original_image_id,
@@ -227,7 +235,7 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
             dataY=32,
             dataWidth=3,
             dataHeight=33,
-            created_by=CREATING_USER,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -342,6 +350,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
+        user = User.query.filter_by(is_administrator=True).first()
         tag1 = Face.query.first()
         officer = Officer.query.filter_by(id=tag1.officer_id).one()
 
@@ -361,7 +370,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
-                created_by=CREATING_USER,
+                created_by=user.id,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=second_image.id),
