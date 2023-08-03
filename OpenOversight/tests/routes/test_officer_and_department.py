@@ -731,7 +731,7 @@ def test_admin_cannot_edit_police_department_without_state(mockdata, client, ses
         )
 
         without_state_form = EditDepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=""
+            name=TestPD.name, short_name=TestPD.short_name, state="", created_by=user.id
         )
 
         without_state_form.validate()
