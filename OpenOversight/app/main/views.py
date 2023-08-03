@@ -942,7 +942,6 @@ def add_officer():
 def edit_officer(officer_id):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
-    form.created_by.data = officer.created_by
 
     if request.method == HTTPMethod.GET:
         if officer.race is None:
