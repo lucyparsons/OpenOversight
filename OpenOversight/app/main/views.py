@@ -404,6 +404,7 @@ def edit_assignment(officer_id, assignment_id):
 @ac_or_admin_required
 def add_salary(officer_id):
     form = SalaryForm()
+    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     if not officer:
         flash("Officer not found")
@@ -457,6 +458,7 @@ def edit_salary(officer_id, salary_id):
 
     salary = Salary.query.filter_by(id=salary_id).one()
     form = SalaryForm(obj=salary)
+    form.created_by.data = salary.created_by
     if form.validate_on_submit():
         form.populate_obj(salary)
         db.session.add(salary)
