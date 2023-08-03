@@ -1407,7 +1407,7 @@ def test_admin_can_edit_existing_officer(mockdata, client, session, department, 
 
         officer = Officer.query.filter_by(last_name="Testerinski").one()
 
-        form = EditOfficerForm(last_name="Changed", links=links[:1], created_by=user.id)
+        form = EditOfficerForm(last_name="Changed", links=links[:1])
         data = process_form_data(form.data)
 
         rv = client.post(
