@@ -1795,6 +1795,7 @@ def test_assignments_csv(mockdata, client, session, department):
 def test_incidents_csv(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         # Delete existing incidents for chosen department
         Incident.query.filter_by(department_id=department.id).delete()
@@ -1802,9 +1803,11 @@ def test_incidents_csv(mockdata, client, session, department, faker):
         incident_date = datetime(2000, 5, 25, 1, 45)
         report_number = "42"
 
-        address_form = LocationForm(street_name="ABCDE", city="FGHI", state="IA")
-        link_form = LinkForm(url=faker.url(), link_type="video")
-        license_plates_form = LicensePlateForm(state="AZ")
+        address_form = LocationForm(
+            street_name="ABCDE", city="FGHI", state="IA", created_by=user.id
+        )
+        link_form = LinkForm(url=faker.url(), link_type="video", created_by=user.id)
+        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
         form = IncidentForm(
             date_field=str(incident_date.date()),
             time_field=str(incident_date.time()),
@@ -1816,6 +1819,7 @@ def test_incidents_csv(mockdata, client, session, department, faker):
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
+            created_by=user.id,
         )
         # add the incident
         rv = client.post(
