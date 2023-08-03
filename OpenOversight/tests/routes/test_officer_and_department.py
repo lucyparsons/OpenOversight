@@ -2313,7 +2313,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
         assert "Added new salary" in rv.data.decode(ENCODING_UTF_8)
         assert "<td>$123,456.78</td>" in rv.data.decode(ENCODING_UTF_8)
 
-        form = SalaryForm(salary=150000)
+        form = SalaryForm(salary=150000, created_by=user.id)
         officer = Officer.query.filter_by(id=1).one()
 
         rv = client.post(
