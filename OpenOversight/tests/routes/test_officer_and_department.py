@@ -2337,6 +2337,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
 def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         officer_id = officer.id
@@ -2344,7 +2345,10 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         Salary.query.filter_by(officer_id=officer_id).delete()
 
         form = SalaryForm(
-            salary=123456.78, overtime_pay=666.66, year=2019, is_fiscal_year=False
+            salary=123456.78,
+            overtime_pay=666.66,
+            year=2019,
+            is_fiscal_year=False,
         )
 
         rv = client.post(
