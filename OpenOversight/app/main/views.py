@@ -458,7 +458,6 @@ def edit_salary(officer_id, salary_id):
 
     salary = Salary.query.filter_by(id=salary_id).one()
     form = SalaryForm(obj=salary)
-    form.created_by.data = salary.created_by
     if form.validate_on_submit():
         form.populate_obj(salary)
         db.session.add(salary)
