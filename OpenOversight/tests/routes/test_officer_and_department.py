@@ -2349,6 +2349,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
             overtime_pay=666.66,
             year=2019,
             is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -2360,7 +2361,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         assert "Added new salary" in rv.data.decode(ENCODING_UTF_8)
         assert "<td>$123,456.78</td>" in rv.data.decode(ENCODING_UTF_8)
 
-        form = SalaryForm(salary=150000)
+        form = SalaryForm(salary=150000, created_by=user.id)
         officer = Officer.query.filter_by(id=officer_id).one()
 
         rv = client.post(
