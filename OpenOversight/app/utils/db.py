@@ -33,20 +33,20 @@ def add_unit_query(form, current_user):
 
 def compute_leaderboard_stats(select_top=25):
     top_sorters = (
-        db.session.query(User, func.count(Image.user_id))
+        db.session.query(User, func.count(Image.created_by))
         .select_from(Image)
         .join(User)
         .group_by(User)
-        .order_by(func.count(Image.user_id).desc())
+        .order_by(func.count(Image.created_by).desc())
         .limit(select_top)
         .all()
     )
     top_taggers = (
-        db.session.query(User, func.count(Face.user_id))
+        db.session.query(User, func.count(Face.created_by))
         .select_from(Face)
         .join(User)
         .group_by(User)
-        .order_by(func.count(Face.user_id).desc())
+        .order_by(func.count(Face.created_by).desc())
         .limit(select_top)
         .all()
     )
@@ -72,8 +72,8 @@ def get_officer(department_id, star_no, first_name, last_name):
     else:
         star_no = str(star_no)
         for assignment in Assignment.query.filter_by(star_no=star_no).all():
-            if assignment.baseofficer in officers:
-                return assignment.baseofficer
+            if assignment.base_officer in officers:
+                return assignment.base_officer
     return None
 
 

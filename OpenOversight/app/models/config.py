@@ -7,6 +7,7 @@ from OpenOversight.app.utils.constants import (
     KEY_ENV_PROD,
     KEY_ENV_TESTING,
     KEY_OFFICERS_PER_PAGE,
+    KEY_OO_MAIL_SUBJECT_PREFIX,
     KEY_TIMEZONE,
     MEGABYTE,
 )
@@ -44,7 +45,7 @@ class BaseConfig:
 
         # Mail Settings
         self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
-            "OO_MAIL_SUBJECT_PREFIX", "[OpenOversight]"
+            KEY_OO_MAIL_SUBJECT_PREFIX, "[OpenOversight]"
         )
         self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
         # TODO: Remove the default once we are able to update the production .env file

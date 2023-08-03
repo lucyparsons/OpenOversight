@@ -41,24 +41,26 @@
           incident.department.name }}</a>
         </p>
       {% endif %}
-      <div class="col-sm-12 col-md-6">
-        <h1>
-          Incident
-          {% if incident.report_number %}{{ incident.report_number }}{% endif %}
-        </h1>
-        <div>
-          <table class="table table-hover table-responsive">
-            <tbody>
-              {% with detail=True %}
-                {% include "partials/incident_fields.html" %}
-              {% endwith %}
-            </tbody>
-          </table>
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <h1>
+            Incident
+            {% if incident.report_number %}{{ incident.report_number }}{% endif %}
+          </h1>
+          <div>
+            <table class="table table-hover table-responsive">
+              <tbody>
+                {% with detail=True %}
+                  {% include "partials/incident_fields.html" %}
+                {% endwith %}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-      <div class="col-sm-12 col-md-6">
-        <h1>Incident Description</h1>
-        {{ incident.description | markdown }}
+        <div class="col-sm-12 col-md-6">
+          <h1>Incident Description</h1>
+          {{ incident.description | markdown }}
+        </div>
       </div>
       {% include "partials/links_and_videos_row.html" %}
       {% if current_user.is_administrator

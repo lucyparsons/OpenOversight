@@ -324,6 +324,7 @@ def sitemap_officers():
 @ac_or_admin_required
 def add_assignment(officer_id):
     form = AssignmentForm()
+    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
@@ -402,6 +403,7 @@ def edit_assignment(officer_id, assignment_id):
 @ac_or_admin_required
 def add_salary(officer_id):
     form = SalaryForm()
+    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     if not officer:
         flash("Officer not found")
@@ -498,7 +500,7 @@ def classify_submission(image_id, contains_cops):
         if image.contains_cops is not None and not current_user.is_administrator:
             flash("Only administrator can re-classify image")
             return redirect(redirect_url())
-        image.user_id = current_user.get_id()
+        image.created_by = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
         elif contains_cops == 0:
@@ -519,6 +521,7 @@ def classify_submission(image_id, contains_cops):
 @admin_required
 def add_department():
     form = DepartmentForm()
+    form.created_by = current_user.get_id()
     if form.validate_on_submit():
         department_does_not_exist = (
             Department.query.filter_by(
@@ -532,6 +535,7 @@ def add_department():
                 name=form.name.data,
                 short_name=form.short_name.data,
                 state=form.state.data,
+                created_by=current_user.get_id(),
             )
             db.session.add(department)
             db.session.flush()
@@ -578,6 +582,7 @@ def edit_department(department_id):
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
+    form.created_by.data = department.created_by
     if form.validate_on_submit():
         if form.name.data != previous_name:
             does_already_department_exist = (
@@ -898,10 +903,10 @@ def get_dept_units(department_id=None):
 @login_required
 @ac_or_admin_required
 def add_officer():
-    jsloads = ["js/dynamic_lists.js", "js/add_officer.js"]
     form = AddOfficerForm()
+    form.created_by.data = current_user.get_id()
     for link in form.links:
-        link.creator_id.data = current_user.id
+        link.created_by.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -924,14 +929,17 @@ def add_officer():
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
-        return render_template("add_officer.html", form=form, jsloads=jsloads)
+        return render_template(
+            "add_officer.html",
+            form=form,
+            jsloads=["js/dynamic_lists.js", "js/add_officer.js"],
+        )
 
 
 @main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
-    jsloads = ["js/dynamic_lists.js"]
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
 
@@ -953,7 +961,9 @@ def edit_officer(officer_id):
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
-        return render_template("edit_officer.html", form=form, jsloads=jsloads)
+        return render_template(
+            "edit_officer.html", form=form, jsloads=["js/dynamic_lists.js"]
+        )
 
 
 @main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1129,7 +1139,7 @@ def label_data(department_id=None, image_id=None):
                     face_position_y=upper,
                     face_width=form.dataWidth.data,
                     face_height=form.dataHeight.data,
-                    user_id=current_user.get_id(),
+                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_tag)
                 db.session.commit()
@@ -1245,9 +1255,9 @@ def download_dept_officers_csv(department_id):
 def download_dept_assignments_csv(department_id):
     assignments = (
         db.session.query(Assignment)
-        .join(Assignment.baseofficer)
+        .join(Assignment.base_officer)
         .filter(Officer.department_id == department_id)
-        .options(contains_eager(Assignment.baseofficer))
+        .options(contains_eager(Assignment.base_officer))
         .options(joinedload(Assignment.unit))
         .options(joinedload(Assignment.job))
     )
@@ -1365,7 +1375,7 @@ def download_dept_descriptions_csv(department_id):
     field_names = [
         "id",
         "text_contents",
-        "creator_id",
+        "created_by",
         "officer_id",
         "created_at",
         "updated_at",
@@ -1443,7 +1453,7 @@ def upload(department_id, officer_id=None):
                 # we set both images to the uploaded one
                 img_id=image.id,
                 original_image_id=image.id,
-                user_id=current_user.get_id(),
+                created_by=current_user.get_id(),
             )
             db.session.add(face)
             db.session.commit()
@@ -1561,7 +1571,7 @@ class IncidentApi(ModelView):
             form.officers[0].oo_id.data = request.args.get("officer_id")
 
         for link in form.links:
-            link.creator_id.data = current_user.id
+            link.created_by.data = current_user.id
         return form
 
     def get_edit_form(self, obj):
@@ -1571,10 +1581,10 @@ class IncidentApi(ModelView):
         no_links = len(obj.links)
         no_officers = len(obj.officers)
         for link in form.links:
-            if link.creator_id.data:
+            if link.created_by.data:
                 continue
             else:
-                link.creator_id.data = current_user.id
+                link.created_by.data = current_user.id
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id
@@ -1791,8 +1801,8 @@ class OfficerLinkApi(ModelView):
             abort(HTTPStatus.FORBIDDEN)
         if not form:
             form = self.get_new_form()
-            if hasattr(form, "creator_id") and not form.creator_id.data:
-                form.creator_id.data = current_user.get_id()
+            if hasattr(form, "created_by") and not form.created_by.data:
+                form.created_by.data = current_user.get_id()
 
         if form.validate_on_submit():
             link = Link(
@@ -1801,7 +1811,7 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
-                creator_id=form.creator_id.data,
+                created_by=form.created_by.data,
             )
             self.officer.links.append(link)
             db.session.add(link)
