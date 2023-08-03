@@ -427,6 +427,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             job_title=job.id,
             start_date=date(2019, 2, 1),
             resign_date=date(2019, 11, 30),
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -1614,9 +1615,12 @@ def test_admin_can_add_new_unit(mockdata, client, session, department):
 def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         department = Department.query.filter_by(id=AC_DEPT).first()
-        form = AddUnitForm(description="Test", department=department.id)
+        form = AddUnitForm(
+            description="Test", department=department.id, created_by=user.id
+        )
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
