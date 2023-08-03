@@ -82,8 +82,6 @@ class PoliceDepartment:
         )
 
 
-CREATING_USER = 1
-
 OFFICERS = [
     ("IVANA", "", "TINKLE"),
     ("SEYMOUR", "", "BUTZ"),
@@ -351,16 +349,6 @@ def add_mockdata(session):
     )
     session.add(test_admin)
 
-    test_area_coordinator = User(
-        email="raq929@example.org",
-        username="test_ac",
-        password="horse",
-        confirmed=True,
-        is_area_coordinator=True,
-        ac_department_id=AC_DEPT,
-    )
-    session.add(test_area_coordinator)
-
     test_unconfirmed_user = User(
         email="freddy@example.org", username="b_meson", password="dog", confirmed=False
     )
@@ -410,6 +398,16 @@ def add_mockdata(session):
     )
     session.add(empty_department)
     session.commit()
+
+    test_area_coordinator = User(
+        email="raq929@example.org",
+        username="test_ac",
+        password="horse",
+        confirmed=True,
+        is_area_coordinator=True,
+        ac_department_id=AC_DEPT,
+    )
+    session.add(test_area_coordinator)
 
     for i, rank in enumerate(RANK_CHOICES_1):
         session.add(
