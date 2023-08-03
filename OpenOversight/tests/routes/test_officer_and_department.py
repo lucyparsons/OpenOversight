@@ -2463,7 +2463,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         officer = Officer.query.first()
 
         form = OfficerLinkForm(
@@ -2490,7 +2490,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
 def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
         form = OfficerLinkForm(
@@ -2519,7 +2519,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
@@ -2575,7 +2575,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
 def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2633,7 +2633,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
@@ -2714,7 +2714,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2760,7 +2760,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
