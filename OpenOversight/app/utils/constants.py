@@ -52,3 +52,9 @@ KEY_TIMEZONE = "TIMEZONE"
 BYTE = 1
 KILOBYTE = 1024 * BYTE
 MEGABYTE = 1024 * KILOBYTE
+MINUTE = 60
+HOUR = 60 * MINUTE
+
+# Test Constants
+ADMIN_EMAIL = "test@example.org"
+ADMIN_PASSWORD = "testtest"

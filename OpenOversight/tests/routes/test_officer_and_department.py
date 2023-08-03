@@ -391,6 +391,7 @@ def test_admin_edit_assignment_validation_error(
 def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         star_no = "1234"
         new_star_no = "12345"
@@ -403,6 +404,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             job_title=job.id,
             start_date=date(2019, 1, 1),
             resign_date=date(2019, 12, 31),
+            created_by=user.id,
         )
 
         # Remove existing assignments
@@ -430,6 +432,7 @@ def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session)
             job_title=job.id,
             start_date=date(2019, 2, 1),
             resign_date=date(2019, 11, 30),
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -504,9 +507,13 @@ TestPD = PoliceDepartment("Test Police Department", "TPD")
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -527,8 +534,11 @@ def test_admin_can_add_police_department(mockdata, client, session):
 def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
-        form = DepartmentForm(name=TestPD.name, short_name=TestPD.short_name, state="")
+        form = DepartmentForm(
+            name=TestPD.name, short_name=TestPD.short_name, state="", created_by=user.id
+        )
         form.validate()
         errors = form.errors
 
@@ -540,9 +550,13 @@ def test_admin_cannot_add_police_department_without_state(mockdata, client, sess
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(is_administrator=False).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -555,9 +569,13 @@ def test_ac_cannot_add_police_department(mockdata, client, session):
 def test_admin_cannot_add_duplicate_police_department(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = DepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=TestPD.state
+            name=TestPD.name,
+            short_name=TestPD.short_name,
+            state=TestPD.state,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -598,11 +616,13 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         )
 
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
             short_name=MisspelledPD.short_name,
             state=MisspelledPD.state,
+            created_by=user.id,
         )
 
         misspelled_rv = client.post(
@@ -700,11 +720,13 @@ def test_admin_can_edit_police_department(mockdata, client, session):
 def test_admin_cannot_edit_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         add_department_form = DepartmentForm(
             name=TestPD.name,
             short_name=TestPD.short_name,
             state=TestPD.state,
+            created_by=user.id,
         )
 
         add_department_rv = client.post(
@@ -719,7 +741,7 @@ def test_admin_cannot_edit_police_department_without_state(mockdata, client, ses
         )
 
         without_state_form = EditDepartmentForm(
-            name=TestPD.name, short_name=TestPD.short_name, state=""
+            name=TestPD.name, short_name=TestPD.short_name, state="", created_by=user.id
         )
 
         without_state_form.validate()
@@ -1009,11 +1031,13 @@ def test_admin_can_create_department_with_same_name_in_different_state(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         existing_form = DepartmentForm(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_rv = client.post(
@@ -1046,6 +1070,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             name=ExistingDiffStatePD.name,
             short_name=ExistingDiffStatePD.short_name,
             state=ExistingDiffStatePD.state,
+            created_by=user.id,
         )
 
         existing_diff_state_rv = client.post(
@@ -1070,6 +1095,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_duplicate_rv = client.post(
@@ -1088,11 +1114,13 @@ def test_admin_cannot_duplicate_police_department_during_edit(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         existing_dep_form = DepartmentForm(
             name=ExistingPD.name,
             short_name=ExistingPD.short_name,
             state=ExistingPD.state,
+            created_by=user.id,
         )
 
         existing_dep_rv = client.post(
@@ -1109,7 +1137,10 @@ def test_admin_cannot_duplicate_police_department_during_edit(
         NewPD = PoliceDepartment("New Police Department", "NPD", ExistingPD.state)
 
         new_dep_form = DepartmentForm(
-            name=NewPD.name, short_name=NewPD.short_name, state=NewPD.state
+            name=NewPD.name,
+            short_name=NewPD.short_name,
+            state=NewPD.state,
+            created_by=user.id,
         )
 
         new_dep_rv = client.post(
@@ -1159,6 +1190,8 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 def test_admin_can_add_new_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         links = [
             LinkForm(url=faker.url(), link_type="link").data,
             LinkForm(url=faker.url(), link_type="video").data,
@@ -1175,6 +1208,7 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
             department=department.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
@@ -1195,6 +1229,8 @@ def test_admin_can_add_new_officer_with_unit(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         unit = random.choice(unit_choices())
         links = [
             LinkForm(url=faker.url(), link_type="link").data,
@@ -1213,6 +1249,7 @@ def test_admin_can_add_new_officer_with_unit(
             department=department.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
@@ -1226,7 +1263,7 @@ def test_admin_can_add_new_officer_with_unit(
         assert officer.first_name == "Test"
         assert officer.race == "WHITE"
         assert officer.gender == "M"
-        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+        assert Assignment.query.filter_by(base_officer=officer, unit=unit).one()
 
 
 def test_ac_can_add_new_officer_in_their_dept(mockdata, client, session):
@@ -1313,12 +1350,14 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
             )
         else:
             assert officer.gender == gender
-        assert Assignment.query.filter_by(baseofficer=officer, unit=unit).one()
+        assert Assignment.query.filter_by(base_officer=officer, unit=unit).one()
 
 
 def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         department = Department.query.except_(
             Department.query.filter_by(id=AC_DEPT)
         ).first()
@@ -1338,6 +1377,7 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
@@ -1351,12 +1391,14 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
 def test_admin_can_edit_existing_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         unit = random.choice(unit_choices())
         link_url0 = faker.url()
         link_url1 = faker.url()
         links = [
-            LinkForm(url=link_url0, link_type="link").data,
-            LinkForm(url=link_url0, link_type="video").data,
+            LinkForm(url=link_url0, link_type="link", created_by=user.id).data,
+            LinkForm(url=link_url0, link_type="video", created_by=user.id).data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1371,10 +1413,11 @@ def test_admin_can_edit_existing_officer(mockdata, client, session, department, 
             unit=unit.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
-        rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
+        client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         officer = Officer.query.filter_by(last_name="Testerinski").one()
 
@@ -1397,7 +1440,7 @@ def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        officer = officer = Officer.query.except_(
+        officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
         old_last_name = officer.last_name
@@ -1466,7 +1509,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
 
         data = process_form_data(form.data)
 
-        rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
+        client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         officer = Officer.query.filter_by(last_name=last_name).one()
 
@@ -1500,6 +1543,7 @@ def test_admin_adds_officer_without_middle_initial(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1511,6 +1555,7 @@ def test_admin_adds_officer_without_middle_initial(
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -1531,6 +1576,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1543,6 +1589,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -1561,8 +1608,11 @@ def test_admin_adds_officer_with_letter_in_badge_no(
 def test_admin_can_add_new_unit(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
-        form = AddUnitForm(description="Test", department=department.id)
+        form = AddUnitForm(
+            description="Test", department=department.id, created_by=user.id
+        )
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
@@ -1578,9 +1628,12 @@ def test_admin_can_add_new_unit(mockdata, client, session, department):
 def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         department = Department.query.filter_by(id=AC_DEPT).first()
-        form = AddUnitForm(description="Test", department=department.id)
+        form = AddUnitForm(
+            description="Test", department=department.id, created_by=user.id
+        )
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
@@ -1614,9 +1667,11 @@ def test_admin_can_add_new_officer_with_suffix(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         links = [
-            LinkForm(url=faker.url(), link_type="link").data,
-            LinkForm(url=faker.url(), link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
+            LinkForm(url=faker.url(), link_type="video", created_by=user.id).data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1631,6 +1686,7 @@ def test_admin_can_add_new_officer_with_suffix(
             department=department.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
@@ -1756,6 +1812,7 @@ def test_assignments_csv(mockdata, client, session, department):
 def test_incidents_csv(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         # Delete existing incidents for chosen department
         Incident.query.filter_by(department_id=department.id).delete()
@@ -1763,9 +1820,11 @@ def test_incidents_csv(mockdata, client, session, department, faker):
         incident_date = datetime(2000, 5, 25, 1, 45)
         report_number = "42"
 
-        address_form = LocationForm(street_name="ABCDE", city="FGHI", state="IA")
-        link_form = LinkForm(url=faker.url(), link_type="video")
-        license_plates_form = LicensePlateForm(state="AZ")
+        address_form = LocationForm(
+            street_name="ABCDE", city="FGHI", state="IA", created_by=user.id
+        )
+        link_form = LinkForm(url=faker.url(), link_type="video", created_by=user.id)
+        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
         form = IncidentForm(
             date_field=str(incident_date.date()),
             time_field=str(incident_date.time()),
@@ -1777,6 +1836,7 @@ def test_incidents_csv(mockdata, client, session, department, faker):
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
+            created_by=user.id,
         )
         # add the incident
         rv = client.post(
@@ -2176,9 +2236,14 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
 def test_admin_can_add_salary(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         form = SalaryForm(
-            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
+            salary="123456.78",
+            overtime_pay="666.66",
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -2199,9 +2264,14 @@ def test_admin_can_add_salary(mockdata, client, session):
 def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         form = SalaryForm(
-            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
+            salary="123456.78",
+            overtime_pay="666.66",
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
@@ -2243,12 +2313,17 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
 def test_admin_can_edit_salary(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         # Remove existing salaries
         Salary.query.filter_by(officer_id=1).delete()
 
         form = SalaryForm(
-            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
+            salary="123456.78",
+            overtime_pay="666.66",
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -2260,7 +2335,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
         assert "Added new salary" in rv.data.decode(ENCODING_UTF_8)
         assert "<td>$123,456.78</td>" in rv.data.decode(ENCODING_UTF_8)
 
-        form = SalaryForm(salary="150000")
+        form = SalaryForm(salary="150000", created_by=user.id)
         officer = Officer.query.filter_by(id=1).one()
 
         rv = client.post(
@@ -2284,6 +2359,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
 def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
 
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         officer_id = officer.id
@@ -2291,7 +2367,11 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         Salary.query.filter_by(officer_id=officer_id).delete()
 
         form = SalaryForm(
-            salary="123456.78", overtime_pay="666.66", year=2019, is_fiscal_year=False
+            salary="123456.78",
+            overtime_pay="666.66",
+            year=2019,
+            is_fiscal_year=False,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -2303,7 +2383,7 @@ def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
         assert "Added new salary" in rv.data.decode(ENCODING_UTF_8)
         assert "<td>$123,456.78</td>" in rv.data.decode(ENCODING_UTF_8)
 
-        form = SalaryForm(salary="150000")
+        form = SalaryForm(salary="150000", created_by=user.id)
         officer = Officer.query.filter_by(id=officer_id).one()
 
         rv = client.post(
@@ -2397,7 +2477,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         officer = Officer.query.first()
 
         form = OfficerLinkForm(
@@ -2406,7 +2486,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 
@@ -2424,7 +2504,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
 def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
         form = OfficerLinkForm(
@@ -2433,7 +2513,7 @@ def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, sess
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2453,7 +2533,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
@@ -2464,7 +2544,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2491,7 +2571,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2509,7 +2589,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
 def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2526,7 +2606,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2547,7 +2627,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2567,7 +2647,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
@@ -2584,7 +2664,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 
@@ -2607,7 +2687,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author=link.author,
             url=link.url,
             link_type=link.link_type,
-            creator_id=link.creator_id,
+            created_by=link.created_by,
             officer_id=officer.id,
         )
 
@@ -2648,7 +2728,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2665,7 +2745,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=ac.id,
+            created_by=ac.id,
             officer_id=officer.id,
         )
 
@@ -2694,7 +2774,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
@@ -2711,7 +2791,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            creator_id=admin.id,
+            created_by=admin.id,
             officer_id=officer.id,
         )
 

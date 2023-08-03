@@ -15,6 +15,7 @@ from OpenOversight.app.models.database import (
     Image,
     Job,
     Officer,
+    User,
 )
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
@@ -159,6 +160,8 @@ def test_user_can_add_tag(mockdata, client, session):
             officer = Officer.query.filter_by(department_id=1).first()
             image = Image.query.filter_by(department_id=1).first()
             login_user(client)
+            user = User.query.filter_by(is_administrator=True).first()
+
             form = FaceTag(
                 department_id=officer.department_id,
                 star_no=officer.assignments[0].star_no,
@@ -167,6 +170,7 @@ def test_user_can_add_tag(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
+                created_by=user.id,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=image.id),
@@ -250,6 +254,8 @@ def test_user_cannot_open_image_in_tagger_if_has_already_been_tagged(
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         tag = Face.query.first()
         form = FaceTag(
             department_id=tag.officer.department_id,
@@ -259,6 +265,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -275,6 +282,8 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
 def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         tag = Face.query.first()
         form = FaceTag(
             department_id=Department.query.first().id,
@@ -284,6 +293,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -298,6 +308,8 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
     with current_app.test_request_context():
         login_user(client)
         tag = Face.query.first()
+        user = User.query.filter_by(is_administrator=True).first()
+
         form = FaceTag(
             department_id=tag.officer.department_id,
             star_no=tag.officer.assignments[0].star_no,
@@ -307,6 +319,7 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
             dataY=32,
             dataWidth=3,
             dataHeight=33,
+            created_by=user.id,
         )
 
         rv = client.post(
@@ -381,6 +394,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
 
+        user = User.query.filter_by(is_administrator=True).first()
         tag1 = Face.query.first()
         officer = Officer.query.filter_by(id=tag1.officer_id).one()
 
@@ -401,6 +415,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
                 dataY=32,
                 dataWidth=3,
                 dataHeight=33,
+                created_by=user.id,
             )
             rv = client.post(
                 url_for("main.label_data", image_id=second_image.id),

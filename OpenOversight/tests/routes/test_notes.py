@@ -37,9 +37,9 @@ def test_admins_can_create_notes(mockdata, client, session):
         login_admin(client)
         officer = Officer.query.first()
         text_contents = "I can haz notez"
-        admin = User.query.filter_by(email="jen@example.org").first()
+        admin = User.query.filter_by(is_administrator=True).first()
         form = TextForm(
-            text_contents=text_contents, officer_id=officer.id, creator_id=admin.id
+            text_contents=text_contents, officer_id=officer.id, created_by=admin.id
         )
 
         rv = client.post(
@@ -61,8 +61,8 @@ def test_acs_can_create_notes(mockdata, client, session):
         login_ac(client)
         officer = Officer.query.first()
         note = "I can haz notez"
-        ac = User.query.filter_by(email="raq929@example.org").first()
-        form = TextForm(text_contents=note, officer_id=officer.id, creator_id=ac.id)
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        form = TextForm(text_contents=note, officer_id=officer.id, created_by=ac.id)
 
         rv = client.post(
             url_for("main.note_api", officer_id=officer.id),
@@ -88,7 +88,7 @@ def test_admins_can_edit_notes(mockdata, client, session):
         note = Note(
             text_contents=old_note,
             officer_id=officer.id,
-            creator_id=1,
+            created_by=1,
             created_at=original_date,
             updated_at=original_date,
         )
@@ -114,7 +114,7 @@ def test_admins_can_edit_notes(mockdata, client, session):
 def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         old_note = "meow"
         new_note = "I can haz editing notez"
@@ -122,7 +122,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
         note = Note(
             text_contents=old_note,
             officer_id=officer.id,
-            creator_id=ac.id,
+            created_by=ac.id,
             created_at=original_date,
             updated_at=original_date,
         )
@@ -148,7 +148,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session):
 def test_ac_can_edit_others_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         old_note = "meow"
         new_note = "I can haz editing notez"
@@ -156,7 +156,7 @@ def test_ac_can_edit_others_notes(mockdata, client, session):
         note = Note(
             text_contents=old_note,
             officer_id=officer.id,
-            creator_id=ac.id - 1,
+            created_by=ac.id - 1,
             created_at=original_date,
             updated_at=original_date,
         )
@@ -186,14 +186,14 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         old_note = "meow"
         new_note = "I can haz editing notez"
         original_date = datetime.now()
         note = Note(
             text_contents=old_note,
             officer_id=officer.id,
-            creator_id=ac.id,
+            created_by=ac.id,
             created_at=original_date,
             updated_at=original_date,
         )
@@ -230,12 +230,12 @@ def test_admins_can_delete_notes(mockdata, client, session):
 def test_acs_can_delete_their_notes_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         note = Note(
             text_contents="Hello",
             officer_id=officer.id,
-            creator_id=ac.id,
+            created_by=ac.id,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -260,7 +260,7 @@ def test_acs_cannot_delete_notes_not_in_their_department(mockdata, client, sessi
         note = Note(
             text_contents="Hello",
             officer_id=officer.id,
-            creator_id=2,
+            created_by=2,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -281,11 +281,11 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         note = Note(
             text_contents="Hello",
             officer_id=officer.id,
-            creator_id=ac.id,
+            created_by=ac.id,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -303,11 +303,11 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        ac = User.query.filter_by(email="raq929@example.org").first()
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         note = Note(
             text_contents="Hello",
             officer_id=officer.id,
-            creator_id=ac.id - 1,
+            created_by=ac.id - 1,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -330,7 +330,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         note = Note(
             text_contents="Hello",
             officer_id=officer.id,
-            creator_id=2,
+            created_by=2,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -350,7 +350,7 @@ def test_users_cannot_see_notes(mockdata, client, session):
         note = Note(
             text_contents=text_contents,
             officer_id=officer.id,
-            creator_id=1,
+            created_by=1,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -374,7 +374,7 @@ def test_admins_can_see_notes(mockdata, client, session):
         note = Note(
             text_contents=text_contents,
             officer_id=officer.id,
-            creator_id=1,
+            created_by=1,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -397,7 +397,7 @@ def test_acs_can_see_notes_in_their_department(mockdata, client, session):
         note = Note(
             text_contents=text_contents,
             officer_id=officer.id,
-            creator_id=1,
+            created_by=1,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -422,7 +422,7 @@ def test_acs_cannot_see_notes_not_in_their_department(mockdata, client, session)
         note = Note(
             text_contents=text_contents,
             officer_id=officer.id,
-            creator_id=1,
+            created_by=1,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )

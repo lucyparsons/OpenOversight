@@ -33,6 +33,13 @@ officer_links = db.Table(
     "officer_links",
     db.Column("officer_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 officer_incidents = db.Table(
@@ -41,9 +48,19 @@ officer_incidents = db.Table(
     db.Column(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 
+# This is a last recently used cache that also utilizes a time-to-live function for each
+# value saved in it (12 hours).
+# TODO: Change this into a singleton so that we can clear values when updates happen
 date_updated_cache = TTLCache(maxsize=1024, ttl=12 * 60 * 60)
 
 
@@ -71,6 +88,15 @@ class Department(BaseModel):
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
     state = db.Column(db.String(2), server_default="", nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
 
     # See https://github.com/lucyparsons/OpenOversight/issues/462
     unique_internal_identifier_label = db.Column(
@@ -130,6 +156,15 @@ class Job(BaseModel):
     order = db.Column(db.Integer, index=True, unique=False, nullable=False)
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="jobs")
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -149,7 +184,9 @@ class Note(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
     creator = db.relationship("User", backref="notes")
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
@@ -169,7 +206,9 @@ class Description(BaseModel):
     officer = db.relationship("Officer", back_populates="descriptions")
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     created_at = db.Column(
         db.DateTime(timezone=True),
@@ -200,9 +239,17 @@ class Officer(BaseModel):
     unique_internal_identifier = db.Column(
         db.String(50), index=True, unique=True, nullable=True
     )
-    date_created = db.Column(db.DateTime, default=func.now())
     date_updated = db.Column(
         db.DateTime, default=func.now(), onupdate=func.now(), index=True
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
     )
 
     links = db.relationship(
@@ -330,6 +377,15 @@ class Salary(BaseModel):
     overtime_pay = db.Column(Currency(), index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
 
     def __repr__(self):
         return f"<Salary: ID {self.officer_id} : {self.salary}"
@@ -340,7 +396,7 @@ class Assignment(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    baseofficer = db.relationship("Officer")
+    base_officer = db.relationship("Officer")
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"), nullable=False)
     job = db.relationship("Job")
@@ -348,9 +404,17 @@ class Assignment(BaseModel):
     unit = db.relationship("Unit")
     start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
-    date_created = db.Column(db.DateTime, default=func.now())
     date_updated = db.Column(
         db.DateTime, default=func.now(), onupdate=func.now(), index=True
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
     )
 
     def __repr__(self):
@@ -365,6 +429,15 @@ class Unit(BaseModel):
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship(
         "Department", backref="unit_types", order_by="Unit.description.asc()"
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
     )
 
     def __repr__(self):
@@ -404,10 +477,16 @@ class Face(BaseModel):
     original_image = db.relationship(
         "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
     )
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     user = db.relationship("User", backref="faces")
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
+    )
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     )
 
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
@@ -423,7 +502,6 @@ class Image(BaseModel):
     filepath = db.Column(db.String(255), unique=False)
     hash_img = db.Column(db.String(120), unique=False, nullable=True)
 
-    # Track when the image was put into our database
     created_at = db.Column(
         db.DateTime(timezone=True),
         index=True,
@@ -436,7 +514,12 @@ class Image(BaseModel):
         db.DateTime(timezone=True), index=True, unique=False, nullable=True
     )
     contains_cops = db.Column(db.Boolean, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
 
     user = db.relationship("User", backref="raw_images")
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
@@ -454,6 +537,13 @@ incident_links = db.Table(
         "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
     ),
     db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 incident_license_plates = db.Table(
@@ -467,6 +557,13 @@ incident_license_plates = db.Table(
         db.ForeignKey("license_plates.id"),
         primary_key=True,
     ),
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    ),
 )
 
 incident_officers = db.Table(
@@ -476,6 +573,13 @@ incident_officers = db.Table(
     ),
     db.Column(
         "officers_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True
+    ),
+    db.Column(
+        "created_at",
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     ),
 )
 
@@ -490,6 +594,18 @@ class Location(BaseModel):
     city = db.Column(db.String(100), unique=False, index=True)
     state = db.Column(db.String(2), unique=False, index=True)
     zip_code = db.Column(db.String(5), unique=False, index=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
 
     @validates("zip_code")
     def validate_zip_code(self, key, zip_code):
@@ -529,6 +645,18 @@ class LicensePlate(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     number = db.Column(db.String(8), nullable=False, index=True)
     state = db.Column(db.String(2), index=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
 
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
@@ -547,8 +675,19 @@ class Link(BaseModel):
     link_type = db.Column(db.String(100), index=True)
     description = db.Column(db.Text(), nullable=True)
     author = db.Column(db.String(255), nullable=True)
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
     creator = db.relationship("User", backref="links", lazy=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     @validates("url")
     def validate_url(self, key, url):
@@ -585,13 +724,31 @@ class Incident(BaseModel):
     )
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="incidents", lazy=True)
-    creator_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    creator = db.relationship(
-        "User", backref="incidents_created", lazy=True, foreign_keys=[creator_id]
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
     )
-    last_updated_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    last_updated_by = db.relationship(
-        "User", backref="incidents_updated", lazy=True, foreign_keys=[last_updated_id]
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
+    creator = db.relationship(
+        "User", backref="incidents_created", lazy=True, foreign_keys=[created_by]
+    )
+    last_updated_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=False,
+    )
+    last_updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=True,
+        unique=False,
     )
     date_created = db.Column(db.DateTime, default=func.now())
     date_updated = db.Column(
@@ -618,6 +775,12 @@ class User(UserMixin, BaseModel):
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
     classifications = db.relationship("Image", backref="users")
     tags = db.relationship("Face", backref="users")
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        server_default=sql_func.now(),
+        unique=False,
+    )
 
     def _jwt_encode(self, payload, expiration):
         secret = current_app.config["SECRET_KEY"]

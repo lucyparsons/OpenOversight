@@ -38,7 +38,9 @@ class Email:
 
 class AdministratorApprovalEmail(Email):
     def __init__(self, receiver: str, user, admin):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} New User Registered"
+        subject = (
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} New User Registered"
+        )
         body = render_template(
             f"{self.EMAIL_PATH}new_registration.txt", user=user, admin=admin
         )
@@ -51,7 +53,7 @@ class AdministratorApprovalEmail(Email):
 class ChangeEmailAddressEmail(Email):
     def __init__(self, receiver: str, user, token: str):
         subject = (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Email "
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Email "
             f"Address"
         )
         body = render_template(
@@ -65,9 +67,7 @@ class ChangeEmailAddressEmail(Email):
 
 class ChangePasswordEmail(Email):
     def __init__(self, receiver: str, user):
-        subject = (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password Has Changed"
-        )
+        subject = f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Your Password Has Changed"
         body = render_template(
             f"{self.EMAIL_PATH}change_password.txt",
             user=user,
@@ -93,7 +93,7 @@ class ConfirmAccountEmail(Email):
 
 class ConfirmedUserEmail(Email):
     def __init__(self, receiver: str, user, admin):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} New User Confirmed"
+        subject = f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} New User Confirmed"
         body = render_template(
             f"{self.EMAIL_PATH}new_confirmation.txt", user=user, admin=admin
         )

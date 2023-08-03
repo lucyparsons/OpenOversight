@@ -1,4 +1,3 @@
-# Routing and view tests
 from http import HTTPStatus
 from unittest import TestCase
 from urllib.parse import urlparse
@@ -16,8 +15,9 @@ from OpenOversight.app.auth.forms import (
     RegistrationForm,
 )
 from OpenOversight.app.models.database import User
-
-from .route_helpers import (
+from OpenOversight.app.utils.constants import KEY_OO_MAIL_SUBJECT_PREFIX
+from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.routes.route_helpers import (
     login_disabled_user,
     login_modified_disabled_user,
     login_unconfirmed_user,
@@ -90,9 +90,10 @@ def test_user_can_logout(mockdata, client, session):
 
 def test_user_cannot_register_with_existing_email(mockdata, client, session):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
-            email="jen@example.org",
-            username="redshiftzero",
+            email=user.email,
+            username=user.username,
             password="dog",
             password2="dog",
         )
@@ -109,9 +110,10 @@ def test_user_cannot_register_with_existing_email_differently_cased(
     mockdata, client, session
 ):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
-            email="JEN@EXAMPLE.ORG",
-            username="redshiftzero",
+            email=user.email.upper(),
+            username=user.username,
             password="dog",
             password2="dog",
         )
@@ -126,9 +128,10 @@ def test_user_cannot_register_with_existing_email_differently_cased(
 
 def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
-            email="freddy@example.org",
-            username="b_meson",
+            email=user.email,
+            username=user.username,
             password="dog",
             password2="cat",
         )
@@ -141,14 +144,14 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
         assert b"Passwords must match" in rv.data
 
 
-def test_user_can_register_with_legit_credentials(mockdata, client, session):
+def test_user_can_register_with_legit_credentials(mockdata, client, session, faker):
     with current_app.test_request_context(), TestCase.assertLogs(
         current_app.logger
     ) as log:
         diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
-            email="jen@example.com",
-            username="redshiftzero",
+            email=faker.ascii_email(),
+            username="generic_username",
             password=diceware_password,
             password2=diceware_password,
         )
@@ -158,16 +161,17 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session):
 
         assert b"A confirmation email has been sent to you." in rv.data
         assert (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
             in str(log.output)
         )
 
 
 def test_user_cannot_register_with_weak_password(mockdata, client, session):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
-            email="jen@example.com",
-            username="redshiftzero",
+            email=user.email,
+            username=user.username,
             password="weak",
             password2="weak",
         )
@@ -188,7 +192,7 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
 
         assert b"A new confirmation email has been sent to you." in rv.data
         assert (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
             in str(log.output)
         )
 
@@ -197,7 +201,8 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
     with current_app.test_request_context(), TestCase.assertLogs(
         current_app.logger
     ) as log:
-        form = PasswordResetRequestForm(email="jen@example.org")
+        user = User.query.filter_by(is_administrator=True).first()
+        form = PasswordResetRequestForm(email=user.email)
 
         rv = client.post(
             url_for("auth.password_reset_request"),
@@ -207,7 +212,7 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
 
         assert b"An email with instructions to reset your password" in rv.data
         assert (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
             in str(log.output)
         )
 
@@ -218,7 +223,8 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
     with current_app.test_request_context(), TestCase.assertLogs(
         current_app.logger
     ) as log:
-        form = PasswordResetRequestForm(email="JEN@EXAMPLE.ORG")
+        user = User.query.filter_by(is_administrator=True).first()
+        form = PasswordResetRequestForm(email=user.email.upper())
 
         rv = client.post(
             url_for("auth.password_reset_request"),
@@ -228,17 +234,17 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
 
         assert b"An email with instructions to reset your password" in rv.data
         assert (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
             in str(log.output)
         )
 
 
 def test_user_can_get_reset_password_with_valid_token(mockdata, client, session):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetForm(
-            email="jen@example.org", password="catdog", password2="catdog"
+            email=user.email, password="catdog", password2="catdog"
         )
-        user = User.query.filter_by(email="jen@example.org").one()
         token = user.generate_reset_token()
 
         rv = client.post(
@@ -254,10 +260,10 @@ def test_user_can_get_reset_password_with_valid_token_differently_cased(
     mockdata, client, session
 ):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetForm(
-            email="JEN@EXAMPLE.ORG", password="catdog", password2="catdog"
+            email=user.email.upper(), password="catdog", password2="catdog"
         )
-        user = User.query.filter_by(email="jen@example.org").one()
         token = user.generate_reset_token()
 
         rv = client.post(
@@ -271,8 +277,9 @@ def test_user_can_get_reset_password_with_valid_token_differently_cased(
 
 def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session):
     with current_app.test_request_context():
+        user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetForm(
-            email="jen@example.org", password="catdog", password2="catdog"
+            email=user.email, password="catdog", password2="catdog"
         )
         token = "beepboopbeep"
 
@@ -290,7 +297,8 @@ def test_user_cannot_get_email_reset_token_sent_without_valid_password(
 ):
     with current_app.test_request_context():
         login_user(client)
-        form = ChangeEmailForm(email="jen@example.org", password="dogdogdogdog")
+        user = User.query.filter_by(is_administrator=True).first()
+        form = ChangeEmailForm(email=user.email, password="dogdogdogdog")
 
         rv = client.post(
             url_for("auth.change_email_request"), data=form.data, follow_redirects=True
@@ -304,7 +312,8 @@ def test_user_cannot_get_email_reset_token_sent_to_existing_email(
 ):
     with current_app.test_request_context():
         login_user(client)
-        form = ChangeEmailForm(email="freddy@example.org", password="dogdogdogdog")
+        user = User.query.filter_by(is_administrator=True).first()
+        form = ChangeEmailForm(email=user.email, password="dogdogdogdog")
 
         rv = client.post(
             url_for("auth.change_email_request"), data=form.data, follow_redirects=True
@@ -318,7 +327,8 @@ def test_user_cannot_get_email_reset_token_sent_to_existing_email_differently_ca
 ):
     with current_app.test_request_context():
         login_user(client)
-        form = ChangeEmailForm(email="FREDDY@EXAMPLE.ORG", password="dogdogdogdog")
+        user = User.query.filter_by(is_administrator=True).first()
+        form = ChangeEmailForm(email=user.email.upper(), password="dogdogdogdog")
 
         rv = client.post(
             url_for("auth.change_email_request"), data=form.data, follow_redirects=True
@@ -327,10 +337,12 @@ def test_user_cannot_get_email_reset_token_sent_to_existing_email_differently_ca
         assert b"An email with instructions to confirm your new email" not in rv.data
 
 
-def test_user_can_get_email_reset_token_sent_with_password(mockdata, client, session):
+def test_user_can_get_email_reset_token_sent_with_password(
+    mockdata, client, session, faker
+):
     with current_app.test_request_context():
         login_user(client)
-        form = ChangeEmailForm(email="alice@example.org", password="dog")
+        form = ChangeEmailForm(email=faker.ascii_email(), password="dog")
 
         rv = client.post(
             url_for("auth.change_email_request"), data=form.data, follow_redirects=True
@@ -342,7 +354,7 @@ def test_user_can_get_email_reset_token_sent_with_password(mockdata, client, ses
 def test_user_can_change_email_with_valid_reset_token(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        user = User.query.filter_by(email="jen@example.org").one()
+        user = User.query.filter_by(is_administrator=False, is_disabled=False).first()
         token = user.generate_email_change_token("alice@example.org")
 
         rv = client.get(
@@ -367,7 +379,7 @@ def test_user_cannot_change_email_with_invalid_reset_token(mockdata, client, ses
 def test_user_can_confirm_account_with_valid_token(mockdata, client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
-        user = User.query.filter_by(email="freddy@example.org").one()
+        user = User.query.filter_by(confirmed=False).first()
         token = user.generate_confirmation_token()
 
         rv = client.get(url_for("auth.confirm", token=token), follow_redirects=True)
@@ -400,7 +412,7 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
 
         assert b"Your password has been updated." in rv.data
         assert (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password Has Changed"
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Your Password Has Changed"
             in str(log.output)
         )
 
@@ -457,10 +469,7 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client, sessio
 def test_user_can_change_dept_pref(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-
-        test_department_id = 1
-
-        form = ChangeDefaultDepartmentForm(dept_pref=test_department_id)
+        form = ChangeDefaultDepartmentForm(dept_pref=AC_DEPT)
 
         rv = client.post(
             url_for("auth.change_dept"), data=form.data, follow_redirects=True
@@ -469,4 +478,4 @@ def test_user_can_change_dept_pref(mockdata, client, session):
         assert b"Updated!" in rv.data
 
         user = User.query.filter_by(email="jen@example.org").one()
-        assert user.dept_pref == test_department_id
+        assert user.dept_pref == AC_DEPT
