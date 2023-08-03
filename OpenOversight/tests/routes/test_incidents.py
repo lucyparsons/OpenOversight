@@ -575,8 +575,8 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
 def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        user = User.query.filter(
-            User.ac_department_id != AC_DEPT, User.is_administrator is False
+        user = User.query.filter_by(
+            ac_department_id=None, is_administrator=False
         ).first()
 
         inc = Incident.query.except_(
