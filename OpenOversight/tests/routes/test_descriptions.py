@@ -45,7 +45,6 @@ def test_officer_descriptions_markdown(mockdata, client, session):
         rv = client.get(url_for("main.officer_profile", officer_id=1))
         assert rv.status_code == HTTPStatus.OK
         html = rv.data.decode()
-        print(html)
         assert "<h3>A markdown description</h3>" in html
         assert "<p>A <strong>test</strong> description!</p>" in html
 
