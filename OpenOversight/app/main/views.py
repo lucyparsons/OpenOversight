@@ -903,8 +903,8 @@ def get_dept_units(department_id=None):
 @login_required
 @ac_or_admin_required
 def add_officer():
-    jsloads = ["js/dynamic_lists.js", "js/add_officer.js"]
     form = AddOfficerForm()
+    form.created_by.data = current_user.get_id()
     for link in form.links:
         link.created_by.data = current_user.id
     add_unit_query(form, current_user)
@@ -929,16 +929,20 @@ def add_officer():
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
-        return render_template("add_officer.html", form=form, jsloads=jsloads)
+        return render_template(
+            "add_officer.html",
+            form=form,
+            jsloads=["js/dynamic_lists.js", "js/add_officer.js"],
+        )
 
 
 @main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id):
-    jsloads = ["js/dynamic_lists.js"]
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
+    form.created_by.data = officer.created_by
 
     if request.method == HTTPMethod.GET:
         if officer.race is None:
@@ -958,7 +962,9 @@ def edit_officer(officer_id):
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
         current_app.logger.info(form.errors)
-        return render_template("edit_officer.html", form=form, jsloads=jsloads)
+        return render_template(
+            "edit_officer.html", form=form, jsloads=["js/dynamic_lists.js"]
+        )
 
 
 @main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
