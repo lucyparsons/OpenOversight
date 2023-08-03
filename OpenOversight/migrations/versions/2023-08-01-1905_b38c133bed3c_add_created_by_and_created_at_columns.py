@@ -67,7 +67,6 @@ def upgrade():
 
     with op.batch_alter_table("descriptions", schema=None) as batch_op:
         batch_op.add_column(sa.Column("created_by", sa.Integer(), nullable=True))
-        batch_op.drop_constraint("descriptions_creator_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "descriptions_created_by_fkey",
             "users",
@@ -97,7 +96,6 @@ def upgrade():
                 nullable=False,
             )
         )
-        batch_op.drop_constraint("faces_user_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "faces_created_by_fkey", "users", ["created_by"], ["id"]
         )
@@ -223,7 +221,6 @@ def upgrade():
                 nullable=False,
             )
         )
-        batch_op.drop_constraint("links_creator_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "links_created_by_fkey",
             "users",
@@ -263,7 +260,6 @@ def upgrade():
 
     with op.batch_alter_table("notes", schema=None) as batch_op:
         batch_op.add_column(sa.Column("created_by", sa.Integer(), nullable=True))
-        batch_op.drop_constraint("notes_creator_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "notes_created_by_fkey",
             "users",
@@ -334,7 +330,6 @@ def upgrade():
 
     with op.batch_alter_table("raw_images", schema=None) as batch_op:
         batch_op.add_column(sa.Column("created_by", sa.Integer(), nullable=True))
-        batch_op.drop_constraint("raw_images_user_id_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "raw_images_created_by_fkey",
             "users",
