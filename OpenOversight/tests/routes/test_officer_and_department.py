@@ -1342,6 +1342,8 @@ def test_ac_can_add_new_officer_with_unit_in_their_dept(mockdata, client, sessio
 def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         department = Department.query.except_(
             Department.query.filter_by(id=AC_DEPT)
         ).first()
@@ -1361,6 +1363,7 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
@@ -1374,12 +1377,14 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
 def test_admin_can_edit_existing_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         unit = random.choice(unit_choices())
         link_url0 = faker.url()
         link_url1 = faker.url()
         links = [
-            LinkForm(url=link_url0, link_type="link").data,
-            LinkForm(url=link_url0, link_type="video").data,
+            LinkForm(url=link_url0, link_type="link", created_by=user.id).data,
+            LinkForm(url=link_url0, link_type="video", created_by=user.id).data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1394,14 +1399,15 @@ def test_admin_can_edit_existing_officer(mockdata, client, session, department, 
             unit=unit.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
-        rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
+        client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         officer = Officer.query.filter_by(last_name="Testerinski").one()
 
-        form = EditOfficerForm(last_name="Changed", links=links[:1])
+        form = EditOfficerForm(last_name="Changed", links=links[:1], created_by=user.id)
         data = process_form_data(form.data)
 
         rv = client.post(
@@ -1420,7 +1426,7 @@ def test_ac_cannot_edit_officer_not_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
 
-        officer = officer = Officer.query.except_(
+        officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
         old_last_name = officer.last_name
@@ -1489,7 +1495,7 @@ def test_ac_can_edit_officer_in_their_dept(mockdata, client, session):
 
         data = process_form_data(form.data)
 
-        rv = client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
+        client.post(url_for("main.add_officer"), data=data, follow_redirects=True)
 
         officer = Officer.query.filter_by(last_name=last_name).one()
 
@@ -1523,6 +1529,7 @@ def test_admin_adds_officer_without_middle_initial(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1534,6 +1541,7 @@ def test_admin_adds_officer_without_middle_initial(
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -1554,6 +1562,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1566,6 +1575,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
             job_id=job.id,
             department=department.id,
             birth_year=1990,
+            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -1584,8 +1594,11 @@ def test_admin_adds_officer_with_letter_in_badge_no(
 def test_admin_can_add_new_unit(mockdata, client, session, department):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
 
-        form = AddUnitForm(description="Test", department=department.id)
+        form = AddUnitForm(
+            description="Test", department=department.id, created_by=user.id
+        )
 
         rv = client.post(
             url_for("main.add_unit"), data=form.data, follow_redirects=True
@@ -1637,9 +1650,11 @@ def test_admin_can_add_new_officer_with_suffix(
 ):
     with current_app.test_request_context():
         login_admin(client)
+        user = User.query.filter_by(is_administrator=True).first()
+
         links = [
-            LinkForm(url=faker.url(), link_type="link").data,
-            LinkForm(url=faker.url(), link_type="video").data,
+            LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
+            LinkForm(url=faker.url(), link_type="video", created_by=user.id).data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1654,6 +1669,7 @@ def test_admin_can_add_new_officer_with_suffix(
             department=department.id,
             birth_year=1990,
             links=links,
+            created_by=user.id,
         )
 
         data = process_form_data(form.data)
