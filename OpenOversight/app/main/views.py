@@ -1626,7 +1626,7 @@ class IncidentApi(ModelView):
                     except ValueError:
                         our_id = officer["oo_id"].split('value="')[1][:-2]
                         of = Officer.query.filter_by(id=int(our_id)).first()
-                    if of:
+                    if of and of not in obj.officers:
                         obj.officers.append(of)
 
         license_plates = form.data.pop("license_plates")
