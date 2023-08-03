@@ -2,6 +2,7 @@ from flask import url_for
 
 from OpenOversight.app.auth.forms import LoginForm
 from OpenOversight.app.models.database import User
+from OpenOversight.app.utils.constants import ADMIN_PASSWORD
 from OpenOversight.tests.conftest import AC_DEPT
 
 
@@ -34,13 +35,13 @@ def login_modified_disabled_user(client):
 
 def login_admin(client):
     user = User.query.filter_by(is_administrator=True).first()
-    form = LoginForm(email=user.email, password=AC_DEPT, remember_me=True)
+    form = LoginForm(email=user.email, password=ADMIN_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv
 
 
 def login_ac(client):
-    user = User.query.filter_by(ac_department_id=1).first()
+    user = User.query.filter_by(ac_department_id=AC_DEPT).first()
     form = LoginForm(email=user.email, password="horse", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv
