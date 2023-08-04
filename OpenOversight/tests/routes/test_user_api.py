@@ -203,7 +203,7 @@ def test_admin_can_enable_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
         user.is_disabled = True
         db.session.commit()
 
