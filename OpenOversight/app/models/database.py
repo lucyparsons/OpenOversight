@@ -12,7 +12,10 @@ from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from OpenOversight.app.models.database_cache import DB_CACHE, department_statistics_cache_key
+from OpenOversight.app.models.database_cache import (
+    DB_CACHE,
+    department_statistics_cache_key,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
