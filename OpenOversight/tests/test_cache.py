@@ -178,9 +178,7 @@ def test_total_documented_officers(mockdata, client, faker):
             follow_redirects=True,
         )
 
-        assert f"New Officer {last_name} added" in rv.data.decode(
-            ENCODING_UTF_8
-        )
+        assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
         assert (
             has_department_cache_entry(department.id, KEY_DEPT_TOTAL_OFFICERS) is False
         )
