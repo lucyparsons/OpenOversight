@@ -12,6 +12,7 @@ from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
+from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
 
 DESCRIPTION_CUTOFF = 700
@@ -29,7 +30,7 @@ def login_admin(browser, server_port):
     with wait_for_page_load(browser):
         elem = browser.find_element_by_id("email")
         elem.clear()
-        elem.send_keys("test@example.org")
+        elem.send_keys(ADMIN_USER_EMAIL)
         elem = browser.find_element_by_id("password")
         elem.clear()
         elem.send_keys("testtest")
