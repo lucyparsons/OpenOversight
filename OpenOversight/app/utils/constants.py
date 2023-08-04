@@ -32,5 +32,6 @@ MINUTE = 60
 HOUR = 60 * MINUTE
 
 # Test Constants
-ADMIN_EMAIL = "test@example.org"
-ADMIN_PASSWORD = "testtest"
+ADMIN_USER_EMAIL = "test@example.org"
+ADMIN_USER_PASSWORD = "testtest"
+
