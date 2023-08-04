@@ -155,10 +155,9 @@ def test_total_documented_officers(mockdata, client, faker):
             LinkForm(url=faker.url(), link_type="video", created_by=user.id).data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
-        first_name = faker.first_name()
         last_name = faker.last_name()
         form = AddOfficerForm(
-            first_name=first_name,
+            first_name=faker.first_name(),
             last_name=last_name,
             middle_initial=faker.random_uppercase_letter(),
             race="WHITE",
