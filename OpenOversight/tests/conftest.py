@@ -50,6 +50,14 @@ from OpenOversight.tests.constants import (
     AC_USER_PASSWORD,
     ADMIN_USER_EMAIL,
     ADMIN_USER_PASSWORD,
+    DISABLED_USER_EMAIL,
+    DISABLED_USER_PASSWORD,
+    GENERAL_USER_EMAIL,
+    GENERAL_USER_PASSWORD,
+    MOD_DISABLED_USER_EMAIL,
+    MOD_DISABLED_USER_PASSWORD,
+    UNCONFIRMED_USER_EMAIL,
+    UNCONFIRMED_USER_PASSWORD,
 )
 
 
@@ -341,7 +349,10 @@ def add_mockdata(session):
     assert current_app.config[KEY_NUM_OFFICERS] >= 5
 
     test_user = User(
-        email="jen@example.org", username="test_user", password="dog", confirmed=True
+        email=GENERAL_USER_EMAIL,
+        username="test_user",
+        password=GENERAL_USER_PASSWORD,
+        confirmed=True,
     )
     session.add(test_user)
 
@@ -355,15 +366,18 @@ def add_mockdata(session):
     session.add(test_admin)
 
     test_unconfirmed_user = User(
-        email="freddy@example.org", username="b_meson", password="dog", confirmed=False
+        email=UNCONFIRMED_USER_EMAIL,
+        username="b_meson",
+        password=UNCONFIRMED_USER_PASSWORD,
+        confirmed=False,
     )
     session.add(test_unconfirmed_user)
     session.commit()
 
     test_disabled_user = User(
-        email="may@example.org",
+        email=DISABLED_USER_EMAIL,
         username="may",
-        password="yam",
+        password=DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
     )
@@ -371,9 +385,9 @@ def add_mockdata(session):
     session.commit()
 
     test_modified_disabled_user = User(
-        email="sam@example.org",
+        email=MOD_DISABLED_USER_EMAIL,
         username="sam",
-        password="the yam",
+        password=MOD_DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
     )
