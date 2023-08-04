@@ -10,7 +10,7 @@ def login_user(client):
     user = User.query.filter_by(id=1).first()
     form = LoginForm(email=user.email, password="dog", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def login_unconfirmed_user(client):
@@ -18,33 +18,35 @@ def login_unconfirmed_user(client):
     form = LoginForm(email=user.email, password="dog", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     assert b"Invalid username or password" not in rv.data
-    return rv
+    return rv, user
 
 
 def login_disabled_user(client):
-    form = LoginForm(email="may@example.org", password="yam", remember_me=True)
+    user = User.query.filter_by(email="may@example.org").first()
+    form = LoginForm(email=user.email, password="yam", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
-    return rv
+    return rv, user
 
 
 def login_modified_disabled_user(client):
-    form = LoginForm(email="sam@example.org", password="the yam", remember_me=True)
+    user = User.query.filter_by(email="sam@example.org").first()
+    form = LoginForm(email=user.email, password="the yam", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
-    return rv
+    return rv, user
 
 
 def login_admin(client):
     user = User.query.filter_by(is_administrator=True).first()
     form = LoginForm(email=user.email, password=ADMIN_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def login_ac(client):
     user = User.query.filter_by(ac_department_id=AC_DEPT).first()
     form = LoginForm(email=user.email, password="horse", remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def process_form_data(form_dict):
