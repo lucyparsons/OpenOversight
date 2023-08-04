@@ -16,9 +16,9 @@ from OpenOversight.app.models.db_cache import DB_CACHE, department_statistics_ca
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
-    KEY_TOTAL_ASSIGNMENTS,
-    KEY_TOTAL_INCIDENTS,
-    KEY_TOTAL_OFFICERS,
+    KEY_DEPT_TOTAL_ASSIGNMENTS,
+    KEY_DEPT_TOTAL_INCIDENTS,
+    KEY_DEPT_TOTAL_OFFICERS,
 )
 from OpenOversight.app.validators import state_validator, url_validator
 
@@ -94,7 +94,7 @@ class Department(BaseModel):
 
     @cached(
         cache=DB_CACHE,
-        key=department_statistics_cache_key(KEY_TOTAL_ASSIGNMENTS),
+        key=department_statistics_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS),
     )
     def total_documented_assignments(self):
         return (
@@ -106,14 +106,16 @@ class Department(BaseModel):
 
     @cached(
         cache=DB_CACHE,
-        key=department_statistics_cache_key(KEY_TOTAL_INCIDENTS),
+        key=department_statistics_cache_key(KEY_DEPT_TOTAL_INCIDENTS),
     )
     def total_documented_incidents(self):
         return (
             db.session.query(Incident).filter(Incident.department_id == self.id).count()
         )
 
-    @cached(cache=DB_CACHE, key=department_statistics_cache_key(KEY_TOTAL_OFFICERS))
+    @cached(
+        cache=DB_CACHE, key=department_statistics_cache_key(KEY_DEPT_TOTAL_OFFICERS)
+    )
     def total_documented_officers(self):
         return (
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
