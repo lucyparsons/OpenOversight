@@ -30,7 +30,13 @@ def department_statistics_cache_key(update_type: str):
     return _cache_key
 
 
-def remove_department_cache_entry(department_id: str, update_type: str):
+def has_department_cache_entry(department_id: str, update_type: str) -> bool:
+    """Department key exists in cache."""
+    key = _department_key(department_id, update_type)
+    return key in DB_CACHE.keys()
+
+
+def remove_department_cache_entry(department_id: str, update_type: str) -> None:
     """Remove department key from cache if it exists."""
 
     key = _department_key(department_id, update_type)
