@@ -40,8 +40,8 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.constants import (
-    ADMIN_EMAIL,
-    ADMIN_PASSWORD,
+    ADMIN_USER_EMAIL,
+    ADMIN_USER_PASSWORD,
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
@@ -342,9 +342,9 @@ def add_mockdata(session):
     session.add(test_user)
 
     test_admin = User(
-        email=ADMIN_EMAIL,
+        email=ADMIN_USER_EMAIL,
         username="test_admin",
-        password=ADMIN_PASSWORD,
+        password=ADMIN_USER_PASSWORD,
         confirmed=True,
         is_administrator=True,
     )
