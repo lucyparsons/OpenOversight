@@ -55,7 +55,9 @@ def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
 
 def test_admin_can_update_users_to_ac(mockdata, client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
+
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
 
         form = EditUserForm(
             is_area_coordinator=True, ac_department=AC_DEPT, submit=True
@@ -73,7 +75,9 @@ def test_admin_can_update_users_to_ac(mockdata, client, session):
 
 def test_admin_cannot_update_to_ac_without_department(mockdata, client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
+
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
 
         form = EditUserForm(is_area_coordinator=True, submit=True)
 
@@ -89,7 +93,9 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
 
 def test_admin_can_update_users_to_admin(mockdata, client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
+
+        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
 
         form = EditUserForm(
             is_area_coordinator=False, is_administrator=True, submit=True
@@ -107,7 +113,9 @@ def test_admin_can_update_users_to_admin(mockdata, client, session):
 
 def test_admin_can_delete_user(mockdata, client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
+
+        user = User.query.first()
 
         rv = client.get(
             url_for("auth.delete_user", user_id=user.id),
