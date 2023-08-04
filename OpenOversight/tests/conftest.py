@@ -40,13 +40,17 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.constants import (
-    ADMIN_USER_EMAIL,
-    ADMIN_USER_PASSWORD,
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
 )
 from OpenOversight.app.utils.general import merge_dicts
+from OpenOversight.tests.constants import (
+    AC_USER_EMAIL,
+    AC_USER_PASSWORD,
+    ADMIN_USER_EMAIL,
+    ADMIN_USER_PASSWORD,
+)
 
 
 factory = Faker()
@@ -401,9 +405,9 @@ def add_mockdata(session):
     session.commit()
 
     test_area_coordinator = User(
-        email="raq929@example.org",
+        email=AC_USER_EMAIL,
         username="test_ac",
-        password="horse",
+        password=AC_USER_PASSWORD,
         confirmed=True,
         is_area_coordinator=True,
         ac_department_id=AC_DEPT,
