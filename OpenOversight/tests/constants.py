@@ -1,3 +1,8 @@
+from faker import Faker
+
+
+faker = Faker()
+
 # User Constants
 AC_USER_EMAIL = "raq929@example.org"
 AC_USER_PASSWORD = "horse"
