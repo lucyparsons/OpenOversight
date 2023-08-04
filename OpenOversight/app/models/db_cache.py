@@ -7,6 +7,11 @@ from OpenOversight.app.utils.constants import HOUR
 DB_CACHE = TTLCache(maxsize=1024, ttl=12 * HOUR)
 
 
+def _department_key(department_id: str, update_type: str):
+    """Create unique department key."""
+    return hashkey(department_id, update_type, "Department")
+
+
 def department_statistics_cache_key(update_type: str):
     """Return a key function to calculate the cache key for Department
     methods using the department id and a given update type.
@@ -20,6 +25,14 @@ def department_statistics_cache_key(update_type: str):
     """
 
     def _cache_key(department):
-        return hashkey(department.id, update_type)
+        return _department_key(department.id, update_type)
 
     return _cache_key
+
+
+def remove_department_cache_entry(department_id: str, update_type: str):
+    """Remove department key from cache if it exists."""
+
+    key = _department_key(department_id, update_type)
+    if DB_CACHE.has(key):
+        DB_CACHE.delete(key)
