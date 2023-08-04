@@ -58,7 +58,7 @@ def test_route_login_required(route, client, mockdata):
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
-        rv = login_user(client)
+        rv, _ = login_user(client)
         assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
@@ -428,7 +428,7 @@ def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, sessio
 
 def test_disabled_user_cannot_login(mockdata, client, session):
     with current_app.test_request_context():
-        rv = login_disabled_user(client)
+        rv, _ = login_disabled_user(client)
         assert b"User has been disabled" in rv.data
 
 
@@ -442,7 +442,7 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, sessi
         user.is_disabled = False
         session.add(user)
 
-        rv = login_modified_disabled_user(client)
+        rv, _ = login_modified_disabled_user(client)
         assert b"/user/sam" in rv.data
 
         # Disable account again and check that login_required redirects user correctly
