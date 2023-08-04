@@ -8,7 +8,11 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-from OpenOversight.tests.constants import ADMIN_USER_EMAIL, GENERAL_USER_EMAIL
+from OpenOversight.tests.constants import (
+    ADMIN_USER_EMAIL,
+    GENERAL_USER_EMAIL,
+    UNCONFIRMED_USER_EMAIL,
+)
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -231,7 +235,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(confirmed=False).first()
+        user = User.query.filter_by(email=UNCONFIRMED_USER_EMAIL).first()
 
         form = EditUserForm(
             resend=True,
@@ -254,8 +258,9 @@ def test_register_user_approval_required(mockdata, client, session):
     EmailClient(testing=True)
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
+        new_user_email = "jen@example.com"
         form = RegistrationForm(
-            email="jen@example.com",
+            email=new_user_email,
             username="redshiftzero",
             password=diceware_password,
             password2=diceware_password,
@@ -271,7 +276,7 @@ def test_register_user_approval_required(mockdata, client, session):
         )
 
         form = LoginForm(
-            email="jen@example.com", password=diceware_password, remember_me=True
+            email=new_user_email, password=diceware_password, remember_me=True
         )
         rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
 
@@ -286,7 +291,7 @@ def test_admin_can_approve_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         user.approved = False
         db.session.commit()
 
