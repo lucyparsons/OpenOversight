@@ -14,7 +14,7 @@ from OpenOversight.app.main.forms import (
 )
 from OpenOversight.app.models.database import Department, Job, Officer, User
 from OpenOversight.app.models.database_cache import has_department_cache_entry
-from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
+from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
@@ -96,7 +96,7 @@ def test_total_documented_incidents(mockdata, client, faker):
             street_name=faker.street_address(),
             cross_street1=faker.street_address(),
             city=faker.city(),
-            state="IA",
+            state=random.choice(STATE_CHOICES)[0],
             zip_code=faker.postcode(),
             created_by=user.id,
         )
