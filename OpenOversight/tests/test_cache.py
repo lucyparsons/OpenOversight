@@ -14,6 +14,7 @@ from OpenOversight.app.main.forms import (
 )
 from OpenOversight.app.models.database import Department, Job, Officer, User
 from OpenOversight.app.models.database_cache import has_department_cache_entry
+from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
@@ -107,8 +108,8 @@ def test_total_documented_incidents(mockdata, client, faker):
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
             report_number="PPP Case 92",
-            description="Something happened",
-            department="1",
+            description=faker.sentence(nb_words=15),
+            department=department.id,
             address=address_form.data,
             links=[link_form.data],
             license_plates=[license_plates_form.data],
@@ -160,8 +161,8 @@ def test_total_documented_officers(mockdata, client, faker):
             first_name=faker.first_name(),
             last_name=last_name,
             middle_initial=faker.random_uppercase_letter(),
-            race="WHITE",
-            gender="M",
+            race=random.choice(RACE_CHOICES)[0],
+            gender=random.choice(GENDER_CHOICES)[0],
             star_no=faker.random_number(digits=3),
             job_id=job.id,
             unit=random.choice(unit_choices()).id,
