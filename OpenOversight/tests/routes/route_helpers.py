@@ -9,6 +9,8 @@ from OpenOversight.tests.constants import (
     ADMIN_USER_PASSWORD,
     DISABLED_USER_EMAIL,
     DISABLED_USER_PASSWORD,
+    GENERAL_USER_EMAIL,
+    GENERAL_USER_PASSWORD,
     MOD_DISABLED_USER_EMAIL,
     MOD_DISABLED_USER_PASSWORD,
     UNCONFIRMED_USER_EMAIL,
@@ -17,8 +19,8 @@ from OpenOversight.tests.constants import (
 
 
 def login_user(client):
-    user = User.query.filter_by(id=1).first()
-    form = LoginForm(email=user.email, password="dog", remember_me=True)
+    user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
+    form = LoginForm(email=user.email, password=GENERAL_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
