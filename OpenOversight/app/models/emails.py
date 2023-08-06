@@ -3,6 +3,8 @@ from email.mime.text import MIMEText
 
 from flask import current_app, render_template
 
+from OpenOversight.app.utils.constants import KEY_OO_MAIL_SUBJECT_PREFIX
+
 
 class Email:
     """Base class for all emails."""
@@ -22,7 +24,9 @@ class Email:
 
 class AdministratorApprovalEmail(Email):
     def __init__(self, receiver: str, user, admin):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} New User Registered"
+        subject = (
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} New User Registered"
+        )
         body = render_template(
             "auth/email/new_registration.html", user=user, admin=admin
         )
@@ -32,7 +36,7 @@ class AdministratorApprovalEmail(Email):
 class ChangeEmailAddressEmail(Email):
     def __init__(self, receiver: str, user, token: str):
         subject = (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Email "
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Email "
             f"Address"
         )
         body = render_template("auth/email/change_email.html", user=user, token=token)
@@ -41,9 +45,7 @@ class ChangeEmailAddressEmail(Email):
 
 class ChangePasswordEmail(Email):
     def __init__(self, receiver: str, user):
-        subject = (
-            f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Your Password Has Changed"
-        )
+        subject = f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Your Password Has Changed"
         body = render_template(
             "auth/email/change_password.html",
             user=user,
@@ -54,14 +56,16 @@ class ChangePasswordEmail(Email):
 
 class ConfirmAccountEmail(Email):
     def __init__(self, receiver: str, user, token: str):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Confirm Your Account"
+        subject = (
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
+        )
         body = render_template("auth/email/confirm.html", user=user, token=token)
         super().__init__(body, subject, receiver)
 
 
 class ConfirmedUserEmail(Email):
     def __init__(self, receiver: str, user, admin):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} New User Confirmed"
+        subject = f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} New User Confirmed"
         body = render_template(
             "auth/email/new_confirmation.html", user=user, admin=admin
         )
@@ -70,6 +74,8 @@ class ConfirmedUserEmail(Email):
 
 class ResetPasswordEmail(Email):
     def __init__(self, receiver: str, user, token: str):
-        subject = f"{current_app.config['OO_MAIL_SUBJECT_PREFIX']} Reset Your Password"
+        subject = (
+            f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
+        )
         body = render_template("auth/email/reset_password.html", user=user, token=token)
         super().__init__(body, subject, receiver)

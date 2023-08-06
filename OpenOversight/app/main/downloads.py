@@ -114,7 +114,7 @@ def officer_record_maker(officer: Officer) -> _Record:
 
 
 def assignment_record_maker(assignment: Assignment) -> _Record:
-    officer = assignment.baseofficer
+    officer = assignment.base_officer
     return {
         "id": assignment.id,
         "officer id": assignment.officer_id,
@@ -158,7 +158,7 @@ def descriptions_record_maker(description: Description) -> _Record:
     return {
         "id": description.id,
         "text_contents": description.text_contents,
-        "creator_id": description.creator_id,
+        "created_by": description.created_by,
         "officer_id": description.officer_id,
         "created_at": description.created_at,
         "updated_at": description.updated_at,

@@ -1,4 +1,3 @@
-# Routing and view tests
 from http import HTTPMethod, HTTPStatus
 
 import pytest
@@ -9,12 +8,7 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-from OpenOversight.tests.routes.route_helpers import (
-    ADMIN_EMAIL,
-    login_ac,
-    login_admin,
-    login_user,
-)
+from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
 routes_methods = [
@@ -64,14 +58,13 @@ def test_admin_can_update_users_to_ac(mockdata, client, session):
         login_admin(client)
 
         user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
-        user_id = user.id
 
         form = EditUserForm(
             is_area_coordinator=True, ac_department=AC_DEPT, submit=True
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -85,12 +78,11 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
         login_admin(client)
 
         user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
-        user_id = user.id
 
         form = EditUserForm(is_area_coordinator=True, submit=True)
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -104,14 +96,13 @@ def test_admin_can_update_users_to_admin(mockdata, client, session):
         login_admin(client)
 
         user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
-        user_id = user.id
 
         form = EditUserForm(
             is_area_coordinator=False, is_administrator=True, submit=True
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -125,21 +116,21 @@ def test_admin_can_delete_user(mockdata, client, session):
         login_admin(client)
 
         user = User.query.first()
-        user_id = user.id
-        username = user.username
 
         rv = client.get(
-            url_for("auth.delete_user", user_id=user_id),
+            url_for("auth.delete_user", user_id=user.id),
         )
 
         assert b"Are you sure you want to delete this user?" in rv.data
 
         rv = client.post(
-            url_for("auth.delete_user", user_id=user_id), follow_redirects=True
+            url_for("auth.delete_user", user_id=user.id), follow_redirects=True
         )
 
-        assert f"User {username} has been deleted!" in rv.data.decode(ENCODING_UTF_8)
-        assert not User.query.get(user_id)
+        assert f"User {user.username} has been deleted!" in rv.data.decode(
+            ENCODING_UTF_8
+        )
+        assert not User.query.get(user.id)
 
 
 def test_admin_cannot_delete_other_admin(mockdata, client, session):
@@ -149,14 +140,13 @@ def test_admin_cannot_delete_other_admin(mockdata, client, session):
         user = User(is_administrator=True, email="another_user@example.org")
         session.add(user)
         session.commit()
-        user_id = user.id
 
         rv = client.post(
-            url_for("auth.delete_user", user_id=user_id), follow_redirects=True
+            url_for("auth.delete_user", user_id=user.id), follow_redirects=True
         )
 
         assert rv.status_code == HTTPStatus.FORBIDDEN
-        assert User.query.get(user_id) is not None
+        assert User.query.get(user.id) is not None
 
 
 def test_admin_can_disable_user(mockdata, client, session):
@@ -165,7 +155,6 @@ def test_admin_can_disable_user(mockdata, client, session):
 
         # just need to make sure to not select the admin user
         user = User.query.filter_by(is_administrator=False).first()
-        user_id = user.id
 
         assert not user.is_disabled
 
@@ -175,14 +164,14 @@ def test_admin_can_disable_user(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert user.is_disabled
 
 
@@ -190,8 +179,7 @@ def test_admin_cannot_disable_self(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(email=ADMIN_EMAIL).first()
-        user_id = user.id
+        user = User.query.filter_by(is_administrator=True).first()
 
         assert not user.is_disabled
 
@@ -201,14 +189,14 @@ def test_admin_cannot_disable_self(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert not user.is_disabled
 
 
@@ -217,11 +205,10 @@ def test_admin_can_enable_user(mockdata, client, session):
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
-        user_id = user.id
         user.is_disabled = True
         db.session.commit()
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert user.is_disabled
 
         form = EditUserForm(
@@ -230,14 +217,14 @@ def test_admin_can_enable_user(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert not user.is_disabled
 
 
@@ -246,21 +233,20 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
         login_admin(client)
 
         user = User.query.filter_by(confirmed=False).first()
-        user_id = user.id
-        email = user.email
 
         form = EditUserForm(
             resend=True,
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
 
-        assert f"A new confirmation email has been sent to {email}." in rv.data.decode(
-            ENCODING_UTF_8
+        assert (
+            f"A new confirmation email has been sent to {user.email}."
+            in rv.data.decode(ENCODING_UTF_8)
         )
 
 
@@ -302,11 +288,10 @@ def test_admin_can_approve_user(mockdata, client, session):
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
-        user_id = user.id
         user.approved = False
         db.session.commit()
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert not user.approved
 
         form = EditUserForm(
@@ -315,14 +300,14 @@ def test_admin_can_approve_user(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert user.approved
 
 
@@ -356,19 +341,18 @@ def test_admin_approval_sends_confirmation_email(
         login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
-        user_id = user.id
         user.approved = currently_approved
         user.confirmed = currently_confirmed
         db.session.commit()
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert user.approved == currently_approved
         assert user.confirmed == currently_confirmed
 
         form = EditUserForm(approved=True, submit=True, confirmed=currently_confirmed)
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user_id),
+            url_for("auth.edit_user", user_id=user.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -378,5 +362,5 @@ def test_admin_approval_sends_confirmation_email(
         ) == should_send_email
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user_id)
+        user = User.query.get(user.id)
         assert user.approved

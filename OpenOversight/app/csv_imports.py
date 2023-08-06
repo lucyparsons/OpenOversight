@@ -234,7 +234,7 @@ def _handle_assignments_csv(
             csv_reader = rows
         else:
             existing_assignments = (
-                Assignment.query.join(Assignment.baseofficer)
+                Assignment.query.join(Assignment.base_officer)
                 .filter(Officer.department_id == department_id)
                 .all()
             )
@@ -375,8 +375,8 @@ def _handle_incidents_csv(
                 "city",
                 "state",
                 "zip_code",
-                "creator_id",
-                "last_updated_id",
+                "created_by",
+                "last_updated_by",
                 "officer_ids",
                 "license_plates",
             ],
@@ -441,7 +441,7 @@ def _handle_links_csv(
                 "link_type",
                 "description",
                 "author",
-                "creator_id",
+                "created_by",
                 "officer_ids",
                 "incident_ids",
             ],

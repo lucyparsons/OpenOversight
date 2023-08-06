@@ -150,7 +150,7 @@ Incidents csv
 ^^^^^^^^^^^^^
 - Required: ``id, department_name, department_state, date``
 - Optional: ``time, report_number, description, street_name, cross_street1, cross_street2, city, state, zip_code,
-  creator_id, last_updated_id, officer_ids, license_plates``
+  created_by, last_updated_by, officer_ids, license_plates``
 
 Details:
 ~~~~~~~~
@@ -165,7 +165,7 @@ Details:
 - ``street_name`` Name of the street the incident occurred, but should not include the street number.
 - ``cross_street1``, ``cross_street2`` The two closest intersecting streets.
 - ``city``, ``state``, ``zip_code`` State needs to be in 2 letter abbreviated notation.
-- ``creator_id``, ``last_updated_id`` Id of existing user shown as responsible for adding this entry.
+- ``created_by``, ``last_updated_by`` Id of existing user shown as responsible for adding this entry.
 - ``officer_ids`` Ids of officers involved in the incident, separated by ``|``.
 
   - Each individual id can either be an integer referring to an existing officer or a string starting with ``#`` referring to a newly created officer.
@@ -181,7 +181,7 @@ Details:
 Links csv
 ^^^^^^^^^
 - Required: ``id, url``
-- Optional: ``title, link_type, description, author, creator_id, officer_ids, incident_ids``
+- Optional: ``title, link_type, description, author, created_by, officer_ids, incident_ids``
 
 Details:
 ~~~~~~~~
@@ -190,7 +190,7 @@ Details:
 - ``description`` A short description of the link.
 - ``link_type`` Choice of ``Link``, ``YouTube Video`` and ``Other Video``.
 - ``author`` The source or author of the linked article, report, video.
-- ``creator_id`` Id of existing user shown as responsible for adding this entry.
+- ``created_by`` Id of existing user shown as responsible for adding this entry.
 - ``officer_ids`` Ids of officer profiles this link should be visible on, separated by ``|``. See same field in incidents above for more details.
 - ``incidents_ids`` Ids of incidents this link should be associated with, separated by ``|``. Just like ``officer_ids`` this can contain strings
   starting with ``#`` to refer to an incident created in the incident csv.
