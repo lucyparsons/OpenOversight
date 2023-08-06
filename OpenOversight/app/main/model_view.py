@@ -6,7 +6,9 @@ from flask.views import MethodView
 from flask_login import current_user, login_required
 
 from OpenOversight.app.models.database import db
+from OpenOversight.app.models.database_cache import remove_department_cache_entry
 from OpenOversight.app.utils.auth import ac_or_admin_required
+from OpenOversight.app.utils.constants import KEY_DEPT_TOTAL_INCIDENTS
 from OpenOversight.app.utils.db import add_department_query
 from OpenOversight.app.utils.forms import set_dynamic_default
 
@@ -65,7 +67,6 @@ class ModelView(MethodView):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
             if hasattr(form, "created_by") and not form.created_by.data:
                 form.created_by.data = current_user.get_id()
-            # TODO: Determine whether creating counts as updating, seems redundant
             if hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
                 form.last_updated_at.data = datetime.datetime.now()
@@ -74,6 +75,10 @@ class ModelView(MethodView):
             new_obj = self.create_function(form)
             db.session.add(new_obj)
             db.session.commit()
+            if self.create_function.__name__ == "create_incident":
+                remove_department_cache_entry(
+                    new_obj.department_id, KEY_DEPT_TOTAL_INCIDENTS
+                )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
