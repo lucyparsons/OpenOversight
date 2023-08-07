@@ -34,15 +34,10 @@ def test_total_documented_assignments(mockdata, client, faker):
         department.total_documented_officers()
 
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_ASSIGNMENTS)
-            is True
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_INCIDENTS) is True
-        )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_OFFICERS) is True
-        )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         officer = Officer.query.first()
         job = Job.query.filter_by(
@@ -63,11 +58,11 @@ def test_total_documented_assignments(mockdata, client, faker):
         )
 
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_ASSIGNMENTS)
-            is False
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is False
         )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
 def test_total_documented_incidents(mockdata, client, faker):
@@ -80,15 +75,10 @@ def test_total_documented_incidents(mockdata, client, faker):
         user = User.query.first()
 
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_ASSIGNMENTS)
-            is True
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_INCIDENTS) is True
-        )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_OFFICERS) is True
-        )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         test_date = faker.date_time()
 
@@ -123,12 +113,14 @@ def test_total_documented_incidents(mockdata, client, faker):
         rv = client.post(
             url_for("main.incident_api") + "new", data=data, follow_redirects=True
         )
+
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
-
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_INCIDENTS) is False
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is False
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
 def test_total_documented_officers(mockdata, client, faker):
@@ -141,15 +133,10 @@ def test_total_documented_officers(mockdata, client, faker):
         user = User.query.filter_by(is_administrator=True).first()
 
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_ASSIGNMENTS)
-            is True
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_INCIDENTS) is True
-        )
-        assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_OFFICERS) is True
-        )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         links = [
             LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
@@ -180,5 +167,7 @@ def test_total_documented_officers(mockdata, client, faker):
 
         assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
         assert (
-            has_department_cache_entry(department.id, KEY_DEPT_TOTAL_OFFICERS) is False
+            has_department_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         )
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_department_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False
