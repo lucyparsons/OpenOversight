@@ -12,7 +12,7 @@ from OpenOversight.app.main.forms import (
     LinkForm,
     LocationForm,
 )
-from OpenOversight.app.models.database import Department, Incident, Job, Officer, User
+from OpenOversight.app.models.database import Department, Incident, Job, Officer
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
     has_database_cache_entry,
@@ -92,7 +92,6 @@ def test_total_documented_incidents(mockdata, client, faker):
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
-        user = User.query.first()
 
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
@@ -146,7 +145,6 @@ def test_total_documented_officers(mockdata, client, faker):
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
-        user = User.query.filter_by(is_administrator=True).first()
 
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
