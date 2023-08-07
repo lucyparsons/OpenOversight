@@ -12,6 +12,8 @@ from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
+from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
 
 DESCRIPTION_CUTOFF = 700
@@ -29,7 +31,7 @@ def login_admin(browser, server_port):
     with wait_for_page_load(browser):
         elem = browser.find_element_by_id("email")
         elem.clear()
-        elem.send_keys("test@example.org")
+        elem.send_keys(ADMIN_USER_EMAIL)
         elem = browser.find_element_by_id("password")
         elem.clear()
         elem.send_keys("testtest")
@@ -109,11 +111,10 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
 
 
 def test_officer_browse_pagination(mockdata, browser, server_port):
-    dept_id = 1
-    total = Officer.query.filter_by(department_id=dept_id).count()
+    total = Officer.query.filter_by(department_id=AC_DEPT).count()
 
     # first page of results
-    browser.get(f"http://localhost:{server_port}/department/{dept_id}?page=1")
+    browser.get(f"http://localhost:{server_port}/department/{AC_DEPT}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = f"Showing 1-{current_app.config['OFFICERS_PER_PAGE']} of {total}"
@@ -122,7 +123,7 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     # last page of results
     last_page_index = (total // current_app.config[KEY_OFFICERS_PER_PAGE]) + 1
     browser.get(
-        f"http://localhost:{server_port}/department/{dept_id}?page={last_page_index}"
+        f"http://localhost:{server_port}/department/{AC_DEPT}?page={last_page_index}"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text

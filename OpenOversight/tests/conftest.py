@@ -19,7 +19,7 @@ from selenium import webdriver
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
-from OpenOversight.app import create_app
+from OpenOversight.app import EmailClient, create_app
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
@@ -40,13 +40,31 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.models.database import db as _db
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.constants import (
-    ADMIN_EMAIL,
-    ADMIN_PASSWORD,
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
 )
 from OpenOversight.app.utils.general import merge_dicts
+from OpenOversight.tests.constants import (
+    AC_USER_EMAIL,
+    AC_USER_PASSWORD,
+    AC_USER_USERNAME,
+    ADMIN_USER_EMAIL,
+    ADMIN_USER_PASSWORD,
+    ADMIN_USER_USER_NAME,
+    DISABLED_USER_EMAIL,
+    DISABLED_USER_PASSWORD,
+    DISABLED_USER_USERNAME,
+    GENERAL_USER_EMAIL,
+    GENERAL_USER_PASSWORD,
+    GENERAL_USER_USERNAME,
+    MOD_DISABLED_USER_EMAIL,
+    MOD_DISABLED_USER_PASSWORD,
+    MOD_DISABLED_USER_USERNAME,
+    UNCONFIRMED_USER_EMAIL,
+    UNCONFIRMED_USER_PASSWORD,
+    UNCONFIRMED_USER_USERNAME,
+)
 
 
 factory = Faker()
@@ -264,6 +282,11 @@ def app(request):
 
 
 @pytest.fixture(autouse=True)
+def email_client():
+    EmailClient(testing=True)
+
+
+@pytest.fixture(autouse=True)
 def ctx(app):
     with app.app_context():
         yield
@@ -337,29 +360,35 @@ def add_mockdata(session):
     assert current_app.config[KEY_NUM_OFFICERS] >= 5
 
     test_user = User(
-        email="jen@example.org", username="test_user", password="dog", confirmed=True
+        email=GENERAL_USER_EMAIL,
+        username=GENERAL_USER_USERNAME,
+        password=GENERAL_USER_PASSWORD,
+        confirmed=True,
     )
     session.add(test_user)
 
     test_admin = User(
-        email=ADMIN_EMAIL,
-        username="test_admin",
-        password=ADMIN_PASSWORD,
+        email=ADMIN_USER_EMAIL,
+        username=ADMIN_USER_USER_NAME,
+        password=ADMIN_USER_PASSWORD,
         confirmed=True,
         is_administrator=True,
     )
     session.add(test_admin)
 
     test_unconfirmed_user = User(
-        email="freddy@example.org", username="b_meson", password="dog", confirmed=False
+        email=UNCONFIRMED_USER_EMAIL,
+        username=UNCONFIRMED_USER_USERNAME,
+        password=UNCONFIRMED_USER_PASSWORD,
+        confirmed=False,
     )
     session.add(test_unconfirmed_user)
     session.commit()
 
     test_disabled_user = User(
-        email="may@example.org",
-        username="may",
-        password="yam",
+        email=DISABLED_USER_EMAIL,
+        username=DISABLED_USER_USERNAME,
+        password=DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
     )
@@ -367,9 +396,9 @@ def add_mockdata(session):
     session.commit()
 
     test_modified_disabled_user = User(
-        email="sam@example.org",
-        username="sam",
-        password="the yam",
+        email=MOD_DISABLED_USER_EMAIL,
+        username=MOD_DISABLED_USER_USERNAME,
+        password=MOD_DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
     )
@@ -401,9 +430,9 @@ def add_mockdata(session):
     session.commit()
 
     test_area_coordinator = User(
-        email="raq929@example.org",
-        username="test_ac",
-        password="horse",
+        email=AC_USER_EMAIL,
+        username=AC_USER_USERNAME,
+        password=AC_USER_PASSWORD,
         confirmed=True,
         is_area_coordinator=True,
         ac_department_id=AC_DEPT,
