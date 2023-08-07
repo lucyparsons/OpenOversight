@@ -17,6 +17,11 @@ from OpenOversight.app.auth.forms import (
 from OpenOversight.app.models.database import User
 from OpenOversight.app.utils.constants import KEY_OO_MAIL_SUBJECT_PREFIX
 from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import (
+    GENERAL_USER_EMAIL,
+    MOD_DISABLED_USER_EMAIL,
+    UNCONFIRMED_USER_EMAIL,
+)
 from OpenOversight.tests.routes.route_helpers import (
     login_disabled_user,
     login_modified_disabled_user,
@@ -58,7 +63,7 @@ def test_route_login_required(route, client, mockdata):
 
 def test_valid_user_can_login(mockdata, client, session):
     with current_app.test_request_context():
-        rv = login_user(client)
+        rv, _ = login_user(client)
         assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
@@ -74,7 +79,7 @@ def test_valid_user_can_login_with_email_differently_cased(mockdata, client, ses
 def test_invalid_user_cannot_login(mockdata, client, session):
     with current_app.test_request_context():
         form = LoginForm(
-            email="freddy@example.org", password="bruteforce", remember_me=True
+            email=UNCONFIRMED_USER_EMAIL, password="bruteforce", remember_me=True
         )
         rv = client.post(url_for("auth.login"), data=form.data)
         assert b"Invalid username or password." in rv.data
@@ -428,7 +433,7 @@ def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, sessio
 
 def test_disabled_user_cannot_login(mockdata, client, session):
     with current_app.test_request_context():
-        rv = login_disabled_user(client)
+        rv, _ = login_disabled_user(client)
         assert b"User has been disabled" in rv.data
 
 
@@ -438,11 +443,11 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, sessi
     # you'll get unexpected results if both tests run simultaneously.
     with current_app.test_request_context():
         # Temporarily enable account for login
-        user = User.query.filter_by(email="sam@example.org").one()
+        user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).one()
         user.is_disabled = False
         session.add(user)
 
-        rv = login_modified_disabled_user(client)
+        rv, _ = login_modified_disabled_user(client)
         assert b"/user/sam" in rv.data
 
         # Disable account again and check that login_required redirects user correctly
@@ -477,5 +482,5 @@ def test_user_can_change_dept_pref(mockdata, client, session):
 
         assert b"Updated!" in rv.data
 
-        user = User.query.filter_by(email="jen@example.org").one()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
         assert user.dept_pref == AC_DEPT

@@ -2,49 +2,69 @@ from flask import url_for
 
 from OpenOversight.app.auth.forms import LoginForm
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.constants import ADMIN_PASSWORD
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import (
+    AC_USER_EMAIL,
+    AC_USER_PASSWORD,
+    ADMIN_USER_EMAIL,
+    ADMIN_USER_PASSWORD,
+    DISABLED_USER_EMAIL,
+    DISABLED_USER_PASSWORD,
+    GENERAL_USER_EMAIL,
+    GENERAL_USER_PASSWORD,
+    MOD_DISABLED_USER_EMAIL,
+    MOD_DISABLED_USER_PASSWORD,
+    UNCONFIRMED_USER_EMAIL,
+    UNCONFIRMED_USER_PASSWORD,
+)
 
 
 def login_user(client):
-    user = User.query.filter_by(id=1).first()
-    form = LoginForm(email=user.email, password="dog", remember_me=True)
+    user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
+    form = LoginForm(email=user.email, password=GENERAL_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def login_unconfirmed_user(client):
-    user = User.query.filter_by(confirmed=False).first()
-    form = LoginForm(email=user.email, password="dog", remember_me=True)
+    user = User.query.filter_by(email=UNCONFIRMED_USER_EMAIL).first()
+    form = LoginForm(
+        email=user.email, password=UNCONFIRMED_USER_PASSWORD, remember_me=True
+    )
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     assert b"Invalid username or password" not in rv.data
-    return rv
+    return rv, user
 
 
 def login_disabled_user(client):
-    form = LoginForm(email="may@example.org", password="yam", remember_me=True)
+    user = User.query.filter_by(email=DISABLED_USER_EMAIL).first()
+    form = LoginForm(
+        email=user.email, password=DISABLED_USER_PASSWORD, remember_me=True
+    )
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
-    return rv
+    return rv, user
 
 
 def login_modified_disabled_user(client):
-    form = LoginForm(email="sam@example.org", password="the yam", remember_me=True)
+    user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).first()
+    form = LoginForm(
+        email=user.email, password=MOD_DISABLED_USER_PASSWORD, remember_me=True
+    )
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=True)
-    return rv
+    return rv, user
 
 
 def login_admin(client):
-    user = User.query.filter_by(is_administrator=True).first()
-    form = LoginForm(email=user.email, password=ADMIN_PASSWORD, remember_me=True)
+    user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+    form = LoginForm(email=user.email, password=ADMIN_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def login_ac(client):
-    user = User.query.filter_by(ac_department_id=AC_DEPT).first()
-    form = LoginForm(email=user.email, password="horse", remember_me=True)
+    user = User.query.filter_by(email=AC_USER_EMAIL).first()
+    form = LoginForm(email=user.email, password=AC_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
-    return rv
+    return rv, user
 
 
 def process_form_data(form_dict):
