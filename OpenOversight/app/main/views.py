@@ -71,11 +71,14 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.models.database_cache import remove_database_cache_entry
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    KEY_DEPT_ASSIGNMENTS_LAST_UPDATED,
+    KEY_DEPT_OFFICERS_LAST_UPDATED,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
 )
@@ -337,6 +340,9 @@ def add_assignment(officer_id):
             current_user.is_area_coordinator
             and officer.department_id == current_user.ac_department_id
         ):
+            remove_database_cache_entry(
+                Department(id=officer.department_id), KEY_DEPT_ASSIGNMENTS_LAST_UPDATED
+            )
             try:
                 add_new_assignment(officer_id, form)
                 flash("Added new assignment!")
@@ -922,6 +928,9 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
+        remove_database_cache_entry(
+            Department(id=officer.department_id), KEY_DEPT_OFFICERS_LAST_UPDATED
+        )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:

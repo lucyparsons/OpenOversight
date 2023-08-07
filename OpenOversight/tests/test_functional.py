@@ -378,7 +378,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
 
     wait_for_page_load(browser)
     page_text = browser.find_element(By.TAG_NAME, "body").text
-    assert "All images have been classfied!" in page_text
+    assert "All images have been classified!" in page_text
 
     # 5. Identify the new officer in the uploaded image
     browser.get(f"http://localhost:{server_port}/cop_face/department/{dept_id}")

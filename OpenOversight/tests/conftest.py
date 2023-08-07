@@ -76,7 +76,7 @@ OFFICERS = [
     ("IVANA", "", "TINKLE"),
     ("SEYMOUR", "", "BUTZ"),
     ("HAYWOOD", "U", "CUDDLEME"),
-    ("BEA", "", "PROBLEM"),
+    ("BEA", "", "O'PROBLEM"),
     ("URA", "", "SNOTBALL"),
     ("HUGH", "", "JASS"),
 ]

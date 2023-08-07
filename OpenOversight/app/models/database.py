@@ -5,29 +5,30 @@ from datetime import date
 from decimal import Decimal
 
 from authlib.jose import JoseError, JsonWebToken
-from cachetools import TTLCache, cached
-from cachetools.keys import hashkey
+from cachetools import cached
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
-
-# from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from OpenOversight.app.models.database_cache import DB_CACHE, db_model_cache_key
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    KEY_DEPT_ASSIGNMENTS_LAST_UPDATED,
+    KEY_DEPT_INCIDENTS_LAST_UPDATED,
+    KEY_DEPT_OFFICERS_LAST_UPDATED,
+)
 from OpenOversight.app.validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
 
-BaseModel = (
-    db.Model
-)  # This was here before but it's fucking with my IDE's typing - type: DefaultMeta (MJSB 2021-09-08)
+BaseModel = db.Model
 
 officer_links = db.Table(
     "officer_links",
@@ -56,30 +57,6 @@ officer_incidents = db.Table(
         unique=False,
     ),
 )
-
-
-# This is a last recently used cache that also utilizes a time-to-live function for each
-# value saved in it (12 hours).
-# TODO: Change this into a singleton so that we can clear values when updates happen
-date_updated_cache = TTLCache(maxsize=1024, ttl=12 * 60 * 60)
-
-
-def _date_updated_cache_key(update_type: str):
-    """Return a key function to calculate the cache key for Department
-    `latest_*_update` methods using the department id and a given update type.
-
-    Department.id is used instead of a Department obj because the default Python
-    __hash__ is unique per obj instance, meaning multiple instances of the same
-    department will have different hashes.
-
-    Update type is used in the hash to differentiate between the (currently) three
-    update types we compute per department.
-    """
-
-    def _cache_key(dept: "Department"):
-        return hashkey(dept.id, update_type)
-
-    return _cache_key
 
 
 class Department(BaseModel):
@@ -117,25 +94,7 @@ class Department(BaseModel):
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
-    @cached(cache=date_updated_cache, key=_date_updated_cache_key("incident"))
-    def latest_incident_update(self) -> datetime.date:
-        incident_updated = (
-            db.session.query(func.max(Incident.date_updated))
-            .filter(Incident.department_id == self.id)
-            .scalar()
-        )
-        return incident_updated.date() if incident_updated else None
-
-    @cached(cache=date_updated_cache, key=_date_updated_cache_key("officer"))
-    def latest_officer_update(self) -> datetime.date:
-        officer_updated = (
-            db.session.query(func.max(Officer.date_updated))
-            .filter(Officer.department_id == self.id)
-            .scalar()
-        )
-        return officer_updated.date() if officer_updated else None
-
-    @cached(cache=date_updated_cache, key=_date_updated_cache_key("assignment"))
+    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_ASSIGNMENTS_LAST_UPDATED))
     def latest_assignment_update(self) -> datetime.date:
         assignment_updated = (
             db.session.query(func.max(Assignment.date_updated))
@@ -145,6 +104,24 @@ class Department(BaseModel):
             .scalar()
         )
         return assignment_updated.date() if assignment_updated else None
+
+    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_INCIDENTS_LAST_UPDATED))
+    def latest_incident_update(self) -> datetime.date:
+        incident_updated = (
+            db.session.query(func.max(Incident.date_updated))
+            .filter(Incident.department_id == self.id)
+            .scalar()
+        )
+        return incident_updated.date() if incident_updated else None
+
+    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_OFFICERS_LAST_UPDATED))
+    def latest_officer_update(self) -> datetime.date:
+        officer_updated = (
+            db.session.query(func.max(Officer.date_updated))
+            .filter(Officer.department_id == self.id)
+            .scalar()
+        )
+        return officer_updated.date() if officer_updated else None
 
 
 class Job(BaseModel):
