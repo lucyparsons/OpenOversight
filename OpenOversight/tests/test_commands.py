@@ -926,7 +926,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert cop1.last_name == "Smith"
     assert cop1.gender == "M"
     assert cop1.race == "WHITE"
-    assert cop1.employment_date == datetime.date(2019, 7, 12)
+    assert cop1.employment_date == date(2019, 7, 12)
     assert cop1.birth_year == 1984
     assert cop1.middle_initial == "O"
     assert cop1.suffix is None
@@ -942,8 +942,8 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         cop1.assignments, key=operator.attrgetter("start_date")
     )
     assert assignment_po.star_no == "1234"
-    assert assignment_po.start_date == datetime.date(2019, 7, 12)
-    assert assignment_po.resign_date == datetime.date(2020, 1, 1)
+    assert assignment_po.start_date == date(2019, 7, 12)
+    assert assignment_po.resign_date == date(2020, 1, 1)
     assert assignment_po.job.job_title == "Police Officer"
     assert assignment_po.unit_id is None
 
@@ -980,10 +980,10 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         cop4.assignments, key=operator.attrgetter("start_date")
     )
     assert updated_assignment.job.job_title == "Police Officer"
-    assert updated_assignment.resign_date == datetime.date(2020, 7, 10)
+    assert updated_assignment.resign_date == date(2020, 7, 10)
     assert updated_assignment.star_no == "4567"
     assert new_assignment.job.job_title == "Captain"
-    assert new_assignment.start_date == datetime.date(2020, 7, 10)
+    assert new_assignment.start_date == date(2020, 7, 10)
     assert new_assignment.star_no == "54321"
 
     incident = cop4.incidents[0]
