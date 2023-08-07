@@ -1,8 +1,8 @@
 """change incident date and time to timestamptz
 
 Revision ID: 9fa948bcea25
-Revises: 18f43ac4622f
-Create Date: 2023-07-27 18:48:58.819477
+Revises: b38c133bed3c
+Create Date: 2023-08-06 23:16:00.819477
 
 """
 import os
@@ -14,7 +14,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "9fa948bcea25"
-down_revision = "18f43ac4622f"
+down_revision = "b38c133bed3c"
 branch_labels = None
 depends_on = None
 
