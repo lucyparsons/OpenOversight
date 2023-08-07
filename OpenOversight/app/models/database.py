@@ -633,7 +633,8 @@ class Incident(BaseModel):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
-    occurred_at = db.Column(db.DateTime(timezone=True), unique=False, nullable=False)
+    date = db.Column(db.Date, unique=False, index=True)
+    occurred_at = db.Column(db.DateTime(timezone=True), unique=False, nullable=True, index=True)
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey("locations.id"))
