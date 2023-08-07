@@ -7,7 +7,7 @@ build: ## Build containers
 	docker-compose build
 
 .PHONY: build_with_version
-build_with_version: create_empty_secret create_empty_env
+build_with_version: create_empty_secret
 	docker-compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
@@ -100,10 +100,3 @@ create_empty_secret: # This is needed to make sure docker doesn't create an empt
 	(echo "Need to delete that empty directory first"; \
 	 sudo rm -d service_account_key.json/; \
 	 touch service_account_key.json)
-
-.PHONY: create_empty_env
-create_empty_env: # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
-	touch .env || \
-	(echo "Need to delete that empty directory first"; \
-	 sudo rm -d .env/; \
-	 touch .env)
