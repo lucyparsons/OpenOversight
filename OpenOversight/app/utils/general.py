@@ -1,5 +1,6 @@
 import random
 import sys
+from datetime import datetime, timezone
 from distutils.util import strtobool
 from typing import Optional
 from urllib.parse import urlparse
@@ -68,6 +69,14 @@ def get_random_image(image_query):
         return image_query[rand]
     else:
         return None
+
+
+def get_utc_datetime(dt: datetime = None) -> datetime:
+    """Return the current datetime in UTC or the converted given datetime to UTC."""
+    if dt:
+        return datetime.now(tz=timezone.utc)
+    else:
+        return dt.replace(tzinfo=timezone.utc)
 
 
 def merge_dicts(*dict_args):
