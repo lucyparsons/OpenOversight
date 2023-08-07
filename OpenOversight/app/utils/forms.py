@@ -20,7 +20,7 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
-from OpenOversight.app.utils.general import get_or_create
+from OpenOversight.app.utils.general import get_or_create, get_utc_datetime
 
 
 def add_new_assignment(officer_id, form):
@@ -134,8 +134,8 @@ def create_description(self, form):
 
 def create_incident(self, form):
     fields = {
-        "occurred_at": datetime.datetime.combine(
-            form.date_field.data, form.time_field.data
+        "occurred_at": get_utc_datetime(
+            datetime.datetime.combine(form.date_field.data, form.time_field.data)
         ),
         "officers": [],
         "license_plates": [],
