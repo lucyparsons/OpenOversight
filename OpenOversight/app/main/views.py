@@ -344,7 +344,7 @@ def add_assignment(officer_id):
             and officer.department_id == current_user.ac_department_id
         ):
             remove_department_cache_entry(
-                officer.department_id, KEY_DEPT_TOTAL_ASSIGNMENTS
+                Department(id=officer.department_id), KEY_DEPT_TOTAL_ASSIGNMENTS
             )
             try:
                 add_new_assignment(officer_id, form)
@@ -931,7 +931,9 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        remove_department_cache_entry(officer.department_id, KEY_DEPT_TOTAL_OFFICERS)
+        remove_department_cache_entry(
+            Department(id=officer.department_id), KEY_DEPT_TOTAL_OFFICERS
+        )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
