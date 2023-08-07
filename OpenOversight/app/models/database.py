@@ -150,7 +150,7 @@ class Job(BaseModel):
     )
 
     def __repr__(self):
-        return f"<Job ID {self.id,}: {self.job_title}>"
+        return f"<Job ID {self.id}: {self.job_title}>"
 
     def __str__(self):
         return self.job_title

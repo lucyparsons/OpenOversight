@@ -12,6 +12,7 @@ from OpenOversight.app.models.database import (
     Face,
     Image,
     Incident,
+    Job,
     LicensePlate,
     Link,
     Location,
@@ -52,6 +53,11 @@ def test_assignment_repr(mockdata):
         repr(assignment)
         == f"<Assignment: ID {assignment.officer.id} : {assignment.star_no}>"
     )
+
+
+def test_job_repr(mockdata):
+    job = Job.query.first()
+    assert repr(job) == f"<Job ID {job.id}: {job.job_title}>"
 
 
 def test_image_repr(mockdata):

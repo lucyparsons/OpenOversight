@@ -12,7 +12,7 @@ from OpenOversight.app.main.forms import (
     LinkForm,
     LocationForm,
 )
-from OpenOversight.app.models.database import Department, Incident, Job, Officer, User
+from OpenOversight.app.models.database import Department, Incident, Job, Officer
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
     has_database_cache_entry,
@@ -90,12 +90,11 @@ def test_latest_assignment_update(mockdata, client, faker):
 
 def test_latest_incident_update(mockdata, client, faker):
     with current_app.test_request_context():
-        login_admin(client)
+        _, user = login_admin(client)
         department = Department.query.first()
         department.latest_assignment_update()
         department.latest_incident_update()
         department.latest_officer_update()
-        user = User.query.first()
 
         assert has_database_cache_entry(department, KEY_DEPT_ASSIGNMENTS_LAST_UPDATED)
         assert has_database_cache_entry(department, KEY_DEPT_INCIDENTS_LAST_UPDATED)
@@ -147,12 +146,11 @@ def test_latest_incident_update(mockdata, client, faker):
 
 def test_latest_officer_update(mockdata, client, faker):
     with current_app.test_request_context():
-        login_admin(client)
+        _, user = login_admin(client)
         department = Department.query.first()
         department.latest_assignment_update()
         department.latest_incident_update()
         department.latest_officer_update()
-        user = User.query.filter_by(is_administrator=True).first()
 
         assert has_database_cache_entry(department, KEY_DEPT_ASSIGNMENTS_LAST_UPDATED)
         assert has_database_cache_entry(department, KEY_DEPT_INCIDENTS_LAST_UPDATED)
