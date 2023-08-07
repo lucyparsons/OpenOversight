@@ -102,6 +102,7 @@ from OpenOversight.app.utils.general import (
     allowed_file,
     get_or_create,
     get_random_image,
+    get_utc_datetime,
     replace_list,
     serve_image,
     validate_redirect_url,
@@ -1634,12 +1635,12 @@ class IncidentApi(ModelView):
             replace_list(license_plates, obj, "license_plates", LicensePlate, db)
 
         if form.time_field.raw_data and form.time_field.raw_data != [""]:
-            obj.occurred_at = datetime.datetime.combine(
-                form.date_field.data, form.time_field.data
+            obj.occurred_at = get_utc_datetime(
+                datetime.datetime.combine(form.date_field.data, form.time_field.data)
             )
         else:
-            obj.occurred_at = datetime.datetime.combine(
-                form.date_field.data, datetime.time(0, 0)
+            obj.occurred_at = get_utc_datetime(
+                datetime.datetime.combine(form.date_field.data, datetime.time(0, 0))
             )
         super(IncidentApi, self).populate_obj(form, obj)
 
