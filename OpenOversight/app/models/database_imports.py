@@ -21,7 +21,7 @@ from OpenOversight.app.utils.choices import (
     RACE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.general import get_or_create, str_is_true
+from OpenOversight.app.utils.general import get_or_create, get_utc_datetime, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
 
@@ -282,8 +282,8 @@ def get_or_create_location_from_dict(
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     incident = Incident(
-        occurred_at=parse_date_time(
-            " ".join([data.get("date"), data.get("time", "00:00")])
+        occurred_at=get_utc_datetime(
+            parse_date_time(" ".join([data.get("date"), data.get("time", "00:00")]))
         ),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
@@ -291,7 +291,7 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         department_id=parse_int(data.get("department_id")),
         created_by=parse_int(data.get("created_by")),
         last_updated_by=parse_int(data.get("last_updated_by")),
-        last_updated_at=datetime.datetime.now(),
+        last_updated_at=datetime.now(),
     )
 
     incident.officers = data.get("officers", [])
@@ -307,8 +307,8 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
-        incident.occurred_at = parse_date_time(
-            " ".join([data.get("date"), data.get("time", "00:00")])
+        incident.occurred_at = get_utc_datetime(
+            parse_date_time(" ".join([data.get("date"), data.get("time", "00:00")]))
         )
     if "report_number" in data:
         incident.report_number = parse_str(data.get("report_number"), None)
@@ -322,7 +322,7 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.created_by = parse_int(data.get("created_by"))
     if "last_updated_by" in data:
         incident.last_updated_by = parse_int(data.get("last_updated_by"))
-        incident.last_updated_at = datetime.datetime.now()
+        incident.last_updated_at = datetime.now()
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
