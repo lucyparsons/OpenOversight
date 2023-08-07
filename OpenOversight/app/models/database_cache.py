@@ -10,7 +10,7 @@ DB_CACHE = TTLCache(maxsize=1024, ttl=12 * HOUR)
 
 def _model_key(model: Model, update_type: str):
     """Create unique db.Model key."""
-    return hashkey(model.id, update_type, model.__name__)
+    return hashkey(model.id, update_type, model.__class__.__name__)
 
 
 def db_model_cache_key(update_type: str):
@@ -31,13 +31,13 @@ def db_model_cache_key(update_type: str):
     return _cache_key
 
 
-def has_department_cache_entry(department, update_type: str) -> bool:
+def has_department_cache_entry(department: Model, update_type: str) -> bool:
     """Department key exists in cache."""
     key = _model_key(department, update_type)
     return key in DB_CACHE.keys()
 
 
-def remove_department_cache_entry(department, update_type: str) -> None:
+def remove_department_cache_entry(department: Model, update_type: str) -> None:
     """Remove department key from cache if it exists."""
     key = _model_key(department, update_type)
     if key in DB_CACHE.keys():
