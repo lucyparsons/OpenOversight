@@ -198,8 +198,10 @@ class Officer(BaseModel):
     gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    assignments = db.relationship("Assignment", backref="officer", lazy="dynamic")
-    assignments_lazy = db.relationship("Assignment")
+    assignments = db.relationship(
+        "Assignment", back_populates="base_officer", lazy="dynamic"
+    )
+    assignments_lazy = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="officers")
@@ -334,7 +336,7 @@ class Assignment(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    base_officer = db.relationship("Officer")
+    base_officer = db.relationship("Officer", back_populates="assignments")
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"), nullable=False)
     job = db.relationship("Job")
@@ -408,12 +410,12 @@ class Face(BaseModel):
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship("Image", backref="faces", foreign_keys=[img_id])
+    image = db.relationship("Image", back_populates="faces", foreign_keys=[img_id])
     original_image = db.relationship(
         "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
     )
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    user = db.relationship("User", backref="faces")
+    user = db.relationship("User", back_populates="faces")
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
     )
@@ -456,7 +458,7 @@ class Image(BaseModel):
         unique=False,
     )
 
-    user = db.relationship("User", backref="raw_images")
+    user = db.relationship("User", back_populates="classifications")
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
@@ -704,8 +706,8 @@ class User(UserMixin, BaseModel):
     is_disabled = db.Column(db.Boolean, default=False)
     dept_pref = db.Column(db.Integer, db.ForeignKey("departments.id"))
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
-    classifications = db.relationship("Image", backref="users")
-    tags = db.relationship("Face", backref="users")
+    classifications = db.relationship("Image", back_populates="users")
+    tags = db.relationship("Face", back_populates="users")
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
