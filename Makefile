@@ -7,7 +7,7 @@ build: ## Build containers
 	docker-compose build
 
 .PHONY: build_with_version
-build_with_version: create_empty_secret create_empty_env
+build_with_version: create_empty_secret
 	docker-compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
