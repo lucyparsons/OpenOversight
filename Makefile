@@ -96,10 +96,3 @@ create_empty_secret: # This is needed to make sure docker doesn't create an empt
 	(echo "Need to delete that empty directory first"; \
 	 sudo rm -d service_account_key.json/; \
 	 touch service_account_key.json)
-
-.PHONY: create_empty_env
-create_empty_env: # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
-	touch .env || \
-	(echo "Need to delete that empty directory first"; \
-	 sudo rm -d .env/; \
-	 touch .env)
