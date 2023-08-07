@@ -4,10 +4,14 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.models.database import User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import (
+    ADMIN_USER_EMAIL,
+    GENERAL_USER_EMAIL,
+    UNCONFIRMED_USER_EMAIL,
+)
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -77,7 +81,7 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+        user = User.query.except_(User.query.filter_by(email=ADMIN_USER_EMAIL)).first()
 
         form = EditUserForm(is_area_coordinator=True, submit=True)
 
@@ -95,7 +99,7 @@ def test_admin_can_update_users_to_admin(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.except_(User.query.filter_by(is_administrator=True)).first()
+        user = User.query.except_(User.query.filter_by(email=ADMIN_USER_EMAIL)).first()
 
         form = EditUserForm(
             is_area_coordinator=False, is_administrator=True, submit=True
@@ -115,7 +119,7 @@ def test_admin_can_delete_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.first()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
 
         rv = client.get(
             url_for("auth.delete_user", user_id=user.id),
@@ -177,9 +181,7 @@ def test_admin_can_disable_user(mockdata, client, session):
 
 def test_admin_cannot_disable_self(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-
-        user = User.query.filter_by(is_administrator=True).first()
+        _, user = login_admin(client)
 
         assert not user.is_disabled
 
@@ -204,7 +206,7 @@ def test_admin_can_enable_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
         user.is_disabled = True
         db.session.commit()
 
@@ -232,7 +234,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(confirmed=False).first()
+        user = User.query.filter_by(email=UNCONFIRMED_USER_EMAIL).first()
 
         form = EditUserForm(
             resend=True,
@@ -252,11 +254,11 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
 
 def test_register_user_approval_required(mockdata, client, session):
     current_app.config["APPROVE_REGISTRATIONS"] = True
-    EmailClient(testing=True)
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
+        new_user_email = "jen@example.com"
         form = RegistrationForm(
-            email="jen@example.com",
+            email=new_user_email,
             username="redshiftzero",
             password=diceware_password,
             password2=diceware_password,
@@ -272,7 +274,7 @@ def test_register_user_approval_required(mockdata, client, session):
         )
 
         form = LoginForm(
-            email="jen@example.com", password=diceware_password, remember_me=True
+            email=new_user_email, password=diceware_password, remember_me=True
         )
         rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
 
@@ -287,7 +289,7 @@ def test_admin_can_approve_user(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         user.approved = False
         db.session.commit()
 
@@ -336,7 +338,6 @@ def test_admin_approval_sends_confirmation_email(
     session,
 ):
     current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
-    EmailClient(testing=True)
     with current_app.test_request_context():
         login_admin(client)
 
