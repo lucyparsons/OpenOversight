@@ -48,16 +48,22 @@ from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.constants import (
     AC_USER_EMAIL,
     AC_USER_PASSWORD,
+    AC_USER_USERNAME,
     ADMIN_USER_EMAIL,
     ADMIN_USER_PASSWORD,
+    ADMIN_USER_USER_NAME,
     DISABLED_USER_EMAIL,
     DISABLED_USER_PASSWORD,
+    DISABLED_USER_USERNAME,
     GENERAL_USER_EMAIL,
     GENERAL_USER_PASSWORD,
+    GENERAL_USER_USERNAME,
     MOD_DISABLED_USER_EMAIL,
     MOD_DISABLED_USER_PASSWORD,
+    MOD_DISABLED_USER_USERNAME,
     UNCONFIRMED_USER_EMAIL,
     UNCONFIRMED_USER_PASSWORD,
+    UNCONFIRMED_USER_USERNAME,
 )
 
 
@@ -355,7 +361,7 @@ def add_mockdata(session):
 
     test_user = User(
         email=GENERAL_USER_EMAIL,
-        username="test_user",
+        username=GENERAL_USER_USERNAME,
         password=GENERAL_USER_PASSWORD,
         confirmed=True,
     )
@@ -363,7 +369,7 @@ def add_mockdata(session):
 
     test_admin = User(
         email=ADMIN_USER_EMAIL,
-        username="test_admin",
+        username=ADMIN_USER_USER_NAME,
         password=ADMIN_USER_PASSWORD,
         confirmed=True,
         is_administrator=True,
@@ -372,7 +378,7 @@ def add_mockdata(session):
 
     test_unconfirmed_user = User(
         email=UNCONFIRMED_USER_EMAIL,
-        username="b_meson",
+        username=UNCONFIRMED_USER_USERNAME,
         password=UNCONFIRMED_USER_PASSWORD,
         confirmed=False,
     )
@@ -381,7 +387,7 @@ def add_mockdata(session):
 
     test_disabled_user = User(
         email=DISABLED_USER_EMAIL,
-        username="may",
+        username=DISABLED_USER_USERNAME,
         password=DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
@@ -391,7 +397,7 @@ def add_mockdata(session):
 
     test_modified_disabled_user = User(
         email=MOD_DISABLED_USER_EMAIL,
-        username="sam",
+        username=MOD_DISABLED_USER_USERNAME,
         password=MOD_DISABLED_USER_PASSWORD,
         confirmed=True,
         is_disabled=True,
@@ -425,7 +431,7 @@ def add_mockdata(session):
 
     test_area_coordinator = User(
         email=AC_USER_EMAIL,
-        username="test_ac",
+        username=AC_USER_USERNAME,
         password=AC_USER_PASSWORD,
         confirmed=True,
         is_area_coordinator=True,
