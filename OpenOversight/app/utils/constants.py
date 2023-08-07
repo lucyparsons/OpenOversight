@@ -2,9 +2,9 @@ import os
 
 
 # Cache Key Constants
-KEY_TOTAL_ASSIGNMENTS = "total_assignments"
-KEY_TOTAL_INCIDENTS = "total_incidents"
-KEY_TOTAL_OFFICERS = "total_officers"
+KEY_DEPT_TOTAL_ASSIGNMENTS = "total_assignments"
+KEY_DEPT_TOTAL_INCIDENTS = "total_incidents"
+KEY_DEPT_TOTAL_OFFICERS = "total_officers"
 
 # Config Key Constants
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
