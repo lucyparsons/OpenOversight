@@ -1,10 +1,10 @@
 import csv
-import datetime
 import operator
 import os
 import random
 import traceback
 import uuid
+from datetime import date, datetime
 
 import pandas as pd
 import pytest
@@ -857,7 +857,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         id=77021,
         officer_id=officer.id,
         star_no="4567",
-        start_date=datetime.date(2020, 1, 1),
+        start_date=date(2020, 1, 1),
         job_id=department.jobs[0].id,
         created_by=user.id,
     )
@@ -878,7 +878,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         report_number="Old_Report_Number",
         department_id=1,
         description="description",
-        occurred_at=datetime.datetime(2020, 7, 26, 23, 45, 16),
+        occurred_at=datetime(2020, 7, 26, 23, 45, 16),
         created_by=user.id,
     )
     incident.officers = [officer]
@@ -1006,7 +1006,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.report_number == "CR-39283"
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
-    assert incident3.occurred_at == datetime.datetime(2020, 7, 26, 0, 0)
+    assert incident3.occurred_at == datetime(2020, 7, 26, 0, 0)
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
     assert lp.state is None
