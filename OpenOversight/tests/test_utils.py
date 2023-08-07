@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 import pytest
+import pytz
 from flask import current_app
 from flask_login import current_user
 from mock import MagicMock, Mock, patch
@@ -12,9 +14,14 @@ from OpenOversight.app.utils.cloud import (
     upload_image_to_s3_and_store_in_db,
     upload_obj_to_s3,
 )
+from OpenOversight.app.utils.constants import KEY_TIMEZONE
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import filter_by_form, grab_officers
-from OpenOversight.app.utils.general import allowed_file, validate_redirect_url
+from OpenOversight.app.utils.general import (
+    allowed_file,
+    get_utc_datetime,
+    validate_redirect_url,
+)
 from OpenOversight.tests.routes.route_helpers import login_user
 
 
@@ -72,6 +79,22 @@ def test_gender_filter_include_all_genders_if_not_sure(mockdata):
     for officer in results.all():
         assert officer.department == department
     assert results.count() == len(department.officers)
+
+
+def test_get_utc_datetime():
+    utc_now = datetime.utcnow()
+    test_utc_now = get_utc_datetime()
+    assert (test_utc_now - utc_now).total_seconds() < 0.5
+
+    with current_app.test_request_context():
+        server_timezone = pytz.timezone(current_app.config[KEY_TIMEZONE])
+        local = server_timezone.localize(datetime.now() + timedelta(days=10, hours=3))
+        test_local_to_utc = get_utc_datetime(local)
+        test = (local - test_local_to_utc).total_seconds()
+        correct = (
+            datetime.now(tz=timezone.utc) - datetime.now().astimezone(tz=server_timezone)
+        ).total_seconds()
+        assert test == correct
 
 
 def test_rank_filter_select_all_commanders(mockdata):
