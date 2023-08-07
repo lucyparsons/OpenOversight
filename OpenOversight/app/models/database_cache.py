@@ -8,7 +8,7 @@ from OpenOversight.app.utils.constants import HOUR
 DB_CACHE = TTLCache(maxsize=1024, ttl=12 * HOUR)
 
 
-def _model_key(model: Model, update_type: str):
+def model_key(model: Model, update_type: str):
     """Create unique db.Model key."""
     return hashkey(model.id, update_type, model.__class__.__name__)
 
@@ -26,19 +26,19 @@ def db_model_cache_key(update_type: str):
     """
 
     def _cache_key(model: Model):
-        return _model_key(model, update_type)
+        return model_key(model, update_type)
 
     return _cache_key
 
 
-def has_department_cache_entry(department: Model, update_type: str) -> bool:
-    """Department key exists in cache."""
-    key = _model_key(department, update_type)
+def has_database_cache_entry(model: Model, update_type: str) -> bool:
+    """db.Model key exists in cache."""
+    key = model_key(model, update_type)
     return key in DB_CACHE.keys()
 
 
-def remove_department_cache_entry(department: Model, update_type: str) -> None:
-    """Remove department key from cache if it exists."""
-    key = _model_key(department, update_type)
+def remove_database_cache_entry(model: Model, update_type: str) -> None:
+    """Remove db.Model key from cache if it exists."""
+    key = model_key(model, update_type)
     if key in DB_CACHE.keys():
         del DB_CACHE[key]
