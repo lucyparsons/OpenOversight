@@ -92,7 +92,8 @@ def test_get_utc_datetime():
         test_local_to_utc = get_utc_datetime(local)
         test = (local - test_local_to_utc).total_seconds()
         correct = (
-            datetime.now(tz=timezone.utc) - datetime.now().astimezone(tz=server_timezone)
+            datetime.now(tz=timezone.utc)
+            - datetime.now().astimezone(tz=server_timezone)
         ).total_seconds()
         assert test == correct
 
