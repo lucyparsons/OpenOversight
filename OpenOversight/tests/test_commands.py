@@ -568,22 +568,20 @@ def test_bulk_add_officers__success(
     officers = officer_query.all()
     assert len(officers) == 3
     first_officer_db = officer_query.filter_by(first_name=fo_fn, last_name=fo_ln).one()
-    assert {asmt.job.job_title for asmt in first_officer_db.assignments} == {
+    assert {a.job.job_title for a in first_officer_db.assignments} == {
         RANK_CHOICES_1[2],
         RANK_CHOICES_1[1],
     }
     different_officer_db = officer_query.filter_by(
         first_name=do_fn, last_name=do_ln
     ).one()
-    assert [asmt.job.job_title for asmt in different_officer_db.assignments] == [
+    assert [a.job.job_title for a in different_officer_db.assignments] == [
         RANK_CHOICES_1[1]
     ]
     new_officer_db = officer_query.filter_by(
         first_name=new_officer_first_name, last_name=new_officer_last_name
     ).one()
-    assert [asmt.job.job_title for asmt in new_officer_db.assignments] == [
-        RANK_CHOICES_1[1]
-    ]
+    assert [a.job.job_title for a in new_officer_db.assignments] == [RANK_CHOICES_1[1]]
 
 
 def test_bulk_add_officers__duplicate_name(session, department, csv_path):
