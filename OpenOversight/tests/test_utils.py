@@ -103,7 +103,7 @@ def test_rank_filter_select_all_commanders(mockdata):
     department = Department.query.first()
     results = grab_officers({"rank": ["Commander"], "dept": department})
     for element in results.all():
-        assignment = element.assignments.first()
+        assignment = element.assignments[0]
         assert assignment.job.job_title in ("Commander", "Not Sure")
 
 
@@ -111,7 +111,7 @@ def test_rank_filter_select_all_police_officers(mockdata):
     department = Department.query.first()
     results = grab_officers({"rank": ["Police Officer"], "dept": department})
     for element in results.all():
-        assignment = element.assignments.first()
+        assignment = element.assignments[0]
         assert assignment.job.job_title in ("Police Officer", "Not Sure")
 
 
@@ -136,7 +136,7 @@ def test_filter_by_badge_no(mockdata):
     department = Department.query.first()
     results = grab_officers({"badge": "12", "dept": department})
     for element in results.all():
-        assignment = element.assignments.first()
+        assignment = element.assignments[0]
         assert "12" in str(assignment.star_no)
 
 

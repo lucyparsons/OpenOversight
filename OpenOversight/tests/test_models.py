@@ -51,7 +51,7 @@ def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
     assert (
         repr(assignment)
-        == f"<Assignment: ID {assignment.officer.id} : {assignment.star_no}>"
+        == f"<Assignment: ID {assignment.base_officer.id} : {assignment.star_no}>"
     )
 
 
