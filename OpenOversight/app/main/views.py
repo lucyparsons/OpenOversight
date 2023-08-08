@@ -53,7 +53,11 @@ from OpenOversight.app.main.forms import (
     TextForm,
 )
 from OpenOversight.app.main.model_view import ModelView
-from OpenOversight.app.models.cache import remove_cache_entry
+from OpenOversight.app.models.cache import (
+    get_cache_entry,
+    put_cache_entry,
+    remove_cache_entry,
+)
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
@@ -77,6 +81,12 @@ from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CH
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    KEY_DEPT_ALL_ASSIGNMENTS,
+    KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_LINKS,
+    KEY_DEPT_ALL_NOTES,
+    KEY_DEPT_ALL_OFFICERS,
+    KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_OFFICERS_PER_PAGE,
@@ -487,13 +497,14 @@ def display_submission(image_id):
 
 @main.route("/tag/<int:tag_id>")
 def display_tag(tag_id):
-    jsloads = ["js/tag.js"]
     try:
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
-    return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
+    return render_template(
+        "tag.html", face=tag, path=proper_path, jsloads=["js/tag.js"]
+    )
 
 
 @main.route(
@@ -697,8 +708,6 @@ def list_officer(
     current_job=None,
     require_photo=False,
 ):
-    js_loads = ["js/select2.min.js", "js/list_officer.js"]
-
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -854,7 +863,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
-        jsloads=js_loads,
+        jsloads=["js/select2.min.js", "js/list_officer.js"],
     )
 
 
@@ -1074,7 +1083,6 @@ def leaderboard():
 @main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def label_data(department_id=None, image_id=None):
-    jsloads = ["js/cropper.js", "js/tagger.js"]
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -1166,7 +1174,7 @@ def label_data(department_id=None, image_id=None):
         image=image,
         path=proper_path,
         department=department,
-        jsloads=jsloads,
+        jsloads=["js/cropper.js", "js/tagger.js"],
     )
 
 
@@ -1230,12 +1238,16 @@ def submit_data():
 )
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id):
-    officers = (
-        db.session.query(Officer)
-        .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-        .options(joinedload(Officer.salaries))
-        .filter_by(department_id=department_id)
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
+    officers = get_cache_entry(*cache_params)
+    if officers is None:
+        officers = (
+            db.session.query(Officer)
+            .options(joinedload(Officer.assignments).joinedload(Assignment.job))
+            .options(joinedload(Officer.salaries))
+            .filter_by(department_id=department_id)
+        )
+        put_cache_entry(*cache_params, officers)
 
     field_names = [
         "id",
@@ -1262,14 +1274,18 @@ def download_dept_officers_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id):
-    assignments = (
-        db.session.query(Assignment)
-        .join(Assignment.base_officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Assignment.base_officer))
-        .options(joinedload(Assignment.unit))
-        .options(joinedload(Assignment.job))
-    )
+    cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
+    assignments = get_cache_entry(*cache_params)
+    if assignments is None:
+        assignments = (
+            db.session.query(Assignment)
+            .join(Assignment.base_officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Assignment.base_officer))
+            .options(joinedload(Assignment.unit))
+            .options(joinedload(Assignment.job))
+        )
+        put_cache_entry(*cache_params, assignments)
 
     field_names = [
         "id",
@@ -1296,7 +1312,12 @@ def download_dept_assignments_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id):
-    incidents = Incident.query.filter_by(department_id=department_id).all()
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
+    incidents = get_cache_entry(*cache_params)
+    if incidents is None:
+        incidents = Incident.query.filter_by(department_id=department_id).all()
+        put_cache_entry(*cache_params, incidents)
+
     field_names = [
         "id",
         "report_num",
@@ -1322,12 +1343,16 @@ def download_incidents_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id):
-    salaries = (
-        db.session.query(Salary)
-        .join(Salary.officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Salary.officer))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
+    salaries = get_cache_entry(*cache_params)
+    if salaries is None:
+        salaries = (
+            db.session.query(Salary)
+            .join(Salary.officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Salary.officer))
+        )
+        put_cache_entry(*cache_params, salaries)
 
     field_names = [
         "id",
@@ -1347,12 +1372,16 @@ def download_dept_salaries_csv(department_id):
 @main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id):
-    links = (
-        db.session.query(Link)
-        .join(Link.officers)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Link.officers))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
+    links = get_cache_entry(*cache_params)
+    if links is None:
+        links = (
+            db.session.query(Link)
+            .join(Link.officers)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Link.officers))
+        )
+        put_cache_entry(*cache_params, links)
 
     field_names = [
         "id",
@@ -1374,12 +1403,16 @@ def download_dept_links_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id):
-    notes = (
-        db.session.query(Description)
-        .join(Description.officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Description.officer))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
+    notes = get_cache_entry(*cache_params)
+    if notes is None:
+        notes = (
+            db.session.query(Description)
+            .join(Description.officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Description.officer))
+        )
+        put_cache_entry(*cache_params, notes)
 
     field_names = [
         "id",
