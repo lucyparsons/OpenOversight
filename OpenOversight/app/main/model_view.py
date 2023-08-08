@@ -6,9 +6,12 @@ from flask.views import MethodView
 from flask_login import current_user, login_required
 
 from OpenOversight.app.models.cache import remove_cache_entry
-from OpenOversight.app.models.database import Department, db
+from OpenOversight.app.models.database import Department, Incident, db
 from OpenOversight.app.utils.auth import ac_or_admin_required
-from OpenOversight.app.utils.constants import KEY_DEPT_TOTAL_INCIDENTS
+from OpenOversight.app.utils.constants import (
+    KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_TOTAL_INCIDENTS,
+)
 from OpenOversight.app.utils.db import add_department_query
 from OpenOversight.app.utils.forms import set_dynamic_default
 
@@ -75,9 +78,12 @@ class ModelView(MethodView):
             new_obj = self.create_function(form)
             db.session.add(new_obj)
             db.session.commit()
-            if self.create_function.__name__ == "create_incident":
+            if self.model.__name__ == Incident.__name__:
                 remove_cache_entry(
                     Department(id=new_obj.department_id), KEY_DEPT_TOTAL_INCIDENTS
+                )
+                remove_cache_entry(
+                    Department(id=new_obj.department_id), KEY_DEPT_ALL_INCIDENTS
                 )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
