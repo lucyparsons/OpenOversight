@@ -201,7 +201,6 @@ class Officer(BaseModel):
     assignments = db.relationship(
         "Assignment", back_populates="base_officer", lazy="dynamic"
     )
-    assignments_lazy = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="officers")
@@ -269,29 +268,23 @@ class Officer(BaseModel):
                 return label
 
     def job_title(self):
-        if self.assignments_lazy:
+        if self.assignments:
             return max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
+                self.assignments, key=lambda x: x.start_date or date.min
             ).job.job_title
 
     def unit_description(self):
-        if self.assignments_lazy:
-            unit = max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            ).unit
+        if self.assignments:
+            unit = max(self.assignments, key=lambda x: x.start_date or date.min).unit
             return unit.description if unit else None
 
     def badge_number(self):
-        if self.assignments_lazy:
-            return max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            ).star_no
+        if self.assignments:
+            return max(self.assignments, key=lambda x: x.start_date or date.min).star_no
 
     def currently_on_force(self):
-        if self.assignments_lazy:
-            most_recent = max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            )
+        if self.assignments:
+            most_recent = max(self.assignments, key=lambda x: x.start_date or date.min)
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
@@ -410,12 +403,11 @@ class Face(BaseModel):
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship("Image", back_populates="faces", foreign_keys=[img_id])
+    image = db.relationship("Image", backref="raw_images", foreign_keys=[img_id])
     original_image = db.relationship(
         "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
     )
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    user = db.relationship("User", back_populates="faces")
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
     )
@@ -706,8 +698,8 @@ class User(UserMixin, BaseModel):
     is_disabled = db.Column(db.Boolean, default=False)
     dept_pref = db.Column(db.Integer, db.ForeignKey("departments.id"))
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
-    classifications = db.relationship("Image", back_populates="users")
-    tags = db.relationship("Face", back_populates="users")
+    classifications = db.relationship("Image", back_populates="user")
+    tags = db.relationship("Face", backref="user")
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
