@@ -213,7 +213,7 @@ def build_assignment(
     return Assignment(
         star_no=pick_star(),
         job_id=random.choice(jobs).id,
-        base_officer=officer,
+        officer_id=officer.id,
         unit_id=unit_id,
         start_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
         resign_date=pick_date(officer.full_name().encode(ENCODING_UTF_8)),
