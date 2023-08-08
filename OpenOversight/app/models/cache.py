@@ -1,3 +1,5 @@
+from typing import Any
+
 from cachetools import TTLCache
 from cachetools.keys import hashkey
 from flask_sqlalchemy.model import Model
@@ -5,7 +7,7 @@ from flask_sqlalchemy.model import Model
 from OpenOversight.app.utils.constants import HOUR
 
 
-CACHE = TTLCache(maxsize=1024, ttl=12 * HOUR)
+CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 
 def model_key(model: Model, update_type: str):
@@ -31,10 +33,25 @@ def model_cache_key(update_type: str):
     return _cache_key
 
 
+def get_cache_entry(model: Model, update_type: str) -> Any:
+    """Get db.Model entry for key in the cache."""
+    key = model_key(model, update_type)
+    if key in CACHE.keys():
+        return CACHE.get(key)
+    else:
+        return None
+
+
 def has_cache_entry(model: Model, update_type: str) -> bool:
     """db.Model key exists in cache."""
     key = model_key(model, update_type)
     return key in CACHE.keys()
+
+
+def put_cache_entry(model: Model, update_type: str, data: Any) -> None:
+    """Put data in cache using the constructed key."""
+    key = model_key(model, update_type)
+    CACHE[key] = data
 
 
 def remove_cache_entry(model: Model, update_type: str) -> None:
