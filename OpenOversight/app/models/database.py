@@ -198,9 +198,7 @@ class Officer(BaseModel):
     gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    assignments = db.relationship(
-        "Assignment", back_populates="base_officer", lazy="dynamic"
-    )
+    assignments = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="officers")
