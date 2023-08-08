@@ -1,4 +1,6 @@
 from flask import url_for
+from flask.testing import FlaskClient
+from werkzeug.test import TestResponse
 
 from OpenOversight.app.auth.forms import LoginForm
 from OpenOversight.app.models.database import User
@@ -18,14 +20,14 @@ from OpenOversight.tests.constants import (
 )
 
 
-def login_user(client):
+def login_user(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=GENERAL_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
 
-def login_unconfirmed_user(client):
+def login_unconfirmed_user(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=UNCONFIRMED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=UNCONFIRMED_USER_PASSWORD, remember_me=True
@@ -35,7 +37,7 @@ def login_unconfirmed_user(client):
     return rv, user
 
 
-def login_disabled_user(client):
+def login_disabled_user(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=DISABLED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=DISABLED_USER_PASSWORD, remember_me=True
@@ -44,7 +46,7 @@ def login_disabled_user(client):
     return rv, user
 
 
-def login_modified_disabled_user(client):
+def login_modified_disabled_user(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=MOD_DISABLED_USER_PASSWORD, remember_me=True
@@ -53,21 +55,21 @@ def login_modified_disabled_user(client):
     return rv, user
 
 
-def login_admin(client):
+def login_admin(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=ADMIN_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
 
-def login_ac(client):
+def login_ac(client: FlaskClient) -> (TestResponse, User):
     user = User.query.filter_by(email=AC_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=AC_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
 
-def process_form_data(form_dict):
+def process_form_data(form_dict: dict) -> dict:
     """Mock the browser-flattening of a form containing embedded data."""
     new_dict = {}
     for key, value in form_dict.items():
@@ -75,8 +77,8 @@ def process_form_data(form_dict):
             if value[0]:
                 if type(value[0]) is dict:
                     for idx, item in enumerate(value):
-                        for subkey, subvalue in item.items():
-                            new_dict[f"{key}-{idx}-{subkey}"] = subvalue
+                        for sub_key, sub_value in item.items():
+                            new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
                 elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
                         new_dict[f"{key}-{idx}"] = item
@@ -87,8 +89,8 @@ def process_form_data(form_dict):
                         )
                     )
         elif type(value) == dict:
-            for subkey, subvalue in value.items():
-                new_dict[f"{key}-{subkey}"] = subvalue
+            for sub_key, sub_value in value.items():
+                new_dict[f"{key}-{sub_key}"] = sub_value
         else:
             new_dict[key] = value
 
