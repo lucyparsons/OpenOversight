@@ -198,8 +198,7 @@ class Officer(BaseModel):
     gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    assignments = db.relationship("Assignment", backref="officer", lazy="dynamic")
-    assignments_lazy = db.relationship("Assignment")
+    assignments = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
     department = db.relationship("Department", backref="officers")
@@ -267,29 +266,23 @@ class Officer(BaseModel):
                 return label
 
     def job_title(self):
-        if self.assignments_lazy:
+        if self.assignments:
             return max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
+                self.assignments, key=lambda x: x.start_date or date.min
             ).job.job_title
 
     def unit_description(self):
-        if self.assignments_lazy:
-            unit = max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            ).unit
+        if self.assignments:
+            unit = max(self.assignments, key=lambda x: x.start_date or date.min).unit
             return unit.description if unit else None
 
     def badge_number(self):
-        if self.assignments_lazy:
-            return max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            ).star_no
+        if self.assignments:
+            return max(self.assignments, key=lambda x: x.start_date or date.min).star_no
 
     def currently_on_force(self):
-        if self.assignments_lazy:
-            most_recent = max(
-                self.assignments_lazy, key=lambda x: x.start_date or date.min
-            )
+        if self.assignments:
+            most_recent = max(self.assignments, key=lambda x: x.start_date or date.min)
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
@@ -334,7 +327,7 @@ class Assignment(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    base_officer = db.relationship("Officer")
+    base_officer = db.relationship("Officer", back_populates="assignments")
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"), nullable=False)
     job = db.relationship("Job")
@@ -413,7 +406,6 @@ class Face(BaseModel):
         "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
     )
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    user = db.relationship("User", backref="faces")
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
     )
@@ -456,7 +448,7 @@ class Image(BaseModel):
         unique=False,
     )
 
-    user = db.relationship("User", backref="raw_images")
+    user = db.relationship("User", back_populates="classifications")
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
@@ -704,8 +696,8 @@ class User(UserMixin, BaseModel):
     is_disabled = db.Column(db.Boolean, default=False)
     dept_pref = db.Column(db.Integer, db.ForeignKey("departments.id"))
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
-    classifications = db.relationship("Image", backref="users")
-    tags = db.relationship("Face", backref="users")
+    classifications = db.relationship("Image", back_populates="user")
+    tags = db.relationship("Face", backref="user")
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,

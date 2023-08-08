@@ -568,22 +568,20 @@ def test_bulk_add_officers__success(
     officers = officer_query.all()
     assert len(officers) == 3
     first_officer_db = officer_query.filter_by(first_name=fo_fn, last_name=fo_ln).one()
-    assert {asmt.job.job_title for asmt in first_officer_db.assignments.all()} == {
+    assert {a.job.job_title for a in first_officer_db.assignments} == {
         RANK_CHOICES_1[2],
         RANK_CHOICES_1[1],
     }
     different_officer_db = officer_query.filter_by(
         first_name=do_fn, last_name=do_ln
     ).one()
-    assert [asmt.job.job_title for asmt in different_officer_db.assignments.all()] == [
+    assert [a.job.job_title for a in different_officer_db.assignments] == [
         RANK_CHOICES_1[1]
     ]
     new_officer_db = officer_query.filter_by(
         first_name=new_officer_first_name, last_name=new_officer_last_name
     ).one()
-    assert [asmt.job.job_title for asmt in new_officer_db.assignments.all()] == [
-        RANK_CHOICES_1[1]
-    ]
+    assert [a.job.job_title for a in new_officer_db.assignments] == [RANK_CHOICES_1[1]]
 
 
 def test_bulk_add_officers__duplicate_name(session, department, csv_path):
@@ -958,14 +956,14 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert len(cop2.salaries) == 1
     assert cop2.salaries[0].salary == 20000
 
-    assert len(cop2.assignments.all()) == 1
+    assert len(cop2.assignments) == 1
     assert cop2.assignments[0].job.job_title == "Commander"
 
     cop3 = all_officers["UID-3"]
     assert cop3.first_name == "Robert"
     assert cop3.last_name == "Brown"
 
-    assert len(cop3.assignments.all()) == 0
+    assert len(cop3.assignments) == 0
     assert len(cop3.salaries) == 0
 
     cop4 = all_officers["UID-4"]
@@ -975,7 +973,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert cop4.gender == "Other"
     assert cop4.salaries[0].salary == 50000
 
-    assert len(cop4.assignments.all()) == 2
+    assert len(cop4.assignments) == 2
     updated_assignment, new_assignment = sorted(
         cop4.assignments, key=operator.attrgetter("start_date")
     )
@@ -1268,15 +1266,15 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
 
     # make sure all the data is imported as expected
     cop1 = Officer.query.get(cop1_id)
-    assert len(cop1.assignments.all()) == 1
+    assert len(cop1.assignments) == 1
     assert cop1.assignments[0].star_no == b1
 
     cop2 = Officer.query.get(cop2_id)
-    assert len(cop2.assignments.all()) == 1
+    assert len(cop2.assignments) == 1
     assert cop2.assignments[0] == Assignment.query.get(a2_id)
 
     cop3 = Officer.query.filter_by(first_name="Second", last_name="Test").first()
-    assert len(cop3.assignments.all()) == 1
+    assert len(cop3.assignments) == 1
     assert cop3.assignments[0].star_no == b2
     assert cop3.assignments[0].job.job_title == "Police Officer"
 
