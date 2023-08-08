@@ -1232,7 +1232,7 @@ def submit_data():
 def download_dept_officers_csv(department_id):
     officers = (
         db.session.query(Officer)
-        .options(joinedload(Officer.assignments_lazy).joinedload(Assignment.job))
+        .options(joinedload(Officer.assignments).joinedload(Assignment.job))
         .options(joinedload(Officer.salaries))
         .filter_by(department_id=department_id)
     )
