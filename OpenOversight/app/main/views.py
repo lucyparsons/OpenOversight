@@ -53,6 +53,7 @@ from OpenOversight.app.main.forms import (
     TextForm,
 )
 from OpenOversight.app.main.model_view import ModelView
+from OpenOversight.app.models.cache import remove_cache_entry
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
@@ -71,7 +72,6 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.models.database_cache import remove_database_cache_entry
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
@@ -343,7 +343,7 @@ def add_assignment(officer_id):
             current_user.is_area_coordinator
             and officer.department_id == current_user.ac_department_id
         ):
-            remove_database_cache_entry(
+            remove_cache_entry(
                 Department(id=officer.department_id), KEY_DEPT_TOTAL_ASSIGNMENTS
             )
             try:
@@ -931,7 +931,7 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        remove_database_cache_entry(
+        remove_cache_entry(
             Department(id=officer.department_id), KEY_DEPT_TOTAL_OFFICERS
         )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
