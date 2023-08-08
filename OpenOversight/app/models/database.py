@@ -401,7 +401,7 @@ class Face(BaseModel):
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship("Image", backref="raw_images", foreign_keys=[img_id])
+    image = db.relationship("Image", backref="faces", foreign_keys=[img_id])
     original_image = db.relationship(
         "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
     )
