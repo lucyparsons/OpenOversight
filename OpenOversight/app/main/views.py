@@ -176,7 +176,6 @@ def browse():
 @sitemap_include
 @main.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
-    js_loads = ["js/find_officer.js"]
     form = FindOfficerForm()
 
     departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
@@ -212,7 +211,7 @@ def get_officer():
         "input_find_officer.html",
         form=form,
         depts_dict=departments_dict,
-        jsloads=js_loads,
+        jsloads=["js/find_officer.js"],
     )
 
 
