@@ -125,6 +125,10 @@ class ModelView(MethodView):
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
+            if self.model.__name__ == Incident.__name__:
+                remove_cache_entry(
+                    Department(id=obj.department_id), KEY_DEPT_ALL_INCIDENTS
+                )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
 
@@ -144,6 +148,13 @@ class ModelView(MethodView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
+            if self.model.__name__ == Incident.__name__:
+                remove_cache_entry(
+                    Department(id=obj.department_id), KEY_DEPT_TOTAL_INCIDENTS
+                )
+                remove_cache_entry(
+                    Department(id=obj.department_id), KEY_DEPT_ALL_INCIDENTS
+                )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
