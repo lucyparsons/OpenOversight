@@ -2,6 +2,12 @@ import os
 
 
 # Cache Key Constants
+KEY_DEPT_ALL_ASSIGNMENTS = "all_assignments_csv"
+KEY_DEPT_ALL_INCIDENTS = "all_incidents_csv"
+KEY_DEPT_ALL_LINKS = "all_links_csv"
+KEY_DEPT_ALL_NOTES = "all_notes_csv"
+KEY_DEPT_ALL_OFFICERS = "all_officers_csv"
+KEY_DEPT_ALL_SALARIES = "all_salaries_csv"
 KEY_DEPT_TOTAL_ASSIGNMENTS = "total_assignments"
 KEY_DEPT_TOTAL_INCIDENTS = "total_incidents"
 KEY_DEPT_TOTAL_OFFICERS = "total_officers"
