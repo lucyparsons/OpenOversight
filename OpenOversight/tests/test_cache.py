@@ -13,7 +13,11 @@ from OpenOversight.app.main.forms import (
     LocationForm,
 )
 from OpenOversight.app.models.database import Department, Incident, Job, Officer
-from OpenOversight.app.models.database_cache import DB_CACHE, has_cache_entry, get_model_cache_key
+from OpenOversight.app.models.database_cache import (
+    DB_CACHE,
+    get_model_cache_key,
+    has_cache_entry,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
