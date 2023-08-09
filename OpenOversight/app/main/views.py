@@ -351,7 +351,7 @@ def add_assignment(officer_id):
             try:
                 add_new_assignment(officer_id, form)
                 Department.remove_cache_entry(
-                    Department(id=officer.department_id),
+                    officer.department_id,
                     [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
                 )
                 flash("Added new assignment!")
@@ -403,7 +403,7 @@ def edit_assignment(officer_id, assignment_id):
         ).one()
         assignment = edit_existing_assignment(assignment, form)
         Department.remove_cache_entry(
-            Department(id=officer.department_id),
+            officer.department_id,
             [KEY_DEPT_ALL_ASSIGNMENTS],
         )
         flash(f"Edited officer assignment ID {assignment.id}")
@@ -443,7 +443,7 @@ def add_salary(officer_id):
             db.session.add(new_salary)
             db.session.commit()
             Department.remove_cache_entry(
-                Department(id=officer.department_id),
+                officer.department_id,
                 [KEY_DEPT_ALL_SALARIES],
             )
             flash("Added new salary!")
@@ -482,7 +482,7 @@ def edit_salary(officer_id, salary_id):
         db.session.add(salary)
         db.session.commit()
         Department.remove_cache_entry(
-            Department(id=officer.department_id),
+            officer.department_id,
             [KEY_DEPT_ALL_SALARIES],
         )
         flash(f"Edited officer salary ID {salary.id}")
