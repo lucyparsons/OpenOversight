@@ -32,9 +32,9 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import (
-    OTHER_PD,
     RANK_CHOICES_1,
     SPRINGFIELD_PD,
+    PoliceDepartment,
     generate_officer,
 )
 from OpenOversight.tests.constants import FILE_MODE_WRITE
@@ -60,14 +60,16 @@ def run_command_print_output(cli, args=None, **kwargs):
 
 
 def test_add_department__success(session):
+    AddedPD = PoliceDepartment("Added Police Department", "APD")
+
     # add department via command line
     result = run_command_print_output(
         add_department,
         [
-            SPRINGFIELD_PD.name,
-            SPRINGFIELD_PD.short_name,
-            SPRINGFIELD_PD.state,
-            SPRINGFIELD_PD.unique_internal_identifier_label,
+            AddedPD.name,
+            AddedPD.short_name,
+            AddedPD.state,
+            AddedPD.unique_internal_identifier_label,
         ],
     )
 
@@ -75,21 +77,23 @@ def test_add_department__success(session):
     assert result.exit_code == 0
     # department was added to database
     departments = Department.query.filter_by(
-        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label
+        unique_internal_identifier_label=AddedPD.unique_internal_identifier_label
     ).all()
     assert len(departments) == 1
     department = departments[0]
-    assert department.name == SPRINGFIELD_PD.name
-    assert department.short_name == SPRINGFIELD_PD.short_name
-    assert department.state == SPRINGFIELD_PD.state
+    assert department.name == AddedPD.name
+    assert department.short_name == AddedPD.short_name
+    assert department.state == AddedPD.state
 
 
 def test_add_department__duplicate(session):
+    DuplicatePD = PoliceDepartment("Duplicate Department", "DPD")
+
     department = Department(
-        name=SPRINGFIELD_PD.name,
-        short_name=SPRINGFIELD_PD.short_name,
-        state=SPRINGFIELD_PD.state,
-        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
+        name=DuplicatePD.name,
+        short_name=DuplicatePD.short_name,
+        state=DuplicatePD.state,
+        unique_internal_identifier_label=DuplicatePD.unique_internal_identifier_label,
     )
     session.add(department)
     session.commit()
@@ -205,9 +209,13 @@ def test_add_job_title__duplicate(session, department):
 
 
 def test_add_job_title__different_departments(session, department):
-    session.add(OTHER_PD)
+    other_department = Department(
+        name="Other Police Department",
+        short_name="OPD",
+        state=random.choice(DEPARTMENT_STATE_CHOICES)[0],
+    )
+    session.add(other_department)
     session.commit()
-    other_department_id = OTHER_PD.id
 
     job_title = "Police Officer"
     is_sworn = True
@@ -222,14 +230,14 @@ def test_add_job_title__different_departments(session, department):
 
     # adding same job but for different department
     result = run_command_print_output(
-        add_job_title, [str(other_department_id), job_title, str(is_sworn), str(order)]
+        add_job_title, [str(other_department.id), job_title, str(is_sworn), str(order)]
     )
 
     # success because this department doesn't have that title yet
     assert result.exit_code == 0
 
     jobs = Job.query.filter_by(
-        department_id=other_department_id, job_title=job_title
+        department_id=other_department.id, job_title=job_title
     ).all()
 
     assert len(jobs) == 1
