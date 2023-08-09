@@ -21,6 +21,7 @@ from OpenOversight.app.models.database_cache import (
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
@@ -81,6 +82,7 @@ def test_total_documented_assignments(mockdata, client, faker):
 
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is False
+        assert has_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is False
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
