@@ -1867,6 +1867,9 @@ class OfficerLinkApi(ModelView):
             self.officer.links.append(link)
             db.session.add(link)
             db.session.commit()
+            Department.remove_cache_entry(
+                self.officer.department_id, [KEY_DEPT_ALL_LINKS]
+            )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=link.id)
 
@@ -1885,6 +1888,9 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
+            Department.remove_cache_entry(
+                self.officer.department_id, [KEY_DEPT_ALL_LINKS]
+            )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
