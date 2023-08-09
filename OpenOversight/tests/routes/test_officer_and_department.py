@@ -364,7 +364,7 @@ def test_admin_edit_assignment_validation_error(
             resign_date=date(2019, 12, 31),
         )
 
-        rv = client.post(
+        client.post(
             url_for("main.add_assignment", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
@@ -391,8 +391,7 @@ def test_admin_edit_assignment_validation_error(
 
 def test_ac_can_edit_officer_in_their_dept_assignment(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
 
         star_no = "1234"
         new_star_no = "12345"
@@ -507,8 +506,7 @@ TestPD = PoliceDepartment("Test Police Department", "TPD")
 
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         form = DepartmentForm(
             name=TestPD.name,
@@ -534,8 +532,7 @@ def test_admin_can_add_police_department(mockdata, client, session):
 
 def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         form = DepartmentForm(
             name=TestPD.name, short_name=TestPD.short_name, state="", created_by=user.id
@@ -550,8 +547,7 @@ def test_admin_cannot_add_police_department_without_state(mockdata, client, sess
 
 def test_ac_cannot_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        user = User.query.filter_by(is_administrator=False).first()
+        _, user = login_ac(client)
 
         form = DepartmentForm(
             name=TestPD.name,
@@ -569,8 +565,7 @@ def test_ac_cannot_add_police_department(mockdata, client, session):
 
 def test_admin_cannot_add_duplicate_police_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         form = DepartmentForm(
             name=TestPD.name,
@@ -612,8 +607,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department", "MPD", exclude_state=CorrectedPD.state
         )
 
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
@@ -716,8 +710,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
 
 def test_admin_cannot_edit_police_department_without_state(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         add_department_form = DepartmentForm(
             name=TestPD.name,
@@ -842,7 +835,7 @@ def test_admin_can_delete_rank_not_in_use(mockdata, client, session, department)
                 job_title="Temporary Rank",
                 order=original_ranks_length,
                 is_sworn_officer=True,
-                department_id=1,
+                department_id=AC_DEPT,
             )
         )
 
@@ -968,7 +961,7 @@ def test_admin_cannot_commit_edit_that_deletes_one_rank_in_use_and_one_not_in_us
                 job_title="Temporary Rank",
                 order=original_ranks_length,
                 is_sworn_officer=True,
-                department_id=1,
+                department_id=AC_DEPT,
             )
         )
         rank_change_form = EditDepartmentForm(
@@ -1027,8 +1020,7 @@ def test_admin_can_create_department_with_same_name_in_different_state(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_admin(client)
 
         existing_form = DepartmentForm(
             name=ExistingPD.name,
@@ -1106,8 +1098,7 @@ def test_admin_cannot_duplicate_police_department_during_edit(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         existing_dep_form = DepartmentForm(
             name=ExistingPD.name,
@@ -1182,8 +1173,7 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
 def test_admin_can_add_new_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         links = [
             LinkForm(url=faker.url(), link_type="link").data,
@@ -1221,8 +1211,7 @@ def test_admin_can_add_new_officer_with_unit(
     mockdata, client, session, department, faker
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         unit = random.choice(unit_choices())
         links = [
@@ -1383,8 +1372,7 @@ def test_ac_cannot_add_new_officer_not_in_their_dept(mockdata, client, session):
 
 def test_admin_can_edit_existing_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         unit = random.choice(unit_choices())
         link_url0 = faker.url()
@@ -1535,8 +1523,7 @@ def test_admin_adds_officer_without_middle_initial(
     mockdata, client, session, department
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1568,8 +1555,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
     mockdata, client, session, department
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         job = Job.query.filter_by(department_id=department.id).first()
         form = AddOfficerForm(
@@ -1600,8 +1586,7 @@ def test_admin_adds_officer_with_letter_in_badge_no(
 
 def test_admin_can_add_new_unit(mockdata, client, session, department):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         form = AddUnitForm(
             description="Test", department=department.id, created_by=user.id
@@ -1620,8 +1605,7 @@ def test_admin_can_add_new_unit(mockdata, client, session, department):
 
 def test_ac_can_add_new_unit_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
 
         department = Department.query.filter_by(id=AC_DEPT).first()
         form = AddUnitForm(
@@ -1659,8 +1643,7 @@ def test_admin_can_add_new_officer_with_suffix(
     mockdata, client, session, department, faker
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         links = [
             LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
@@ -1804,8 +1787,7 @@ def test_assignments_csv(mockdata, client, session, department):
 
 def test_incidents_csv(mockdata, client, session, department, faker):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
 
         # Delete existing incidents for chosen department
         Incident.query.filter_by(department_id=department.id).delete()
@@ -2231,9 +2213,8 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
 
 def test_admin_can_add_salary(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
-        officer = Officer.query.filter_by(id=1).first()
+        _, user = login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_SALARIES)
         put_cache_entry(*cache_params, 1)
 
@@ -2263,8 +2244,7 @@ def test_admin_can_add_salary(mockdata, client, session):
 
 def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
 
         form = SalaryForm(
             salary=123456.78,
@@ -2310,8 +2290,7 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
 
 def test_admin_can_edit_salary(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
         officer = Officer.query.filter_by(id=1).first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_SALARIES)
         put_cache_entry(*cache_params, 1)
