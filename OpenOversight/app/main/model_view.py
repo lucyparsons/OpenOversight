@@ -5,10 +5,18 @@ from flask import abort, current_app, flash, redirect, render_template, request,
 from flask.views import MethodView
 from flask_login import current_user, login_required
 
-from OpenOversight.app.models.database import Department, Incident, Note, Officer, db
+from OpenOversight.app.models.database import (
+    Department,
+    Incident,
+    Link,
+    Note,
+    Officer,
+    db,
+)
 from OpenOversight.app.utils.auth import ac_or_admin_required
 from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
     KEY_DEPT_TOTAL_INCIDENTS,
 )
@@ -148,6 +156,13 @@ class ModelView(MethodView):
                         Department.remove_cache_entry(
                             officer.department_id,
                             [KEY_DEPT_ALL_NOTES],
+                        )
+                case Link.__name__:
+                    officer = Officer.query.filter_by(id=obj.officer_id).first()
+                    if officer:
+                        Department.remove_cache_entry(
+                            officer.department_id,
+                            [KEY_DEPT_ALL_LINKS],
                         )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
