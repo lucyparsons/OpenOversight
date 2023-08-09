@@ -5,7 +5,7 @@ from flask import abort, current_app, flash, redirect, render_template, request,
 from flask.views import MethodView
 from flask_login import current_user, login_required
 
-from OpenOversight.app.models.database import Department, Incident, Note, db
+from OpenOversight.app.models.database import Department, Incident, Note, Officer, db
 from OpenOversight.app.utils.auth import ac_or_admin_required
 from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
@@ -18,13 +18,13 @@ from OpenOversight.app.utils.forms import set_dynamic_default
 
 class ModelView(MethodView):
     model = None  # type: DefaultMeta
-    model_name = ""
-    per_page = 20
+    model_name: str = ""
+    per_page: int = 20
     order_by = ""  # this should be a field on the model
-    descending = False  # used for order_by
+    descending: bool = False  # used for order_by
     form = ""  # type: Form
     create_function = ""  # type: Union[str, Callable]
-    department_check = False
+    department_check: bool = False
 
     def get(self, obj_id):
         if obj_id is None:
@@ -86,10 +86,14 @@ class ModelView(MethodView):
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
-                    Department.remove_cache_entry(
-                        new_obj.department_id,
-                        [KEY_DEPT_ALL_NOTES],
-                    )
+                    officer = Officer.query.filter_by(
+                        department_id=new_obj.officer_id
+                    ).first()
+                    if officer:
+                        Department.remove_cache_entry(
+                            officer.department_id,
+                            [KEY_DEPT_ALL_NOTES],
+                        )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
@@ -137,10 +141,14 @@ class ModelView(MethodView):
                         [KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
-                    Department.remove_cache_entry(
-                        obj.department_id,
-                        [KEY_DEPT_ALL_NOTES],
-                    )
+                    officer = Officer.query.filter_by(
+                        department_id=obj.officer_id
+                    ).first()
+                    if officer:
+                        Department.remove_cache_entry(
+                            officer.department_id,
+                            [KEY_DEPT_ALL_NOTES],
+                        )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
 
@@ -167,10 +175,14 @@ class ModelView(MethodView):
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
-                    Department.remove_cache_entry(
-                        obj.department_id,
-                        [KEY_DEPT_ALL_NOTES],
-                    )
+                    officer = Officer.query.filter_by(
+                        department_id=obj.officer_id
+                    ).first()
+                    if officer:
+                        Department.remove_cache_entry(
+                            officer.department_id,
+                            [KEY_DEPT_ALL_NOTES],
+                        )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
