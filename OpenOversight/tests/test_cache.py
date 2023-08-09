@@ -13,7 +13,7 @@ from OpenOversight.app.main.forms import (
     LocationForm,
 )
 from OpenOversight.app.models.database import Department, Incident, Job, Officer
-from OpenOversight.app.models.database_cache import DB_CACHE, has_cache_entry, model_key
+from OpenOversight.app.models.database_cache import DB_CACHE, has_cache_entry, get_model_cache_key
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -30,17 +30,17 @@ def test_model_key(mockdata, faker):
     test_key = faker.uuid4()
 
     test_officer = Officer(id=faker.random_number(digits=3))
-    test_officer_key = model_key(test_officer, test_key)
+    test_officer_key = get_model_cache_key(test_officer, test_key)
     DB_CACHE[test_officer_key] = 1
     assert has_cache_entry(test_officer, test_key)
 
     test_department = Department(id=faker.random_number(digits=3))
-    test_department_key = model_key(test_department, test_key)
+    test_department_key = get_model_cache_key(test_department, test_key)
     DB_CACHE[test_department_key] = 1
     assert has_cache_entry(test_department, test_key)
 
     test_incident = Incident(id=faker.random_number(digits=3))
-    test_incident_key = model_key(test_incident, test_key)
+    test_incident_key = get_model_cache_key(test_incident, test_key)
     DB_CACHE[test_incident_key] = 1
     assert has_cache_entry(test_incident, test_key)
 
