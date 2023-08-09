@@ -37,7 +37,7 @@ from OpenOversight.tests.conftest import (
     PoliceDepartment,
     generate_officer,
 )
-from OpenOversight.tests.constants import FILE_MODE_WRITE
+from OpenOversight.tests.constants import FILE_MODE_WRITE, GENERAL_USER_EMAIL
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -162,21 +162,19 @@ def test_add_department__lower_case_state_value(session):
 
 
 def test_add_job_title__success(session, department):
-    department_id = department.id
-
     job_title = "New Rank"
     is_sworn = True
     order = 15
 
     # run command to add job title
     result = run_command_print_output(
-        add_job_title, [str(department_id), job_title, str(is_sworn), str(order)]
+        add_job_title, [str(department.id), job_title, str(is_sworn), str(order)]
     )
 
     assert result.exit_code == 0
 
     # confirm that job title was added to database
-    jobs = Job.query.filter_by(department_id=department_id, job_title=job_title).all()
+    jobs = Job.query.filter_by(department_id=department.id, job_title=job_title).all()
 
     assert len(jobs) == 1
     job = jobs[0]
@@ -366,7 +364,6 @@ def test_csv_new_assignment(csvfile, monkeypatch):
         1, df.loc[0, "star_no"], df.loc[0, "first_name"], df.loc[0, "last_name"]
     )
     assert officer
-    officer_id = officer.id
     assert len(list(officer.assignments)) == 1
 
     # Update job_title
@@ -377,7 +374,7 @@ def test_csv_new_assignment(csvfile, monkeypatch):
     assert n_created == 0
     assert n_updated == 1
 
-    officer = Officer.query.filter_by(id=officer_id).one()
+    officer = Officer.query.filter_by(id=officer.id).one()
     assert len(list(officer.assignments)) == 2
     for assignment in officer.assignments:
         assert (
@@ -475,7 +472,6 @@ def test_csv_new_salary(csvfile, monkeypatch):
         1, df.loc[0, "star_no"], df.loc[0, "first_name"], df.loc[0, "last_name"]
     )
     assert officer
-    officer_id = officer.id
     assert len(list(officer.salaries)) == 1
 
     # Update salary
@@ -488,14 +484,14 @@ def test_csv_new_salary(csvfile, monkeypatch):
     assert n_updated == 1
     assert Officer.query.count() == officer_count
 
-    officer = Officer.query.filter_by(id=officer_id).one()
+    officer = Officer.query.filter_by(id=officer.id).one()
     assert len(list(officer.salaries)) == 2
     for salary in officer.salaries:
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
 def test_bulk_add_officers__success(
-    session, department_without_officers, csv_path, monkeypatch
+    session, department_without_officers, csv_path, monkeypatch, faker
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
     user = User.query.filter_by(is_administrator=False).first()
@@ -521,26 +517,23 @@ def test_bulk_add_officers__success(
     session.add(assignment)
     session.commit()
 
-    department_id = department_without_officers.id
-
     # generate csv to update one existing officer and add one new
+    new_officer_first_name = faker.first_name()
+    new_officer_last_name = faker.last_name()
 
-    new_officer_first_name = "Newofficer"
-    new_officer_last_name = "Name"
-
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
         "job_title",
     ]
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
             {
-                "department_id": department_id,
+                "department_id": department_without_officers.id,
                 "first_name": first_officer.first_name,
                 "last_name": first_officer.last_name,
                 "job_title": RANK_CHOICES_1[2],
@@ -549,7 +542,7 @@ def test_bulk_add_officers__success(
 
         csv_writer.writerow(
             {
-                "department_id": department_id,
+                "department_id": department_without_officers.id,
                 "first_name": new_officer_first_name,
                 "last_name": new_officer_last_name,
                 "job_title": RANK_CHOICES_1[1],
@@ -566,7 +559,9 @@ def test_bulk_add_officers__success(
     # make sure that exactly three officers are assigned to the department now
     # and the first officer has two assignments stored (one original one
     # and one updated via csv)
-    officer_query = Officer.query.filter_by(department_id=department_id)
+    officer_query = Officer.query.filter_by(
+        department_id=department_without_officers.id
+    )
     officers = officer_query.all()
     assert len(officers) == 3
     first_officer_db = officer_query.filter_by(first_name=fo_fn, last_name=fo_ln).one()
@@ -604,14 +599,14 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     session.commit()
 
     # a csv that refers to that name
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
         "star_no",
     ]
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
@@ -645,7 +640,7 @@ def test_bulk_add_officers__write_static_null_field(
     fo_uuid = officer.unique_internal_identifier
 
     birth_year = 1983
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
@@ -654,7 +649,7 @@ def test_bulk_add_officers__write_static_null_field(
     ]
     # generate csv that provides birth_year for that officer
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
@@ -691,7 +686,7 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
 
     new_birth_year = 1983
 
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
@@ -700,7 +695,7 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
     ]
     # generate csv that assigns different birth year to that officer
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
@@ -740,7 +735,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
 
     new_birth_year = 1983
 
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
@@ -749,7 +744,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
     ]
     # generate csv assigning different birth year to that officer
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
@@ -780,9 +775,8 @@ def test_bulk_add_officers__no_create_flag(
     session, department_without_officers, csv_path, monkeypatch
 ):
     monkeypatch.setattr("builtins.input", lambda: "y")
-    user = User.query.filter_by(is_administrator=False).first()
+    user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     # department with one officer
-    department_id = department_without_officers.id
     officer = generate_officer(department_without_officers, user)
     officer.gender = None
     session.add(officer)
@@ -790,7 +784,7 @@ def test_bulk_add_officers__no_create_flag(
     officer_uuid = officer.unique_internal_identifier
     officer_gender_updated = "M"
 
-    fieldnames = [
+    field_names = [
         "department_id",
         "first_name",
         "last_name",
@@ -800,12 +794,12 @@ def test_bulk_add_officers__no_create_flag(
     # generate csv that updates gender of officer already in database
     # and provides data for another (new) officer
     with open(csv_path, FILE_MODE_WRITE) as f:
-        csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+        csv_writer = csv.DictWriter(f, fieldnames=field_names)
         csv_writer.writeheader()
 
         csv_writer.writerow(
             {
-                "department_id": department_id,
+                "department_id": department_without_officers.id,
                 "first_name": officer.first_name,
                 "last_name": officer.last_name,
                 "unique_internal_identifier": officer_uuid,
@@ -814,7 +808,7 @@ def test_bulk_add_officers__no_create_flag(
         )
         csv_writer.writerow(
             {
-                "department_id": department_id,
+                "department_id": department_without_officers.id,
                 "first_name": "NewOfficer",
                 "last_name": "NotInDatabase",
                 "unique_internal_identifier": uuid.uuid4(),
@@ -831,7 +825,9 @@ def test_bulk_add_officers__no_create_flag(
     assert result.exception is None
 
     # confirm that only one officer is in database and information was updated
-    officer = Officer.query.filter_by(department_id=department_id).one()
+    officer = Officer.query.filter_by(
+        department_id=department_without_officers.id
+    ).one()
     assert officer.unique_internal_identifier == officer_uuid
     assert officer.gender == officer_gender_updated
 
