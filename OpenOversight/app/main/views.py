@@ -71,7 +71,10 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.models.database_cache import get_cache_entry, put_cache_entry
+from OpenOversight.app.models.database_cache import (
+    get_database_cache_entry,
+    put_database_cache_entry,
+)
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
@@ -350,7 +353,7 @@ def add_assignment(officer_id):
         ):
             try:
                 add_new_assignment(officer_id, form)
-                Department.remove_cache_entry(
+                Department.remove_database_cache_entry(
                     officer.department_id,
                     [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
                 )
@@ -402,7 +405,7 @@ def edit_assignment(officer_id, assignment_id):
             id=int(form.job_title.raw_data[0])
         ).one()
         assignment = edit_existing_assignment(assignment, form)
-        Department.remove_cache_entry(
+        Department.remove_database_cache_entry(
             officer.department_id,
             [KEY_DEPT_ALL_ASSIGNMENTS],
         )
@@ -442,7 +445,7 @@ def add_salary(officer_id):
             )
             db.session.add(new_salary)
             db.session.commit()
-            Department.remove_cache_entry(
+            Department.remove_database_cache_entry(
                 officer.department_id,
                 [KEY_DEPT_ALL_SALARIES],
             )
@@ -481,7 +484,7 @@ def edit_salary(officer_id, salary_id):
         form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
-        Department.remove_cache_entry(
+        Department.remove_database_cache_entry(
             officer.department_id,
             [KEY_DEPT_ALL_SALARIES],
         )
@@ -948,7 +951,7 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        Department.remove_cache_entry(
+        Department.remove_database_cache_entry(
             officer.department_id, [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS]
         )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
@@ -983,7 +986,9 @@ def edit_officer(officer_id):
 
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
-        Department.remove_cache_entry(officer.department_id, [KEY_DEPT_TOTAL_OFFICERS])
+        Department.remove_database_cache_entry(
+            officer.department_id, [KEY_DEPT_TOTAL_OFFICERS]
+        )
         flash(f"Officer {officer.last_name} edited")
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
@@ -1248,7 +1253,7 @@ def submit_data():
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
-    officers = get_cache_entry(*cache_params)
+    officers = get_database_cache_entry(*cache_params)
     if officers is None:
         officers = (
             db.session.query(Officer)
@@ -1256,7 +1261,7 @@ def download_dept_officers_csv(department_id):
             .options(joinedload(Officer.salaries))
             .filter_by(department_id=department_id)
         )
-        put_cache_entry(*cache_params, officers)
+        put_database_cache_entry(*cache_params, officers)
 
     field_names = [
         "id",
@@ -1284,7 +1289,7 @@ def download_dept_officers_csv(department_id):
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id):
     cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
-    assignments = get_cache_entry(*cache_params)
+    assignments = get_database_cache_entry(*cache_params)
     if assignments is None:
         assignments = (
             db.session.query(Assignment)
@@ -1294,7 +1299,7 @@ def download_dept_assignments_csv(department_id):
             .options(joinedload(Assignment.unit))
             .options(joinedload(Assignment.job))
         )
-        put_cache_entry(*cache_params, assignments)
+        put_database_cache_entry(*cache_params, assignments)
 
     field_names = [
         "id",
@@ -1322,10 +1327,10 @@ def download_dept_assignments_csv(department_id):
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
-    incidents = get_cache_entry(*cache_params)
+    incidents = get_database_cache_entry(*cache_params)
     if incidents is None:
         incidents = Incident.query.filter_by(department_id=department_id).all()
-        put_cache_entry(*cache_params, incidents)
+        put_database_cache_entry(*cache_params, incidents)
 
     field_names = [
         "id",
@@ -1353,7 +1358,7 @@ def download_incidents_csv(department_id):
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
-    salaries = get_cache_entry(*cache_params)
+    salaries = get_database_cache_entry(*cache_params)
     if salaries is None:
         salaries = (
             db.session.query(Salary)
@@ -1361,7 +1366,7 @@ def download_dept_salaries_csv(department_id):
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Salary.officer))
         )
-        put_cache_entry(*cache_params, salaries)
+        put_database_cache_entry(*cache_params, salaries)
 
     field_names = [
         "id",
@@ -1382,7 +1387,7 @@ def download_dept_salaries_csv(department_id):
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
-    links = get_cache_entry(*cache_params)
+    links = get_database_cache_entry(*cache_params)
     if links is None:
         links = (
             db.session.query(Link)
@@ -1390,7 +1395,7 @@ def download_dept_links_csv(department_id):
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Link.officers))
         )
-        put_cache_entry(*cache_params, links)
+        put_database_cache_entry(*cache_params, links)
 
     field_names = [
         "id",
@@ -1413,7 +1418,7 @@ def download_dept_links_csv(department_id):
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
-    notes = get_cache_entry(*cache_params)
+    notes = get_database_cache_entry(*cache_params)
     if notes is None:
         notes = (
             db.session.query(Description)
@@ -1421,7 +1426,7 @@ def download_dept_descriptions_csv(department_id):
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Description.officer))
         )
-        put_cache_entry(*cache_params, notes)
+        put_database_cache_entry(*cache_params, notes)
 
     field_names = [
         "id",
@@ -1867,7 +1872,7 @@ class OfficerLinkApi(ModelView):
             self.officer.links.append(link)
             db.session.add(link)
             db.session.commit()
-            Department.remove_cache_entry(
+            Department.remove_database_cache_entry(
                 self.officer.department_id, [KEY_DEPT_ALL_LINKS]
             )
             flash(f"{self.model_name} created!")
@@ -1888,7 +1893,7 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            Department.remove_cache_entry(
+            Department.remove_database_cache_entry(
                 self.officer.department_id, [KEY_DEPT_ALL_LINKS]
             )
             flash(f"{self.model_name} successfully deleted!")

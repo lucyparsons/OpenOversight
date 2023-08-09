@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
     model_cache_key,
-    remove_cache_entry,
+    remove_database_cache_entry,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
@@ -118,9 +118,9 @@ class Department(BaseModel):
         )
 
     @staticmethod
-    def remove_cache_entry(dept_id: int, update_type: [str]) -> None:
+    def remove_database_cache_entry(dept_id: int, update_type: [str]) -> None:
         """Remove the Department model key from the cache if it exists."""
-        remove_cache_entry(Department(id=dept_id), update_type)
+        remove_database_cache_entry(Department(id=dept_id), update_type)
 
 
 class Job(BaseModel):

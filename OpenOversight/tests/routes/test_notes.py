@@ -6,7 +6,10 @@ from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import EditTextForm, TextForm
 from OpenOversight.app.models.database import Department, Note, Officer, User, db
-from OpenOversight.app.models.database_cache import has_cache_entry, put_cache_entry
+from OpenOversight.app.models.database_cache import (
+    has_database_cache_entry,
+    put_database_cache_entry,
+)
 from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_DEPT_ALL_NOTES
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
@@ -72,9 +75,9 @@ def test_admins_can_create_notes(mockdata, client, session, faker):
             text_contents=text_contents, officer_id=officer.id, created_by=user.id
         )
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_NOTES)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         rv = client.post(
             url_for("main.note_api", officer_id=officer.id),
@@ -88,7 +91,7 @@ def test_admins_can_create_notes(mockdata, client, session, faker):
         created_note = Note.query.filter_by(text_contents=text_contents).first()
         assert created_note is not None
         assert created_note.created_at is not None
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_acs_can_create_notes(mockdata, client, session, faker):
@@ -132,9 +135,9 @@ def test_admins_can_edit_notes(mockdata, client, session, faker):
             text_contents=new_note,
         )
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_NOTES)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         rv = client.post(
             url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/edit",
@@ -146,7 +149,7 @@ def test_admins_can_edit_notes(mockdata, client, session, faker):
 
         assert note.text_contents == new_note
         assert note.updated_at > original_date
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session, faker):
@@ -253,9 +256,9 @@ def test_admins_can_delete_notes(mockdata, client, session):
         note = Note.query.first()
         officer = Officer.query.filter_by(id=note.officer_id).first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_NOTES)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         rv = client.post(
             url_for("main.note_api", officer_id=note.officer_id, obj_id=note.id)
@@ -265,7 +268,7 @@ def test_admins_can_delete_notes(mockdata, client, session):
         assert rv.status_code == HTTPStatus.OK
         deleted = Note.query.get(note.id)
         assert deleted is None
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_acs_can_delete_their_notes_in_their_department(mockdata, client, session):

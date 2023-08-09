@@ -33,7 +33,7 @@ def model_cache_key(update_type: str):
     return _cache_key
 
 
-def get_cache_entry(model: Model, update_type: str) -> Any:
+def get_database_cache_entry(model: Model, update_type: str) -> Any:
     """Get db.Model entry for key in the cache."""
     key = get_model_cache_key(model, update_type)
     if key in DB_CACHE.keys():
@@ -42,19 +42,19 @@ def get_cache_entry(model: Model, update_type: str) -> Any:
         return None
 
 
-def has_cache_entry(model: Model, update_type: str) -> bool:
+def has_database_cache_entry(model: Model, update_type: str) -> bool:
     """db.Model key exists in cache."""
     key = get_model_cache_key(model, update_type)
     return key in DB_CACHE.keys()
 
 
-def put_cache_entry(model: Model, update_type: str, data: Any) -> None:
+def put_database_cache_entry(model: Model, update_type: str, data: Any) -> None:
     """Put data in cache using the constructed key."""
     key = get_model_cache_key(model, update_type)
     DB_CACHE[key] = data
 
 
-def remove_cache_entry(model: Model, update_type: [str]) -> None:
+def remove_database_cache_entry(model: Model, update_type: [str]) -> None:
     """Remove db.Model key from cache if it exists."""
     for ut in update_type:
         key = get_model_cache_key(model, ut)

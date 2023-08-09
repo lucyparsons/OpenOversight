@@ -16,8 +16,8 @@ from OpenOversight.app.models.database import Department, Incident, Job, Officer
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
     get_model_cache_key,
-    has_cache_entry,
-    put_cache_entry,
+    has_database_cache_entry,
+    put_database_cache_entry,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
@@ -40,17 +40,17 @@ def test_model_key(mockdata, faker):
     test_officer = Officer(id=faker.random_number(digits=3))
     test_officer_key = get_model_cache_key(test_officer, test_key)
     DB_CACHE[test_officer_key] = 1
-    assert has_cache_entry(test_officer, test_key)
+    assert has_database_cache_entry(test_officer, test_key)
 
     test_department = Department(id=faker.random_number(digits=3))
     test_department_key = get_model_cache_key(test_department, test_key)
     DB_CACHE[test_department_key] = 1
-    assert has_cache_entry(test_department, test_key)
+    assert has_database_cache_entry(test_department, test_key)
 
     test_incident = Incident(id=faker.random_number(digits=3))
     test_incident_key = get_model_cache_key(test_incident, test_key)
     DB_CACHE[test_incident_key] = 1
-    assert has_cache_entry(test_incident, test_key)
+    assert has_database_cache_entry(test_incident, test_key)
 
 
 def test_documented_assignments(mockdata, client, faker):
@@ -60,12 +60,12 @@ def test_documented_assignments(mockdata, client, faker):
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
-        put_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS, 1)
+        put_database_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS, 1)
 
-        assert has_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         officer = Officer.query.first()
         job = Job.query.filter_by(
@@ -86,10 +86,10 @@ def test_documented_assignments(mockdata, client, faker):
         )
 
         assert "Added new assignment" in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is False
-        assert has_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is False
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
 def test_documented_incidents(mockdata, client, faker):
@@ -99,12 +99,12 @@ def test_documented_incidents(mockdata, client, faker):
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
-        put_cache_entry(department, KEY_DEPT_ALL_INCIDENTS, 1)
+        put_database_cache_entry(department, KEY_DEPT_ALL_INCIDENTS, 1)
 
-        assert has_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         test_date = faker.date_time()
 
@@ -142,10 +142,10 @@ def test_documented_incidents(mockdata, client, faker):
 
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is False
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is False
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
 def test_documented_officers(mockdata, client, faker):
@@ -155,12 +155,12 @@ def test_documented_officers(mockdata, client, faker):
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
-        put_cache_entry(department, KEY_DEPT_ALL_OFFICERS, 1)
+        put_database_cache_entry(department, KEY_DEPT_ALL_OFFICERS, 1)
 
-        assert has_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
         links = [
             LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
@@ -190,7 +190,7 @@ def test_documented_officers(mockdata, client, faker):
         )
 
         assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is False
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
-        assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is False
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
+        assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False

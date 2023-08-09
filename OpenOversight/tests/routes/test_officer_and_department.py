@@ -41,7 +41,10 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
 )
-from OpenOversight.app.models.database_cache import has_cache_entry, put_cache_entry
+from OpenOversight.app.models.database_cache import (
+    has_database_cache_entry,
+    put_database_cache_entry,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -2216,9 +2219,9 @@ def test_admin_can_add_salary(mockdata, client, session):
         _, user = login_admin(client)
         officer = Officer.query.filter_by(id=AC_DEPT).first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_SALARIES)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         form = SalaryForm(
             salary=123456.78,
@@ -2239,7 +2242,7 @@ def test_admin_can_add_salary(mockdata, client, session):
 
         officer = Officer.query.filter(Officer.salaries.any(salary=123456.78)).first()
         assert officer is not None
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_add_salary_in_their_dept(mockdata, client, session):
@@ -2293,9 +2296,9 @@ def test_admin_can_edit_salary(mockdata, client, session):
         _, user = login_admin(client)
         officer = Officer.query.filter_by(id=1).first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_SALARIES)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         # Remove existing salaries
         Salary.query.filter_by(officer_id=1).delete()
@@ -2336,7 +2339,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
 
         officer = Officer.query.filter_by(id=1).one()
         assert officer.salaries[0].salary == 150000
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
@@ -2461,9 +2464,9 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
         _, user = login_admin(client)
         officer = Officer.query.first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
 
         form = OfficerLinkForm(
             title="BPD Watch",
@@ -2484,7 +2487,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
         assert "link created!" in rv.data.decode(ENCODING_UTF_8)
         assert "BPD Watch" in rv.data.decode(ENCODING_UTF_8)
         assert officer.unique_internal_identifier in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, session):
@@ -2546,9 +2549,9 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
         login_admin(client)
         officer = Officer.query.filter_by(id=1).one()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
         assert len(officer.links) > 0
 
         link = officer.links[0]
@@ -2571,7 +2574,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
         assert "link successfully updated!" in rv.data.decode(ENCODING_UTF_8)
         assert "NEW TITLE" in rv.data.decode(ENCODING_UTF_8)
         assert officer.unique_internal_identifier in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, session):
@@ -2697,9 +2700,9 @@ def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
             .first()
         )
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
-        put_cache_entry(*cache_params, 1)
+        put_database_cache_entry(*cache_params, 1)
 
-        assert has_cache_entry(*cache_params) is True
+        assert has_database_cache_entry(*cache_params) is True
         assert len(officer.links) > 0
 
         link = officer.links[0]
@@ -2710,7 +2713,7 @@ def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
 
         assert "link successfully deleted!" in rv.data.decode(ENCODING_UTF_8)
         assert officer.unique_internal_identifier in rv.data.decode(ENCODING_UTF_8)
-        assert has_cache_entry(*cache_params) is False
+        assert has_database_cache_entry(*cache_params) is False
 
 
 def test_ac_can_delete_link_from_officer_profile_in_their_dept(
