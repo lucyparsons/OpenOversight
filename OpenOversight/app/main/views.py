@@ -53,7 +53,7 @@ from OpenOversight.app.main.forms import (
     TextForm,
 )
 from OpenOversight.app.main.model_view import ModelView
-from OpenOversight.app.models.cache import (
+from OpenOversight.app.models.database_cache import (
     get_cache_entry,
     put_cache_entry,
     remove_cache_entry,
