@@ -17,11 +17,14 @@ from OpenOversight.app.models.database_cache import (
     DB_CACHE,
     get_model_cache_key,
     has_cache_entry,
+    put_cache_entry,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES, STATE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_DEPT_ALL_ASSIGNMENTS,
+    KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
@@ -50,14 +53,16 @@ def test_model_key(mockdata, faker):
     assert has_cache_entry(test_incident, test_key)
 
 
-def test_total_documented_assignments(mockdata, client, faker):
+def test_documented_assignments(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
+        put_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS, 1)
 
+        assert has_cache_entry(department, KEY_DEPT_ALL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
@@ -87,14 +92,16 @@ def test_total_documented_assignments(mockdata, client, faker):
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
-def test_total_documented_incidents(mockdata, client, faker):
+def test_documented_incidents(mockdata, client, faker):
     with current_app.test_request_context():
         _, user = login_admin(client)
         department = Department.query.first()
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
+        put_cache_entry(department, KEY_DEPT_ALL_INCIDENTS, 1)
 
+        assert has_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
@@ -135,19 +142,22 @@ def test_total_documented_incidents(mockdata, client, faker):
 
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
+        assert has_cache_entry(department, KEY_DEPT_ALL_INCIDENTS) is False
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is False
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
 
 
-def test_total_documented_officers(mockdata, client, faker):
+def test_documented_officers(mockdata, client, faker):
     with current_app.test_request_context():
         _, user = login_admin(client)
         department = Department.query.first()
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
+        put_cache_entry(department, KEY_DEPT_ALL_OFFICERS, 1)
 
+        assert has_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is True
@@ -180,6 +190,7 @@ def test_total_documented_officers(mockdata, client, faker):
         )
 
         assert f"New Officer {last_name} added" in rv.data.decode(ENCODING_UTF_8)
+        assert has_cache_entry(department, KEY_DEPT_ALL_OFFICERS) is False
         assert has_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False
