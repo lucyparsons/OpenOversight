@@ -38,9 +38,10 @@ class ModelView(MethodView):
                     objects = self.model.query.order_by(
                         getattr(self.model, self.order_by)
                     ).paginate(page=page, per_page=self.per_page, error_out=False)
-                objects = self.model.query.order_by(
-                    getattr(self.model, self.order_by).desc()
-                ).paginate(page=page, per_page=self.per_page, error_out=False)
+                else:
+                    objects = self.model.query.order_by(
+                        getattr(self.model, self.order_by).desc()
+                    ).paginate(page=page, per_page=self.per_page, error_out=False)
             else:
                 objects = self.model.query.paginate(
                     page=page, per_page=self.per_page, error_out=False
@@ -79,9 +80,10 @@ class ModelView(MethodView):
             db.session.add(new_obj)
             db.session.commit()
             if self.model.__name__ == Incident.__name__:
-                cache_dept = Department(id=new_obj.department_id)
-                remove_cache_entry(cache_dept, KEY_DEPT_TOTAL_INCIDENTS)
-                remove_cache_entry(cache_dept, KEY_DEPT_ALL_INCIDENTS)
+                remove_cache_entry(
+                    Department(id=new_obj.department_id),
+                    [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
@@ -124,7 +126,7 @@ class ModelView(MethodView):
             self.populate_obj(form, obj)
             if self.model.__name__ == Incident.__name__:
                 remove_cache_entry(
-                    Department(id=obj.department_id), KEY_DEPT_ALL_INCIDENTS
+                    Department(id=obj.department_id), [KEY_DEPT_ALL_INCIDENTS]
                 )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
@@ -146,9 +148,10 @@ class ModelView(MethodView):
             db.session.delete(obj)
             db.session.commit()
             if self.model.__name__ == Incident.__name__:
-                cache_dept = Department(id=obj.department_id)
-                remove_cache_entry(cache_dept, KEY_DEPT_TOTAL_INCIDENTS)
-                remove_cache_entry(cache_dept, KEY_DEPT_ALL_INCIDENTS)
+                remove_cache_entry(
+                    Department(id=obj.department_id),
+                    [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
