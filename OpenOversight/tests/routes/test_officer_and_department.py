@@ -2341,8 +2341,7 @@ def test_admin_can_edit_salary(mockdata, client, session):
 
 def test_ac_can_edit_salary_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        user = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
 
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         officer_id = officer.id
@@ -2459,8 +2458,7 @@ def test_get_department_ranks_with_no_department(mockdata, client, session):
 
 def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
-        admin = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
         officer = Officer.query.first()
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
         put_cache_entry(*cache_params, 1)
@@ -2473,7 +2471,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=admin.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2491,8 +2489,7 @@ def test_admin_can_add_link_to_officer_profile(mockdata, client, session):
 
 def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
 
         form = OfficerLinkForm(
@@ -2501,7 +2498,7 @@ def test_ac_can_add_link_to_officer_profile_in_their_dept(mockdata, client, sess
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=ac.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2520,8 +2517,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
@@ -2532,7 +2528,7 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=ac.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2580,8 +2576,7 @@ def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
 
 def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2598,7 +2593,7 @@ def test_ac_can_edit_link_on_officer_profile_in_their_dept(mockdata, client, ses
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=ac.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2638,8 +2633,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        admin = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
@@ -2656,7 +2650,7 @@ def test_ac_cannot_edit_link_on_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=admin.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2723,8 +2717,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
         # Officer from department with id AC_DEPT and no links
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
@@ -2741,7 +2734,7 @@ def test_ac_can_delete_link_from_officer_profile_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=ac.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
@@ -2769,8 +2762,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
     mockdata, client, session
 ):
     with current_app.test_request_context():
-        login_admin(client)
-        admin = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
+        _, user = login_admin(client)
         # Officer from another department (not id AC_DEPT) and no links
         officer = (
             Officer.query.filter(Officer.department_id != AC_DEPT)
@@ -2787,7 +2779,7 @@ def test_ac_cannot_delete_link_from_officer_profile_not_in_their_dept(
             author="OJB",
             url="https://bpdwatch.com",
             link_type="link",
-            created_by=admin.id,
+            created_by=user.id,
             officer_id=officer.id,
         )
 
