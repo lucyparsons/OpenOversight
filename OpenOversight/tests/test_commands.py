@@ -32,6 +32,7 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import (
+    AC_DEPT,
     RANK_CHOICES_1,
     SPRINGFIELD_PD,
     PoliceDepartment,
@@ -415,7 +416,7 @@ def test_csv_new_officer(csvfile, monkeypatch):
     new_officer = pd.DataFrame.from_dict(
         [
             {  # Must match fields in csvfile
-                "department_id": 1,
+                "department_id": AC_DEPT,
                 "unique_internal_identifier": new_uid,
                 "first_name": "FOO",
                 "last_name": "BAR",
@@ -498,14 +499,16 @@ def test_bulk_add_officers__success(
     # generate two officers with different names
     first_officer = generate_officer(department_without_officers, user)
     job = (
-        Job.query.filter_by(department=department_without_officers).filter_by(order=1)
+        Job.query.filter_by(department_id=department_without_officers.id).filter_by(
+            order=1
+        )
     ).first()
     fo_fn = "Uniquefirst"
     first_officer.first_name = fo_fn
     fo_ln = first_officer.last_name
     session.add(first_officer)
     session.commit()
-    assignment = Assignment(base_officer=first_officer, job_id=job.id)
+    assignment = Assignment(officer_id=first_officer.id, job_id=job.id)
     session.add(assignment)
     session.commit()
     different_officer = generate_officer(department_without_officers, user)
@@ -513,7 +516,9 @@ def test_bulk_add_officers__success(
     do_fn = different_officer.first_name
     do_ln = different_officer.last_name
     session.add(different_officer)
-    assignment = Assignment(base_officer=different_officer, job=job, created_by=user.id)
+    assignment = Assignment(
+        officer_id=different_officer.id, job=job, created_by=user.id
+    )
     session.add(assignment)
     session.commit()
 
@@ -841,7 +846,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     # set up existing data
     officer = Officer(
         id=49483,
-        department_id=1,
+        department_id=AC_DEPT,
         first_name="Already",
         last_name="InDatabase",
         birth_year=1951,
@@ -914,7 +919,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
 
     all_officers = {
         officer.unique_internal_identifier: officer
-        for officer in Officer.query.filter_by(department_id=1).all()
+        for officer in Officer.query.filter_by(department_id=AC_DEPT).all()
     }
     # make sure all the data is imported as expected
     cop1 = all_officers["UID-1"]
@@ -1441,26 +1446,23 @@ def test_advanced_csv_import__unit_other_department(
 
 
 def test_create_officer_from_row_adds_new_officer_and_normalizes_gender(
-    app, session, department_without_officers
+    app, session, department_without_officers, faker
 ):
     with app.app_context():
-        lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow"
-        ).one_or_none()
+        first_name = faker.first_name()
+        lookup_officer = Officer.query.filter_by(first_name=first_name).one_or_none()
         assert lookup_officer is None
 
         row = {
             "gender": "Female",
-            "first_name": "NewOfficerFromRow",
+            "first_name": first_name,
             "last_name": "Jones",
             "employment_date": "1980-12-01",
             "unique_internal_identifier": "officer-jones-unique-id",
         }
         create_officer_from_row(row, department_without_officers.id)
 
-        lookup_officer = Officer.query.filter_by(
-            first_name="NewOfficerFromRow"
-        ).one_or_none()
+        lookup_officer = Officer.query.filter_by(first_name=first_name).one_or_none()
 
         # Was an officer created in the database?
         assert lookup_officer is not None
