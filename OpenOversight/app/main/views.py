@@ -948,7 +948,9 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        Department.remove_cache_entry(officer.department_id, [KEY_DEPT_TOTAL_OFFICERS])
+        Department.remove_cache_entry(
+            officer.department_id, [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS]
+        )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
