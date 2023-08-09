@@ -470,8 +470,8 @@ def add_salary(officer_id):
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id, salary_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
     if current_user.is_area_coordinator and not current_user.is_administrator:
-        officer = Officer.query.filter_by(id=officer_id).one()
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
 
