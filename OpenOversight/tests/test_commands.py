@@ -37,6 +37,7 @@ from OpenOversight.tests.conftest import (
     SPRINGFIELD_PD,
     generate_officer,
 )
+from OpenOversight.tests.constants import FILE_MODE_WRITE
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -525,7 +526,7 @@ def test_bulk_add_officers__success(
         "last_name",
         "job_title",
     ]
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -601,7 +602,7 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
         "last_name",
         "star_no",
     ]
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -644,7 +645,7 @@ def test_bulk_add_officers__write_static_null_field(
         "birth_year",
     ]
     # generate csv that provides birth_year for that officer
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -690,7 +691,7 @@ def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_
         "birth_year",
     ]
     # generate csv that assigns different birth year to that officer
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -739,7 +740,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
         "birth_year",
     ]
     # generate csv assigning different birth year to that officer
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -790,7 +791,7 @@ def test_bulk_add_officers__no_create_flag(
     ]
     # generate csv that updates gender of officer already in database
     # and provides data for another (new) officer
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
         csv_writer.writeheader()
 
@@ -1023,7 +1024,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
 def _create_csv(data, path, csv_file_name):
     csv_path = os.path.join(str(path), csv_file_name)
     field_names = set().union(*[set(row.keys()) for row in data])
-    with open(csv_path, "w") as f:
+    with open(csv_path, FILE_MODE_WRITE) as f:
         csv_writer = csv.DictWriter(f, field_names)
         csv_writer.writeheader()
         csv_writer.writerows(data)

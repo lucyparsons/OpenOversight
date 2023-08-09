@@ -55,6 +55,7 @@ from OpenOversight.tests.constants import (
     DISABLED_USER_EMAIL,
     DISABLED_USER_PASSWORD,
     DISABLED_USER_USERNAME,
+    FILE_MODE_WRITE,
     GENERAL_USER_EMAIL,
     GENERAL_USER_PASSWORD,
     GENERAL_USER_USERNAME,
@@ -787,9 +788,9 @@ def csvfile(mockdata, tmp_path, request):
     officers_dept1 = Officer.query.filter_by(department_id=1).all()
 
     if sys.version_info.major == 2:
-        csv_file = open(str(csv_path), "w")
+        csv_file = open(str(csv_path), FILE_MODE_WRITE)
     else:
-        csv_file = open(str(csv_path), "w", newline="")
+        csv_file = open(str(csv_path), FILE_MODE_WRITE, newline="")
     try:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
