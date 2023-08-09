@@ -71,11 +71,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.models.database_cache import (
-    get_cache_entry,
-    put_cache_entry,
-    remove_cache_entry,
-)
+from OpenOversight.app.models.database_cache import get_cache_entry, put_cache_entry
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
@@ -352,11 +348,12 @@ def add_assignment(officer_id):
             current_user.is_area_coordinator
             and officer.department_id == current_user.ac_department_id
         ):
-            remove_cache_entry(
-                Department(id=officer.department_id), KEY_DEPT_TOTAL_ASSIGNMENTS
-            )
             try:
                 add_new_assignment(officer_id, form)
+                Department.remove_cache_entry(
+                    Department(id=officer.department_id),
+                    [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
+                )
                 flash("Added new assignment!")
             except IntegrityError:
                 flash("Assignment already exists")
@@ -405,6 +402,10 @@ def edit_assignment(officer_id, assignment_id):
             id=int(form.job_title.raw_data[0])
         ).one()
         assignment = edit_existing_assignment(assignment, form)
+        Department.remove_cache_entry(
+            Department(id=officer.department_id),
+            [KEY_DEPT_ALL_ASSIGNMENTS],
+        )
         flash(f"Edited officer assignment ID {assignment.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
@@ -441,6 +442,10 @@ def add_salary(officer_id):
             )
             db.session.add(new_salary)
             db.session.commit()
+            Department.remove_cache_entry(
+                Department(id=officer.department_id),
+                [KEY_DEPT_ALL_SALARIES],
+            )
             flash("Added new salary!")
         except IntegrityError as e:
             db.session.rollback()
@@ -476,6 +481,10 @@ def edit_salary(officer_id, salary_id):
         form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
+        Department.remove_cache_entry(
+            Department(id=officer.department_id),
+            [KEY_DEPT_ALL_SALARIES],
+        )
         flash(f"Edited officer salary ID {salary.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
@@ -939,9 +948,7 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        remove_cache_entry(
-            Department(id=officer.department_id), KEY_DEPT_TOTAL_OFFICERS
-        )
+        Department.remove_cache_entry(officer.department_id, [KEY_DEPT_TOTAL_OFFICERS])
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
     else:
@@ -974,6 +981,7 @@ def edit_officer(officer_id):
 
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
+        Department.remove_cache_entry(officer.department_id, [KEY_DEPT_TOTAL_OFFICERS])
         flash(f"Officer {officer.last_name} edited")
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
