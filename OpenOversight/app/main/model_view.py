@@ -79,17 +79,17 @@ class ModelView(MethodView):
             new_obj = self.create_function(form)
             db.session.add(new_obj)
             db.session.commit()
-            model_name = self.model.__name__
-            if model_name == Incident.__name__:
-                Department.remove_cache_entry(
-                    new_obj.department_id,
-                    [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
-                )
-            elif model_name == Note.__name:
-                Department.remove_cache_entry(
-                    new_obj.department_id,
-                    [KEY_DEPT_ALL_NOTES],
-                )
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department.remove_cache_entry(
+                        new_obj.department_id,
+                        [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    Department.remove_cache_entry(
+                        new_obj.department_id,
+                        [KEY_DEPT_ALL_NOTES],
+                    )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
@@ -130,11 +130,17 @@ class ModelView(MethodView):
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
-            if self.model.__name__ == Incident.__name__:
-                Department.remove_cache_entry(
-                    obj.department_id,
-                    [KEY_DEPT_ALL_INCIDENTS],
-                )
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department.remove_cache_entry(
+                        obj.department_id,
+                        [KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    Department.remove_cache_entry(
+                        obj.department_id,
+                        [KEY_DEPT_ALL_NOTES],
+                    )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
 
@@ -154,11 +160,17 @@ class ModelView(MethodView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            if self.model.__name__ == Incident.__name__:
-                Department.remove_cache_entry(
-                    obj.department_id,
-                    [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
-                )
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department.remove_cache_entry(
+                        obj.department_id,
+                        [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    Department.remove_cache_entry(
+                        obj.department_id,
+                        [KEY_DEPT_ALL_NOTES],
+                    )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
