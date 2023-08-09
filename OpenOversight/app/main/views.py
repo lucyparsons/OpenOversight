@@ -53,11 +53,6 @@ from OpenOversight.app.main.forms import (
     TextForm,
 )
 from OpenOversight.app.main.model_view import ModelView
-from OpenOversight.app.models.database_cache import (
-    get_cache_entry,
-    put_cache_entry,
-    remove_cache_entry,
-)
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
@@ -75,6 +70,11 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
     db,
+)
+from OpenOversight.app.models.database_cache import (
+    get_cache_entry,
+    put_cache_entry,
+    remove_cache_entry,
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES

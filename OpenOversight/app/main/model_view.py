@@ -5,8 +5,8 @@ from flask import abort, current_app, flash, redirect, render_template, request,
 from flask.views import MethodView
 from flask_login import current_user, login_required
 
-from OpenOversight.app.models.database_cache import remove_cache_entry
 from OpenOversight.app.models.database import Department, Incident, db
+from OpenOversight.app.models.database_cache import remove_cache_entry
 from OpenOversight.app.utils.auth import ac_or_admin_required
 from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
