@@ -198,7 +198,7 @@ Example csvs can be found in the repository under [OpenOversight/tests/test_csvs
 
 Local development flag `--force-create`
 ---------------------------------------
-This flag chances the behavior when an integer is provided as `id`. Instead of updating an existing record,
+This flag changes the behavior when an integer is provided as `id`. Instead of updating an existing record,
 a new record will be created and assigned the given `id`. If a record with that `id` already exists in the
 database, it will be deleted before the new record is created.
 
