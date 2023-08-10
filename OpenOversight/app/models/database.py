@@ -7,8 +7,8 @@ from cachetools import cached
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from flask_sqlalchemy.extension import Model
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -26,6 +26,8 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
+BaseModel: DeclarativeMeta = db.Model
+
 
 officer_links = db.Table(
     "officer_links",
@@ -56,7 +58,7 @@ officer_incidents = db.Table(
 )
 
 
-class Department(Model):
+class Department(BaseModel):
     __tablename__ = "departments"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
@@ -113,7 +115,7 @@ class Department(Model):
         )
 
 
-class Job(Model):
+class Job(BaseModel):
     __tablename__ = "jobs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -145,7 +147,7 @@ class Job(Model):
         return self.job_title
 
 
-class Note(Model):
+class Note(BaseModel):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -165,7 +167,7 @@ class Note(Model):
     updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
-class Description(Model):
+class Description(BaseModel):
     __tablename__ = "descriptions"
 
     creator = db.relationship("User", backref="descriptions")
@@ -185,7 +187,7 @@ class Description(Model):
     updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
-class Officer(Model):
+class Officer(BaseModel):
     __tablename__ = "officers"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -297,7 +299,7 @@ class Officer(Model):
         )
 
 
-class Salary(Model):
+class Salary(BaseModel):
     __tablename__ = "salaries"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -321,7 +323,7 @@ class Salary(Model):
         return f"<Salary: ID {self.officer_id} : {self.salary}"
 
 
-class Assignment(Model):
+class Assignment(BaseModel):
     __tablename__ = "assignments"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -348,7 +350,7 @@ class Assignment(Model):
         return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
 
 
-class Unit(Model):
+class Unit(BaseModel):
     __tablename__ = "unit_types"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -371,7 +373,7 @@ class Unit(Model):
         return f"Unit: {self.description}"
 
 
-class Face(Model):
+class Face(BaseModel):
     __tablename__ = "faces"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -421,7 +423,7 @@ class Face(Model):
         return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
 
 
-class Image(Model):
+class Image(BaseModel):
     __tablename__ = "raw_images"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -510,7 +512,7 @@ incident_officers = db.Table(
 )
 
 
-class Location(Model):
+class Location(BaseModel):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -565,7 +567,7 @@ class Location(Model):
             return f"{self.city} {self.state}"
 
 
-class LicensePlate(Model):
+class LicensePlate(BaseModel):
     __tablename__ = "license_plates"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -592,7 +594,7 @@ class LicensePlate(Model):
         return state_validator(state)
 
 
-class Link(Model):
+class Link(BaseModel):
     __tablename__ = "links"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -620,7 +622,7 @@ class Link(Model):
         return url_validator(url)
 
 
-class Incident(Model):
+class Incident(BaseModel):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -678,7 +680,7 @@ class Incident(Model):
     )
 
 
-class User(UserMixin, Model):
+class User(UserMixin, BaseModel):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
