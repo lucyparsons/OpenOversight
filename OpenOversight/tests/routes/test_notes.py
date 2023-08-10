@@ -14,7 +14,7 @@ from .route_helpers import login_ac, login_admin, login_user
 
 @pytest.mark.parametrize(
     "route",
-    ["officer/1/note/1/edit", "officer/1/note/new", "officer/1/note/1/delete"],
+    ["officers/1/notes/1/edit", "officers/1/notes/new", "officers/1/notes/1/delete"],
 )
 def test_route_login_required(route, client, mockdata):
     rv = client.get(route)
@@ -23,7 +23,7 @@ def test_route_login_required(route, client, mockdata):
 
 @pytest.mark.parametrize(
     "route",
-    ["officer/1/note/1/edit", "officer/1/note/new", "officer/1/note/1/delete"],
+    ["officers/1/notes/1/edit", "officers/1/notes/new", "officers/1/notes/1/delete"],
 )
 def test_route_admin_or_required(route, client, mockdata):
     with current_app.test_request_context():

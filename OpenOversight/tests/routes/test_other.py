@@ -19,7 +19,7 @@ from OpenOversight.tests.routes.route_helpers import login_user
         "/about",
         "/privacy",
         "/submit",
-        "/label",
+        "/labels",
         "/tutorial",
     ],
 )
