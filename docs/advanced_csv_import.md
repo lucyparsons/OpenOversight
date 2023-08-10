@@ -194,7 +194,7 @@ Details:
 
 Examples
 ---------
-Example csvs can be found in the repository under [OpenOversight/tests/test_csvs](../OpenOversight/tests/test_csvs).
+Example csvs can be found in the repository under `OpenOversight/tests/test_csvs`.
 
 Local development flag `--force-create`
 ---------------------------------------
