@@ -7,6 +7,7 @@ from cachetools import cached
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.extension import Model
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
@@ -25,8 +26,6 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
-
-BaseModel = db.Model
 
 officer_links = db.Table(
     "officer_links",
@@ -57,7 +56,7 @@ officer_incidents = db.Table(
 )
 
 
-class Department(BaseModel):
+class Department(Model):
     __tablename__ = "departments"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
@@ -114,7 +113,7 @@ class Department(BaseModel):
         )
 
 
-class Job(BaseModel):
+class Job(Model):
     __tablename__ = "jobs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -146,7 +145,7 @@ class Job(BaseModel):
         return self.job_title
 
 
-class Note(BaseModel):
+class Note(Model):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -166,7 +165,7 @@ class Note(BaseModel):
     updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
-class Description(BaseModel):
+class Description(Model):
     __tablename__ = "descriptions"
 
     creator = db.relationship("User", backref="descriptions")
@@ -186,7 +185,7 @@ class Description(BaseModel):
     updated_at = db.Column(db.DateTime(timezone=True), unique=False)
 
 
-class Officer(BaseModel):
+class Officer(Model):
     __tablename__ = "officers"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -298,7 +297,7 @@ class Officer(BaseModel):
         )
 
 
-class Salary(BaseModel):
+class Salary(Model):
     __tablename__ = "salaries"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -322,7 +321,7 @@ class Salary(BaseModel):
         return f"<Salary: ID {self.officer_id} : {self.salary}"
 
 
-class Assignment(BaseModel):
+class Assignment(Model):
     __tablename__ = "assignments"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -349,7 +348,7 @@ class Assignment(BaseModel):
         return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
 
 
-class Unit(BaseModel):
+class Unit(Model):
     __tablename__ = "unit_types"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -372,7 +371,7 @@ class Unit(BaseModel):
         return f"Unit: {self.description}"
 
 
-class Face(BaseModel):
+class Face(Model):
     __tablename__ = "faces"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -422,7 +421,7 @@ class Face(BaseModel):
         return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
 
 
-class Image(BaseModel):
+class Image(Model):
     __tablename__ = "raw_images"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -511,7 +510,7 @@ incident_officers = db.Table(
 )
 
 
-class Location(BaseModel):
+class Location(Model):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -566,7 +565,7 @@ class Location(BaseModel):
             return f"{self.city} {self.state}"
 
 
-class LicensePlate(BaseModel):
+class LicensePlate(Model):
     __tablename__ = "license_plates"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -593,7 +592,7 @@ class LicensePlate(BaseModel):
         return state_validator(state)
 
 
-class Link(BaseModel):
+class Link(Model):
     __tablename__ = "links"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -621,7 +620,7 @@ class Link(BaseModel):
         return url_validator(url)
 
 
-class Incident(BaseModel):
+class Incident(Model):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -679,7 +678,7 @@ class Incident(BaseModel):
     )
 
 
-class User(UserMixin, BaseModel):
+class User(UserMixin, Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
