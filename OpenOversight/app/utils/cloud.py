@@ -106,8 +106,8 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
-    Just a quick explaination of the order of operations here...
-    we have to scrub the image before we do anything else like hash it
+    Just a quick explanation of the order of operations here...
+    we have to scrub the image before we do anything else like hash it,
     but we also have to get the date for the image before we scrub it.
     """
     image_buf.seek(0)
