@@ -11,7 +11,7 @@ So the tables provided in csv form represent the data that will be inside the sq
 
 Before you start
 ----------------
-CSV uploads should always be tested locally or in other non-production environments and it is strongly recommended
+CSV uploads should always be tested locally or in other non-production environments, and it is strongly recommended
 to have the database backed up before running the command. The command is designed to fail early and will
 only commit the changes if it didn't encounter any problems. The command however is pretty powerful
 and can therefore lead to data loss and inconsistencies if the provided csv files are not prepared correctly.
@@ -49,7 +49,7 @@ Then there are 5 options to include paths to officers, assignments, salaries, in
 Then there is a ``--force-create`` flag that allows to delete and overwrite existing entries in the database.
 This is only supposed to be used in non-production environments and to allow replication of the data of another (in most cases production)
 instance to local environments to test the import command locally first. More details on that flag at the end of the document: :ref:`ref-aci-force-create`.
-Finally there is ``--overwrite-assignments`` which simplifies updating assignments. Instead of updating them,
+Finally, there is ``--overwrite-assignments`` which simplifies updating assignments. Instead of updating them,
 all assignments for the relevant officers are deleted and created new based on the provided data. This flag is only
 considered if an assignments-csv is provided and ignored otherwise. See the instructions in
 the section on assignment-csv for more details.
@@ -57,7 +57,7 @@ the section on assignment-csv for more details.
 General overview of the csv import:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The following lists the header fields that each csv can contain. If the csv includes any other fields, the command will fail.
-However the fields are not case-sensitive and spaces are treated as ``_``. So ``Officer ID`` can be used instead of ``officer_id``.
+However, the fields are not case-sensitive and spaces are treated as ``_``. So ``Officer ID`` can be used instead of ``officer_id``.
 
 *All optional fields can be left blank and will be inserted as* ``NULL`` *or empty string as appropriate.*
 **Warning:** When updating a record a field that is left blank might overwrite an existing record.
@@ -77,7 +77,7 @@ The ``id`` field
 Each csv corresponds to a table in the OpenOversight database. And each csv file has to include ``id`` as a field in the table.
 That field has one primary purpose: If the field is blank, it is assumed that that row is a new entry.
 If the field contains a number however, it is assumed that a record with that particular id already exists in the database
-and the record will be updated according to the provided fields. Finally in the case of officers and incidents
+and the record will be updated according to the provided fields. Finally, in the case of officers and incidents
 there is a third option where the ``id`` field can contain a string that starts with ``#``. This also indicates a new record,
 but that new record can be referenced in other provided tables. (for example as the ``officer_id`` in the salaries csv)
 
