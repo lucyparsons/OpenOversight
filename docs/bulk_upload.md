@@ -45,17 +45,17 @@ The csv file can have the following fields:
 Explanation of the individual fields
 ------------------------------------
 General information:
-- `department_id` - ID of department in the server database, for example `1` for Chicago Police Department can be found in 
+- `department_id` - ID of department in the server database, for example `1` for Chicago Police Department can be found in
    url for that department: `https://openoversight.com/departments/1`.
-- `unique_internal_identifier` - A string or number that can be used to uniquely identify the officer, in departments in 
-   which the badge number stays with the officer using that number is fine, otherwise it is recommended to leave this 
+- `unique_internal_identifier` - A string or number that can be used to uniquely identify the officer, in departments in
+   which the badge number stays with the officer using that number is fine, otherwise it is recommended to leave this
    blank and provide the `star_no` instead.
 - `first_name` & `last_name` & `middle_initial`
 - `suffix` - One of the following values: `Jr, Sr, II, III, IV, V`.
 - `gender` - One of the following values: `M`, `F`, `Other` or `Not Sure`.
 - `race` - One of the following values: `BLACK`, `WHITE`, `ASIAN`, `HISPANIC`, `NATIVE AMERICAN`, `PACIFIC ISLANDER`, `Other`, `Not Sure`.
 - `employment_date` - Start of employment with this department.
-- `birth_year` - The year of birth for the respective person in that row in a `yyyy` format.
+- `birth_year` - Integer representing the birth year of the officer in a `yyyy` format
 
 Current Employment information:
 - `star_no` - Star or badge number, might be related to current rank.
