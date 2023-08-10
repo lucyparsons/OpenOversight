@@ -46,7 +46,8 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 source_suffix = {
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 
 # The master toctree document.
