@@ -28,8 +28,7 @@ def instantiate_filters(app: Flask):
 
     @app.template_filter("get_age")
     def get_age_from_birth_year(birth_year: int) -> int:
-        if birth_year:
-            return int(datetime.now(pytz.timezone(get_timezone())).year - birth_year)
+        return int(datetime.now(pytz.timezone(get_timezone())).year - birth_year)
 
     @app.template_filter("field_in_query")
     def field_in_query(form_data, field) -> str:
