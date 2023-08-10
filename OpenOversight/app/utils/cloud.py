@@ -82,9 +82,9 @@ def upload_obj_to_s3(file_obj, dest_filename):
     # Folder to store files in on S3 is first two chars of dest_filename
     s3_folder = dest_filename[0:2]
     s3_filename = dest_filename[2:]
-    pimage = Pimage.open(file_obj.read())
+    pimage = Pimage.open(file_obj)
     file_obj.seek(0)
-    s3_content_type = f"image/{pimage.format}"
+    s3_content_type = f"image/{pimage.format.lower()}"
     s3_path = f"{s3_folder}/{s3_filename}"
     s3_client.upload_fileobj(
         file_obj,
@@ -111,8 +111,9 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
-    if pimage.format not in current_app.config["ALLOWED_EXTENSIONS"]:
-        raise ValueError(f"Attempted to pass invalid data type: {pimage.format}")
+    image_format = pimage.format.lower()
+    if image_format not in current_app.config["ALLOWED_EXTENSIONS"]:
+        raise ValueError(f"Attempted to pass invalid data type: {image_format}")
     image_buf.seek(0)
 
     date_taken = find_date_taken(pimage)
@@ -120,7 +121,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         date_taken = datetime.datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
     pimage.getexif().clear()
     scrubbed_image_buf = BytesIO()
-    pimage.save(scrubbed_image_buf, pimage.format)
+    pimage.save(scrubbed_image_buf, image_format)
     pimage.close()
     scrubbed_image_buf.seek(0)
     image_data = scrubbed_image_buf.read()
@@ -129,7 +130,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     if existing_image:
         return existing_image
     try:
-        new_filename = f"{hash_img}.{pimage.format}"
+        new_filename = f"{hash_img}.{image_format}"
         scrubbed_image_buf.seek(0)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(
