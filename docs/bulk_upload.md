@@ -44,7 +44,6 @@ The csv file can have the following fields:
 
 Explanation of the individual fields
 ------------------------------------
-
 General information:
 - `department_id` - ID of department in the server database, for example `1` for Chicago Police Department can be found in 
    url for that department: `https://openoversight.com/departments/1`.
