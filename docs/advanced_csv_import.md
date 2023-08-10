@@ -54,7 +54,7 @@ all assignments for the relevant officers are deleted and created new based on t
 considered if an assignments-csv is provided and ignored otherwise. See the instructions in
 the section on assignment-csv for more details.
 
-General overview of the csv import:
+General overview of the csv import
 -----------------------------------
 The following lists the header fields that each csv can contain. If the csv includes any other fields, the command will fail.
 However, the fields are not case-sensitive and spaces are treated as `_`. So `Officer ID` can be used instead of `officer_id`.
@@ -122,7 +122,7 @@ Details
 - `start_date` - [Start date](https://help.highbond.com/helpdocs/analytics/13/user-guide/en-us/Content/table_definition/c_formats_of_date_and_time_source_data.htm) of this assignment.
 - `resign_date` - [End date](https://help.highbond.com/helpdocs/analytics/13/user-guide/en-us/Content/table_definition/c_formats_of_date_and_time_source_data.htm) of this assignment.
 
-Special Flag:
+Special Flag
 -------------
 The `--overwrite-assignments` in the command can be used to not merge new with existing assignments.
 Instead, all existing assignments belonging to officers named in the `officer_id` column are deleted first,
