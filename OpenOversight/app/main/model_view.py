@@ -1,5 +1,6 @@
 import datetime
 from http import HTTPMethod
+from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
@@ -20,7 +21,7 @@ class ModelView(MethodView):
     order_by = ""  # this should be a field on the model
     descending = False  # used for order_by
     form = ""  # type: Form
-    create_function = ""  # type: Union[str, Callable]
+    create_function: Union[str, Callable] = ""
     department_check = False
 
     def get(self, obj_id):
