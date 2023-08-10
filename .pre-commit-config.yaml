@@ -76,11 +76,6 @@ repos:
           args:
             - --quiet
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.4.1'
-    hooks:
-      - id: mypy
-
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
     hooks:
@@ -96,6 +91,11 @@ repos:
           args:
             - --safe
             - "--target-version=py311"
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.4.1'
+    hooks:
+      - id: mypy
 
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.32.1
