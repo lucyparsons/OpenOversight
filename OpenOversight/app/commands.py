@@ -3,6 +3,7 @@ import sys
 from builtins import input
 from datetime import date, datetime
 from getpass import getpass
+from typing import Dict, List
 
 import click
 import us
@@ -106,8 +107,8 @@ def link_officers_to_department():
 
 
 class ImportLog:
-    updated_officers = {}  # type: Dict[int, List]
-    created_officers = {}  # type: Dict[int, List]
+    updated_officers: Dict[int, List] = {}
+    created_officers: Dict[int, List] = {}
 
     @classmethod
     def log_change(cls, officer, msg):
