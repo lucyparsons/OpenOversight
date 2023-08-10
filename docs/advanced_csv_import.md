@@ -88,7 +88,7 @@ Officers csv
 - Optional: `last_name, first_name, middle_initial, suffix, race, gender, employment_date, birth_year, unique_internal_identifier`
 - Ignored: `badge_number, job_title, most_recent_salary, unique_identifier` (Unused but command will not fail when field is present)
 
-Details:
+Details
 --------
 - `department_name` - Name of department exactly as it is in the server database.
    This needs to match the department name provided with the command.
@@ -112,7 +112,7 @@ Assignments csv
 - Required: `id, officer_id, job_title`
 - Optional: `badge_number, unit_id, unit_name, start_date, resign_date`
 
-Details:
+Details
 --------
 - `officer_id` - Number referring to `id` of existing officer or string starting with `#` referring to a newly created officer in the provided officers csv.
 - `badge_number` - Any string that represents the star or badge number of the officer. In some departments this number changes with the assignment.
@@ -136,7 +136,7 @@ Salaries csv
 - Required: `id, officer_id, salary, year`
 - Optional: `overtime_pay, is_fiscal_year`
 
-Details:
+Details
 --------
 - `officer_id` - Integer referring to `id` of existing officer or string starting with `#` referring to a newly created officer in the provided officers csv.
 - `salary` - Number representing the officer's salary in the given year.
@@ -151,7 +151,7 @@ Incidents csv
 - Optional: `date, time, report_number, description, street_name, cross_street1, cross_street2, city, state, zip_code,
   created_by, last_updated_by, officer_ids, license_plates`
 
-Details:
+Details
 --------
 - `department_name` - Name of department exactly as in the server database.
    This needs to match the department name provided with the command.
@@ -180,7 +180,7 @@ Links csv
 - Required: `id, url`
 - Optional: `title, link_type, description, author, created_by, officer_ids, incident_ids`
 
-Details:
+Details
 --------
 - `url` - Full url of the link starting with `http://` or `https://`.
 - `title` - Text that will be displayed as the link.
