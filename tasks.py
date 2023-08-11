@@ -59,7 +59,9 @@ class HostConfig:
         return Connection(host=self.host_name, user=self.user)
 
 
-def get_configs(env: str, github_user: str = "", github_token: str = "") -> HostConfig:
+def get_configs(
+    env: str = "", github_user: str = "", github_token: str = ""
+) -> HostConfig:
     """
     Return a HostConfig based on given environment and GitHub user and token.
     The GitHub user and token can be omitted if no connection to GitHub is needed.
