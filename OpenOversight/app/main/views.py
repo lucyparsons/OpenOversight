@@ -1260,6 +1260,7 @@ def download_dept_officers_csv(department_id):
             .options(joinedload(Officer.assignments).joinedload(Assignment.job))
             .options(joinedload(Officer.salaries))
             .filter_by(department_id=department_id)
+            .all()
         )
         put_database_cache_entry(*cache_params, officers)
 
@@ -1298,6 +1299,7 @@ def download_dept_assignments_csv(department_id):
             .options(contains_eager(Assignment.base_officer))
             .options(joinedload(Assignment.unit))
             .options(joinedload(Assignment.job))
+            .all()
         )
         put_database_cache_entry(*cache_params, assignments)
 
@@ -1365,6 +1367,7 @@ def download_dept_salaries_csv(department_id):
             .join(Salary.officer)
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Salary.officer))
+            .all()
         )
         put_database_cache_entry(*cache_params, salaries)
 
@@ -1394,6 +1397,7 @@ def download_dept_links_csv(department_id):
             .join(Link.officers)
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Link.officers))
+            .all()
         )
         put_database_cache_entry(*cache_params, links)
 
@@ -1425,6 +1429,7 @@ def download_dept_descriptions_csv(department_id):
             .join(Description.officer)
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Description.officer))
+            .all()
         )
         put_database_cache_entry(*cache_params, notes)
 
