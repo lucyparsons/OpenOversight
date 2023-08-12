@@ -1,9 +1,12 @@
 import datetime
 from http import HTTPMethod
+from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_login import current_user, login_required
+from flask_sqlalchemy.model import DefaultMeta
+from flask_wtf import Form
 
 from OpenOversight.app.models.database import Department, db
 from OpenOversight.app.models.database_cache import remove_database_cache_entry
@@ -14,13 +17,13 @@ from OpenOversight.app.utils.forms import set_dynamic_default
 
 
 class ModelView(MethodView):
-    model = None  # type: DefaultMeta
-    model_name = ""
+    model: DefaultMeta = None
+    model_name: str = ""
     per_page = 20
-    order_by = ""  # this should be a field on the model
+    order_by: str = ""  # this should be a field on the model
     descending = False  # used for order_by
-    form = ""  # type: Form
-    create_function = ""  # type: Union[str, Callable]
+    form: Form = None
+    create_function: Union[str, Callable] = ""
     department_check = False
 
     def get(self, obj_id):
