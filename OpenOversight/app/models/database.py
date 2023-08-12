@@ -8,6 +8,7 @@ from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -29,8 +30,8 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
+BaseModel: DeclarativeMeta = db.Model
 
-BaseModel = db.Model
 
 officer_links = db.Table(
     "officer_links",
