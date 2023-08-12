@@ -131,7 +131,9 @@ def pick_birth_date():
     return random.randint(1950, 2000)
 
 
-def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
+def pick_date(
+    seed: bytes = b"", start_year: int = 2000, end_year: int = 2020
+) -> datetime.datetime:
     # source: https://stackoverflow.com/q/40351791
     # Wanted to deterministically create a date from a seed string (e.g. the hash or
     # uuid on an officer object).
@@ -141,7 +143,7 @@ def pick_date(seed: bytes = None, start_year=2000, end_year=2020):
     def bytes_to_float(b):
         return float(unpack("L", sha256(b).digest()[:8])[0]) / 2**64
 
-    if seed is None:
+    if seed == b"":
         seed = str(uuid.uuid4()).encode(ENCODING_UTF_8)
 
     return datetime.datetime(start_year, 1, 1, 00, 00, 00) + datetime.timedelta(
@@ -861,7 +863,7 @@ def browser(app, server_port):
     # start headless webdriver
     visual_display = Xvfb()
     visual_display.start()
-    driver = webdriver.Firefox(log_path="/tmp/geckodriver.log")
+    driver = webdriver.Firefox(service_log_path="/tmp/geckodriver.log")
     # wait for browser to start up
     time.sleep(3)
     yield driver

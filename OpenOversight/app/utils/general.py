@@ -7,12 +7,6 @@ from urllib.parse import urlparse
 
 from flask import current_app, url_for
 
-from OpenOversight.app.custom import add_jpeg_patch
-
-
-# Call JPEG patch function
-add_jpeg_patch()
-
 
 def ac_can_edit_officer(officer, ac):
     if officer.department_id == ac.ac_department_id:
