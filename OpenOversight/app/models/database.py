@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import date
+from typing import List
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -119,7 +120,7 @@ class Department(BaseModel):
         )
 
     @staticmethod
-    def remove_database_cache_entry(dept_id: int, update_type: [str]) -> None:
+    def remove_database_cache_entry(dept_id: int, update_type: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
         remove_database_cache_entry(Department(id=dept_id), update_type)
 
