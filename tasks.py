@@ -23,6 +23,7 @@ import io
 import logging
 import os
 from dataclasses import dataclass
+from time import gmtime
 
 from fabric import Connection
 from invoke import task
@@ -32,16 +33,9 @@ logging.basicConfig(
     format="[{asctime}] {levelname: <8} [{filename}:{lineno}] {message}",
     level=logging.INFO,
     style="{",
+    datefmt="%Y-%m-%dT%H:%M:%S%z",
 )
-
-
-# make sure we are logging in UTC and have millisecond granularity
-def _format_time(record, _):
-    return str(datetime.datetime.utcfromtimestamp(record.created)) + "Z"
-
-
-for h in logging.getLogger().handlers:
-    h.formatter.formatTime = _format_time
+logging.Formatter.converter = gmtime
 
 
 @dataclass
@@ -66,7 +60,7 @@ class HostConfig:
 
 
 def get_configs(
-    env: str, github_user: str = None, github_token: str = None
+    env: str = "", github_user: str = "", github_token: str = ""
 ) -> HostConfig:
     """
     Return a HostConfig based on given environment and GitHub user and token.
