@@ -1,4 +1,4 @@
-title_corrections = {
+corrections = {
     "Police Sergeant": (".Police Sergeant", "Police Segeant"),
     "Accounting Technician II": (
         "Accounting Technician Ii",

@@ -10,8 +10,10 @@ from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
+from sqlalchemy.types import TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import DB_CACHE, db_model_cache_key
@@ -27,8 +29,8 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken("HS512")
+BaseModel: DeclarativeMeta = db.Model
 
-BaseModel = db.Model
 
 officer_links = db.Table(
     "officer_links",
@@ -311,7 +313,7 @@ class Officer(BaseModel):
         )
 
 
-class Currency(db.TypeDecorator):
+class Currency(TypeDecorator):
     """
     Store currency as an integer in sqlite to avoid float conversion
     https://stackoverflow.com/questions/10355767/

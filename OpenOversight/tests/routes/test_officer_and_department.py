@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from flask import current_app, url_for
 from sqlalchemy.sql.operators import Operators
+from werkzeug.test import TestResponse
 
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
@@ -1973,7 +1974,7 @@ def test_browse_filtering_allows_good(client, mockdata, session, faker):
             follow_redirects=True,
         )
 
-        def normalize_tokens_for_comparison(html_str: str, split_str: str):
+        def normalize_tokens_for_comparison(html_str: TestResponse, split_str: str):
             """Remove new lines, leading, and closing spaces between <dd> elements in
             formatted HTML."""
             parsed_list = html_str.data.decode(ENCODING_UTF_8).split(split_str)[1:]

@@ -101,9 +101,9 @@ class ProductionConfig(BaseConfig):
         self.SITEMAP_URL_SCHEME = "https"
 
 
-config = {
+config: dict[str, BaseConfig] = {
     "development": DevelopmentConfig(),
     "testing": TestingConfig(),
     "production": ProductionConfig(),
 }
-config["default"] = config.get(os.environ.get("ENV", ""), DevelopmentConfig)
+config["default"] = config.get(os.environ.get("ENV", ""), DevelopmentConfig())

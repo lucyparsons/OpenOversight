@@ -1,4 +1,4 @@
-unit_corrections = {
+corrections = {
     "Harbor - Squad D": ("Harbor    Squad D",),
     "Harbor - Squad C": ("'Harbor - Squad C",),
     "Parking Enforcement - P6 Squad": (". Parking Enforcement - P6 Squad",),

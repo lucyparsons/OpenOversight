@@ -23,12 +23,11 @@ def instantiate_filters(app: Flask):
         return s[0].capitalize() + s[1:]  # only change 1st letter
 
     @app.template_filter("get_age")
-    def get_age_from_birth_year(birth_year) -> int:
-        if birth_year:
-            return int(datetime.now(pytz.timezone(get_timezone())).year - birth_year)
+    def get_age_from_birth_year(birth_year: int) -> int:
+        return int(datetime.now(pytz.timezone(get_timezone())).year - birth_year)
 
     @app.template_filter("field_in_query")
-    def field_in_query(form_data, field):
+    def field_in_query(form_data, field) -> str:
         """
         Determine if a field is specified in the form data, and if so return a Bootstrap
         class which will render the field accordion open.

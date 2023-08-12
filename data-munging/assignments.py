@@ -139,10 +139,10 @@ def extract_all_assignments(
     log.info("Correcting unit/title info")
     # Correct the unit and title names
     hist.loc[:, "title"] = apply_correction_mapping(
-        hist["title"], title_corrections.title_corrections
+        hist["title"], title_corrections.corrections
     )
     hist.loc[:, "unit_description"] = apply_correction_mapping(
-        hist["unit_description"], unit_corrections.unit_corrections
+        hist["unit_description"], unit_corrections.corrections
     )
     log.info("Computing last known job date for officers")
     # Get the end dates for each officer

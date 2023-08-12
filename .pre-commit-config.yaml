@@ -105,6 +105,11 @@ repos:
 #             - types-click
 #             - types-ujson
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.4.1'
+    hooks:
+      - id: mypy
+
   - repo: https://github.com/Riverside-Healthcare/djLint
     rev: v1.32.1
     hooks:
