@@ -9,7 +9,6 @@ from urllib.request import urlopen
 import boto3
 import botocore
 from botocore.exceptions import ClientError
-from filetype.match import image_match
 from flask import current_app
 from flask_login import current_user
 from PIL import Image as Pimage
@@ -87,9 +86,9 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
     # File extension filtering is expected to have already been performed before this
     # point (see `upload_image_to_s3_and_store_in_db`)
-    s3_content_type = image_match(file_obj).mime
-
+    pimage = Pimage.open(file_obj)
     file_obj.seek(0)
+    s3_content_type = f"image/{pimage.format.lower()}"
     s3_path = f"{s3_folder}/{s3_filename}"
     s3_client.upload_fileobj(
         file_obj,
@@ -112,29 +111,24 @@ def upload_obj_to_s3(file_obj, dest_filename):
 
 def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
-    Just a quick explaination of the order of operations here...
-    we have to scrub the image before we do anything else like hash it
+    Just a quick explanation of the order of operations here...
+    we have to scrub the image before we do anything else like hash it,
     but we also have to get the date for the image before we scrub it.
     """
-    kind = image_match(image_buf)
-    image_type = kind.extension.lower() if kind else None
-    if image_type not in current_app.config["ALLOWED_EXTENSIONS"]:
-        raise ValueError(f"Attempted to pass invalid data type: {image_type}")
-
-    # PIL expects format name to be JPEG, not JPG
-    # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
-    if image_type == "jpg":
-        image_type = "jpeg"
-
     # Scrub EXIF data, extracting date taken data if it exists
     image_buf.seek(0)
     pimage = Pimage.open(image_buf)
+    image_format = pimage.format.lower()
+    if image_format not in current_app.config["ALLOWED_EXTENSIONS"]:
+        raise ValueError(f"Attempted to pass invalid data type: {image_format}")
+    image_buf.seek(0)
+
     date_taken = find_date_taken(pimage)
     if date_taken:
         date_taken = datetime.datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
     pimage.getexif().clear()
     scrubbed_image_buf = BytesIO()
-    pimage.save(scrubbed_image_buf, image_type)
+    pimage.save(scrubbed_image_buf, image_format)
     pimage.close()
 
     # Check whether image with hash already exists
@@ -146,7 +140,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         return existing_image
 
     try:
-        new_filename = f"{hash_img}.{image_type}"
+        new_filename = f"{hash_img}.{image_format}"
         scrubbed_image_buf.seek(0)
         url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(

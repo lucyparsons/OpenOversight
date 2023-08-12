@@ -3,6 +3,7 @@ import string
 from io import BytesIO
 from unittest.mock import MagicMock, Mock, patch
 
+import PIL
 import pytest
 import us
 from flask import current_app
@@ -287,7 +288,7 @@ def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
 def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(
     mockdata, client
 ):
-    with pytest.raises(ValueError):
+    with pytest.raises(PIL.UnidentifiedImageError):
         upload_image_to_s3_and_store_in_db(BytesIO(b"invalid-image"), 1, 1)
 
 

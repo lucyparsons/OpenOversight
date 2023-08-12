@@ -22,7 +22,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from webdriver_manager.firefox import GeckoDriverManager
 from xvfbwrapper import Xvfb
 
-from OpenOversight.app import EmailClient, create_app
+from OpenOversight.app import create_app
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
