@@ -1,3 +1,6 @@
+from typing import List, Tuple
+
+
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -112,7 +115,9 @@ htmlhelp_basename = "OpenOversightdoc"
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "openoversight", "OpenOversight Documentation", [author], 1)]
+man_pages: List[Tuple[str, str, str, list[str], int]] = [
+    (master_doc, "openoversight", "OpenOversight Documentation", [author], 1)
+]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -120,7 +125,7 @@ man_pages = [(master_doc, "openoversight", "OpenOversight Documentation", [autho
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
+texinfo_documents: List[Tuple[str, str, str, str, str, str, str]] = [
     (
         master_doc,
         "OpenOversight",

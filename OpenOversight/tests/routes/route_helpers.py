@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from flask import url_for
 from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
@@ -20,14 +22,14 @@ from OpenOversight.tests.constants import (
 )
 
 
-def login_user(client: FlaskClient) -> (TestResponse, User):
+def login_user(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=GENERAL_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
 
-def login_unconfirmed_user(client: FlaskClient) -> (TestResponse, User):
+def login_unconfirmed_user(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=UNCONFIRMED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=UNCONFIRMED_USER_PASSWORD, remember_me=True
@@ -37,7 +39,7 @@ def login_unconfirmed_user(client: FlaskClient) -> (TestResponse, User):
     return rv, user
 
 
-def login_disabled_user(client: FlaskClient) -> (TestResponse, User):
+def login_disabled_user(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=DISABLED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=DISABLED_USER_PASSWORD, remember_me=True
@@ -46,7 +48,7 @@ def login_disabled_user(client: FlaskClient) -> (TestResponse, User):
     return rv, user
 
 
-def login_modified_disabled_user(client: FlaskClient) -> (TestResponse, User):
+def login_modified_disabled_user(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).first()
     form = LoginForm(
         email=user.email, password=MOD_DISABLED_USER_PASSWORD, remember_me=True
@@ -55,14 +57,14 @@ def login_modified_disabled_user(client: FlaskClient) -> (TestResponse, User):
     return rv, user
 
 
-def login_admin(client: FlaskClient) -> (TestResponse, User):
+def login_admin(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=ADMIN_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
     return rv, user
 
 
-def login_ac(client: FlaskClient) -> (TestResponse, User):
+def login_ac(client: FlaskClient) -> Tuple[TestResponse, User]:
     user = User.query.filter_by(email=AC_USER_EMAIL).first()
     form = LoginForm(email=user.email, password=AC_USER_PASSWORD, remember_me=True)
     rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
