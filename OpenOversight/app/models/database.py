@@ -119,10 +119,9 @@ class Department(BaseModel):
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
 
-    @staticmethod
-    def remove_database_cache_entry(dept_id: int, update_type: List[str]) -> None:
+    def remove_database_cache_entry(self, update_types: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entry(Department(id=dept_id), update_type)
+        remove_database_cache_entry(self, update_types)
 
 
 class Job(BaseModel):
