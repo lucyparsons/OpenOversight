@@ -649,7 +649,17 @@ def classify_submission(image_id, contains_cops):
         error_str = " ".join([str(exception_type), str(value), format_exc()])
         current_app.logger.error(f"Error classifying image: {error_str}")
     return redirect(redirect_url())
-    # return redirect(url_for('main.display_submission', image_id=image_id))
+
+
+@main.route("/department/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@admin_required
+def redirect_add_department():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_department"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/departments/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -709,11 +719,24 @@ def add_department():
 
 
 @main.route(
+    "/department/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@login_required
+@admin_required
+def redirect_edit_department(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("edit_department", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/departments/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
 @admin_required
-def edit_department(department_id):
+def edit_department(department_id: int):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
@@ -810,10 +833,50 @@ def edit_department(department_id):
         )
 
 
+@main.route("/department/<int:department_id>")
+def redirect_list_officer(
+    department_id: int,
+    page: int = 1,
+    race=None,
+    gender=None,
+    rank=None,
+    min_age: str = "16",
+    max_age: str = "100",
+    last_name=None,
+    first_name=None,
+    badge=None,
+    unique_internal_identifier=None,
+    unit=None,
+    current_job=None,
+    require_photo: bool = False,
+):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for(
+            "list_officer",
+            department_id,
+            page,
+            race,
+            gender,
+            rank,
+            min_age,
+            max_age,
+            last_name,
+            first_name,
+            badge,
+            unique_internal_identifier,
+            unit,
+            current_job,
+            require_photo,
+        ),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/departments/<int:department_id>")
 def list_officer(
-    department_id,
-    page=1,
+    department_id: int,
+    page: int = 1,
     race=None,
     gender=None,
     rank=None,
@@ -825,7 +888,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo=False,
+    require_photo: bool = False,
 ):
     form = BrowseForm()
     form.rank.query = (
