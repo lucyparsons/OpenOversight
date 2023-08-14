@@ -101,7 +101,7 @@ class ModelView(MethodView):
                     ).first()
                     if officer:
                         Department(
-                            id=new_obj.department_id
+                            id=officer.department_id
                         ).remove_database_cache_entries(
                             [KEY_DEPT_ALL_NOTES],
                         )
@@ -189,8 +189,7 @@ class ModelView(MethodView):
             db.session.commit()
             match self.model.__name__:
                 case Incident.__name__:
-                    Department.remove_database_cache_entries(
-                        obj.department_id,
+                    Department(id=obj.department_id).remove_database_cache_entries(
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
