@@ -119,7 +119,7 @@ class Department(BaseModel):
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
 
-    def remove_database_cache_entry(self, update_types: List[str]) -> None:
+    def remove_database_cache_entries(self, update_types: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
         remove_database_cache_entries(self, update_types)
 
