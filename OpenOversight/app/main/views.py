@@ -1449,7 +1449,7 @@ def label_data(department_id=None, image_id=None):
     )
 
 
-@main.route("/images/tagged/<int:image_id>")
+@main.route("/image/tagged/<int:image_id>")
 @login_required
 def redirect_complete_tagging(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1524,7 +1524,7 @@ def submit_data():
 
 
 @main.route(
-    "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
+    "/download/department/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
 def redirect_download_dept_officers_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
