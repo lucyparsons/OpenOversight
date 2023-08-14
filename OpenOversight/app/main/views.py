@@ -427,7 +427,9 @@ def add_assignment(officer_id: int):
 def redirect_edit_assignment(officer_id: int, assignment_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.edit_assignment", officer_id, assignment_id),
+        url_for(
+            "main.edit_assignment", officer_id=officer_id, assignment_id=assignment_id
+        ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -478,7 +480,7 @@ def edit_assignment(officer_id: int, assignment_id: int):
 def redirect_add_salary(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.add_salary", officer_id),
+        url_for("main.add_salary", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -541,7 +543,7 @@ def add_salary(officer_id: int):
 def redirect_edit_salary(officer_id: int, salary_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.edit_salary", officer_id, salary_id),
+        url_for("main.edit_salary", officer_id=officer_id, salary_id=salary_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -579,7 +581,7 @@ def edit_salary(officer_id: int, salary_id: int):
 def redirect_display_submission(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.display_submission", image_id),
+        url_for("main.display_submission", image_id=image_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -599,7 +601,7 @@ def display_submission(image_id: int):
 def redirect_display_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.display_tag", tag_id),
+        url_for("main.display_tag", tag_id=tag_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -623,7 +625,9 @@ def display_tag(tag_id: int):
 def redirect_classify_submission(image_id: int, contains_cops: bool):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.classify_submission", image_id, contains_cops),
+        url_for(
+            "main.classify_submission", image_id=image_id, contains_cops=contains_cops
+        ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -728,7 +732,7 @@ def add_department():
 def redirect_edit_department(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.edit_department", department_id),
+        url_for("main.edit_department", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -855,21 +859,21 @@ def redirect_list_officer(
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(
         url_for(
-            "list_officer",
-            department_id,
-            page,
-            race,
-            gender,
-            rank,
-            min_age,
-            max_age,
-            last_name,
-            first_name,
-            badge,
-            unique_internal_identifier,
-            unit,
-            current_job,
-            require_photo,
+            "main.list_officer",
+            department_id=department_id,
+            page=page,
+            race=race,
+            gender=gender,
+            rank=rank,
+            min_age=min_age,
+            max_age=max_age,
+            last_name=last_name,
+            first_name=first_name,
+            badge=badge,
+            unique_internal_identifier=unique_internal_identifier,
+            unit=unit,
+            current_job=current_job,
+            require_photo=require_photo,
         ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
@@ -1055,7 +1059,11 @@ def list_officer(
 def redirect_get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.get_dept_ranks", department_id, is_sworn_officer),
+        url_for(
+            "main.get_dept_ranks",
+            department_id=department_id,
+            is_sworn_officer=is_sworn_officer,
+        ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1090,7 +1098,7 @@ def get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
 def redirect_get_dept_units(department_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.get_dept_ranks", department_id),
+        url_for("main.get_dept_ranks", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1173,7 +1181,7 @@ def add_officer():
 def redirect_edit_officer(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.add_officer", officer_id),
+        url_for("main.add_officer", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1251,7 +1259,7 @@ def add_unit():
 def redirect_delete_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.delete_tag", tag_id),
+        url_for("main.delete_tag", tag_id=tag_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1280,6 +1288,17 @@ def delete_tag(tag_id: int):
         current_app.logger.exception("Unknown error occurred")
 
     return redirect(url_for("main.officer_profile", officer_id=officer_id))
+
+
+@main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_set_featured_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.set_featured_tag", tag_id=tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
@@ -1336,7 +1355,7 @@ def leaderboard():
 def redirect_label_data(department_id=None, image_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.label_data", department_id, image_id),
+        url_for("main.label_data", department_id=department_id, image_id=image_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1455,7 +1474,7 @@ def label_data(department_id=None, image_id=None):
 def redirect_complete_tagging(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.complete_tagging", image_id),
+        url_for("main.complete_tagging", image_id=image_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1530,7 +1549,7 @@ def submit_data():
 def redirect_download_dept_officers_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_dept_officers_csv", department_id),
+        url_for("main.download_dept_officers_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1578,7 +1597,7 @@ def download_dept_officers_csv(department_id: int):
 def redirect_download_dept_assignments_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_dept_assignments_csv", department_id),
+        url_for("main.download_dept_assignments_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1628,7 +1647,7 @@ def download_dept_assignments_csv(department_id: int):
 def redirect_download_incidents_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_incidents_csv", department_id),
+        url_for("main.download_incidents_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1670,7 +1689,7 @@ def download_incidents_csv(department_id: int):
 def redirect_download_dept_salaries_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_dept_salaries_csv", department_id),
+        url_for("main.download_dept_salaries_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1711,7 +1730,7 @@ def download_dept_salaries_csv(department_id: int):
 def redirect_download_dept_links_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_dept_links_csv", department_id),
+        url_for("main.download_dept_links_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1752,7 +1771,7 @@ def download_dept_links_csv(department_id: int):
 def redirect_download_dept_descriptions_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.download_dept_descriptions_csv", department_id),
+        url_for("main.download_dept_descriptions_csv", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1803,7 +1822,7 @@ def all_data():
 def redirect_submit_officer_images(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.submit_officer_images", officer_id),
+        url_for("main.submit_officer_images", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -1827,7 +1846,7 @@ def submit_officer_images(officer_id: int):
 def redirect_upload(department_id: int, officer_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.upload", department_id, officer_id),
+        url_for("main.upload", department_id=department_id, officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
