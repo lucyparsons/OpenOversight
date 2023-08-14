@@ -247,7 +247,7 @@ def get_started_labeling():
 def redirect_sort_images(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.sort_images", department_id),
+        url_for("main.sort_images", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -368,9 +368,8 @@ def sitemap_officers():
 )
 @ac_or_admin_required
 def redirect_add_assignment(officer_id: int):
-    flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.add_assignment", officer_id),
+        url_for("main.add_assignment", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
