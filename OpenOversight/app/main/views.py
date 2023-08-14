@@ -238,6 +238,17 @@ def get_started_labeling():
 
 
 @main.route(
+    "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+def sort_images_redirect(department_id):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("sort_images", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/sort/departments/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
