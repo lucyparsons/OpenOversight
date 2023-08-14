@@ -23,6 +23,11 @@ KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
 KEY_OO_MAIL_SUBJECT_PREFIX = "OO_MAIL_SUBJECT_PREFIX"
 KEY_TIMEZONE = "TIMEZONE"
 
+# Flash Message Constants
+FLASH_MSG_PERMANENT_REDIRECT = (
+    "This page's address has changed, please update your bookmark!"
+)
+
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
 SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator only
