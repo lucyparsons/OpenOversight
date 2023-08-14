@@ -216,7 +216,7 @@ def get_officer():
 
 
 @main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
-def labels_redirect():
+def redirect_get_started_labeling():
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(url_for("get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT)
 
@@ -240,7 +240,7 @@ def get_started_labeling():
 @main.route(
     "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
-def sort_images_redirect(department_id):
+def redirect_sort_images(department_id):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(
         url_for("sort_images", department_id=department_id),
@@ -287,6 +287,15 @@ def profile(username):
     except NoResultFound:
         department = None
     return render_template("profile.html", user=user, department=department)
+
+
+@main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_officer_profile(officer_id):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("officer_profile", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
