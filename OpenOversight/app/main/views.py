@@ -631,7 +631,7 @@ def redirect_classify_submission(image_id: int, contains_cops: bool):
     "/images/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
-def classify_submission(image_id, contains_cops):
+def classify_submission(image_id: int, contains_cops: bool):
     try:
         image = Image.query.filter_by(id=image_id).one()
         if image.contains_cops is not None and not current_user.is_administrator:
