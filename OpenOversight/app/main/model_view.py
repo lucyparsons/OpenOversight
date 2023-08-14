@@ -8,10 +8,21 @@ from flask_login import current_user, login_required
 from flask_sqlalchemy.model import DefaultMeta
 from flask_wtf import Form
 
-from OpenOversight.app.models.database import Department, db
-from OpenOversight.app.models.database_cache import remove_database_cache_entry
+from OpenOversight.app.models.database import (
+    Department,
+    Incident,
+    Link,
+    Note,
+    Officer,
+    db,
+)
 from OpenOversight.app.utils.auth import ac_or_admin_required
-from OpenOversight.app.utils.constants import KEY_DEPT_TOTAL_INCIDENTS
+from OpenOversight.app.utils.constants import (
+    KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_LINKS,
+    KEY_DEPT_ALL_NOTES,
+    KEY_DEPT_TOTAL_INCIDENTS,
+)
 from OpenOversight.app.utils.db import add_department_query
 from OpenOversight.app.utils.forms import set_dynamic_default
 
@@ -38,9 +49,10 @@ class ModelView(MethodView):
                     objects = self.model.query.order_by(
                         getattr(self.model, self.order_by)
                     ).paginate(page=page, per_page=self.per_page, error_out=False)
-                objects = self.model.query.order_by(
-                    getattr(self.model, self.order_by).desc()
-                ).paginate(page=page, per_page=self.per_page, error_out=False)
+                else:
+                    objects = self.model.query.order_by(
+                        getattr(self.model, self.order_by).desc()
+                    ).paginate(page=page, per_page=self.per_page, error_out=False)
             else:
                 objects = self.model.query.paginate(
                     page=page, per_page=self.per_page, error_out=False
@@ -78,10 +90,21 @@ class ModelView(MethodView):
             new_obj = self.create_function(form)
             db.session.add(new_obj)
             db.session.commit()
-            if self.create_function.__name__ == "create_incident":
-                remove_database_cache_entry(
-                    Department(id=new_obj.department_id), KEY_DEPT_TOTAL_INCIDENTS
-                )
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department(id=new_obj.department_id).remove_database_cache_entries(
+                        [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    officer = Officer.query.filter_by(
+                        department_id=new_obj.officer_id
+                    ).first()
+                    if officer:
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
+                            [KEY_DEPT_ALL_NOTES],
+                        )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=new_obj.id)
         else:
@@ -122,6 +145,29 @@ class ModelView(MethodView):
 
         if form.validate_on_submit():
             self.populate_obj(form, obj)
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department(id=obj.department_id).remove_database_cache_entries(
+                        [KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    officer = Officer.query.filter_by(
+                        department_id=obj.officer_id
+                    ).first()
+                    if officer:
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
+                            [KEY_DEPT_ALL_NOTES],
+                        )
+                case Link.__name__:
+                    officer = Officer.query.filter_by(id=obj.officer_id).first()
+                    if officer:
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
+                            [KEY_DEPT_ALL_LINKS],
+                        )
             flash(f"{self.model_name} successfully updated!")
             return self.get_redirect_url(obj_id=obj_id)
 
@@ -141,6 +187,21 @@ class ModelView(MethodView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
+            match self.model.__name__:
+                case Incident.__name__:
+                    Department(id=obj.department_id).remove_database_cache_entries(
+                        [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                    )
+                case Note.__name__:
+                    officer = Officer.query.filter_by(
+                        department_id=obj.officer_id
+                    ).first()
+                    if officer:
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
+                            [KEY_DEPT_ALL_NOTES],
+                        )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 

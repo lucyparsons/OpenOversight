@@ -2,9 +2,15 @@ import os
 
 
 # Cache Key Constants
-KEY_DEPT_TOTAL_ASSIGNMENTS = "total_assignments"
-KEY_DEPT_TOTAL_INCIDENTS = "total_incidents"
-KEY_DEPT_TOTAL_OFFICERS = "total_officers"
+KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
+KEY_DEPT_ALL_INCIDENTS = "all_department_incidents"
+KEY_DEPT_ALL_LINKS = "all_department_links"
+KEY_DEPT_ALL_NOTES = "all_department_notes"
+KEY_DEPT_ALL_OFFICERS = "all_department_officers"
+KEY_DEPT_ALL_SALARIES = "all_department_salaries"
+KEY_DEPT_TOTAL_ASSIGNMENTS = "total_department_assignments"
+KEY_DEPT_TOTAL_INCIDENTS = "total_department_incidents"
+KEY_DEPT_TOTAL_OFFICERS = "total_department_officers"
 
 # Config Key Constants
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"

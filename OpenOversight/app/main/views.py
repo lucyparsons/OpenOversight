@@ -71,12 +71,21 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.models.database_cache import remove_database_cache_entry
+from OpenOversight.app.models.database_cache import (
+    get_database_cache_entry,
+    put_database_cache_entry,
+)
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    KEY_DEPT_ALL_ASSIGNMENTS,
+    KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_LINKS,
+    KEY_DEPT_ALL_NOTES,
+    KEY_DEPT_ALL_OFFICERS,
+    KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_OFFICERS_PER_PAGE,
@@ -166,7 +175,6 @@ def browse():
 @sitemap_include
 @main.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
-    js_loads = ["js/find_officer.js"]
     form = FindOfficerForm()
 
     departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
@@ -202,7 +210,7 @@ def get_officer():
         "input_find_officer.html",
         form=form,
         depts_dict=departments_dict,
-        jsloads=js_loads,
+        jsloads=["js/find_officer.js"],
     )
 
 
@@ -343,11 +351,11 @@ def add_assignment(officer_id):
             current_user.is_area_coordinator
             and officer.department_id == current_user.ac_department_id
         ):
-            remove_database_cache_entry(
-                Department(id=officer.department_id), KEY_DEPT_TOTAL_ASSIGNMENTS
-            )
             try:
                 add_new_assignment(officer_id, form)
+                Department(id=officer.department_id).remove_database_cache_entries(
+                    [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
+                )
                 flash("Added new assignment!")
             except IntegrityError:
                 flash("Assignment already exists")
@@ -396,6 +404,9 @@ def edit_assignment(officer_id, assignment_id):
             id=int(form.job_title.raw_data[0])
         ).one()
         assignment = edit_existing_assignment(assignment, form)
+        Department(id=officer.department_id).remove_database_cache_entries(
+            [KEY_DEPT_ALL_ASSIGNMENTS],
+        )
         flash(f"Edited officer assignment ID {assignment.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
@@ -432,6 +443,9 @@ def add_salary(officer_id):
             )
             db.session.add(new_salary)
             db.session.commit()
+            Department(id=officer.department_id).remove_database_cache_entries(
+                [KEY_DEPT_ALL_SALARIES],
+            )
             flash("Added new salary!")
         except IntegrityError as e:
             db.session.rollback()
@@ -456,8 +470,8 @@ def add_salary(officer_id):
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id, salary_id):
+    officer = Officer.query.filter_by(id=officer_id).one()
     if current_user.is_area_coordinator and not current_user.is_administrator:
-        officer = Officer.query.filter_by(id=officer_id).one()
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
 
@@ -467,6 +481,9 @@ def edit_salary(officer_id, salary_id):
         form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
+        Department(id=officer.department_id).remove_database_cache_entries(
+            [KEY_DEPT_ALL_SALARIES],
+        )
         flash(f"Edited officer salary ID {salary.id}")
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
     else:
@@ -487,13 +504,14 @@ def display_submission(image_id):
 
 @main.route("/tag/<int:tag_id>")
 def display_tag(tag_id):
-    jsloads = ["js/tag.js"]
     try:
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
-    return render_template("tag.html", face=tag, path=proper_path, jsloads=jsloads)
+    return render_template(
+        "tag.html", face=tag, path=proper_path, jsloads=["js/tag.js"]
+    )
 
 
 @main.route(
@@ -697,8 +715,6 @@ def list_officer(
     current_job=None,
     require_photo=False,
 ):
-    js_loads = ["js/select2.min.js", "js/list_officer.js"]
-
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -854,7 +870,7 @@ def list_officer(
         choices=choices,
         next_url=next_url,
         prev_url=prev_url,
-        jsloads=js_loads,
+        jsloads=["js/select2.min.js", "js/list_officer.js"],
     )
 
 
@@ -931,8 +947,8 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        remove_database_cache_entry(
-            Department(id=officer.department_id), KEY_DEPT_TOTAL_OFFICERS
+        Department(id=officer.department_id).remove_database_cache_entries(
+            [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS]
         )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
@@ -966,6 +982,9 @@ def edit_officer(officer_id):
 
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
+        Department(id=officer.department_id).remove_database_cache_entries(
+            [KEY_DEPT_TOTAL_OFFICERS]
+        )
         flash(f"Officer {officer.last_name} edited")
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
     else:
@@ -1074,7 +1093,6 @@ def leaderboard():
 @main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def label_data(department_id=None, image_id=None):
-    jsloads = ["js/cropper.js", "js/tagger.js"]
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -1166,7 +1184,7 @@ def label_data(department_id=None, image_id=None):
         image=image,
         path=proper_path,
         department=department,
-        jsloads=jsloads,
+        jsloads=["js/cropper.js", "js/tagger.js"],
     )
 
 
@@ -1230,12 +1248,17 @@ def submit_data():
 )
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id):
-    officers = (
-        db.session.query(Officer)
-        .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-        .options(joinedload(Officer.salaries))
-        .filter_by(department_id=department_id)
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
+    officers = get_database_cache_entry(*cache_params)
+    if officers is None:
+        officers = (
+            db.session.query(Officer)
+            .options(joinedload(Officer.assignments).joinedload(Assignment.job))
+            .options(joinedload(Officer.salaries))
+            .filter_by(department_id=department_id)
+            .all()
+        )
+        put_database_cache_entry(*cache_params, officers)
 
     field_names = [
         "id",
@@ -1262,14 +1285,19 @@ def download_dept_officers_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id):
-    assignments = (
-        db.session.query(Assignment)
-        .join(Assignment.base_officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Assignment.base_officer))
-        .options(joinedload(Assignment.unit))
-        .options(joinedload(Assignment.job))
-    )
+    cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
+    assignments = get_database_cache_entry(*cache_params)
+    if assignments is None:
+        assignments = (
+            db.session.query(Assignment)
+            .join(Assignment.base_officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Assignment.base_officer))
+            .options(joinedload(Assignment.unit))
+            .options(joinedload(Assignment.job))
+            .all()
+        )
+        put_database_cache_entry(*cache_params, assignments)
 
     field_names = [
         "id",
@@ -1296,7 +1324,12 @@ def download_dept_assignments_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id):
-    incidents = Incident.query.filter_by(department_id=department_id).all()
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
+    incidents = get_database_cache_entry(*cache_params)
+    if incidents is None:
+        incidents = Incident.query.filter_by(department_id=department_id).all()
+        put_database_cache_entry(*cache_params, incidents)
+
     field_names = [
         "id",
         "report_num",
@@ -1322,12 +1355,17 @@ def download_incidents_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id):
-    salaries = (
-        db.session.query(Salary)
-        .join(Salary.officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Salary.officer))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
+    salaries = get_database_cache_entry(*cache_params)
+    if salaries is None:
+        salaries = (
+            db.session.query(Salary)
+            .join(Salary.officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Salary.officer))
+            .all()
+        )
+        put_database_cache_entry(*cache_params, salaries)
 
     field_names = [
         "id",
@@ -1347,12 +1385,17 @@ def download_dept_salaries_csv(department_id):
 @main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id):
-    links = (
-        db.session.query(Link)
-        .join(Link.officers)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Link.officers))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
+    links = get_database_cache_entry(*cache_params)
+    if links is None:
+        links = (
+            db.session.query(Link)
+            .join(Link.officers)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Link.officers))
+            .all()
+        )
+        put_database_cache_entry(*cache_params, links)
 
     field_names = [
         "id",
@@ -1374,12 +1417,17 @@ def download_dept_links_csv(department_id):
 )
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id):
-    notes = (
-        db.session.query(Description)
-        .join(Description.officer)
-        .filter(Officer.department_id == department_id)
-        .options(contains_eager(Description.officer))
-    )
+    cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
+    notes = get_database_cache_entry(*cache_params)
+    if notes is None:
+        notes = (
+            db.session.query(Description)
+            .join(Description.officer)
+            .filter(Officer.department_id == department_id)
+            .options(contains_eager(Description.officer))
+            .all()
+        )
+        put_database_cache_entry(*cache_params, notes)
 
     field_names = [
         "id",
@@ -1825,6 +1873,9 @@ class OfficerLinkApi(ModelView):
             self.officer.links.append(link)
             db.session.add(link)
             db.session.commit()
+            Department(id=self.officer.department_id).remove_database_cache_entries(
+                [KEY_DEPT_ALL_LINKS]
+            )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=link.id)
 
@@ -1843,6 +1894,9 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
+            Department(id=self.officer.department_id).remove_database_cache_entries(
+                [KEY_DEPT_ALL_LINKS]
+            )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
 
