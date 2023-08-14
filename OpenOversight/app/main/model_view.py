@@ -92,8 +92,7 @@ class ModelView(MethodView):
             db.session.commit()
             match self.model.__name__:
                 case Incident.__name__:
-                    Department.remove_database_cache_entry(
-                        new_obj.department_id,
+                    Department(id=new_obj.department_id).remove_database_cache_entries(
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -101,8 +100,9 @@ class ModelView(MethodView):
                         department_id=new_obj.officer_id
                     ).first()
                     if officer:
-                        Department.remove_database_cache_entry(
-                            officer.department_id,
+                        Department(
+                            id=new_obj.department_id
+                        ).remove_database_cache_entries(
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} created!")
@@ -147,8 +147,7 @@ class ModelView(MethodView):
             self.populate_obj(form, obj)
             match self.model.__name__:
                 case Incident.__name__:
-                    Department.remove_database_cache_entry(
-                        obj.department_id,
+                    Department(id=obj.department_id).remove_database_cache_entries(
                         [KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -156,15 +155,17 @@ class ModelView(MethodView):
                         department_id=obj.officer_id
                     ).first()
                     if officer:
-                        Department.remove_database_cache_entry(
-                            officer.department_id,
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
                             [KEY_DEPT_ALL_NOTES],
                         )
                 case Link.__name__:
                     officer = Officer.query.filter_by(id=obj.officer_id).first()
                     if officer:
-                        Department.remove_database_cache_entry(
-                            officer.department_id,
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
                             [KEY_DEPT_ALL_LINKS],
                         )
             flash(f"{self.model_name} successfully updated!")
@@ -188,7 +189,7 @@ class ModelView(MethodView):
             db.session.commit()
             match self.model.__name__:
                 case Incident.__name__:
-                    Department.remove_database_cache_entry(
+                    Department.remove_database_cache_entries(
                         obj.department_id,
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
@@ -197,8 +198,9 @@ class ModelView(MethodView):
                         department_id=obj.officer_id
                     ).first()
                     if officer:
-                        Department.remove_database_cache_entry(
-                            officer.department_id,
+                        Department(
+                            id=officer.department_id
+                        ).remove_database_cache_entries(
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} successfully deleted!")
