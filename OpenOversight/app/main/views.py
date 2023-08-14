@@ -594,7 +594,7 @@ def display_submission(image_id: int):
     return render_template("image.html", image=image, path=proper_path)
 
 
-@main.route("/tags/<int:tag_id>")
+@main.route("/tag/<int:tag_id>")
 def redirect_display_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(
