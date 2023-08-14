@@ -2,12 +2,15 @@ import os
 
 
 # Cache Key Constants
+KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
+KEY_DEPT_ALL_INCIDENTS = "all_department_incidents"
+KEY_DEPT_ALL_LINKS = "all_department_links"
+KEY_DEPT_ALL_NOTES = "all_department_notes"
+KEY_DEPT_ALL_OFFICERS = "all_department_officers"
+KEY_DEPT_ALL_SALARIES = "all_department_salaries"
 KEY_DEPT_ASSIGNMENTS_LAST_UPDATED = "assignments_last_updated"
 KEY_DEPT_INCIDENTS_LAST_UPDATED = "incidents_last_updated"
 KEY_DEPT_OFFICERS_LAST_UPDATED = "officers_last_updated"
-
-# Database Key Constants
-KEY_DB_CREATOR = "creator"
 
 # Config Key Constants
 KEY_ALLOWED_EXTENSIONS = "ALLOWED_EXTENSIONS"

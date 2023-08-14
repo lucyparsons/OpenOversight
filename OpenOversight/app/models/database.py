@@ -3,6 +3,7 @@ import re
 import time
 from datetime import date
 from decimal import Decimal
+from typing import List
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -16,7 +17,11 @@ from sqlalchemy.sql import func as sql_func
 from sqlalchemy.types import TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from OpenOversight.app.models.database_cache import DB_CACHE, db_model_cache_key
+from OpenOversight.app.models.database_cache import (
+    DB_CACHE,
+    model_cache_key,
+    remove_database_cache_entries,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -96,7 +101,7 @@ class Department(BaseModel):
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_ASSIGNMENTS_LAST_UPDATED))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_ASSIGNMENTS_LAST_UPDATED))
     def latest_assignment_update(self) -> datetime.date:
         assignment_updated = (
             db.session.query(func.max(Assignment.date_updated))
@@ -107,7 +112,7 @@ class Department(BaseModel):
         )
         return assignment_updated.date() if assignment_updated else None
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_INCIDENTS_LAST_UPDATED))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_INCIDENTS_LAST_UPDATED))
     def latest_incident_update(self) -> datetime.date:
         incident_updated = (
             db.session.query(func.max(Incident.date_updated))
@@ -116,7 +121,7 @@ class Department(BaseModel):
         )
         return incident_updated.date() if incident_updated else None
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_OFFICERS_LAST_UPDATED))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_OFFICERS_LAST_UPDATED))
     def latest_officer_update(self) -> datetime.date:
         officer_updated = (
             db.session.query(func.max(Officer.date_updated))
@@ -124,6 +129,10 @@ class Department(BaseModel):
             .scalar()
         )
         return officer_updated.date() if officer_updated else None
+
+    def remove_database_cache_entries(self, update_types: List[str]) -> None:
+        """Remove the Department model key from the cache if it exists."""
+        remove_database_cache_entries(self, update_types)
 
 
 class Job(BaseModel):
