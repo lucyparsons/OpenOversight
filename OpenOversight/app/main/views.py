@@ -2155,10 +2155,53 @@ class DescriptionApi(TextApi):
         return super(DescriptionApi, self).dispatch_request(*args, **kwargs)
 
 
+@login_required
+@ac_or_admin_required
+def redirect_new_note(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.note_api", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+def redirect_get_notes(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.note_api", officer_id, obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_note(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.note_api', officer_id, obj_id)}/edit",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_note(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.note_api', officer_id, obj_id)}/delete",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/new",
     view_func=note_view,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/note/new",
+    view_func=redirect_new_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
@@ -2167,8 +2210,18 @@ main.add_url_rule(
     methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/note/<int:obj_id>",
+    view_func=redirect_get_notes,
+    methods=[HTTPMethod.GET],
+)
+main.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>/edit",
     view_func=note_view,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/note/<int:obj_id>/edit",
+    view_func=redirect_edit_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
@@ -2176,6 +2229,50 @@ main.add_url_rule(
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
+main.add_url_rule(
+    "/officer/<int:officer_id>/note/<int:obj_id>/delete",
+    view_func=redirect_delete_note,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+
+
+@login_required
+@ac_or_admin_required
+def redirect_new_description(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.description_api", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+def redirect_get_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.description_api", officer_id, obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.description_api', officer_id, obj_id)}/edit",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.description_api_delete", officer_id, obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
 
 description_view = DescriptionApi.as_view("description_api")
 main.add_url_rule(
@@ -2184,8 +2281,18 @@ main.add_url_rule(
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/description/new",
+    view_func=redirect_new_description,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>",
     view_func=description_view,
+    methods=[HTTPMethod.GET],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/description/<int:obj_id>",
+    view_func=redirect_get_description,
     methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
@@ -2194,8 +2301,18 @@ main.add_url_rule(
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/description/<int:obj_id>/edit",
+    view_func=redirect_edit_description,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/delete",
     view_func=description_view,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/description/<int:obj_id>/delete",
+    view_func=redirect_delete_description,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
@@ -2304,9 +2421,44 @@ class OfficerLinkApi(ModelView):
         return super(OfficerLinkApi, self).dispatch_request(*args, **kwargs)
 
 
+@login_required
+@ac_or_admin_required
+def redirect_new_link(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_delete", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_link(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_delete", officer_id, obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_link(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_delete", officer_id, obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 main.add_url_rule(
     "/officers/<int:officer_id>/links/new",
     view_func=OfficerLinkApi.as_view("link_api_new"),
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/link/new",
+    view_func=redirect_new_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
@@ -2315,7 +2467,17 @@ main.add_url_rule(
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/link/<int:obj_id>/edit",
+    view_func=redirect_edit_link,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
     "/officers/<int:officer_id>/links/<int:obj_id>/delete",
     view_func=OfficerLinkApi.as_view("link_api_delete"),
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/link/<int:obj_id>/delete",
+    view_func=redirect_delete_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
