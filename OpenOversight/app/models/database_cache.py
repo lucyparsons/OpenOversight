@@ -54,9 +54,9 @@ def put_database_cache_entry(model: Model, update_type: str, data: Any) -> None:
     DB_CACHE[key] = data
 
 
-def remove_database_cache_entries(model: Model, update_type: List[str]) -> None:
+def remove_database_cache_entries(model: Model, update_types: List[str]) -> None:
     """Remove db.Model key from cache if it exists."""
-    for ut in update_type:
-        key = get_model_cache_key(model, ut)
+    for update_type in update_types:
+        key = get_model_cache_key(model, update_type)
         if key in DB_CACHE.keys():
             del DB_CACHE[key]
