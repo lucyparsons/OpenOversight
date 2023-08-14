@@ -80,6 +80,7 @@ from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CH
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    FLASH_MSG_PERMANENT_REDIRECT,
     KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
@@ -212,6 +213,12 @@ def get_officer():
         depts_dict=departments_dict,
         jsloads=["js/find_officer.js"],
     )
+
+
+@main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def labels_redirect():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(url_for("get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT)
 
 
 @sitemap_include
