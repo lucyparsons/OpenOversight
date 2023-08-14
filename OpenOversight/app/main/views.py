@@ -1322,6 +1322,25 @@ def leaderboard():
 
 
 @main.route(
+    "/cop_face/department/<int:department_id>/images/<int:image_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main.route(
+    "/cop_face/department/<int:department_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+def redirect_label_data(department_id=None, image_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("label_data", department_id, image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/cop_faces/departments/<int:department_id>/images/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -1432,6 +1451,16 @@ def label_data(department_id=None, image_id=None):
 
 @main.route("/images/tagged/<int:image_id>")
 @login_required
+def redirect_complete_tagging(image_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("complete_tagging", image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/images/tagged/<int:image_id>")
+@login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
     image = Image.query.filter_by(id=image_id).first()
@@ -1445,6 +1474,15 @@ def complete_tagging(image_id: int):
         return redirect(url_for("main.label_data", department_id=department_id))
     else:
         return redirect(url_for("main.label_data"))
+
+
+@main.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_submit_complaint():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("submit_complaint"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/complaints", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1488,6 +1526,17 @@ def submit_data():
 @main.route(
     "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
+def redirect_download_dept_officers_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_officers_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
@@ -1519,6 +1568,17 @@ def download_dept_officers_csv(department_id: int):
     ]
     return make_downloadable_csv(
         officers, department_id, "Officers", field_names, officer_record_maker
+    )
+
+
+@main.route(
+    "/download/department/<int:department_id>/assignments", methods=[HTTPMethod.GET]
+)
+def redirect_download_dept_assignments_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_assignments_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
@@ -1559,6 +1619,22 @@ def download_dept_assignments_csv(department_id: int):
         field_names,
         assignment_record_maker,
     )
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_assignments_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/department/<int:department_id>/incidents", methods=[HTTPMethod.GET]
+)
+def redirect_download_incidents_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_incidents_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route(
@@ -1589,6 +1665,17 @@ def download_incidents_csv(department_id: int):
         "Incidents",
         field_names,
         incidents_record_maker,
+    )
+
+
+@main.route(
+    "/download/department/<int:department_id>/salaries", methods=[HTTPMethod.GET]
+)
+def redirect_download_dept_salaries_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_salaries_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
@@ -1624,6 +1711,15 @@ def download_dept_salaries_csv(department_id: int):
     )
 
 
+@main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
+def redirect_download_dept_links_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_links_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id: int):
@@ -1651,6 +1747,17 @@ def download_dept_links_csv(department_id: int):
     ]
     return make_downloadable_csv(
         links, department_id, "Links", field_names, links_record_maker
+    )
+
+
+@main.route(
+    "/download/department/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
+)
+def redirect_download_dept_descriptions_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("download_dept_descriptions_csv", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
