@@ -1799,6 +1799,20 @@ def all_data():
 
 
 @main.route(
+    "/submit_officer_images/officer/<int:officer_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def redirect_submit_officer_images(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("submit_officer_images", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/submit_officer_images/officers/<int:officer_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -1807,6 +1821,19 @@ def all_data():
 def submit_officer_images(officer_id: int):
     officer = Officer.query.get_or_404(officer_id)
     return render_template("submit_officer_image.html", officer=officer)
+
+
+@main.route("/upload/department/<int:department_id>", methods=[HTTPMethod.POST])
+@main.route(
+    "/upload/department/<int:department_id>/officer/<int:officer_id>",
+    methods=[HTTPMethod.POST],
+)
+def redirect_upload(department_id: int, officer_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("upload", department_id, officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/upload/departments/<int:department_id>", methods=[HTTPMethod.POST])
