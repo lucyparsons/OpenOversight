@@ -18,6 +18,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required, login_user
+from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
@@ -1049,9 +1050,18 @@ def list_officer(
     )
 
 
+@main.route("/department/<int:department_id>/ranks")
+def redirect_get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("get_dept_ranks", department_id, is_sworn_officer),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/departments/<int:department_id>/ranks")
 @main.route("/ranks")
-def get_dept_ranks(department_id=None, is_sworn_officer=None):
+def get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
     if request.args.get("is_sworn_officer"):
@@ -1075,6 +1085,15 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
     return jsonify(rank_list)
 
 
+@main.route("/department/<int:department_id>/units")
+def redirect_get_dept_units(department_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("get_dept_ranks", department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/departments/<int:department_id>/units")
 @main.route("/units")
 def get_dept_units(department_id=None):
@@ -1094,6 +1113,17 @@ def get_dept_units(department_id=None):
         )
 
     return jsonify(unit_list)
+
+
+@main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_add_officer():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_officer"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/officers/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1136,12 +1166,23 @@ def add_officer():
         )
 
 
+@main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_edit_officer(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_officer", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route(
     "/officers/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
 @ac_or_admin_required
-def edit_officer(officer_id):
+def edit_officer(officer_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
 
@@ -1171,6 +1212,17 @@ def edit_officer(officer_id):
         )
 
 
+@main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_add_unit():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_unit"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/units/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
@@ -1192,10 +1244,21 @@ def add_unit():
         return render_template("add_unit.html", form=form)
 
 
+@main.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_delete_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("delete_tag", tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/tags/delete/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
-def delete_tag(tag_id):
+def delete_tag(tag_id: int):
     tag = Face.query.filter_by(id=tag_id).first()
 
     if not tag:
@@ -1221,7 +1284,7 @@ def delete_tag(tag_id):
 @main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
-def set_featured_tag(tag_id):
+def set_featured_tag(tag_id: int):
     tag = Face.query.filter_by(id=tag_id).first()
 
     if not tag:
@@ -1369,7 +1432,7 @@ def label_data(department_id=None, image_id=None):
 
 @main.route("/images/tagged/<int:image_id>")
 @login_required
-def complete_tagging(image_id):
+def complete_tagging(image_id: int):
     # Select a random untagged image from the database
     image = Image.query.filter_by(id=image_id).first()
     if not image:
@@ -1426,7 +1489,7 @@ def submit_data():
     "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
-def download_dept_officers_csv(department_id):
+def download_dept_officers_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
     officers = get_database_cache_entry(*cache_params)
     if officers is None:
@@ -1463,7 +1526,7 @@ def download_dept_officers_csv(department_id):
     "/download/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
-def download_dept_assignments_csv(department_id):
+def download_dept_assignments_csv(department_id: int):
     cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
     assignments = get_database_cache_entry(*cache_params)
     if assignments is None:
@@ -1502,7 +1565,7 @@ def download_dept_assignments_csv(department_id):
     "/download/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
-def download_incidents_csv(department_id):
+def download_incidents_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
     incidents = get_database_cache_entry(*cache_params)
     if incidents is None:
@@ -1533,7 +1596,7 @@ def download_incidents_csv(department_id):
     "/download/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
-def download_dept_salaries_csv(department_id):
+def download_dept_salaries_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
     salaries = get_database_cache_entry(*cache_params)
     if salaries is None:
@@ -1563,7 +1626,7 @@ def download_dept_salaries_csv(department_id):
 
 @main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def download_dept_links_csv(department_id):
+def download_dept_links_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
     links = get_database_cache_entry(*cache_params)
     if links is None:
@@ -1595,7 +1658,7 @@ def download_dept_links_csv(department_id):
     "/download/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
-def download_dept_descriptions_csv(department_id):
+def download_dept_descriptions_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
     notes = get_database_cache_entry(*cache_params)
     if notes is None:
@@ -1634,7 +1697,7 @@ def all_data():
 )
 @login_required
 @ac_or_admin_required
-def submit_officer_images(officer_id):
+def submit_officer_images(officer_id: int):
     officer = Officer.query.get_or_404(officer_id)
     return render_template("submit_officer_image.html", officer=officer)
 
@@ -1645,7 +1708,7 @@ def submit_officer_images(officer_id):
     methods=[HTTPMethod.POST],
 )
 @limiter.limit("250/minute")
-def upload(department_id, officer_id=None):
+def upload(department_id: int, officer_id=None):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
@@ -1733,7 +1796,7 @@ class IncidentApi(ModelView):
     create_function = create_incident
     department_check = True
 
-    def get(self, obj_id):
+    def get(self, obj_id: int):
         if obj_id:
             # Single-item view
             return super(IncidentApi, self).get(obj_id)
@@ -1810,7 +1873,7 @@ class IncidentApi(ModelView):
             link.created_by.data = current_user.id
         return form
 
-    def get_edit_form(self, obj):
+    def get_edit_form(self, obj: Incident):
         form = super(IncidentApi, self).get_edit_form(obj=obj)
 
         no_license_plates = len(obj.license_plates)
@@ -1835,7 +1898,7 @@ class IncidentApi(ModelView):
             form.time_field.data = obj.time
         return form
 
-    def populate_obj(self, form, obj):
+    def populate_obj(self, form: FlaskForm, obj: Incident):
         # remove all fields not directly on the Incident model
         # use utils to add them to the current object
         address = form.data.pop("address")
@@ -1928,10 +1991,10 @@ class TextApi(ModelView):
     def get_post_delete_url(self, *args, **kwargs):
         return self.get_redirect_url()
 
-    def get_department_id(self, obj):
+    def get_department_id(self, obj: TextForm):
         return self.department_id
 
-    def get_edit_form(self, obj):
+    def get_edit_form(self, obj: TextForm):
         form = EditTextForm(obj=obj)
         return form
 
@@ -2029,7 +2092,7 @@ class OfficerLinkApi(ModelView):
 
     @login_required
     @ac_or_admin_required
-    def new(self, form=None):
+    def new(self, form: FlaskForm = None):
         if (
             not current_user.is_administrator
             and current_user.ac_department_id != self.officer.department_id
@@ -2062,7 +2125,7 @@ class OfficerLinkApi(ModelView):
 
     @login_required
     @ac_or_admin_required
-    def delete(self, obj_id):
+    def delete(self, obj_id: int):
         obj = self.model.query.get_or_404(obj_id)
         if (
             not current_user.is_administrator
