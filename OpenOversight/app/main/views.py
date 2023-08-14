@@ -240,10 +240,11 @@ def get_started_labeling():
 @main.route(
     "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
-def redirect_sort_images(department_id):
+@login_required
+def redirect_sort_images(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(
-        url_for("sort_images", department_id=department_id),
+        url_for("sort_images", department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -252,7 +253,7 @@ def redirect_sort_images(department_id):
     "/sort/departments/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
-def sort_images(department_id):
+def sort_images(department_id: int):
     # Select a random unsorted image from the database
     image_query = Image.query.filter_by(contains_cops=None).filter_by(
         department_id=department_id
@@ -276,7 +277,7 @@ def get_tutorial():
 
 @main.route("/user/<username>")
 @login_required
-def profile(username):
+def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
         user = User.by_username(username).one()
     else:
@@ -290,16 +291,16 @@ def profile(username):
 
 
 @main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
-def redirect_officer_profile(officer_id):
+def redirect_officer_profile(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     redirect(
-        url_for("officer_profile", officer_id=officer_id),
+        url_for("officer_profile", officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
 @main.route("/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
-def officer_profile(officer_id):
+def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
@@ -358,9 +359,22 @@ def sitemap_officers():
         yield "main.officer_profile", {"officer_id": officer.id}
 
 
+@main.route(
+    "/officer/<int:officer_id>/assignment/new",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@ac_or_admin_required
+def redirect_add_assignment(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_assignment", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
 @ac_or_admin_required
-def add_assignment(officer_id):
+def add_assignment(officer_id: int):
     form = AssignmentForm()
     form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
@@ -403,12 +417,26 @@ def add_assignment(officer_id):
 
 
 @main.route(
+    "/officer/<int:officer_id>/assignment/<int:assignment_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def redirect_edit_assignment(officer_id: int, assignment_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("edit_assignment", officer_id, assignment_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/officers/<int:officer_id>/assignments/<int:assignment_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @login_required
 @ac_or_admin_required
-def edit_assignment(officer_id, assignment_id):
+def edit_assignment(officer_id: int, assignment_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
@@ -442,10 +470,22 @@ def edit_assignment(officer_id, assignment_id):
 
 
 @main.route(
+    "/officer/<int:officer_id>/salary/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@ac_or_admin_required
+def redirect_add_salary(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("add_salary", officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/officers/<int:officer_id>/salaries/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @ac_or_admin_required
-def add_salary(officer_id):
+def add_salary(officer_id: int):
     form = SalaryForm()
     form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
@@ -491,12 +531,26 @@ def add_salary(officer_id):
 
 
 @main.route(
+    "/officer/<int:officer_id>/salary/<int:salary_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def redirect_edit_salary(officer_id: int, salary_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("edit_salary", officer_id, salary_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
     "/officers/<int:officer_id>/salaries/<int:salary_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @login_required
 @ac_or_admin_required
-def edit_salary(officer_id, salary_id):
+def edit_salary(officer_id: int, salary_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
