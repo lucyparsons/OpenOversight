@@ -1,6 +1,7 @@
 import re
 import time
 from datetime import date
+from typing import List
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -13,7 +14,11 @@ from sqlalchemy.orm import validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from OpenOversight.app.models.database_cache import DB_CACHE, db_model_cache_key
+from OpenOversight.app.models.database_cache import (
+    DB_CACHE,
+    model_cache_key,
+    remove_database_cache_entries,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -93,7 +98,7 @@ class Department(BaseModel):
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
     def total_documented_assignments(self):
         return (
             db.session.query(Assignment.id)
@@ -102,17 +107,21 @@ class Department(BaseModel):
             .count()
         )
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_TOTAL_INCIDENTS))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_INCIDENTS))
     def total_documented_incidents(self):
         return (
             db.session.query(Incident).filter(Incident.department_id == self.id).count()
         )
 
-    @cached(cache=DB_CACHE, key=db_model_cache_key(KEY_DEPT_TOTAL_OFFICERS))
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_OFFICERS))
     def total_documented_officers(self):
         return (
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
+
+    def remove_database_cache_entries(self, update_types: List[str]) -> None:
+        """Remove the Department model key from the cache if it exists."""
+        remove_database_cache_entries(self, update_types)
 
 
 class Job(BaseModel):
