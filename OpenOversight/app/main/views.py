@@ -219,7 +219,7 @@ def get_officer():
 @main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def redirect_get_started_labeling():
     flash(FLASH_MSG_PERMANENT_REDIRECT)
-    redirect(url_for("get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT)
+    return redirect(url_for("main.get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT)
 
 
 @sitemap_include
