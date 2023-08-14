@@ -572,9 +572,19 @@ def edit_salary(officer_id: int, salary_id: int):
     return render_template("add_edit_salary.html", form=form, update=True)
 
 
+@main.route("/image/<int:image_id>")
+@login_required
+def redirect_display_submission(image_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("display_submission", image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 @main.route("/images/<int:image_id>")
 @login_required
-def display_submission(image_id):
+def display_submission(image_id: int):
     try:
         image = Image.query.filter_by(id=image_id).one()
         proper_path = serve_image(image.filepath)
@@ -584,7 +594,16 @@ def display_submission(image_id):
 
 
 @main.route("/tags/<int:tag_id>")
-def display_tag(tag_id):
+def redirect_display_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("display_tag", tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/tags/<int:tag_id>")
+def display_tag(tag_id: int):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.original_image.filepath)
@@ -592,6 +611,18 @@ def display_tag(tag_id):
         abort(HTTPStatus.NOT_FOUND)
     return render_template(
         "tag.html", face=tag, path=proper_path, jsloads=["js/tag.js"]
+    )
+
+
+@main.route(
+    "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
+)
+@login_required
+def redirect_classify_submission(image_id: int, contains_cops: bool):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    redirect(
+        url_for("classify_submission", image_id, contains_cops),
+        code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
