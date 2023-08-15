@@ -1290,7 +1290,7 @@ def delete_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
-@main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def redirect_set_featured_tag(tag_id: int):
