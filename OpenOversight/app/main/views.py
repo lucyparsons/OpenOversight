@@ -2182,6 +2182,7 @@ def redirect_new_note(officer_id: int):
 
 
 def redirect_get_notes(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.note_api", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
