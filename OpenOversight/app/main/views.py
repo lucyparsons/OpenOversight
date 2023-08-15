@@ -2182,7 +2182,6 @@ def redirect_new_note(officer_id: int):
 
 
 def redirect_get_notes(officer_id: int, obj_id=None):
-    flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.note_api", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
@@ -2285,7 +2284,7 @@ def redirect_edit_description(officer_id: int, obj_id=None):
 def redirect_delete_description(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.description_api_delete", officer_id=officer_id, obj_id=obj_id),
+        f"{url_for('main.description_api', officer_id=officer_id, obj_id=obj_id)}/delete",
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2442,7 +2441,7 @@ class OfficerLinkApi(ModelView):
 def redirect_new_link(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.link_api_delete", officer_id=officer_id),
+        url_for("main.link_api_new", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2452,7 +2451,7 @@ def redirect_new_link(officer_id: int):
 def redirect_edit_link(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.link_api_delete", officer_id=officer_id, obj_id=obj_id),
+        url_for("main.link_api_edit", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
