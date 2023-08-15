@@ -139,7 +139,7 @@ def static_routes():
         yield "main." + endpoint, {}
 
 
-def redirect_url(default="index"):
+def redirect_url(default="main.index"):
     return (
         validate_redirect_url(session.get("next"))
         or request.referrer
@@ -622,8 +622,7 @@ def display_tag(tag_id: int):
     "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
-def redirect_classify_submission(image_id: int, contains_cops: bool):
-    flash(FLASH_MSG_PERMANENT_REDIRECT)
+def redirect_classify_submission(image_id: int, contains_cops: int):
     return redirect(
         url_for(
             "main.classify_submission", image_id=image_id, contains_cops=contains_cops
@@ -636,7 +635,7 @@ def redirect_classify_submission(image_id: int, contains_cops: bool):
     "/images/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
-def classify_submission(image_id: int, contains_cops: bool):
+def classify_submission(image_id: int, contains_cops: int):
     try:
         image = Image.query.filter_by(id=image_id).one()
         if image.contains_cops is not None and not current_user.is_administrator:
