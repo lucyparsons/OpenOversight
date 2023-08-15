@@ -7,9 +7,11 @@ from flask import current_app, url_for
 from OpenOversight.app.main.forms import AssignmentForm, DepartmentForm
 from OpenOversight.app.models.database import (
     Assignment,
+    Description,
     Face,
     Image,
     Job,
+    Note,
     Officer,
     Salary,
 )
@@ -713,4 +715,262 @@ def test_redirect_upload(client, session):
             "main.upload",
             department_id=officer.department_id,
             officer_id=officer.id,
+        )
+
+
+def test_redirect_new_note(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_new_note", officer_id=officer.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_new_note", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.note_api", officer_id=officer.id
+        )
+
+
+def test_redirect_edit_note(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        note = Note.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_edit_note", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_edit_note", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert (
+            resp_redirect.request.path
+            == f"{url_for('main.note_api', officer_id=officer.id, obj_id=note.id)}/edit"
+        )
+
+
+def test_redirect_delete_note(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        note = Note.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_delete_note", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_delete_note", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert (
+            resp_redirect.request.path
+            == url_for("main.note_api", officer_id=officer.id, obj_id=note.id)
+            + "/delete"
+        )
+
+
+def test_redirect_new_description(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_new_description", officer_id=officer.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_new_description", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.description_api", officer_id=officer.id
+        )
+
+
+def test_redirect_edit_description(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        description = Description.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for(
+                "main.redirect_edit_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(
+                "main.redirect_edit_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert (
+            resp_redirect.request.path
+            == f"{url_for('main.description_api', officer_id=officer.id, obj_id=description.id)}/edit"
+        )
+
+
+def test_redirect_delete_description(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        description = Description.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for(
+                "main.redirect_delete_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(
+                "main.redirect_delete_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert (
+            resp_redirect.request.path
+            == f"{url_for('main.description_api', officer_id=officer.id, obj_id=description.id)}/delete"
+        )
+
+
+def test_redirect_new_link(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_new_link", officer_id=officer.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_new_link", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.link_api_new", officer_id=officer.id
+        )
+
+
+def test_redirect_edit_link(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links is not None)
+            .first()
+        )
+        resp_no_redirect = client.get(
+            url_for(
+                "main.redirect_edit_link",
+                officer_id=officer.id,
+                obj_id=officer.links[0].id,
+            ),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(
+                "main.redirect_edit_link",
+                officer_id=officer.id,
+                obj_id=officer.links[0].id,
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.link_api_edit", officer_id=officer.id, obj_id=officer.links[0].id
+        )
+
+
+def test_redirect_delete_link(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = (
+            Officer.query.filter_by(department_id=AC_DEPT)
+            .outerjoin(Officer.links)
+            .filter(Officer.links is not None)
+            .first()
+        )
+        resp_no_redirect = client.get(
+            url_for(
+                "main.redirect_delete_link",
+                officer_id=officer.id,
+                obj_id=officer.links[0].id,
+            ),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(
+                "main.redirect_delete_link",
+                officer_id=officer.id,
+                obj_id=officer.links[0].id,
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.link_api_delete", officer_id=officer.id, obj_id=officer.links[0].id
         )
