@@ -1497,7 +1497,6 @@ def complete_tagging(image_id: int):
 
 @main.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def redirect_submit_complaint():
-    flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.submit_complaint"),
         code=HTTPStatus.PERMANENT_REDIRECT,
@@ -1508,11 +1507,11 @@ def redirect_submit_complaint():
 def submit_complaint():
     return render_template(
         "complaint.html",
-        officer_first_name=request.args.get("officer_first_name"),
-        officer_last_name=request.args.get("officer_last_name"),
-        officer_middle_initial=request.args.get("officer_middle_name"),
-        officer_star=request.args.get("officer_star"),
-        officer_image=request.args.get("officer_image"),
+        officer_first_name=request.args.get("officer_first_name", ""),
+        officer_last_name=request.args.get("officer_last_name", ""),
+        officer_middle_initial=request.args.get("officer_middle_name", ""),
+        officer_star=request.args.get("officer_star", ""),
+        officer_image=request.args.get("officer_image", ""),
     )
 
 
