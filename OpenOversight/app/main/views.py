@@ -1842,7 +1842,7 @@ def submit_officer_images(officer_id: int):
     methods=[HTTPMethod.POST],
 )
 @login_required
-def redirect_upload(department_id: int=0, officer_id: int=0):
+def redirect_upload(department_id: int = 0, officer_id: int = 0):
     return redirect(
         url_for("main.upload", department_id=department_id, officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
@@ -1856,7 +1856,7 @@ def redirect_upload(department_id: int=0, officer_id: int=0):
 )
 @login_required
 @limiter.limit("250/minute")
-def upload(department_id: int=0, officer_id: int=0):
+def upload(department_id: int = 0, officer_id: int = 0):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
