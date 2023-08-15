@@ -742,6 +742,31 @@ def test_redirect_new_note(client, session):
         )
 
 
+def test_redirect_get_notes(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        note = Note.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_get_notes", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_get_notes", officer_id=officer.id, obj_id=note.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.note_api", officer_id=officer.id, obj_id=note.id
+        )
+
+
 def test_redirect_edit_note(client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -813,6 +838,39 @@ def test_redirect_new_description(client, session):
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
             "main.description_api", officer_id=officer.id
+        )
+
+
+def test_redirect_get_description(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        description = Description.query.filter_by(officer_id=officer.id).first()
+        resp_no_redirect = client.get(
+            url_for(
+                "main.redirect_get_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(
+                "main.redirect_get_description",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.description_api", officer_id=officer.id, obj_id=description.id
         )
 
 
