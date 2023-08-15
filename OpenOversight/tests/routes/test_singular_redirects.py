@@ -426,3 +426,24 @@ def test_redirect_get_dept_units(client, session):
         assert resp_redirect.request.path == url_for(
             "main.get_dept_ranks", department_id=AC_DEPT
         )
+
+
+def test_redirect_add_officer(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        resp_no_redirect = client.get(
+            url_for("main.redirect_add_officer"),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_add_officer"),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.add_officer")
