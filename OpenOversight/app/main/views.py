@@ -216,6 +216,14 @@ def get_officer():
     )
 
 
+@main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_get_started_labeling():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT
+    )
+
+
 @sitemap_include
 @main.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
@@ -230,6 +238,18 @@ def get_started_labeling():
         current_app.logger.info(form.errors)
     departments = Department.query.all()
     return render_template("label_data.html", departments=departments, form=form)
+
+
+@main.route(
+    "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@login_required
+def redirect_sort_images(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.sort_images", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route(
@@ -271,6 +291,15 @@ def profile(username: str):
     except NoResultFound:
         department = None
     return render_template("profile.html", user=user, department=department)
+
+
+@main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_officer_profile(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.officer_profile", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -331,6 +360,18 @@ def officer_profile(officer_id: int):
 def sitemap_officers():
     for officer in Officer.query.all():
         yield "main.officer_profile", {"officer_id": officer.id}
+
+
+@main.route(
+    "/officer/<int:officer_id>/assignment/new",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@ac_or_admin_required
+def redirect_add_assignment(officer_id: int):
+    return redirect(
+        url_for("main.add_assignment", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
 
 
 @main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
