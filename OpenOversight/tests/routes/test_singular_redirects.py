@@ -447,3 +447,27 @@ def test_redirect_add_officer(client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for("main.add_officer")
+
+
+def test_redirect_edit_officer(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_edit_officer", officer_id=officer.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_edit_officer", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.edit_officer", officer_id=officer.id
+        )
