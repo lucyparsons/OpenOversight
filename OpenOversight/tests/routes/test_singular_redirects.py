@@ -1,6 +1,7 @@
 from datetime import date
 from http import HTTPStatus
 
+import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import AssignmentForm, DepartmentForm
@@ -622,3 +623,40 @@ def test_redirect_submit_complaint(client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for("main.submit_complaint")
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        ("main.redirect_download_dept_officers_csv", "main.download_dept_officers_csv"),
+        (
+            "main.redirect_download_dept_assignments_csv",
+            "main.download_dept_assignments_csv",
+        ),
+        ("main.redirect_download_incidents_csv", "main.download_incidents_csv"),
+        ("main.redirect_download_dept_salaries_csv", "main.download_dept_salaries_csv"),
+        ("main.redirect_download_dept_links_csv", "main.download_dept_links_csv"),
+        (
+            "main.redirect_download_dept_descriptions_csv",
+            "main.download_dept_descriptions_csv",
+        ),
+    ],
+)
+def test_redirect_download_csvs(route, client, session):
+    with current_app.test_request_context():
+        resp_no_redirect = client.get(
+            url_for(route[0], department_id=AC_DEPT),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for(route[0], department_id=AC_DEPT),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(route[1], department_id=AC_DEPT)
