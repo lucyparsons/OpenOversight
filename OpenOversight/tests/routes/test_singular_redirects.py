@@ -518,3 +518,107 @@ def test_redirect_delete_tag(client, session):
         assert resp_redirect.request.path == url_for(
             "main.officer_profile", officer_id=face.officer_id
         )
+
+
+def test_redirect_set_featured_tag(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        face = Face.query.filter_by(img_id=image.id).first()
+
+        resp_no_redirect = client.post(
+            url_for("main.redirect_set_featured_tag", tag_id=face.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for("main.redirect_set_featured_tag", tag_id=face.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.officer_profile", officer_id=face.officer_id
+        )
+
+
+def test_redirect_label_data(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        resp_no_redirect = client.post(
+            url_for(
+                "main.redirect_label_data", department_id=AC_DEPT, image_id=image.id
+            ),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for(
+                "main.redirect_label_data", department_id=AC_DEPT, image_id=image.id
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.label_data", department_id=AC_DEPT, image_id=image.id
+        )
+
+
+def test_redirect_complete_tagging(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_complete_tagging", image_id=image.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_complete_tagging", image_id=image.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.label_data")
+
+
+def test_redirect_submit_complaint(client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        query_string = {
+            "officer_first_name": officer.first_name,
+            "officer_last_name": officer.last_name,
+            "officer_middle_initial": officer.middle_initial,
+            "officer_star": "1232",
+            "officer_image": "1",
+        }
+        resp_no_redirect = client.post(
+            url_for("main.redirect_submit_complaint"),
+            query_string=query_string,
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for("main.redirect_submit_complaint"),
+            query_string=query_string,
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.submit_complaint")
