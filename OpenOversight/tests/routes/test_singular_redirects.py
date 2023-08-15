@@ -318,3 +318,26 @@ def test_redirect_add_department(client, session):
         assert resp_redirect.request.path == url_for(
             "main.get_started_labeling",
         )
+
+
+def test_redirect_edit_department(client, session):
+    with current_app.test_request_context():
+        _, user = login_admin(client)
+        resp_no_redirect = client.get(
+            url_for("main.redirect_edit_department", department_id=AC_DEPT),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_edit_department", department_id=AC_DEPT),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.edit_department", department_id=AC_DEPT
+        )
