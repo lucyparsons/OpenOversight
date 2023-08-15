@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from flask import current_app, url_for
 
-from OpenOversight.app.main.forms import AssignmentForm
+from OpenOversight.app.main.forms import AssignmentForm, DepartmentForm
 from OpenOversight.app.models.database import (
     Assignment,
     Face,
@@ -13,7 +13,7 @@ from OpenOversight.app.models.database import (
     Salary,
 )
 from OpenOversight.app.utils.constants import FLASH_MSG_PERMANENT_REDIRECT
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.conftest import AC_DEPT, PoliceDepartment
 from OpenOversight.tests.routes.route_helpers import login_admin, login_user
 
 
@@ -262,3 +262,59 @@ def test_redirect_display_tag(client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for("main.display_tag", tag_id=face.id)
+
+
+def test_redirect_classify_submission(client, session):
+    with current_app.test_request_context():
+        _, user = login_admin(client)
+        image = Image.query.filter_by(created_by=user.id).first()
+        resp_no_redirect = client.post(
+            url_for(
+                "main.redirect_classify_submission", image_id=image.id, contains_cops=0
+            ),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for(
+                "main.redirect_classify_submission", image_id=image.id, contains_cops=0
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.index")
+
+
+RedirectPD = PoliceDepartment("Redirect Police Department", "RPD")
+
+
+def test_redirect_add_department(client, session):
+    with current_app.test_request_context():
+        _, user = login_admin(client)
+
+        form = DepartmentForm(
+            name=RedirectPD.name,
+            short_name=RedirectPD.short_name,
+            state=RedirectPD.state,
+            created_by=user.id,
+        )
+
+        resp_no_redirect = client.post(
+            url_for("main.redirect_add_department"),
+            data=form.data,
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for("main.redirect_add_department"),
+            data=form.data,
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.get_started_labeling",
+        )
