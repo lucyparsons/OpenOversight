@@ -1180,7 +1180,7 @@ def add_officer():
 def redirect_edit_officer(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.add_officer", officer_id=officer_id),
+        url_for("main.edit_officer", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
