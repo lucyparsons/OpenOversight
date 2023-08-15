@@ -471,3 +471,50 @@ def test_redirect_edit_officer(client, session):
         assert resp_redirect.request.path == url_for(
             "main.edit_officer", officer_id=officer.id
         )
+
+
+def test_redirect_add_unit(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        resp_no_redirect = client.get(
+            url_for("main.redirect_add_unit"),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_add_unit"),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.add_unit")
+
+
+def test_redirect_delete_tag(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        face = Face.query.filter_by(img_id=image.id).first()
+
+        resp_no_redirect = client.post(
+            url_for("main.redirect_delete_tag", tag_id=face.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for("main.redirect_delete_tag", tag_id=face.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.officer_profile", officer_id=face.officer_id
+        )
