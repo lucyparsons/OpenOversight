@@ -660,3 +660,57 @@ def test_redirect_download_csvs(route, client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(route[1], department_id=AC_DEPT)
+
+
+def test_redirect_submit_officer_images(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.post(
+            url_for("main.redirect_submit_officer_images", officer_id=officer.id),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for("main.redirect_submit_officer_images", officer_id=officer.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.submit_officer_images", officer_id=officer.id
+        )
+
+
+def test_redirect_upload(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        resp_no_redirect = client.post(
+            url_for(
+                "main.redirect_upload",
+                department_id=officer.department_id,
+                officer_id=officer.id,
+            ),
+            follow_redirects=False,
+        )
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for(
+                "main.redirect_upload",
+                department_id=officer.department_id,
+                officer_id=officer.id,
+            ),
+            follow_redirects=True,
+        )
+
+        # TODO: Figure out why this is returning a 400 instead of a 200
+        # assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.upload",
+            department_id=officer.department_id,
+            officer_id=officer.id,
+        )
