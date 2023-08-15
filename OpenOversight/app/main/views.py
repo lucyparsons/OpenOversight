@@ -1351,7 +1351,7 @@ def leaderboard():
 )
 @main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
-def redirect_label_data(department_id=None, image_id=None):
+def redirect_label_data(department_id: int = 0, image_id: int = 0):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.label_data", department_id=department_id, image_id=image_id),
@@ -1372,7 +1372,7 @@ def redirect_label_data(department_id=None, image_id=None):
 )
 @main.route("/cop_faces/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
-def label_data(department_id=None, image_id=None):
+def label_data(department_id: int = 0, image_id: int = 0):
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
