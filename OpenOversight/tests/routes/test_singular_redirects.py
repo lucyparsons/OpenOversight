@@ -363,3 +363,66 @@ def test_redirect_list_officer(client, session):
         assert resp_redirect.request.path == url_for(
             "main.list_officer", department_id=AC_DEPT
         )
+
+
+def test_redirect_get_dept_ranks(client, session):
+    with current_app.test_request_context():
+        resp_no_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.get_dept_ranks", department_id=AC_DEPT
+        )
+
+
+def test_redirect_get_dept_units(client, session):
+    with current_app.test_request_context():
+        resp_no_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.get_dept_ranks", department_id=AC_DEPT
+        )
+    with current_app.test_request_context():
+        resp_no_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.get_dept_ranks", department_id=AC_DEPT
+        )
