@@ -1055,7 +1055,7 @@ def list_officer(
 
 
 @main.route("/department/<int:department_id>/ranks")
-def redirect_get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
+def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for(
@@ -1069,7 +1069,7 @@ def redirect_get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
 
 @main.route("/departments/<int:department_id>/ranks")
 @main.route("/ranks")
-def get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
+def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
     if request.args.get("is_sworn_officer"):
@@ -1094,7 +1094,7 @@ def get_dept_ranks(department_id=None, is_sworn_officer: bool = False):
 
 
 @main.route("/department/<int:department_id>/units")
-def redirect_get_dept_units(department_id=None):
+def redirect_get_dept_units(department_id: int = 0):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.get_dept_ranks", department_id=department_id),
@@ -1104,7 +1104,7 @@ def redirect_get_dept_units(department_id=None):
 
 @main.route("/departments/<int:department_id>/units")
 @main.route("/units")
-def get_dept_units(department_id=None):
+def get_dept_units(department_id: int = 0):
     if not department_id:
         department_id = request.args.get("department_id")
 
