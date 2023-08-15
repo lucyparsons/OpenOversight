@@ -4,7 +4,14 @@ from http import HTTPStatus
 from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import AssignmentForm
-from OpenOversight.app.models.database import Assignment, Job, Officer, Salary
+from OpenOversight.app.models.database import (
+    Assignment,
+    Face,
+    Image,
+    Job,
+    Officer,
+    Salary,
+)
 from OpenOversight.app.utils.constants import FLASH_MSG_PERMANENT_REDIRECT
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.routes.route_helpers import login_admin, login_user
@@ -209,3 +216,49 @@ def test_redirect_edit_salary(client, session):
         assert resp_redirect.request.path == url_for(
             "main.officer_profile", officer_id=officer.id
         )
+
+
+def test_redirect_display_submission(client, session):
+    with current_app.test_request_context():
+        login_user(client)
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_display_submission", image_id=image.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_display_submission", image_id=image.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.display_submission", image_id=image.id
+        )
+
+
+def test_redirect_display_tag(client, session):
+    with current_app.test_request_context():
+        image = Image.query.filter_by(department_id=AC_DEPT).first()
+        face = Face.query.filter_by(img_id=image.id).first()
+        resp_no_redirect = client.get(
+            url_for("main.redirect_display_tag", tag_id=face.id),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.get(
+            url_for("main.redirect_display_tag", tag_id=face.id),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for("main.display_tag", tag_id=face.id)
