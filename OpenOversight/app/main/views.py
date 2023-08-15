@@ -1951,10 +1951,7 @@ class IncidentApi(ModelView):
             return super(IncidentApi, self).get(obj_id)
 
         # List view
-        if request.args.get("page"):
-            page = int(request.args.get("page"))
-        else:
-            page = 1
+        page = int(request.args.get("page", 1))
 
         form = IncidentListForm()
         incidents = self.model.query
