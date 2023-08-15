@@ -2697,7 +2697,7 @@ def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
             .outerjoin(Officer.links)
-            .filter(Officer.links != None)  # noqa: E711
+            .filter(Officer.links is not None)
             .first()
         )
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
