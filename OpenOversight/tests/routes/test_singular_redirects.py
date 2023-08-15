@@ -4,7 +4,7 @@ from http import HTTPStatus
 from flask import current_app, url_for
 
 from OpenOversight.app.main.forms import AssignmentForm
-from OpenOversight.app.models.database import Assignment, Job, Officer
+from OpenOversight.app.models.database import Assignment, Job, Officer, Salary
 from OpenOversight.app.utils.constants import FLASH_MSG_PERMANENT_REDIRECT
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.routes.route_helpers import login_admin, login_user
@@ -53,9 +53,9 @@ def test_redirect_sort_images(client, session):
 
 def test_redirect_officer_profile(client, session):
     with current_app.test_request_context():
-        officer_id = 1
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
         resp_no_redirect = client.get(
-            url_for("main.redirect_officer_profile", officer_id=officer_id),
+            url_for("main.redirect_officer_profile", officer_id=officer.id),
             follow_redirects=False,
         )
         with client.session_transaction() as session:
@@ -65,33 +65,33 @@ def test_redirect_officer_profile(client, session):
         assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
         resp_redirect = client.get(
-            url_for("main.redirect_officer_profile", officer_id=officer_id),
+            url_for("main.redirect_officer_profile", officer_id=officer.id),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            "main.officer_profile", officer_id=officer_id
+            "main.officer_profile", officer_id=officer.id
         )
 
 
 def test_redirect_add_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer_id = 1
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
         resp_no_redirect = client.post(
-            url_for("main.redirect_add_assignment", officer_id=officer_id),
+            url_for("main.redirect_add_assignment", officer_id=officer.id),
             follow_redirects=False,
         )
 
         assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
 
         resp_redirect = client.post(
-            url_for("main.redirect_add_assignment", officer_id=officer_id),
+            url_for("main.redirect_add_assignment", officer_id=officer.id),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            "main.officer_profile", officer_id=officer_id
+            "main.officer_profile", officer_id=officer.id
         )
 
 
@@ -161,19 +161,51 @@ def test_redirect_edit_assignment(client, session):
 def test_redirect_add_salary(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer_id = 1
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
         resp_no_redirect = client.post(
-            url_for("main.redirect_add_salary", officer_id=officer_id),
+            url_for("main.redirect_add_salary", officer_id=officer.id),
             follow_redirects=False,
         )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
 
         assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
         resp_redirect = client.post(
-            url_for("main.redirect_add_salary", officer_id=officer_id),
+            url_for("main.redirect_add_salary", officer_id=officer.id),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            "main.officer_profile", officer_id=officer_id
+            "main.officer_profile", officer_id=officer.id
+        )
+
+
+def test_redirect_edit_salary(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        salary = Salary.query.filter_by(officer_id=officer.id).one()
+        resp_no_redirect = client.post(
+            url_for(
+                "main.redirect_edit_salary", officer_id=officer.id, salary_id=salary.id
+            ),
+            follow_redirects=False,
+        )
+        with client.session_transaction() as session:
+            flash_message = dict(session["_flashes"]).get("message")
+
+        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
+        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
+
+        resp_redirect = client.post(
+            url_for(
+                "main.redirect_edit_salary", officer_id=officer.id, salary_id=salary.id
+            ),
+            follow_redirects=True,
+        )
+        assert resp_redirect.status_code == HTTPStatus.OK
+        assert resp_redirect.request.path == url_for(
+            "main.officer_profile", officer_id=officer.id
         )
