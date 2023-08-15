@@ -856,7 +856,7 @@ def redirect_list_officer(
     require_photo: bool = False,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
-    redirect(
+    return redirect(
         url_for(
             "main.list_officer",
             department_id=department_id,
