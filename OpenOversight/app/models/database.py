@@ -637,6 +637,9 @@ class Incident(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, unique=False, index=True)
     time = db.Column(db.Time, unique=False, index=True)
+    occurred_at = db.Column(
+        db.DateTime(timezone=True), unique=False, nullable=True, index=True
+    )
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey("locations.id"))
@@ -686,6 +689,14 @@ class Incident(BaseModel):
         db.DateTime(timezone=True),
         nullable=True,
         unique=False,
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(occurred_at IS NOT NULL AND time IS NULL and date IS NULL) OR "
+            "(occurred_at IS NULL AND (time IS NOT NULL OR date IS NOT NULL))",
+            name="chk_occurred_at_time_date",
+        ),
     )
 
 
