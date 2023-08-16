@@ -354,6 +354,18 @@ def test_jpg_BytesIO():
 
 
 @pytest.fixture
+def test_tiff_bytes_io():
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    local_path = os.path.join(test_dir, "images/415Cat.tiff")
+    img = Pimage.open(local_path)
+
+    byte_io = BytesIO()
+    img.save(byte_io, img.format)
+    byte_io.seek(0)
+    return byte_io
+
+
+@pytest.fixture
 def test_csv_dir():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(test_dir, "test_csvs")
