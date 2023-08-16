@@ -14,7 +14,7 @@ def ac_can_edit_officer(officer, ac):
     return False
 
 
-def allowed_file(filename):
+def allowed_file(filename: str):
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
@@ -65,12 +65,9 @@ def get_random_image(image_query):
         return None
 
 
-def get_utc_datetime(dt: datetime = None) -> datetime:
+def get_utc_datetime(dt: datetime) -> datetime:
     """Return the current datetime in UTC or the converted given datetime to UTC."""
-    if dt is not None:
-        return dt.replace(tzinfo=timezone.utc)
-    else:
-        return datetime.utcnow()
+    return dt.replace(tzinfo=timezone.utc)
 
 
 def merge_dicts(*dict_args):
@@ -84,7 +81,7 @@ def merge_dicts(*dict_args):
     return result
 
 
-def normalize_gender(input_gender):
+def normalize_gender(input_gender: str):
     if input_gender is None:
         return None
     normalized_genders = {
@@ -149,8 +146,8 @@ def serve_image(filepath):
         return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
 
 
-def str_is_true(str_):
-    return strtobool(str_.lower())
+def str_is_true(string: str):
+    return strtobool(string.lower())
 
 
 def validate_redirect_url(url: Optional[str]) -> Optional[str]:
