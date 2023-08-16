@@ -1938,7 +1938,7 @@ def server_shutdown():  # pragma: no cover
 class IncidentApi(ModelView):
     model = Incident
     model_name = "incident"
-    order_by = "date"
+    order_by = "occurred_at, date, time"
     descending = True
     form = IncidentForm
     create_function = create_incident
