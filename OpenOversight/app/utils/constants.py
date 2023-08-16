@@ -32,6 +32,11 @@ KEY_MAIL_PASSWORD = "MAIL_PASSWORD"
 KEY_S3_BUCKET_NAME = "S3_BUCKET_NAME"
 KEY_TIMEZONE = "TIMEZONE"
 
+# Flash Message Constants
+FLASH_MSG_PERMANENT_REDIRECT = (
+    "This page's address has changed, please update your bookmark!"
+)
+
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
 FILE_TYPE_HTML = "html"

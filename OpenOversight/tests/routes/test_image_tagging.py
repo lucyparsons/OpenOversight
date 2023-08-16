@@ -28,9 +28,9 @@ PROJECT_ROOT = os.path.abspath(os.curdir)
 @pytest.mark.parametrize(
     "route",
     [
-        "/label",
+        "/labels",
         "/tutorial",
-        "/tag/1",
+        "/tags/1",
     ],
 )
 def test_routes_ok(route, client, mockdata):
@@ -43,10 +43,10 @@ def test_routes_ok(route, client, mockdata):
     "route",
     [
         "/leaderboard",
-        "/sort/department/1",
-        "/cop_face/department/1",
-        "/image/1",
-        "/image/tagged/1",
+        "/sort/departments/1",
+        "/cop_faces/departments/1",
+        "/images/1",
+        "/images/tagged/1",
     ],
 )
 def test_route_login_required(route, client, mockdata):
@@ -58,10 +58,10 @@ def test_route_login_required(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        "/officer/3/assignment/new",
-        "/tag/delete/1",
-        "/tag/set_featured/1",
-        "/image/classify/1/1",
+        "/officers/3/assignments/new",
+        "/tags/delete/1",
+        "/tags/set_featured/1",
+        "/images/classify/1/1",
     ],
 )
 def test_route_post_only(route, client, mockdata):
