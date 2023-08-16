@@ -12,9 +12,11 @@ from botocore.exceptions import ClientError
 from flask import current_app
 from flask_login import current_user
 from PIL import Image as Pimage
+from PIL import UnidentifiedImageError
 from PIL.PngImagePlugin import PngImageFile
 
 from OpenOversight.app.models.database import Image, db
+from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
 
 
 def compute_hash(data_to_hash):
@@ -110,9 +112,12 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     but we also have to get the date for the image before we scrub it.
     """
     image_buf.seek(0)
-    pimage = Pimage.open(image_buf)
+    try:
+        pimage = Pimage.open(image_buf)
+    except UnidentifiedImageError:
+        raise ValueError("Attempted to pass an invalid image.")
     image_format = pimage.format.lower()
-    if image_format not in current_app.config["ALLOWED_EXTENSIONS"]:
+    if image_format not in current_app.config[KEY_ALLOWED_EXTENSIONS]:
         raise ValueError(f"Attempted to pass invalid data type: {image_format}")
     image_buf.seek(0)
 
