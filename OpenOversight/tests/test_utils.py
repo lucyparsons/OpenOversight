@@ -3,7 +3,6 @@ import string
 from io import BytesIO
 from unittest.mock import MagicMock, Mock, patch
 
-import PIL
 import pytest
 import us
 from flask import current_app
@@ -14,8 +13,8 @@ from OpenOversight.app.models.database import Department, Image, Officer, Unit
 from OpenOversight.app.utils.cloud import (
     compute_hash,
     crop_image,
-    upload_image_to_s3_and_store_in_db,
-    upload_obj_to_s3,
+    save_image_to_s3_and_db,
+    upload_file_to_s3,
 )
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import filter_by_form, grab_officers
@@ -25,7 +24,7 @@ from OpenOversight.tests.routes.route_helpers import login_user
 
 # Utils tests
 upload_s3_patch = patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 
@@ -206,7 +205,7 @@ def test_s3_upload_image(mockdata, extension, mime_type):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload_obj_to_s3(test_img_bytes, "test_cop1.png")
+            upload_file_to_s3(test_img_bytes, "test_cop1.png")
 
     assert mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == mime_type
 
@@ -238,93 +237,94 @@ def test_unit_choices(mockdata):
 
 
 @upload_s3_patch
-def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(
-    mockdata, test_png_BytesIO, client
+def test_save_image_to_s3_and_db_increases_images_in_db(
+    mockdata, test_png_bytes_io, client
 ):
     original_image_count = Image.query.count()
 
-    upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
     assert Image.query.count() == original_image_count + 1
 
 
 @upload_s3_patch
-def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(
-    mockdata, test_png_BytesIO, client
+def test_save_image_to_s3_and_db_returns_existing_image(
+    mockdata, test_png_bytes_io, client
 ):
     # Disable file closing for this test
-    test_png_BytesIO.close = lambda: None
-    firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
-    secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    test_png_bytes_io.close = lambda: None
+    firstUpload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
+    secondUpload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
     assert type(secondUpload) == Image
     assert firstUpload.id == secondUpload.id
 
 
 @upload_s3_patch
-def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
-    mockdata, test_png_BytesIO, client
+def test_save_image_to_s3_and_db_does_not_set_tagged(
+    mockdata, test_png_bytes_io, client
 ):
-    upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    upload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
     assert not upload.is_tagged
 
 
 @patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
-def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
-    mockdata, test_png_BytesIO, client
+def test_save_image_to_s3_and_db_saves_filename_in_correct_format(
+    mockdata, test_png_bytes_io, client
 ):
     mocked_connection = Mock()
     mocked_resource = Mock()
 
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+            upload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
             filename = upload.filepath.split("/")[-1]
             filename_parts = filename.split(".")
             assert len(filename_parts) == 2
 
 
-def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(
-    mockdata, client
+def test_save_image_to_s3_and_db_invalid_image(mockdata, client):
+    with pytest.raises(ValueError):
+        save_image_to_s3_and_db(BytesIO(b"invalid-image"), 1, 1)
+
+
+def test_save_image_to_s3_and_db_unrecognized_format(
+    mockdata, test_tiff_bytes_io, client
 ):
-    with pytest.raises(PIL.UnidentifiedImageError):
-        upload_image_to_s3_and_store_in_db(BytesIO(b"invalid-image"), 1, 1)
+    with pytest.raises(ValueError):
+        save_image_to_s3_and_db(test_tiff_bytes_io, 1, 1)
 
 
 @patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 # Formats pulled from ALLOWED_EXTENSIONS. Removed jpg and jpe extensions since they
 # will be detected as jpegs and PIL does not support them as `format` parameters.
 @pytest.mark.parametrize("extension", ["jpeg", "png", "gif", "webp"])
-def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(
+def test_save_image_to_s3_and_db_recognized_format(
     mockdata, test_png_BytesIO, client, extension
 ):
     try:
         test_img_bytes = create_test_image_bytes_io(extension)
-        upload_image_to_s3_and_store_in_db(test_img_bytes, 1, 1)
+        save_image_to_s3_and_db(test_img_bytes, 1, 1)
     except ValueError:
         pytest.fail("Unexpected value error")
 
 
-def test_crop_image_calls_upload_image_to_s3_and_store_in_db_with_user_id(
-    mockdata, client
-):
+def test_crop_image_calls_save_image_to_s3_and_db_with_user_id(mockdata, client):
     with current_app.test_request_context():
         login_user(client)
         department = Department.query.first()
         image = Image.query.first()
 
         with patch(
-            "OpenOversight.app.utils.cloud.upload_image_to_s3_and_store_in_db"
-        ) as upload_image_to_s3_and_store_in_db:
+            "OpenOversight.app.utils.cloud.save_image_to_s3_and_db"
+        ) as save_image_to_s3_and_db:
             crop_image(image, None, department.id)
 
-            assert (
-                current_user.get_id() in upload_image_to_s3_and_store_in_db.call_args[0]
-            )
+            assert current_user.get_id() in save_image_to_s3_and_db.call_args[0]
 
 
 @pytest.mark.parametrize(

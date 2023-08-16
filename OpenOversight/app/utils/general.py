@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 
 from flask import current_app, url_for
 
+from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
+
 
 def ac_can_edit_officer(officer, ac):
     if officer.department_id == ac.ac_department_id:
@@ -17,7 +19,7 @@ def allowed_file(filename):
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
-        in current_app.config["ALLOWED_EXTENSIONS"]
+        in current_app.config[KEY_ALLOWED_EXTENSIONS]
     )
 
 

@@ -78,7 +78,7 @@ from OpenOversight.app.models.database_cache import (
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
-from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
+from OpenOversight.app.utils.cloud import crop_image, save_image_to_s3_and_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     FLASH_MSG_PERMANENT_REDIRECT,
@@ -1896,7 +1896,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
         )
 
     try:
-        image = upload_image_to_s3_and_store_in_db(
+        image = save_image_to_s3_and_db(
             file_to_upload, current_user.get_id(), department_id=department_id
         )
     except ValueError:

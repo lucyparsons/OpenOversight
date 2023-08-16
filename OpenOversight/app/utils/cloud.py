@@ -12,9 +12,11 @@ from botocore.exceptions import ClientError
 from flask import current_app
 from flask_login import current_user
 from PIL import Image as Pimage
+from PIL import UnidentifiedImageError
 from PIL.PngImagePlugin import PngImageFile
 
 from OpenOversight.app.models.database import Image, db
+from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_S3_BUCKET_NAME
 
 
 # Cropped officer face image size
@@ -58,26 +60,25 @@ def crop_image(image, crop_data=None, department_id=None):
     cropped_image_buf = BytesIO()
     pimage.save(cropped_image_buf, "jpeg", quality=95, optimize=True, progressive=True)
 
-    return upload_image_to_s3_and_store_in_db(
+    return save_image_to_s3_and_db(
         cropped_image_buf, current_user.get_id(), department_id
     )
 
 
-def find_date_taken(pimage):
+# 36867 in the exif tags holds the date and the original image was taken
+# https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
+EXIF_KEY_DATE_TIME_ORIGINAL = 36867
+
+
+def get_date_taken(pimage):
     if isinstance(pimage, PngImageFile):
         return None
 
     exif = hasattr(pimage, "_getexif") and pimage._getexif()
-    if exif:
-        # 36867 in the exif tags holds the date and the original image was taken
-        # https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
-        if 36867 in exif:
-            return exif[36867]
-    else:
-        return None
+    return exif.get(EXIF_KEY_DATE_TIME_ORIGINAL, None) if exif else None
 
 
-def upload_obj_to_s3(file_obj, dest_filename):
+def upload_file_to_s3(file_obj, dest_filename: str):
     s3_client = boto3.client("s3", endpoint_url=current_app.config["AWS_ENDPOINT_URL"])
 
     # Folder to store files in on S3 is first two chars of dest_filename
@@ -92,7 +93,7 @@ def upload_obj_to_s3(file_obj, dest_filename):
     s3_path = f"{s3_folder}/{s3_filename}"
     s3_client.upload_fileobj(
         file_obj,
-        current_app.config["S3_BUCKET_NAME"],
+        current_app.config[KEY_S3_BUCKET_NAME],
         s3_path,
         ExtraArgs={"ContentType": s3_content_type, "ACL": "public-read"},
     )
@@ -103,13 +104,13 @@ def upload_obj_to_s3(file_obj, dest_filename):
         "s3", config=config, endpoint_url=current_app.config["AWS_ENDPOINT_URL"]
     ).meta.client.generate_presigned_url(
         "get_object",
-        Params={"Bucket": current_app.config["S3_BUCKET_NAME"], "Key": s3_path},
+        Params={"Bucket": current_app.config[KEY_S3_BUCKET_NAME], "Key": s3_path},
     )
 
     return url
 
 
-def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
+def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
     """
     Just a quick explanation of the order of operations here...
     we have to scrub the image before we do anything else like hash it,
@@ -117,13 +118,16 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     """
     # Scrub EXIF data, extracting date taken data if it exists
     image_buf.seek(0)
-    pimage = Pimage.open(image_buf)
+    try:
+        pimage = Pimage.open(image_buf)
+    except UnidentifiedImageError:
+        raise ValueError("Attempted to pass an invalid image.")
     image_format = pimage.format.lower()
-    if image_format not in current_app.config["ALLOWED_EXTENSIONS"]:
+    if image_format not in current_app.config[KEY_ALLOWED_EXTENSIONS]:
         raise ValueError(f"Attempted to pass invalid data type: {image_format}")
     image_buf.seek(0)
 
-    date_taken = find_date_taken(pimage)
+    date_taken = get_date_taken(pimage)
     if date_taken:
         date_taken = datetime.datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
     pimage.getexif().clear()
@@ -142,7 +146,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     try:
         new_filename = f"{hash_img}.{image_format}"
         scrubbed_image_buf.seek(0)
-        url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
+        url = upload_file_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(
             filepath=url,
             hash_img=hash_img,
