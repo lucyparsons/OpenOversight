@@ -39,10 +39,7 @@ class ModelView(MethodView):
 
     def get(self, obj_id):
         if obj_id is None:
-            if request.args.get("page"):
-                page = int(request.args.get("page"))
-            else:
-                page = 1
+            page = int(request.args.get("page", 1))
 
             if self.order_by:
                 if not self.descending:
