@@ -73,11 +73,11 @@ from OpenOversight.tests.routes.route_helpers import (
     "route",
     [
         "/submit",
-        "/label",
-        "/department/1",
-        "/officer/3",
+        "/labels",
+        "/departments/1",
+        "/officers/3",
         (
-            "/complaint?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png"
+            "/complaints?officer_star=1901&officer_first_name=HUGH&officer_last_name=BUTZ&officer_middle_initial=&officer_image=static%2Fimages%2Ftest_cop2.png"
         ),
     ],
 )
@@ -90,11 +90,11 @@ def test_routes_ok(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        "/sort/department/1",
-        "/cop_face/department/1",
-        "/department/new",
-        "/officer/new",
-        "/unit/new",
+        "/sort/departments/1",
+        "/cop_faces/departments/1",
+        "/departments/new",
+        "/officers/new",
+        "/units/new",
     ],
 )
 def test_route_login_required(route, client, mockdata):
@@ -106,7 +106,7 @@ def test_route_login_required(route, client, mockdata):
 @pytest.mark.parametrize(
     "route",
     [
-        "/officer/3/assignment/new",
+        "/officers/3/assignments/new",
     ],
 )
 def test_route_post_only(route, client, mockdata):
@@ -2011,7 +2011,7 @@ def test_find_officer_redirect(client, mockdata, session):
 
         # Check that the parameters are added correctly to the response url
         assert rv.status_code == HTTPStatus.FOUND, "Expected redirect."
-        assert f"department/{department_id}" in rv.location
+        assert f"departments/{department_id}" in rv.location
         parameters = [
             ("first_name", "A"),
             ("last_name", "B"),
@@ -2695,7 +2695,7 @@ def test_admin_can_delete_link_from_officer_profile(mockdata, client, session):
         officer = (
             Officer.query.filter_by(department_id=AC_DEPT)
             .outerjoin(Officer.links)
-            .filter(Officer.links != None)  # noqa: E711
+            .filter(Officer.links is not None)
             .first()
         )
         cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_LINKS)
