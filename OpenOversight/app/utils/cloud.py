@@ -16,7 +16,7 @@ from PIL import UnidentifiedImageError
 from PIL.PngImagePlugin import PngImageFile
 
 from OpenOversight.app.models.database import Image, db
-from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
+from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_S3_BUCKET_NAME
 
 
 def compute_hash(data_to_hash):
@@ -64,18 +64,17 @@ def crop_image(image, crop_data=None, department_id=None):
     )
 
 
-def find_date_taken(pimage):
+# 36867 in the exif tags holds the date and the original image was taken
+# https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
+EXIF_KEY_DATE_TIME_ORIGINAL = 36867
+
+
+def get_date_taken(pimage):
     if isinstance(pimage, PngImageFile):
         return None
 
     exif = hasattr(pimage, "_getexif") and pimage._getexif()
-    if exif:
-        # 36867 in the exif tags holds the date and the original image was taken
-        # https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
-        if 36867 in exif:
-            return exif[36867]
-    else:
-        return None
+    return exif.get(EXIF_KEY_DATE_TIME_ORIGINAL, None) if exif else None
 
 
 def upload_obj_to_s3(file_obj, dest_filename: str):
@@ -90,7 +89,7 @@ def upload_obj_to_s3(file_obj, dest_filename: str):
     s3_path = f"{s3_folder}/{s3_filename}"
     s3_client.upload_fileobj(
         file_obj,
-        current_app.config["S3_BUCKET_NAME"],
+        current_app.config[KEY_S3_BUCKET_NAME],
         s3_path,
         ExtraArgs={"ContentType": s3_content_type, "ACL": "public-read"},
     )
@@ -99,7 +98,7 @@ def upload_obj_to_s3(file_obj, dest_filename: str):
     config.signature_version = botocore.UNSIGNED
     url = boto3.resource("s3", config=config).meta.client.generate_presigned_url(
         "get_object",
-        Params={"Bucket": current_app.config["S3_BUCKET_NAME"], "Key": s3_path},
+        Params={"Bucket": current_app.config[KEY_S3_BUCKET_NAME], "Key": s3_path},
     )
 
     return url
@@ -121,7 +120,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
         raise ValueError(f"Attempted to pass invalid data type: {image_format}")
     image_buf.seek(0)
 
-    date_taken = find_date_taken(pimage)
+    date_taken = get_date_taken(pimage)
     if date_taken:
         date_taken = datetime.datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
     pimage.getexif().clear()
