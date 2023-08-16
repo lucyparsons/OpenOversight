@@ -15,6 +15,7 @@ from OpenOversight.app.main.forms import (
 from OpenOversight.app.models.database import Department, Incident, Job, Officer
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
+    get_database_cache_entry,
     get_model_cache_key,
     has_database_cache_entry,
     put_database_cache_entry,
@@ -31,6 +32,19 @@ from OpenOversight.app.utils.constants import (
 )
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.tests.routes.route_helpers import login_admin, process_form_data
+
+
+def test_get_database_cache_entry(mockdata, faker):
+    """Test getting a cache entry."""
+    test_key = faker.uuid4()
+    test_officer = Officer(id=faker.random_number(digits=3))
+    test_officer_key = get_model_cache_key(test_officer, test_key)
+    DB_CACHE[test_officer_key] = 1
+
+    assert get_database_cache_entry(test_officer, test_key) == 1
+    assert (
+        get_database_cache_entry(test_officer, test_key + faker.random_letter()) is None
+    )
 
 
 def test_model_key(mockdata, faker):

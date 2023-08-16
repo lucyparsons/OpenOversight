@@ -281,10 +281,7 @@ def change_dept():
 @auth.route("/users/", methods=[HTTPMethod.GET])
 @admin_required
 def get_users():
-    if request.args.get("page"):
-        page = int(request.args.get("page"))
-    else:
-        page = 1
+    page = int(request.args.get("page", 1))
     users = User.query.order_by(User.username).paginate(
         page=page, per_page=current_app.config["USERS_PER_PAGE"], error_out=False
     )
