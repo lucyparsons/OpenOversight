@@ -1,6 +1,5 @@
 from io import BytesIO
 
-import PIL
 import pytest
 from flask import current_app
 from flask_login import current_user
@@ -262,11 +261,18 @@ def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
             assert len(filename_parts) == 2
 
 
-def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(
+def test_upload_image_to_s3_and_store_in_db_throws_exception_for_invalid_image(
     mockdata, client
 ):
-    with pytest.raises(PIL.UnidentifiedImageError):
+    with pytest.raises(ValueError):
         upload_image_to_s3_and_store_in_db(BytesIO(b"invalid-image"), 1, 1)
+
+
+def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_format(
+    mockdata, test_tiff_bytes_io, client
+):
+    with pytest.raises(ValueError):
+        upload_image_to_s3_and_store_in_db(test_tiff_bytes_io, 1, 1)
 
 
 @patch(
