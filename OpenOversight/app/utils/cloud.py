@@ -59,7 +59,7 @@ def crop_image(image, crop_data=None, department_id=None):
     cropped_image_buf = BytesIO()
     pimage.save(cropped_image_buf, "jpeg", quality=95, optimize=True, progressive=True)
 
-    return upload_image_to_s3_and_store_in_db(
+    return save_image_to_s3_and_db(
         cropped_image_buf, current_user.get_id(), department_id
     )
 
@@ -104,7 +104,7 @@ def upload_file_to_s3(file_obj, dest_filename: str):
     return url
 
 
-def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
+def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
     """
     Just a quick explanation of the order of operations here...
     we have to scrub the image before we do anything else like hash it,
