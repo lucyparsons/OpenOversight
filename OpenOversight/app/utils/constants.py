@@ -13,6 +13,7 @@ KEY_DEPT_TOTAL_INCIDENTS = "total_department_incidents"
 KEY_DEPT_TOTAL_OFFICERS = "total_department_officers"
 
 # Config Key Constants
+KEY_ALLOWED_EXTENSIONS = "ALLOWED_EXTENSIONS"
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
 KEY_ENV = "ENV"
 KEY_ENV_DEV = "development"
