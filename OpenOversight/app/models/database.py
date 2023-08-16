@@ -636,6 +636,7 @@ class Incident(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, unique=False, index=True)
+    time = db.Column(db.Time, unique=False, index=True)
     occurred_at = db.Column(
         db.DateTime(timezone=True), unique=False, nullable=True, index=True
     )
