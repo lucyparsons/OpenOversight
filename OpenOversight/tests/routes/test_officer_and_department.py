@@ -2028,13 +2028,13 @@ def test_find_officer_redirect(client, mockdata, session):
 
 
 def test_admin_can_upload_photos_of_dept_officers(
-    mockdata, client, session, test_jpg_BytesIO
+    mockdata, client, session, test_jpg_bytes_io
 ):
     with current_app.test_request_context():
         login_admin(client)
 
         data = dict(
-            file=(test_jpg_BytesIO, "204Cat.png"),
+            file=(test_jpg_bytes_io, "204Cat.png"),
         )
 
         department = Department.query.filter_by(id=AC_DEPT).first()
@@ -2050,7 +2050,7 @@ def test_admin_can_upload_photos_of_dept_officers(
         crop_mock = MagicMock(return_value=image)
         upload_mock = MagicMock(return_value=image)
         with patch(
-            "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
+            "OpenOversight.app.main.views.save_image_to_s3_and_db",
             upload_mock,
         ):
             with patch("OpenOversight.app.main.views.crop_image", crop_mock):
@@ -2070,22 +2070,20 @@ def test_admin_can_upload_photos_of_dept_officers(
 
 
 def test_upload_photo_sends_500_on_s3_error(
-    mockdata, client, session, test_png_BytesIO
+    mockdata, client, session, test_png_bytes_io
 ):
     with current_app.test_request_context():
         login_admin(client)
 
         data = dict(
-            file=(test_png_BytesIO, "204Cat.png"),
+            file=(test_png_bytes_io, "204Cat.png"),
         )
 
         department = Department.query.filter_by(id=AC_DEPT).first()
         mock = MagicMock(return_value=None)
         officer = department.officers[0]
         officer_face_count = len(officer.face)
-        with patch(
-            "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db", mock
-        ):
+        with patch("OpenOversight.app.main.views.save_image_to_s3_and_db", mock):
             rv = client.post(
                 url_for(
                     "main.upload", department_id=department.id, officer_id=officer.id
@@ -2138,12 +2136,12 @@ def test_user_cannot_upload_officer_photo(mockdata, client, session):
 
 
 def test_ac_can_upload_photos_of_dept_officers(
-    mockdata, client, session, test_png_BytesIO
+    mockdata, client, session, test_png_bytes_io
 ):
     with current_app.test_request_context():
         login_ac(client)
         data = dict(
-            file=(test_png_BytesIO, "204Cat.png"),
+            file=(test_png_bytes_io, "204Cat.png"),
         )
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]
@@ -2158,7 +2156,7 @@ def test_ac_can_upload_photos_of_dept_officers(
         crop_mock = MagicMock(return_value=image)
         upload_mock = MagicMock(return_value=image)
         with patch(
-            "OpenOversight.app.main.views.upload_image_to_s3_and_store_in_db",
+            "OpenOversight.app.main.views.save_image_to_s3_and_db",
             upload_mock,
         ):
             with patch("OpenOversight.app.main.views.crop_image", crop_mock):
