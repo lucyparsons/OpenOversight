@@ -2028,13 +2028,13 @@ def test_find_officer_redirect(client, mockdata, session):
 
 
 def test_admin_can_upload_photos_of_dept_officers(
-    mockdata, client, session, test_jpg_BytesIO
+    mockdata, client, session, test_jpg_bytes_io
 ):
     with current_app.test_request_context():
         login_admin(client)
 
         data = dict(
-            file=(test_jpg_BytesIO, "204Cat.png"),
+            file=(test_jpg_bytes_io, "204Cat.png"),
         )
 
         department = Department.query.filter_by(id=AC_DEPT).first()
@@ -2070,13 +2070,13 @@ def test_admin_can_upload_photos_of_dept_officers(
 
 
 def test_upload_photo_sends_500_on_s3_error(
-    mockdata, client, session, test_png_BytesIO
+    mockdata, client, session, test_png_bytes_io
 ):
     with current_app.test_request_context():
         login_admin(client)
 
         data = dict(
-            file=(test_png_BytesIO, "204Cat.png"),
+            file=(test_png_bytes_io, "204Cat.png"),
         )
 
         department = Department.query.filter_by(id=AC_DEPT).first()
@@ -2138,12 +2138,12 @@ def test_user_cannot_upload_officer_photo(mockdata, client, session):
 
 
 def test_ac_can_upload_photos_of_dept_officers(
-    mockdata, client, session, test_png_BytesIO
+    mockdata, client, session, test_png_bytes_io
 ):
     with current_app.test_request_context():
         login_ac(client)
         data = dict(
-            file=(test_png_BytesIO, "204Cat.png"),
+            file=(test_png_bytes_io, "204Cat.png"),
         )
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]

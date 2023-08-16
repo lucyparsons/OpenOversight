@@ -163,24 +163,24 @@ def test_compute_hash(mockdata):
     assert hash_result == expected_hash
 
 
-def test_s3_upload_png(mockdata, test_png_BytesIO):
+def test_s3_upload_png(mockdata, test_png_bytes_io):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload_obj_to_s3(test_png_BytesIO, "test_cop1.png")
+            upload_obj_to_s3(test_png_bytes_io, "test_cop1.png")
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/png"
     )
 
 
-def test_s3_upload_jpeg(mockdata, test_jpg_BytesIO):
+def test_s3_upload_jpeg(mockdata, test_jpg_bytes_io):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload_obj_to_s3(test_jpg_BytesIO, "test_cop5.jpg")
+            upload_obj_to_s3(test_jpg_bytes_io, "test_cop5.jpg")
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/jpeg"
@@ -215,31 +215,31 @@ def test_unit_choices(mockdata):
 
 @upload_s3_patch
 def test_upload_image_to_s3_and_store_in_db_increases_images_in_db(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_bytes_io, client
 ):
     original_image_count = Image.query.count()
 
-    upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
     assert Image.query.count() == original_image_count + 1
 
 
 @upload_s3_patch
 def test_upload_existing_image_to_s3_and_store_in_db_returns_existing_image(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_bytes_io, client
 ):
     # Disable file closing for this test
-    test_png_BytesIO.close = lambda: None
-    firstUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
-    secondUpload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    test_png_bytes_io.close = lambda: None
+    firstUpload = upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
+    secondUpload = upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
     assert type(secondUpload) == Image
     assert firstUpload.id == secondUpload.id
 
 
 @upload_s3_patch
 def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_bytes_io, client
 ):
-    upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+    upload = upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
     assert not upload.is_tagged
 
 
@@ -248,14 +248,14 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_bytes_io, client
 ):
     mocked_connection = Mock()
     mocked_resource = Mock()
 
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload = upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+            upload = upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
             filename = upload.filepath.split("/")[-1]
             filename_parts = filename.split(".")
             assert len(filename_parts) == 2
@@ -280,10 +280,10 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(
-    mockdata, test_png_BytesIO, client
+    mockdata, test_png_bytes_io, client
 ):
     try:
-        upload_image_to_s3_and_store_in_db(test_png_BytesIO, 1, 1)
+        upload_image_to_s3_and_store_in_db(test_png_bytes_io, 1, 1)
     except ValueError:
         pytest.fail("Unexpected value error")
 
