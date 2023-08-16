@@ -36,22 +36,22 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> Optional[date]:
+def parse_date(date_str: Optional[str]) -> date:
     if date_str:
         return dateutil.parser.parse(date_str).date()
-    return None
+    return datetime.now().date()
 
 
-def parse_date_time(date_time_str: Optional[str]) -> Optional[datetime]:
+def parse_date_time(date_time_str: str) -> datetime:
     if date_time_str:
         return datetime.combine(parse_date(date_time_str), parse_time(date_time_str))
-    return None
+    return datetime.now()
 
 
-def parse_time(time_str: Optional[str]) -> Optional[time]:
+def parse_time(time_str: str) -> time:
     if time_str:
         return dateutil.parser.parse(time_str).time()
-    return None
+    return datetime.now().time()
 
 
 def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
@@ -283,7 +283,14 @@ def get_or_create_location_from_dict(
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     incident = Incident(
         occurred_at=get_utc_datetime(
-            parse_date_time(" ".join([data.get("date"), data.get("time", "00:00")]))
+            parse_date_time(
+                " ".join(
+                    [
+                        data.get("date", datetime.now().date().strftime("%x")),
+                        data.get("time", "00:00"),
+                    ]
+                )
+            )
         ),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
@@ -308,7 +315,14 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
     if "date" in data:
         incident.occurred_at = get_utc_datetime(
-            parse_date_time(" ".join([data.get("date"), data.get("time", "00:00")]))
+            parse_date_time(
+                " ".join(
+                    [
+                        data.get("date", datetime.now().date().strftime("%x")),
+                        data.get("time", "00:00"),
+                    ]
+                )
+            )
         )
     if "report_number" in data:
         incident.report_number = parse_str(data.get("report_number"), None)
