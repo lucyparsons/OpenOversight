@@ -18,6 +18,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required, login_user
+from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
@@ -80,6 +81,7 @@ from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CH
 from OpenOversight.app.utils.cloud import crop_image, upload_image_to_s3_and_store_in_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    FLASH_MSG_PERMANENT_REDIRECT,
     KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
@@ -138,7 +140,7 @@ def static_routes():
         yield "main." + endpoint, {}
 
 
-def redirect_url(default="index"):
+def redirect_url(default="main.index"):
     return (
         validate_redirect_url(session.get("next"))
         or request.referrer
@@ -215,8 +217,16 @@ def get_officer():
     )
 
 
-@sitemap_include
 @main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_get_started_labeling():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT
+    )
+
+
+@sitemap_include
+@main.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
     form = LoginForm()
     if form.validate_on_submit():
@@ -235,7 +245,19 @@ def get_started_labeling():
     "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
-def sort_images(department_id):
+def redirect_sort_images(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.sort_images", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/sort/departments/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@login_required
+def sort_images(department_id: int):
     # Select a random unsorted image from the database
     image_query = Image.query.filter_by(contains_cops=None).filter_by(
         department_id=department_id
@@ -259,7 +281,7 @@ def get_tutorial():
 
 @main.route("/user/<username>")
 @login_required
-def profile(username):
+def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
         user = User.by_username(username).one()
     else:
@@ -273,7 +295,16 @@ def profile(username):
 
 
 @main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
-def officer_profile(officer_id):
+def redirect_officer_profile(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.officer_profile", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
@@ -332,9 +363,21 @@ def sitemap_officers():
         yield "main.officer_profile", {"officer_id": officer.id}
 
 
-@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
+@main.route(
+    "/officer/<int:officer_id>/assignment/new",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
 @ac_or_admin_required
-def add_assignment(officer_id):
+def redirect_add_assignment(officer_id: int):
+    return redirect(
+        url_for("main.add_assignment", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
+@ac_or_admin_required
+def add_assignment(officer_id: int):
     form = AssignmentForm()
     form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
@@ -382,7 +425,23 @@ def add_assignment(officer_id):
 )
 @login_required
 @ac_or_admin_required
-def edit_assignment(officer_id, assignment_id):
+def redirect_edit_assignment(officer_id: int, assignment_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for(
+            "main.edit_assignment", officer_id=officer_id, assignment_id=assignment_id
+        ),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/officers/<int:officer_id>/assignments/<int:assignment_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def edit_assignment(officer_id: int, assignment_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
@@ -419,7 +478,19 @@ def edit_assignment(officer_id, assignment_id):
     "/officer/<int:officer_id>/salary/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @ac_or_admin_required
-def add_salary(officer_id):
+def redirect_add_salary(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.add_salary", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/officers/<int:officer_id>/salaries/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@ac_or_admin_required
+def add_salary(officer_id: int):
     form = SalaryForm()
     form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
@@ -470,7 +541,21 @@ def add_salary(officer_id):
 )
 @login_required
 @ac_or_admin_required
-def edit_salary(officer_id, salary_id):
+def redirect_edit_salary(officer_id: int, salary_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.edit_salary", officer_id=officer_id, salary_id=salary_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/officers/<int:officer_id>/salaries/<int:salary_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def edit_salary(officer_id: int, salary_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -494,7 +579,17 @@ def edit_salary(officer_id, salary_id):
 
 @main.route("/image/<int:image_id>")
 @login_required
-def display_submission(image_id):
+def redirect_display_submission(image_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.display_submission", image_id=image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/images/<int:image_id>")
+@login_required
+def display_submission(image_id: int):
     try:
         image = Image.query.filter_by(id=image_id).one()
         proper_path = serve_image(image.filepath)
@@ -504,7 +599,16 @@ def display_submission(image_id):
 
 
 @main.route("/tag/<int:tag_id>")
-def display_tag(tag_id):
+def redirect_display_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.display_tag", tag_id=tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/tags/<int:tag_id>")
+def display_tag(tag_id: int):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
         proper_path = serve_image(tag.original_image.filepath)
@@ -519,7 +623,20 @@ def display_tag(tag_id):
     "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
-def classify_submission(image_id, contains_cops):
+def redirect_classify_submission(image_id: int, contains_cops: int):
+    return redirect(
+        url_for(
+            "main.classify_submission", image_id=image_id, contains_cops=contains_cops
+        ),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/images/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
+)
+@login_required
+def classify_submission(image_id: int, contains_cops: int):
     try:
         image = Image.query.filter_by(id=image_id).one()
         if image.contains_cops is not None and not current_user.is_administrator:
@@ -538,10 +655,20 @@ def classify_submission(image_id, contains_cops):
         error_str = " ".join([str(exception_type), str(value), format_exc()])
         current_app.logger.error(f"Error classifying image: {error_str}")
     return redirect(redirect_url())
-    # return redirect(url_for('main.display_submission', image_id=image_id))
 
 
 @main.route("/department/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@admin_required
+def redirect_add_department():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.add_department"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/departments/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @admin_required
 def add_department():
@@ -602,7 +729,20 @@ def add_department():
 )
 @login_required
 @admin_required
-def edit_department(department_id):
+def redirect_edit_department(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.edit_department", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/departments/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@login_required
+@admin_required
+def edit_department(department_id: int):
     department = Department.query.get_or_404(department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
@@ -700,9 +840,49 @@ def edit_department(department_id):
 
 
 @main.route("/department/<int:department_id>")
+def redirect_list_officer(
+    department_id: int,
+    page: int = 1,
+    race=None,
+    gender=None,
+    rank=None,
+    min_age: str = "16",
+    max_age: str = "100",
+    last_name=None,
+    first_name=None,
+    badge=None,
+    unique_internal_identifier=None,
+    unit=None,
+    current_job=None,
+    require_photo: bool = False,
+):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for(
+            "main.list_officer",
+            department_id=department_id,
+            page=page,
+            race=race,
+            gender=gender,
+            rank=rank,
+            min_age=min_age,
+            max_age=max_age,
+            last_name=last_name,
+            first_name=first_name,
+            badge=badge,
+            unique_internal_identifier=unique_internal_identifier,
+            unit=unit,
+            current_job=current_job,
+            require_photo=require_photo,
+        ),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/departments/<int:department_id>")
 def list_officer(
-    department_id,
-    page=1,
+    department_id: int,
+    page: int = 1,
     race=None,
     gender=None,
     rank=None,
@@ -714,7 +894,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo=False,
+    require_photo: bool = False,
 ):
     form = BrowseForm()
     form.rank.query = (
@@ -876,8 +1056,21 @@ def list_officer(
 
 
 @main.route("/department/<int:department_id>/ranks")
+def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for(
+            "main.get_dept_ranks",
+            department_id=department_id,
+            is_sworn_officer=is_sworn_officer,
+        ),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/departments/<int:department_id>/ranks")
 @main.route("/ranks")
-def get_dept_ranks(department_id=None, is_sworn_officer=None):
+def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
     if request.args.get("is_sworn_officer"):
@@ -902,8 +1095,17 @@ def get_dept_ranks(department_id=None, is_sworn_officer=None):
 
 
 @main.route("/department/<int:department_id>/units")
+def redirect_get_dept_units(department_id: int = 0):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.get_dept_ranks", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/departments/<int:department_id>/units")
 @main.route("/units")
-def get_dept_units(department_id=None):
+def get_dept_units(department_id: int = 0):
     if not department_id:
         department_id = request.args.get("department_id")
 
@@ -923,6 +1125,17 @@ def get_dept_units(department_id=None):
 
 
 @main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def redirect_add_officer():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.add_officer"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/officers/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def add_officer():
@@ -965,7 +1178,20 @@ def add_officer():
 @main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
-def edit_officer(officer_id):
+def redirect_edit_officer(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.edit_officer", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/officers/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@login_required
+@ac_or_admin_required
+def edit_officer(officer_id: int):
     officer = Officer.query.filter_by(id=officer_id).one()
     form = EditOfficerForm(obj=officer)
 
@@ -998,6 +1224,17 @@ def edit_officer(officer_id):
 @main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
+def redirect_add_unit():
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.add_unit"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/units/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
 def add_unit():
     form = AddUnitForm()
     add_department_query(form, current_user)
@@ -1019,7 +1256,18 @@ def add_unit():
 @main.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
-def delete_tag(tag_id):
+def redirect_delete_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.delete_tag", tag_id=tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/tags/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def delete_tag(tag_id: int):
     tag = Face.query.filter_by(id=tag_id).first()
 
     if not tag:
@@ -1045,7 +1293,18 @@ def delete_tag(tag_id):
 @main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
-def set_featured_tag(tag_id):
+def redirect_set_featured_tag(tag_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.set_featured_tag", tag_id=tag_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@login_required
+@ac_or_admin_required
+def set_featured_tag(tag_id: int):
     tag = Face.query.filter_by(id=tag_id).first()
 
     if not tag:
@@ -1083,7 +1342,7 @@ def leaderboard():
 
 
 @main.route(
-    "/cop_face/department/<int:department_id>/image/<int:image_id>",
+    "/cop_face/department/<int:department_id>/images/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1093,7 +1352,28 @@ def leaderboard():
 )
 @main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
-def label_data(department_id=None, image_id=None):
+def redirect_label_data(department_id: int = 0, image_id: int = 0):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.label_data", department_id=department_id, image_id=image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/cop_faces/departments/<int:department_id>/images/<int:image_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@main.route(
+    "/cop_faces/images/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@main.route(
+    "/cop_faces/departments/<int:department_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@main.route("/cop_faces/", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@login_required
+def label_data(department_id: int = 0, image_id: int = 0):
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -1191,7 +1471,17 @@ def label_data(department_id=None, image_id=None):
 
 @main.route("/image/tagged/<int:image_id>")
 @login_required
-def complete_tagging(image_id):
+def redirect_complete_tagging(image_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.complete_tagging", image_id=image_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/images/tagged/<int:image_id>")
+@login_required
+def complete_tagging(image_id: int):
     # Select a random untagged image from the database
     image = Image.query.filter_by(id=image_id).first()
     if not image:
@@ -1207,14 +1497,22 @@ def complete_tagging(image_id):
 
 
 @main.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
+def redirect_submit_complaint():
+    return redirect(
+        url_for("main.submit_complaint"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/complaints", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def submit_complaint():
     return render_template(
         "complaint.html",
-        officer_first_name=request.args.get("officer_first_name"),
-        officer_last_name=request.args.get("officer_last_name"),
-        officer_middle_initial=request.args.get("officer_middle_name"),
-        officer_star=request.args.get("officer_star"),
-        officer_image=request.args.get("officer_image"),
+        officer_first_name=request.args.get("officer_first_name", ""),
+        officer_last_name=request.args.get("officer_last_name", ""),
+        officer_middle_initial=request.args.get("officer_middle_name", ""),
+        officer_star=request.args.get("officer_star", ""),
+        officer_image=request.args.get("officer_image", ""),
     )
 
 
@@ -1247,8 +1545,19 @@ def submit_data():
 @main.route(
     "/download/department/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
+def redirect_download_dept_officers_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_dept_officers_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
-def download_dept_officers_csv(department_id):
+def download_dept_officers_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
     officers = get_database_cache_entry(*cache_params)
     if officers is None:
@@ -1284,8 +1593,19 @@ def download_dept_officers_csv(department_id):
 @main.route(
     "/download/department/<int:department_id>/assignments", methods=[HTTPMethod.GET]
 )
+def redirect_download_dept_assignments_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_dept_assignments_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
-def download_dept_assignments_csv(department_id):
+def download_dept_assignments_csv(department_id: int):
     cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
     assignments = get_database_cache_entry(*cache_params)
     if assignments is None:
@@ -1323,8 +1643,19 @@ def download_dept_assignments_csv(department_id):
 @main.route(
     "/download/department/<int:department_id>/incidents", methods=[HTTPMethod.GET]
 )
+def redirect_download_incidents_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_incidents_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
-def download_incidents_csv(department_id):
+def download_incidents_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
     incidents = get_database_cache_entry(*cache_params)
     if incidents is None:
@@ -1353,8 +1684,19 @@ def download_incidents_csv(department_id):
 @main.route(
     "/download/department/<int:department_id>/salaries", methods=[HTTPMethod.GET]
 )
+def redirect_download_dept_salaries_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_dept_salaries_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
-def download_dept_salaries_csv(department_id):
+def download_dept_salaries_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
     salaries = get_database_cache_entry(*cache_params)
     if salaries is None:
@@ -1383,8 +1725,17 @@ def download_dept_salaries_csv(department_id):
 
 
 @main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
+def redirect_download_dept_links_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_dept_links_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def download_dept_links_csv(department_id):
+def download_dept_links_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
     links = get_database_cache_entry(*cache_params)
     if links is None:
@@ -1415,8 +1766,19 @@ def download_dept_links_csv(department_id):
 @main.route(
     "/download/department/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
 )
+def redirect_download_dept_descriptions_csv(department_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.download_dept_descriptions_csv", department_id=department_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/download/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
-def download_dept_descriptions_csv(department_id):
+def download_dept_descriptions_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
     notes = get_database_cache_entry(*cache_params)
     if notes is None:
@@ -1455,7 +1817,21 @@ def all_data():
 )
 @login_required
 @ac_or_admin_required
-def submit_officer_images(officer_id):
+def redirect_submit_officer_images(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.submit_officer_images", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route(
+    "/submit_officer_images/officers/<int:officer_id>",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+@login_required
+@ac_or_admin_required
+def submit_officer_images(officer_id: int):
     officer = Officer.query.get_or_404(officer_id)
     return render_template("submit_officer_image.html", officer=officer)
 
@@ -1465,8 +1841,22 @@ def submit_officer_images(officer_id):
     "/upload/department/<int:department_id>/officer/<int:officer_id>",
     methods=[HTTPMethod.POST],
 )
+@login_required
+def redirect_upload(department_id: int = 0, officer_id: int = 0):
+    return redirect(
+        url_for("main.upload", department_id=department_id, officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@main.route("/upload/departments/<int:department_id>", methods=[HTTPMethod.POST])
+@main.route(
+    "/upload/departments/<int:department_id>/officers/<int:officer_id>",
+    methods=[HTTPMethod.POST],
+)
+@login_required
 @limiter.limit("250/minute")
-def upload(department_id, officer_id=None):
+def upload(department_id: int = 0, officer_id: int = 0):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
@@ -1554,16 +1944,13 @@ class IncidentApi(ModelView):
     create_function = create_incident
     department_check = True
 
-    def get(self, obj_id):
+    def get(self, obj_id: int):
         if obj_id:
             # Single-item view
             return super(IncidentApi, self).get(obj_id)
 
         # List view
-        if request.args.get("page"):
-            page = int(request.args.get("page"))
-        else:
-            page = 1
+        page = int(request.args.get("page", 1))
 
         form = IncidentListForm()
         incidents = self.model.query
@@ -1631,7 +2018,7 @@ class IncidentApi(ModelView):
             link.created_by.data = current_user.id
         return form
 
-    def get_edit_form(self, obj):
+    def get_edit_form(self, obj: Incident):
         form = super(IncidentApi, self).get_edit_form(obj=obj)
 
         no_license_plates = len(obj.license_plates)
@@ -1656,7 +2043,7 @@ class IncidentApi(ModelView):
             form.time_field.data = obj.occurred_at.time()
         return form
 
-    def populate_obj(self, form, obj):
+    def populate_obj(self, form: FlaskForm, obj: Incident):
         # remove all fields not directly on the Incident model
         # use utils to add them to the current object
         address = form.data.pop("address")
@@ -1752,10 +2139,10 @@ class TextApi(ModelView):
     def get_post_delete_url(self, *args, **kwargs):
         return self.get_redirect_url()
 
-    def get_department_id(self, obj):
+    def get_department_id(self, obj: TextForm):
         return self.department_id
 
-    def get_edit_form(self, obj):
+    def get_edit_form(self, obj: TextForm):
         form = EditTextForm(obj=obj)
         return form
 
@@ -1787,47 +2174,164 @@ class DescriptionApi(TextApi):
         return super(DescriptionApi, self).dispatch_request(*args, **kwargs)
 
 
+@login_required
+@ac_or_admin_required
+def redirect_new_note(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.note_api", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+def redirect_get_notes(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.note_api", officer_id=officer_id, obj_id=obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_note(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.note_api', officer_id=officer_id, obj_id=obj_id)}/edit",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_note(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.note_api', officer_id=officer_id, obj_id=obj_id)}/delete",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
-    "/officer/<int:officer_id>/note/new",
+    "/officers/<int:officer_id>/notes/new",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/officer/<int:officer_id>/note/<int:obj_id>",
+    "/officer/<int:officer_id>/note/new",
+    view_func=redirect_new_note,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/notes/<int:obj_id>",
     view_func=note_view,
     methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/note/<int:obj_id>",
+    view_func=redirect_get_notes,
+    methods=[HTTPMethod.GET],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/notes/<int:obj_id>/edit",
+    view_func=note_view,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/edit",
+    view_func=redirect_edit_note,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/notes/<int:obj_id>/delete",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/delete",
-    view_func=note_view,
+    view_func=redirect_delete_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
+
+@login_required
+@ac_or_admin_required
+def redirect_new_description(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.description_api", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+def redirect_get_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.description_api", officer_id=officer_id, obj_id=obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.description_api', officer_id=officer_id, obj_id=obj_id)}/edit",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_description(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        f"{url_for('main.description_api', officer_id=officer_id, obj_id=obj_id)}/delete",
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 description_view = DescriptionApi.as_view("description_api")
 main.add_url_rule(
-    "/officer/<int:officer_id>/description/new",
+    "/officers/<int:officer_id>/descriptions/new",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/officer/<int:officer_id>/description/<int:obj_id>",
+    "/officer/<int:officer_id>/description/new",
+    view_func=redirect_new_description,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/descriptions/<int:obj_id>",
     view_func=description_view,
     methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
+    "/officer/<int:officer_id>/description/<int:obj_id>",
+    view_func=redirect_get_description,
+    methods=[HTTPMethod.GET],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/descriptions/<int:obj_id>/edit",
+    view_func=description_view,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/edit",
+    view_func=redirect_edit_description,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/descriptions/<int:obj_id>/delete",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/delete",
-    view_func=description_view,
+    view_func=redirect_delete_description,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 
@@ -1853,7 +2357,7 @@ class OfficerLinkApi(ModelView):
 
     @login_required
     @ac_or_admin_required
-    def new(self, form=None):
+    def new(self, form: FlaskForm = None):
         if (
             not current_user.is_administrator
             and current_user.ac_department_id != self.officer.department_id
@@ -1886,7 +2390,7 @@ class OfficerLinkApi(ModelView):
 
     @login_required
     @ac_or_admin_required
-    def delete(self, obj_id):
+    def delete(self, obj_id: int):
         obj = self.model.query.get_or_404(obj_id)
         if (
             not current_user.is_administrator
@@ -1936,18 +2440,63 @@ class OfficerLinkApi(ModelView):
         return super(OfficerLinkApi, self).dispatch_request(*args, **kwargs)
 
 
+@login_required
+@ac_or_admin_required
+def redirect_new_link(officer_id: int):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_new", officer_id=officer_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_edit_link(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_edit", officer_id=officer_id, obj_id=obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
+@login_required
+@ac_or_admin_required
+def redirect_delete_link(officer_id: int, obj_id=None):
+    flash(FLASH_MSG_PERMANENT_REDIRECT)
+    return redirect(
+        url_for("main.link_api_delete", officer_id=officer_id, obj_id=obj_id),
+        code=HTTPStatus.PERMANENT_REDIRECT,
+    )
+
+
 main.add_url_rule(
-    "/officer/<int:officer_id>/link/new",
+    "/officers/<int:officer_id>/links/new",
     view_func=OfficerLinkApi.as_view("link_api_new"),
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/officer/<int:officer_id>/link/<int:obj_id>/edit",
+    "/officer/<int:officer_id>/link/new",
+    view_func=redirect_new_link,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/links/<int:obj_id>/edit",
     view_func=OfficerLinkApi.as_view("link_api_edit"),
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/officer/<int:officer_id>/link/<int:obj_id>/delete",
+    "/officer/<int:officer_id>/link/<int:obj_id>/edit",
+    view_func=redirect_edit_link,
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officers/<int:officer_id>/links/<int:obj_id>/delete",
     view_func=OfficerLinkApi.as_view("link_api_delete"),
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
+main.add_url_rule(
+    "/officer/<int:officer_id>/link/<int:obj_id>/delete",
+    view_func=redirect_delete_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
