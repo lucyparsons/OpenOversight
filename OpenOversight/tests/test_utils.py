@@ -9,8 +9,8 @@ from OpenOversight.app.models.database import Department, Image, Officer, Unit
 from OpenOversight.app.utils.cloud import (
     compute_hash,
     crop_image,
+    upload_file_to_s3,
     upload_image_to_s3_and_store_in_db,
-    upload_obj_to_s3,
 )
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.app.utils.forms import filter_by_form, grab_officers
@@ -20,7 +20,7 @@ from OpenOversight.tests.routes.route_helpers import login_user
 
 # Utils tests
 upload_s3_patch = patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 
@@ -168,7 +168,7 @@ def test_s3_upload_png(mockdata, test_png_bytes_io):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload_obj_to_s3(test_png_bytes_io, "test_cop1.png")
+            upload_file_to_s3(test_png_bytes_io, "test_cop1.png")
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/png"
@@ -180,7 +180,7 @@ def test_s3_upload_jpeg(mockdata, test_jpg_bytes_io):
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
         with patch("boto3.resource", Mock(return_value=mocked_resource)):
-            upload_obj_to_s3(test_jpg_bytes_io, "test_cop5.jpg")
+            upload_file_to_s3(test_jpg_bytes_io, "test_cop5.jpg")
 
     assert (
         mocked_connection.method_calls[0][2]["ExtraArgs"]["ContentType"] == "image/jpeg"
@@ -244,7 +244,7 @@ def test_upload_image_to_s3_and_store_in_db_does_not_set_tagged(
 
 
 @patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_saves_filename_in_correct_format(
@@ -276,7 +276,7 @@ def test_upload_image_to_s3_and_store_in_db_throws_exception_for_unrecognized_fo
 
 
 @patch(
-    "OpenOversight.app.utils.cloud.upload_obj_to_s3",
+    "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
 def test_upload_image_to_s3_and_store_in_db_does_not_throw_exception_for_recognized_format(

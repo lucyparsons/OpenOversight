@@ -77,7 +77,7 @@ def get_date_taken(pimage):
     return exif.get(EXIF_KEY_DATE_TIME_ORIGINAL, None) if exif else None
 
 
-def upload_obj_to_s3(file_obj, dest_filename: str):
+def upload_file_to_s3(file_obj, dest_filename: str):
     s3_client = boto3.client("s3")
 
     # Folder to store files in on S3 is first two chars of dest_filename
@@ -136,7 +136,7 @@ def upload_image_to_s3_and_store_in_db(image_buf, user_id, department_id=None):
     try:
         new_filename = f"{hash_img}.{image_format}"
         scrubbed_image_buf.seek(0)
-        url = upload_obj_to_s3(scrubbed_image_buf, new_filename)
+        url = upload_file_to_s3(scrubbed_image_buf, new_filename)
         new_image = Image(
             filepath=url,
             hash_img=hash_img,
