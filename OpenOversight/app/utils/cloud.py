@@ -78,7 +78,7 @@ def find_date_taken(pimage):
         return None
 
 
-def upload_obj_to_s3(file_obj, dest_filename):
+def upload_obj_to_s3(file_obj, dest_filename: str):
     s3_client = boto3.client("s3")
 
     # Folder to store files in on S3 is first two chars of dest_filename
