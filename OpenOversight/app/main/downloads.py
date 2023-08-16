@@ -132,8 +132,8 @@ def incidents_record_maker(incident: Incident) -> _Record:
     return {
         "id": incident.id,
         "report_num": incident.report_number,
-        "date": incident.date,
-        "time": incident.time,
+        "date": incident.occurred_at.date() if incident.occurred_at else incident.date,
+        "time": incident.occurred_at.time() if incident.occurred_at else incident.time,
         "description": incident.description,
         "location": incident.address,
         "licenses": " ".join(map(str, incident.license_plates)),
