@@ -8,6 +8,7 @@ from OpenOversight.app.utils.constants import (
     KEY_ENV_TESTING,
     KEY_OFFICERS_PER_PAGE,
     KEY_OO_MAIL_SUBJECT_PREFIX,
+    KEY_S3_BUCKET_NAME,
     KEY_TIMEZONE,
     MEGABYTE,
 )
@@ -56,7 +57,7 @@ class BaseConfig:
         self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
         self.AWS_DEFAULT_REGION = os.environ.get("AWS_DEFAULT_REGION")
         self.AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-        self.S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
+        self.S3_BUCKET_NAME = os.environ.get(KEY_S3_BUCKET_NAME)
 
         # Upload Settings
         self.ALLOWED_EXTENSIONS = set(["jpeg", "jpg", "jpe", "png", "gif", "webp"])
