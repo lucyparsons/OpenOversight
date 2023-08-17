@@ -695,14 +695,6 @@ class Incident(BaseModel):
         unique=False,
     )
 
-    __table_args__ = (
-        CheckConstraint(
-            "(occurred_at IS NOT NULL AND time IS NULL and date IS NULL) OR "
-            "(occurred_at IS NULL AND (time IS NOT NULL OR date IS NOT NULL))",
-            name="chk_occurred_at_time_date",
-        ),
-    )
-
 
 class User(UserMixin, BaseModel):
     __tablename__ = "users"
