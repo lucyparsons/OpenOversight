@@ -143,7 +143,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
 
     dept_with_uii = Department.query.filter(
         Department.unique_internal_identifier_label.isnot(None)
-    ).all()[1]
+    ).first()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
