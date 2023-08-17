@@ -129,7 +129,7 @@ def assignment_record_maker(assignment: Assignment) -> _Record:
 
 
 def incidents_record_maker(incident: Incident) -> _Record:
-    i = {
+    record = {
         "id": incident.id,
         "report_num": incident.report_number,
         "description": incident.description,
@@ -140,13 +140,13 @@ def incidents_record_maker(incident: Incident) -> _Record:
     }
 
     if incident.occurred_at:
-        i["date"] = incident.occurred_at.date()
-        i["time"] = incident.occurred_at.time()
+        record["date"] = incident.occurred_at.date()
+        record["time"] = incident.occurred_at.time()
     else:
-        i["date"] = incident.date
-        i["time"] = incident.time
+        record["date"] = incident.date
+        record["time"] = incident.time
 
-    return i
+    return record
 
 
 def links_record_maker(link: Link) -> _Record:
