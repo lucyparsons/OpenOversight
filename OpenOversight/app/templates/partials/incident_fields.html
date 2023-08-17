@@ -1,10 +1,12 @@
 {% if not incident.occurred_at %}
-  <tr>
-    <td>
-      <strong>Date</strong>
-    </td>
-    <td>{{ incident.date.strftime("%b %d, %Y") }}</td>
-  </tr>
+  {% if incident.date %}
+    <tr>
+      <td>
+        <strong>Date</strong>
+      </td>
+      <td>{{ incident.date.strftime("%b %d, %Y") }}</td>
+    </tr>
+  {% endif %}
   {% if incident.time %}
     <tr>
       <td>
