@@ -117,7 +117,7 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
-    expected = f"Showing 1-{current_app.config['OFFICERS_PER_PAGE']} of {total}"
+    expected = f"Showing 1-{current_app.config[KEY_OFFICERS_PER_PAGE]} of {total}"
     assert expected in page_text
 
     # last page of results
@@ -143,7 +143,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
 
     dept_with_uii = Department.query.filter(
         Department.unique_internal_identifier_label.isnot(None)
-    ).first()
+    )[1]
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
