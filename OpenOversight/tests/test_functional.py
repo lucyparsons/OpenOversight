@@ -12,7 +12,7 @@ from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
 from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
-from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.conftest import AC_DEPT, SPRINGFIELD_PD
 from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
 
@@ -141,9 +141,9 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
 ):
     browser.get(f"http://localhost:{server_port}/find")
 
-    dept_with_uii = Department.query.filter(
-        Department.unique_internal_identifier_label.isnot(None)
-    ).first()
+    dept_with_uii = Department.query.filter_by(
+        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
+    ).one()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
