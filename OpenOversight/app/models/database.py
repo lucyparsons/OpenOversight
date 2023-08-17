@@ -635,10 +635,14 @@ class Incident(BaseModel):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, unique=False, index=True)
-    time = db.Column(db.Time, unique=False, index=True)
+    date = db.Column(db.Date, unique=False, index=True, server_default=None)
+    time = db.Column(db.Time, unique=False, index=True, server_default=None)
     occurred_at = db.Column(
-        db.DateTime(timezone=True), unique=False, nullable=True, index=True
+        db.DateTime(timezone=True),
+        unique=False,
+        nullable=True,
+        index=True,
+        server_default=None,
     )
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
