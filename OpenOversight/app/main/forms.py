@@ -101,7 +101,7 @@ class FindOfficerForm(Form):
         "dept",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
@@ -306,7 +306,7 @@ class AddOfficerForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     first_name = StringField(
         "First name",
@@ -433,7 +433,7 @@ class EditOfficerForm(Form):
         "Department",
         validators=[Optional()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     submit = SubmitField(label="Update")
 
@@ -448,7 +448,7 @@ class AddUnitForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     created_by = HiddenField(
         validators=[
@@ -463,7 +463,7 @@ class AddImageForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
 
 
@@ -574,7 +574,7 @@ class IncidentForm(DateFieldForm):
         "Department*",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     address = FormField(LocationForm)
     officers = FieldList(
