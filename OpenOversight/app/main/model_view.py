@@ -117,6 +117,7 @@ class ModelView(MethodView):
 
         if not form:
             form = self.get_edit_form(obj)
+            now = datetime.datetime.now()
             # if the object doesn't have a creator id set it to current user
             if (
                 hasattr(obj, "created_by")
@@ -127,10 +128,20 @@ class ModelView(MethodView):
             elif hasattr(form, "created_by"):
                 form.created_by.data = current_user.get_id()
 
+            # TODO: Add created_at field to forms
+            if (
+                hasattr(obj, "created_at")
+                and hasattr(form, "created_at")
+                and getattr(obj, "created_at")
+            ):
+                form.created_at.data = obj.created_at
+            elif hasattr(form, "created_at"):
+                form.created_at.data = now
+
             # if the object keeps track of who updated it last, set to current user
             if hasattr(obj, "last_updated_by") and hasattr(form, "last_updated_by"):
                 form.last_updated_by.data = current_user.get_id()
-                form.last_updated_at.data = datetime.datetime.now()
+                form.last_updated_at.data = now
 
         if hasattr(form, "department"):
             add_department_query(form, current_user)
@@ -225,8 +236,8 @@ class ModelView(MethodView):
 
     def populate_obj(self, form, obj):
         form.populate_obj(obj)
-        if hasattr(obj, "updated_at"):
-            obj.updated_at = datetime.datetime.now()
+        if hasattr(obj, "last_updated_at"):
+            obj.last_updated_at = datetime.datetime.now()
         db.session.add(obj)
         db.session.commit()
 

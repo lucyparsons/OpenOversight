@@ -101,7 +101,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
                     user_id=current_user.get_id(),
                     officer=officer,
                     created_at=datetime.datetime.now(),
-                    updated_at=datetime.datetime.now(),
+                    last_updated_at=datetime.datetime.now(),
                     created_by=current_user.get_id(),
                 )
                 db.session.add(new_note)
@@ -114,7 +114,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
                     user_id=current_user.get_id(),
                     officer=officer,
                     created_at=datetime.datetime.now(),
-                    updated_at=datetime.datetime.now(),
+                    last_updated_at=datetime.datetime.now(),
                     created_by=current_user.get_id(),
                 )
                 db.session.add(new_description)
@@ -142,7 +142,7 @@ def create_description(self, form: TextForm, current_user: User):
         created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
-        updated_at=datetime.datetime.now(),
+        last_updated_at=datetime.datetime.now(),
     )
 
 
@@ -250,7 +250,7 @@ def create_note(self, form: TextForm, current_user: User):
         created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
-        updated_at=datetime.datetime.now(),
+        last_updated_at=datetime.datetime.now(),
     )
 
 
