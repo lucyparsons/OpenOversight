@@ -34,11 +34,7 @@
           <td>
             <b>Department</b>
           </td>
-          {% if officer.department.state %}
-            <td>[{{ officer.department.state }}] {{ officer.department.name }}</td>
-          {% else %}
-            <td>{{ officer.department.name }}</td>
-          {% endif %}
+          <td>{{ officer.department.display_name }}</td>
         </tr>
         <tr>
           <td>
