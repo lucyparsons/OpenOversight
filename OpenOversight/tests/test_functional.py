@@ -142,16 +142,16 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
     browser.get(f"http://localhost:{server_port}/find")
 
     dept_with_uii = Department.query.filter_by(
-        id=2,
-    ).one()
+        Department.unique_internal_identifier_label.isnot(None)
+    ).first()
     dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
     dept_selector.select_by_value(dept_id)
     browser.find_element_by_id("activate-step-2").click()
 
-    page_text = browser.find_element_by_tag_name("body").text
-    assert "Do you know any part of the Officer's" in page_text
+    uii_elements = browser.find_elements_by_id("#uii-question")
+    assert len(uii_elements) == 1
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
@@ -168,8 +168,8 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
     dept_selector.select_by_value(dept_id)
     browser.find_element_by_id("activate-step-2").click()
 
-    results = browser.find_elements_by_id("#uii-question")
-    assert len(results) == 0
+    uii_elements = browser.find_elements_by_id("#uii-question")
+    assert len(uii_elements) == 0
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
