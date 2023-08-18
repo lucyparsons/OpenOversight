@@ -116,7 +116,7 @@
             </div>
             <div id="uii-question">
               <h2>
-                <small>Do you know any part of the Officer's unique internal identifier?</small>
+                <small>Do you know any part of the Officer's <span id="current-uii" data-departments='{{ depts_dict | tojson }}'></span>?</small>
               </h2>
               <div class="input-group input-group-lg col-md-4 col-md-offset-4">
                 {{ form.unique_internal_identifier(class="form-control") }}
