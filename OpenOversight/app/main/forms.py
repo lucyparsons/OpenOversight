@@ -40,7 +40,7 @@ from OpenOversight.app.utils.choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.db import dept_choices, unit_choices
+from OpenOversight.app.utils.db import dept_choices, unit_choices, unsorted_dept_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 
@@ -97,10 +97,12 @@ class FindOfficerForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=55)],
     )
+    # TODO: Figure out why this test is failing when the departments are sorted using
+    #  the dept_choices function.
     dept = QuerySelectField(
         "dept",
         validators=[DataRequired()],
-        query_factory=dept_choices,
+        query_factory=unsorted_dept_choices,
         get_label="display_name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
