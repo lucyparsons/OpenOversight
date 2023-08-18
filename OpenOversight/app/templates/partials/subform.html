@@ -1,22 +1,19 @@
 {% import "bootstrap/wtf.html" as wtf %}
-
-<fieldset
-  {% if id and number %}id="{{id}}-{{number}}"{% endif %}
-  class='well'
->
+<fieldset {% if id and number %}id="{{ id }}-{{ number }}"{% endif %}
+          class="well">
   {{ subform.hidden_tag() }}
-  <div class="text-danger">
-    {{ wtf.form_errors(subform, hiddens="only") }}
-  </div>
+  <div class="text-danger">{{ wtf.form_errors(subform, hiddens="only") }}</div>
   {% for subfield in subform %}
     {% if not bootstrap_is_hidden_field(subfield) %}
       {{ wtf.form_field(subfield,
-                    form_type=form_type,
-                    horizontal_columns=horizontal_columns,
-                    button_map=button_map) }}
+            form_type=form_type,
+            horizontal_columns=horizontal_columns,
+            button_map=button_map) }}
     {% endif %}
   {% endfor %}
   {% if not no_remove %}
-  	<button class="btn btn-danger js-remove-button" style="margin-bottom: 2rem;" disabled>Remove</button>
+    <button class="btn btn-danger js-remove-button"
+            style="margin-bottom: 2rem"
+            disabled>Remove</button>
   {% endif %}
 </fieldset>

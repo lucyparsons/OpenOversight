@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+  File Too Large
+{% endblock title %}
+{% block content %}
+  <div class="container theme-showcase" role="main">
+    <h1>File Too Large</h1>
+    <p>
+      The file you are trying to upload is too large. <a href="{{ url_for("main.index") }}">Return to homepage</a>.
+    </p>
+  </div>
+{% endblock content %}

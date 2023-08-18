@@ -1,0 +1,167 @@
+<h3>Assignment History</h3>
+<table class="table table-hover">
+  <tr>
+    <th>
+      <b>Job Title</b>
+    </th>
+    <th>
+      <b>Badge No.</b>
+    </th>
+    <th>
+      <b>Unit</b>
+    </th>
+    <th>
+      <b>Start Date</b>
+    </th>
+    <th>
+      <b>End Date</b>
+    </th>
+    {% if is_admin_or_coordinator %}
+      <th>
+        <b>Edit</b>
+      </th>
+    {% endif %}
+  </tr>
+  <tbody>
+    {% for assignment in assignments|rejectattr('start_date','ne',None) %}
+      <tr>
+        <td>{{ assignment.job.job_title }}</td>
+        <td>{{ assignment.star_no }}</td>
+        <td>
+          {% if assignment.unit_id %}{{ assignment.unit.description }}{% endif %}
+        </td>
+        <td>
+          {% if assignment.start_date %}
+            {{ assignment.start_date }}
+          {% else %}
+            Unknown
+          {% endif %}
+        </td>
+        <td>
+          {% if assignment.resign_date %}{{ assignment.resign_date }}{% endif %}
+        </td>
+        <td>
+          {% if is_admin_or_coordinator %}
+            <a href="{{ url_for('main.edit_assignment', officer_id=officer.id, assignment_id=assignment.id) }}">
+              <span class="sr-only">Edit</span>
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    {% for assignment in assignments | rejectattr('start_date', 'none') | sort(attribute='start_date', reverse=True) %}
+      <tr>
+        <td>{{ assignment.job.job_title }}</td>
+        <td>{{ assignment.star_no }}</td>
+        <td>
+          {% if assignment.unit_id %}{{ assignment.unit.description }}{% endif %}
+        </td>
+        <td>
+          {% if assignment.start_date %}
+            {{ assignment.start_date }}
+          {% else %}
+            Unknown
+          {% endif %}
+        </td>
+        <td>
+          {% if assignment.resign_date %}{{ assignment.resign_date }}{% endif %}
+        </td>
+        <td>
+          {% if is_admin_or_coordinator %}
+            <a href="{{ url_for('main.edit_assignment', officer_id=officer.id, assignment_id=assignment.id) }}">
+              <span class="sr-only">Edit</span>
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            </a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if is_admin_or_coordinator %}
+  <h3>
+    Add Assignment <small>Admin only</small>
+  </h3>
+  <table class="table">
+    <tbody>
+      <form action="{{ url_for('main.add_assignment', officer_id=officer.id) }}"
+            method="post">
+        {{ form.hidden_tag() }}
+        <tr>
+          <td>
+            <b>New badge number:</b>
+          </td>
+          <td>
+            {{ form.star_no }}
+            {% for error in form.star_no.errors %}
+              <p>
+                <span style="color: red">[{{ error }}]</span>
+              </p>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>New job title:</b>
+          </td>
+          <td>
+            {{ form.job_title }}
+            {% for error in form.job_title.errors %}
+              <p>
+                <span style="color: red">[{{ error }}]</span>
+              </p>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>New unit:</b>
+          </td>
+          <td>
+            {{ form.unit }}
+            {% for error in form.unit.errors %}
+              <p>
+                <span style="color: red">[{{ error }}]</span>
+              </p>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>Start date of new assignment:</b>
+          </td>
+          <td>
+            {{ form.start_date }}
+            {% for error in form.start_date.errors %}
+              <p>
+                <span style="color: red">[{{ error }}]</span>
+              </p>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>End date of new assignment:</b>
+          </td>
+          <td>
+            {{ form.resign_date }}
+            {% for error in form.resign_date.errors %}
+              <p>
+                <span style="color: red">[{{ error }}]</span>
+              </p>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input type="submit"
+                   value="Add Assignment"
+                   name="add-assignment"
+                   class="btn-sm btn-primary" />
+          </td>
+        </tr>
+      </form>
+    </tbody>
+  </table>
+{% endif %}

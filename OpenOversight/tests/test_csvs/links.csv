@@ -1,4 +1,4 @@
-id,title,url,link type,description,author,creator_id,officer ids,incident ids
+id,title,url,link type,description,author,created_by,officer ids,incident ids
 ,A Link,https://www.example.com,link,A link about officers,,,#1|49483,
 ,Another Link,https://www.example.com/incident,link,A link on an incident,Example Times,,,#I1
 55051,Updated Link,https://www.example.org,,,,,,123456

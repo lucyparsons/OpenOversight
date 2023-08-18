@@ -1,8 +1,12 @@
-version: "3"
+version: "3.2"
 
 volumes:
   postgres:
     driver: local
+
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
 
 services:
  postgres:
@@ -23,23 +27,31 @@ services:
       context: .
       args:
       - DOCKER_BUILD_ENV
-      - TRAVIS_PYTHON_VERSION
+      - MAKE_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile
    environment:
-     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-     AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-     AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-     S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
-     FLASK_APP: app
-     FLASK_ENV: "${FLASK_ENV:-development}"
+     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+     AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+     AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+     ENV: "${ENV:-development}"
+     FLASK_APP: OpenOversight.app
+     FLASK_DEBUG: 1
+     OO_HELP_EMAIL: "info@lucyparsonslabs.com"
+     OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
+     S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+     # Update with your application's respective Olson-style timezone:
+     # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#list
+     TIMEZONE: "America/Chicago"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+   secrets:
+     - source: service-account-key
+       target: /usr/src/app/service_account_key.json
    user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
    links:
      - postgres:postgres
    expose:
      - "3000"
-   command: scripts/entrypoint.sh
    ports:
      - "3000:3000"

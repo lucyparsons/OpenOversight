@@ -1,4 +1,4 @@
-id,department name,date,time,report number,description,street name,cross street1,cross street2,city,state,zip code,license plates,officer_ids,creator id,last updated id
-,Springfield Police Department,2020-07-20,06:30,CR-1234,Something happened,,East Ave,Main St,Chicago,IL,60603,ABC123_NY|98UMC_IL,#1|49483,,
-#I1,Springfield Police Department,,,CR-9912,Something happened,Fake Street,Main Street,,Chicago,IL,60603,,#1,,
-123456,Springfield Police Department,2020-07-26,,CR-39283,Don't know where it happened,,,,,,,XYZ11,#1,,
+id,department name,department state,date,time,report number,description,street name,cross street1,cross street2,city,state,zip code,license plates,officer_ids,created by,last updated by
+,Springfield Police Department,IL,2020-07-20,06:30,CR-1234,Something happened,,East Ave,Main St,Chicago,IL,60603,ABC123_NY|98UMC_IL,#1|49483,,
+#I1,Springfield Police Department,IL,,,CR-9912,Something happened,Fake Street,Main Street,,Chicago,IL,60603,,#1,,
+123456,Springfield Police Department,IL,2020-07-26,,CR-39283,Don't know where it happened,,,,,,,XYZ11,#1,,

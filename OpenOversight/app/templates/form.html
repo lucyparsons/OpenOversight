@@ -1,25 +1,20 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
-
 {% block content %}
-	<div class="container theme-showcase" role="main">
-		<div class="page-header">
-				<h1>
-					{% block page_title %}
-
-					{% endblock page_title %}
-				</h1>
-		</div>
-
-		{% block page_header %}
-		{% endblock %}
-
-		<div class="col-md-6 col-xs-12">
-			{% block form %}
-				{{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
-				<br>
-			{% endblock form %}
-		</div>
-	</div>
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>
+        {% block page_title %}
+        {% endblock page_title %}
+      </h1>
+    </div>
+    {% block page_header %}
+    {% endblock page_header %}
+    <div class="col-md-6 col-xs-12">
+      {% block form %}
+        {{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
+        <br>
+      {% endblock form %}
+    </div>
+  </div>
 {% endblock content %}

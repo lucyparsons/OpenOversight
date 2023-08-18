@@ -1,39 +1,48 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Browse OpenOversight{% endblock %}
-{% block meta %}<meta name="description" content="Browse a department on OpenOversight.">{% endblock %}
+{% block title %}
+  Browse OpenOversight
+{% endblock title %}
+{% block meta %}
+  <meta name="description" content="Browse a department on OpenOversight.">
+{% endblock meta %}
 {% block content %}
-
-<div class="container theme-showcase" role="main">
-  <div class="text-center frontpage-leads">
-    <h1><small>Browse a Department</small></h1>
-  </div>
-
-  <div class="text-center frontpage-leads">
-  {% for department in departments %}
-    <p>
-      <div class="btn-group">
-        <h2>{{ department.name }}
-        {% if current_user.is_administrator %}
-            <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
-              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-            </a>
-        {% endif %}
-       </h2>
-          <p>
-          <a class="btn btn-lg btn-primary" href="{{ url_for('main.list_officer', department_id=department.id) }}">
-             Officers
-          </a>
-          {% if department.incidents %}
-            <a class="btn btn-lg btn-primary" href="{{ url_for('main.incident_api', department_id=department.id) }}">
-               Incidents
-            </a>
+  <div class="container theme-showcase" role="main">
+    <div class="text-center frontpage-leads">
+      <h1>
+        <small>Browse a Department</small>
+      </h1>
+    </div>
+    <div class="text-center frontpage-leads">
+      {% for department in departments %}
+        <p>
+          <div class="btn-group">
+            <h2>
+              {{ department.display_name }}
+              {% if current_user.is_administrator %}
+                <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
+                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                </a>
+              {% endif %}
+            </h2>
+            <div>
+              <b class="dept-{{ department.id }}">Officers Documented:</b> {{ department.total_documented_officers() | thousands_seperator }}
+              <br>
+              <b class="dept-{{ department.id }}">Assignments Documented:</b> {{ department.total_documented_assignments() | thousands_seperator }}
+              <br>
+              <b class="dept-{{ department.id }}">Incidents Documented:</b> {{ department.total_documented_incidents() | thousands_seperator }}
+            </div>
+            <p>
+              <a class="btn btn-lg btn-primary"
+                 href="{{ url_for('main.list_officer', department_id=department.id) }}">Officers</a>
+              {% if department.incidents %}
+                <a class="btn btn-lg btn-primary"
+                   href="{{ url_for('main.incident_api', department_id=department.id) }}">Incidents</a>
+              </p>
+            {% endif %}
+          </div>
         </p>
-        {% endif %}
-      </div>
-    </p>
-  {% endfor %}
+      {% endfor %}
+    </div>
   </div>
-</div>
-
-{% endblock %}
+{% endblock content %}

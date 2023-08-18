@@ -1,30 +1,45 @@
-from __future__ import print_function
-
 import csv
 import sys
 from builtins import input
-from datetime import datetime, date
-from dateutil.parser import parse
+from datetime import date, datetime
 from getpass import getpass
 from typing import Dict, List
 
 import click
+import us
+from dateutil.parser import parse
 from flask import current_app
 from flask.cli import with_appcontext
 
-from .models import db, Assignment, Department, Officer, User, Salary, Job
-from .utils import get_officer, str_is_true, normalize_gender, prompt_yes_no
-
-from .csv_imports import import_csv_files
+from OpenOversight.app.csv_imports import import_csv_files
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Image,
+    Job,
+    Officer,
+    Salary,
+    Unit,
+    User,
+    db,
+)
+from OpenOversight.app.utils.constants import (
+    ENCODING_UTF_8,
+    KEY_ENV,
+    KEY_ENV_PROD,
+    KEY_ENV_TESTING,
+)
+from OpenOversight.app.utils.db import get_officer
+from OpenOversight.app.utils.general import normalize_gender, prompt_yes_no, str_is_true
 
 
 @click.command()
 @with_appcontext
 def make_admin_user():
-    "Add confirmed administrator account"
+    """Add confirmed administrator account."""
     while True:
         username = input("Username: ")
-        user = User.query.filter_by(username=username).one_or_none()
+        user = User.by_username(username).one_or_none()
         if user:
             print("Username is already in use")
         else:
@@ -32,7 +47,7 @@ def make_admin_user():
 
     while True:
         email = input("Email: ")
-        user = User.query.filter_by(email=email).one_or_none()
+        user = User.by_email(email).one_or_none()
         if user:
             print("Email address already in use")
         else:
@@ -46,20 +61,23 @@ def make_admin_user():
             break
         print("Passwords did not match")
 
-    u = User(username=username, email=email, password=password,
-             confirmed=True, is_administrator=True)
+    u = User(
+        username=username,
+        email=email,
+        password=password,
+        confirmed=True,
+        is_administrator=True,
+    )
     db.session.add(u)
     db.session.commit()
-    print("Administrator {} successfully added".format(username))
-    current_app.logger.info('Administrator {} added with email {}'.format(username,
-                                                                          email))
+    print(f"Administrator {username} successfully added")
+    current_app.logger.info(f"Administrator {username} added with email {email}")
 
 
 @click.command()
 @with_appcontext
 def link_images_to_department():
-    """Link existing images to first department"""
-    from app.models import Image, db
+    """Link existing images to first department."""
     images = Image.query.all()
     print("Linking images to first department:")
     for image in images:
@@ -74,9 +92,7 @@ def link_images_to_department():
 @click.command()
 @with_appcontext
 def link_officers_to_department():
-    """Links officers and unit_ids to first department"""
-    from app.models import Officer, Unit, db
-
+    """Links officers and unit_ids to first department."""
     officers = Officer.query.all()
     units = Unit.query.all()
 
@@ -91,8 +107,8 @@ def link_officers_to_department():
 
 
 class ImportLog:
-    updated_officers = {}  # type: Dict[int, List]
-    created_officers = {}  # type: Dict[int, List]
+    updated_officers: Dict[int, List] = {}
+    created_officers: Dict[int, List] = {}
 
     @classmethod
     def log_change(cls, officer, msg):
@@ -111,20 +127,22 @@ class ImportLog:
     @classmethod
     def print_create_logs(cls):
         officers = Officer.query.filter(
-            Officer.id.in_(cls.created_officers.keys())).all()
+            Officer.id.in_(cls.created_officers.keys())
+        ).all()
         for officer in officers:
-            print('Created officer {}'.format(officer))
+            print(f"Created officer {officer}")
             for msg in cls.created_officers[officer.id]:
-                print(' --->', msg)
+                print(" --->", msg)
 
     @classmethod
     def print_update_logs(cls):
         officers = Officer.query.filter(
-            Officer.id.in_(cls.updated_officers.keys())).all()
+            Officer.id.in_(cls.updated_officers.keys())
+        ).all()
         for officer in officers:
-            print('Updates to officer {}:'.format(officer))
+            print(f"Updates to officer {officer}:")
             for msg in cls.updated_officers[officer.id]:
-                print(' --->', msg)
+                print(" --->", msg)
 
     @classmethod
     def print_logs(cls):
@@ -150,85 +168,96 @@ def row_has_data(row, required_fields, optional_fields):
     return False
 
 
-def set_field_from_row(row, obj, attribute, allow_blank=True, fieldname=None):
-    fieldname = fieldname or attribute
-    if fieldname in row and (row[fieldname] or allow_blank):
+def set_field_from_row(row, obj, attribute, allow_blank=True, field_name=None):
+    field_name = field_name or attribute
+    if field_name in row and (row[field_name] or allow_blank):
         try:
-            val = datetime.strptime(row[fieldname], '%Y-%m-%d').date()
+            val = datetime.strptime(row[field_name], "%Y-%m-%d").date()
         except ValueError:
-            val = row[fieldname]
-            if attribute == 'gender':
+            val = row[field_name]
+            if attribute == "gender":
                 val = normalize_gender(val)
         setattr(obj, attribute, val)
 
 
 def update_officer_from_row(row, officer, update_static_fields=False):
-    def update_officer_field(fieldname):
-        if fieldname not in row:
+    def update_officer_field(officer_field_name):
+        if officer_field_name not in row:
             return
 
-        if fieldname == 'gender':
-            row[fieldname] = normalize_gender(row[fieldname])
+        if officer_field_name == "gender":
+            row[officer_field_name] = normalize_gender(row[officer_field_name])
 
-        if row[fieldname] and getattr(officer, fieldname) != row[fieldname]:
-
+        if (
+            row[officer_field_name]
+            and getattr(officer, officer_field_name) != row[officer_field_name]
+        ):
             ImportLog.log_change(
                 officer,
-                'Updated {}: {} --> {}'.format(
-                    fieldname, getattr(officer, fieldname), row[fieldname]))
-            setattr(officer, fieldname, row[fieldname])
+                "Updated {}: {} --> {}".format(
+                    officer_field_name,
+                    getattr(officer, officer_field_name),
+                    row[officer_field_name],
+                ),
+            )
+            setattr(officer, officer_field_name, row[officer_field_name])
 
     # Name and gender are the only potentially changeable fields, so update those
-    update_officer_field('last_name')
-    update_officer_field('first_name')
-    update_officer_field('middle_initial')
+    update_officer_field("last_name")
+    update_officer_field("first_name")
+    update_officer_field("middle_initial")
 
-    update_officer_field('suffix')
-    update_officer_field('gender')
+    update_officer_field("suffix")
+    update_officer_field("gender")
 
     # The rest should be static
     static_fields = [
-        'unique_internal_identifier',
-        'race',
-        'employment_date',
-        'birth_year'
+        "unique_internal_identifier",
+        "race",
+        "employment_date",
+        "birth_year",
     ]
-    for fieldname in static_fields:
-        if fieldname in row:
-            if row[fieldname] == '':
-                row[fieldname] = None
-            old_value = getattr(officer, fieldname)
-            # If we're expecting a date type, attempt to parse row[fieldname] as a datetime
-            # This also normalizes all date formats, ensuring the following comparison works properly
+    for field_name in static_fields:
+        if field_name in row:
+            if row[field_name] == "":
+                row[field_name] = None
+            old_value = getattr(officer, field_name)
+            # If we're expecting a date type, attempt to parse row[field_name] as a
+            # datetime. This normalizes all date formats, ensuring the following
+            # comparison works properly
             if isinstance(old_value, (date, datetime)):
                 try:
-                    new_value = parse(row[fieldname])
+                    new_value = parse(row[field_name])
                     if isinstance(old_value, date):
                         new_value = new_value.date()
                 except Exception as e:
-                    msg = 'Field {} is a date-type, but "{}" was specified for Officer {} {} and cannot be parsed as a date-type.\nError message from dateutil: {}'.format(
-                        fieldname,
-                        row[fieldname],
-                        officer.first_name,
-                        officer.last_name,
-                        e
+                    msg = (
+                        'Field {} is a date-type, but "{}" was specified for '
+                        "Officer {} {} and cannot be parsed as a date-type.\nError "
+                        "message from dateutil: {}".format(
+                            field_name,
+                            row[field_name],
+                            officer.first_name,
+                            officer.last_name,
+                            e,
+                        )
                     )
                     raise Exception(msg)
             else:
-                new_value = row[fieldname]
+                new_value = row[field_name]
             if old_value is None:
-                update_officer_field(fieldname)
+                update_officer_field(field_name)
             elif str(old_value) != str(new_value):
-                msg = 'Officer {} {} has differing {} field. Old: {}, new: {}'.format(
+                msg = "Officer {} {} has differing {} field. Old: {}, new: {}".format(
                     officer.first_name,
                     officer.last_name,
-                    fieldname,
+                    field_name,
                     old_value,
-                    new_value
+                    new_value,
                 )
                 if update_static_fields:
                     print(msg)
-                    update_officer_field(fieldname)
+                    update_officer_field(field_name)
                 else:
                     raise Exception(msg)
 
@@ -240,15 +269,15 @@ def create_officer_from_row(row, department_id):
     officer = Officer()
     officer.department_id = department_id
 
-    set_field_from_row(row, officer, 'last_name', allow_blank=False)
-    set_field_from_row(row, officer, 'first_name', allow_blank=False)
-    set_field_from_row(row, officer, 'middle_initial')
-    set_field_from_row(row, officer, 'suffix')
-    set_field_from_row(row, officer, 'race')
-    set_field_from_row(row, officer, 'gender')
-    set_field_from_row(row, officer, 'employment_date', allow_blank=False)
-    set_field_from_row(row, officer, 'birth_year')
-    set_field_from_row(row, officer, 'unique_internal_identifier')
+    set_field_from_row(row, officer, "last_name", allow_blank=False)
+    set_field_from_row(row, officer, "first_name", allow_blank=False)
+    set_field_from_row(row, officer, "middle_initial")
+    set_field_from_row(row, officer, "suffix")
+    set_field_from_row(row, officer, "race")
+    set_field_from_row(row, officer, "gender")
+    set_field_from_row(row, officer, "employment_date", allow_blank=False)
+    set_field_from_row(row, officer, "birth_year")
+    set_field_from_row(row, officer, "unique_internal_identifier")
     db.session.add(officer)
     db.session.flush()
 
@@ -259,7 +288,8 @@ def create_officer_from_row(row, department_id):
 
 
 def is_equal(a, b):
-    """exhaustive equality checking, originally to compare a sqlalchemy result object of various types to a csv string
+    """Run an exhaustive equality check, originally to compare a sqlalchemy result
+    object of various types to a csv string.
     Note: Stringifying covers object cases (as in the datetime example below)
     >>> is_equal("1", 1)  # string == int
     True
@@ -272,6 +302,7 @@ def is_equal(a, b):
     >>> is_equal(datetime(2020, 1, 1), "2020-01-01 00:00:00") # datetime == string
     True
     """
+
     def try_else_false(comparable):
         try:
             return comparable(a, b)
@@ -280,55 +311,68 @@ def is_equal(a, b):
         except ValueError:
             return False
 
-    return any([
-        try_else_false(lambda _a, _b: str(_a) == str(_b)),
-        try_else_false(lambda _a, _b: int(_a) == int(_b)),
-        try_else_false(lambda _a, _b: float(_a) == float(_b))
-    ])
+    return any(
+        [
+            try_else_false(lambda _a, _b: str(_a) == str(_b)),
+            try_else_false(lambda _a, _b: int(_a) == int(_b)),
+            try_else_false(lambda _a, _b: float(_a) == float(_b)),
+        ]
+    )
 
 
 def process_assignment(row, officer, compare=False):
     assignment_fields = {
-        'required': [],
-        'optional': [
-            'job_title',
-            'star_no',
-            'unit_id',
-            'star_date',
-            'resign_date']
+        "required": [],
+        "optional": ["job_title", "star_no", "unit_id", "start_date", "resign_date"],
     }
 
     # See if the row has assignment data
-    if row_has_data(row, assignment_fields['required'], assignment_fields['optional']):
+    if row_has_data(row, assignment_fields["required"], assignment_fields["optional"]):
         add_assignment = True
         if compare:
             # Get existing assignments for officer and compare to row data
-            assignments = db.session.query(Assignment, Job)\
-                            .filter(Assignment.job_id == Job.id)\
-                            .filter_by(officer_id=officer.id)\
-                            .all()
-            for (assignment, job) in assignments:
-                assignment_fieldnames = ['star_no', 'unit_id', 'star_date', 'resign_date']
+            assignments = (
+                db.session.query(Assignment, Job)
+                .filter(Assignment.job_id == Job.id)
+                .filter_by(officer_id=officer.id)
+                .all()
+            )
+            for assignment, job in assignments:
+                assignment_fieldnames = [
+                    "star_no",
+                    "unit_id",
+                    "start_date",
+                    "resign_date",
+                ]
                 i = 0
                 for fieldname in assignment_fieldnames:
                     current = getattr(assignment, fieldname)
                     # Test if fields match between row and existing assignment
-                    if (current and fieldname in row and is_equal(row[fieldname], current)) or \
-                            (not current and (fieldname not in row or not row[fieldname])):
+                    if (
+                        current
+                        and fieldname in row
+                        and is_equal(row[fieldname], current)
+                    ) or (not current and (fieldname not in row or not row[fieldname])):
                         i += 1
                 if i == len(assignment_fieldnames):
                     job_title = job.job_title
-                    if (job_title and row.get('job_title', 'Not Sure') == job_title) or \
-                            (not job_title and ('job_title' not in row or not row['job_title'])):
+                    if (
+                        job_title and row.get("job_title", "Not Sure") == job_title
+                    ) or (
+                        not job_title
+                        and ("job_title" not in row or not row["job_title"])
+                    ):
                         # Found match, so don't add new assignment
                         add_assignment = False
         if add_assignment:
-            job = Job.query\
-                     .filter_by(job_title=row.get('job_title', 'Not Sure'),
-                                department_id=officer.department_id)\
-                     .one_or_none()
+            job = Job.query.filter_by(
+                job_title=row.get("job_title", "Not Sure"),
+                department_id=officer.department_id,
+            ).one_or_none()
             if not job:
-                num_existing_ranks = len(Job.query.filter_by(department_id=officer.department_id).all())
+                num_existing_ranks = len(
+                    Job.query.filter_by(department_id=officer.department_id).all()
+                )
                 if num_existing_ranks > 0:
                     auto_order = num_existing_ranks + 1
                 else:
@@ -337,37 +381,34 @@ def process_assignment(row, officer, compare=False):
                 job = Job(
                     is_sworn_officer=False,
                     department_id=officer.department_id,
-                    order=auto_order
+                    order=auto_order,
                 )
-                set_field_from_row(row, job, 'job_title', allow_blank=False)
+                set_field_from_row(row, job, "job_title", allow_blank=False)
                 db.session.add(job)
                 db.session.flush()
             # create new assignment
             assignment = Assignment()
             assignment.officer_id = officer.id
             assignment.job_id = job.id
-            set_field_from_row(row, assignment, 'star_no')
-            set_field_from_row(row, assignment, 'unit_id')
-            set_field_from_row(row, assignment, 'star_date', allow_blank=False)
-            set_field_from_row(row, assignment, 'resign_date', allow_blank=False)
+            set_field_from_row(row, assignment, "star_no")
+            set_field_from_row(row, assignment, "unit_id")
+            set_field_from_row(row, assignment, "start_date", allow_blank=False)
+            set_field_from_row(row, assignment, "resign_date", allow_blank=False)
             db.session.add(assignment)
             db.session.flush()
 
-            ImportLog.log_change(officer, 'Added assignment: {}'.format(assignment))
+            ImportLog.log_change(officer, f"Added assignment: {assignment}")
 
 
 def process_salary(row, officer, compare=False):
     salary_fields = {
-        'required': [
-            'salary',
-            'salary_year',
-            'salary_is_fiscal_year'],
-        'optional': ['overtime_pay']
+        "required": ["salary", "salary_year", "salary_is_fiscal_year"],
+        "optional": ["overtime_pay"],
     }
 
     # See if the row has salary data
-    if row_has_data(row, salary_fields['required'], salary_fields['optional']):
-        is_fiscal_year = str_is_true(row['salary_is_fiscal_year'])
+    if row_has_data(row, salary_fields["required"], salary_fields["optional"]):
+        is_fiscal_year = str_is_true(row["salary_is_fiscal_year"])
 
         add_salary = True
         if compare:
@@ -375,14 +416,27 @@ def process_salary(row, officer, compare=False):
             salaries = Salary.query.filter_by(officer_id=officer.id).all()
             for salary in salaries:
                 from decimal import Decimal
+
                 print(vars(salary))
                 print(row)
-                if Decimal('%.2f' % salary.salary) == Decimal('%.2f' % float(row['salary'])) and \
-                        salary.year == int(row['salary_year']) and \
-                        salary.is_fiscal_year == is_fiscal_year and \
-                        ((salary.overtime_pay and 'overtime_pay' in row and
-                            Decimal('%.2f' % salary.overtime_pay) == Decimal('%.2f' % float(row['overtime_pay']))) or
-                            (not salary.overtime_pay and ('overtime_pay' not in row or not row['overtime_pay']))):
+                if (
+                    Decimal(f"{salary.salary:.2f}")
+                    == Decimal(f"{float(row['salary']):.2f}")
+                    and salary.year == int(row["salary_year"])
+                    and salary.is_fiscal_year == is_fiscal_year
+                    and (
+                        (
+                            salary.overtime_pay
+                            and "overtime_pay" in row
+                            and Decimal(f"{salary.overtime_pay:.2f}")
+                            == Decimal(f"{float(row['overtime_pay']):.2f}")
+                        )
+                        or (
+                            not salary.overtime_pay
+                            and ("overtime_pay" not in row or not row["overtime_pay"])
+                        )
+                    )
+                ):
                     # Found match, so don't add new salary
                     add_salary = False
 
@@ -390,82 +444,108 @@ def process_salary(row, officer, compare=False):
             # create new salary
             salary = Salary(
                 officer_id=officer.id,
-                salary=float(row['salary']),
-                year=int(row['salary_year']),
+                salary=float(row["salary"]),
+                year=int(row["salary_year"]),
                 is_fiscal_year=is_fiscal_year,
             )
-            if 'overtime_pay' in row and row['overtime_pay']:
-                salary.overtime_pay = float(row['overtime_pay'])
+            if "overtime_pay" in row and row["overtime_pay"]:
+                salary.overtime_pay = float(row["overtime_pay"])
             db.session.add(salary)
             db.session.flush()
 
-            ImportLog.log_change(officer, 'Added salary: {}'.format(salary))
+            ImportLog.log_change(officer, f"Added salary: {salary}")
 
 
 @click.command()
-@click.argument('filename')
-@click.option('--no-create', is_flag=True, help='only update officers; do not create new ones')
-@click.option('--update-by-name', is_flag=True, help='update officers by first and last name (useful when star_no or unique_internal_identifier are not available)')
-@click.option('--update-static-fields', is_flag=True, help='allow updating normally-static fields like race, birth year, etc.')
+@click.argument("filename")
+@click.option(
+    "--no-create", is_flag=True, help="only update officers; do not create new ones"
+)
+@click.option(
+    "--update-by-name",
+    is_flag=True,
+    help="update officers by first and last name (useful when star_no or "
+    "unique_internal_identifier are not available)",
+)
+@click.option(
+    "--update-static-fields",
+    is_flag=True,
+    help="allow updating normally-static fields like race, birth year, etc.",
+)
 @with_appcontext
 def bulk_add_officers(filename, no_create, update_by_name, update_static_fields):
     """Add or update officers from a CSV file."""
 
-    encoding = 'utf-8'
+    encoding = ENCODING_UTF_8
 
     # handles unicode errors that can occur when the file was made in Excel
-    with open(filename, 'r') as f:
-        if u'\ufeff' in f.readline():
-            encoding = 'utf-8-sig'
+    with open(filename, "r") as f:
+        if "\ufeff" in f.readline():
+            encoding = "utf-8-sig"
 
-    with open(filename, 'r', encoding=encoding) as f:
+    with open(filename, "r", encoding=encoding) as f:
         ImportLog.clear_logs()
         csvfile = csv.DictReader(f)
         departments = {}
 
         required_fields = [
-            'department_id',
-            'first_name',
-            'last_name',
+            "department_id",
+            "first_name",
+            "last_name",
         ]
 
         # Assert required fields are in CSV file
         for field in required_fields:
             if field not in csvfile.fieldnames:
-                raise Exception('Missing required field {}'.format(field))
-        if (not update_by_name
-                and 'star_no' not in csvfile.fieldnames
-                and 'unique_internal_identifier' not in csvfile.fieldnames):
-            raise Exception('CSV file must include either badge numbers or unique identifiers for officers')
+                raise Exception(f"Missing required field {field}")
+        if (
+            not update_by_name
+            and "star_no" not in csvfile.fieldnames
+            and "unique_internal_identifier" not in csvfile.fieldnames
+        ):
+            raise Exception(
+                "CSV file must include either badge numbers or unique identifiers for "
+                "officers"
+            )
 
         for row in csvfile:
-            department_id = row['department_id']
+            department_id = row["department_id"]
             department = departments.get(department_id)
-            if row['department_id'] not in departments:
+            if row["department_id"] not in departments:
                 department = Department.query.filter_by(id=department_id).one_or_none()
                 if department:
                     departments[department_id] = department
                 else:
-                    raise Exception('Department ID {} not found'.format(department_id))
+                    raise Exception(f"Department ID {department_id} not found")
 
             if not update_by_name:
-                # check for existing officer based on unique ID or name/badge
-                if 'unique_internal_identifier' in csvfile.fieldnames and row['unique_internal_identifier']:
+                # Check for existing officer based on unique ID or name/badge
+                if (
+                    "unique_internal_identifier" in csvfile.fieldnames
+                    and row["unique_internal_identifier"]
+                ):
                     officer = Officer.query.filter_by(
                         department_id=department_id,
-                        unique_internal_identifier=row['unique_internal_identifier']
+                        unique_internal_identifier=row["unique_internal_identifier"],
                     ).one_or_none()
-                elif 'star_no' in csvfile.fieldnames and row['star_no']:
-                    officer = get_officer(department_id, row['star_no'],
-                                          row['first_name'], row['last_name'])
+                elif "star_no" in csvfile.fieldnames and row["star_no"]:
+                    officer = get_officer(
+                        department_id,
+                        row["star_no"],
+                        row["first_name"],
+                        row["last_name"],
+                    )
                 else:
-                    raise Exception('Officer {} {} missing badge number and unique identifier'.format(row['first_name'],
-                                                                                                      row['last_name']))
+                    raise Exception(
+                        "Officer {} {} missing badge number and unique identifier".format(
+                            row["first_name"], row["last_name"]
+                        )
+                    )
             else:
                 officer = Officer.query.filter_by(
                     department_id=department_id,
-                    last_name=row['last_name'],
-                    first_name=row['first_name']
+                    last_name=row["last_name"],
+                    first_name=row["first_name"],
                 ).one_or_none()
 
             if officer:
@@ -474,8 +554,10 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                 create_officer_from_row(row, department_id)
 
         ImportLog.print_logs()
-        if current_app.config['ENV'] == 'testing' or prompt_yes_no("Do you want to commit the above changes?"):
-            print("Commiting changes.")
+        if current_app.config[KEY_ENV] == KEY_ENV_TESTING or prompt_yes_no(
+            "Do you want to commit the above changes?"
+        ):
+            print("Committing changes.")
             db.session.commit()
         else:
             print("Aborting changes.")
@@ -486,7 +568,12 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
 
 @click.command()
-@click.argument("department-name")
+@click.argument("department-name", required=True)
+@click.argument(
+    "department-state",
+    type=click.Choice([state.abbr for state in us.STATES]),
+    required=True,
+)
 @click.option("--officers-csv", type=click.Path(exists=True))
 @click.option("--assignments-csv", type=click.Path(exists=True))
 @click.option("--salaries-csv", type=click.Path(exists=True))
@@ -497,6 +584,7 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 @with_appcontext
 def advanced_csv_import(
     department_name,
+    department_state,
     officers_csv,
     assignments_csv,
     salaries_csv,
@@ -506,8 +594,8 @@ def advanced_csv_import(
     overwrite_assignments,
 ):
     """
-    Add or update officers, assignments, salaries, links and incidents from csv
-    files in the department DEPARTMENT_NAME.
+    Add or update officers, assignments, salaries, links and incidents from
+    csv files in the department using the DEPARTMENT_NAME and DEPARTMENT_STATE.
 
     The csv files are treated as the source of truth.
     Existing entries might be overwritten as a result, backing up the
@@ -515,45 +603,61 @@ def advanced_csv_import(
 
     See the documentation before running the command.
     """
-    if force_create and current_app.config["ENV"] == "production":
+    if force_create and current_app.config[KEY_ENV] == KEY_ENV_PROD:
         raise Exception("--force-create cannot be used in production!")
 
     import_csv_files(
         department_name,
+        department_state,
         officers_csv,
         assignments_csv,
         salaries_csv,
         links_csv,
         incidents_csv,
         force_create,
-        overwrite_assignments
+        overwrite_assignments,
     )
 
 
 @click.command()
-@click.argument('name')
-@click.argument('short_name')
-@click.argument('unique_internal_identifier', required=False)
+@click.argument("name", required=True)
+@click.argument("short_name", required=True)
+@click.argument(
+    "state", type=click.Choice([state.abbr for state in us.STATES]), required=True
+)
+@click.argument("unique_internal_identifier", required=False)
 @with_appcontext
-def add_department(name, short_name, unique_internal_identifier):
+def add_department(name, short_name, state, unique_internal_identifier):
     """Add a new department to OpenOversight."""
-    dept = Department(name=name, short_name=short_name, unique_internal_identifier_label=unique_internal_identifier)
+    dept = Department(
+        name=name,
+        short_name=short_name,
+        state=state.upper(),
+        unique_internal_identifier_label=unique_internal_identifier,
+    )
     db.session.add(dept)
     db.session.commit()
-    print("Department added with id {}".format(dept.id))
+    print(f"Department added with id {dept.id}")
 
 
 @click.command()
-@click.argument('department_id')
-@click.argument('job_title')
-@click.argument('is_sworn_officer', type=click.Choice(["true", "false"], case_sensitive=False))
-@click.argument('order', type=int)
+@click.argument("department_id")
+@click.argument("job_title")
+@click.argument(
+    "is_sworn_officer", type=click.Choice(["true", "false"], case_sensitive=False)
+)
+@click.argument("order", type=int)
 @with_appcontext
 def add_job_title(department_id, job_title, is_sworn_officer, order):
     """Add a rank to a department."""
     department = Department.query.filter_by(id=department_id).one_or_none()
-    is_sworn = (is_sworn_officer == "true")
-    job = Job(job_title=job_title, is_sworn_officer=is_sworn, order=order, department=department)
+    is_sworn = is_sworn_officer == "true"
+    job = Job(
+        job_title=job_title,
+        is_sworn_officer=is_sworn,
+        order=order,
+        department=department,
+    )
     db.session.add(job)
-    print('Added {} to {}'.format(job.job_title, department.name))
+    print(f"Added {job.job_title} to {department.name}")
     db.session.commit()

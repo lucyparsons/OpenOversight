@@ -4,7 +4,18 @@ from typing import Dict, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from .model_imports import (
+from OpenOversight.app.models.database import (
+    Assignment,
+    Department,
+    Incident,
+    Job,
+    Link,
+    Officer,
+    Salary,
+    Unit,
+    db,
+)
+from OpenOversight.app.models.database_imports import (
     create_assignment_from_dict,
     create_incident_from_dict,
     create_link_from_dict,
@@ -17,17 +28,6 @@ from .model_imports import (
     update_link_from_dict,
     update_officer_from_dict,
     update_salary_from_dict,
-)
-from .models import (
-    Assignment,
-    Department,
-    Incident,
-    Job,
-    Link,
-    Officer,
-    Salary,
-    Unit,
-    db,
 )
 
 
@@ -58,18 +58,14 @@ def _check_provided_fields(dict_reader, required_fields, optional_fields, csv_na
     missing_required = set(required_fields) - set(dict_reader.fieldnames)
     if len(missing_required) > 0:
         raise Exception(
-            "Missing mandatory field(s) {} in {} csv.".format(
-                list(missing_required), csv_name
-            )
+            f"Missing mandatory field(s) {list(missing_required)} in {csv_name} csv."
         )
     unexpected_fields = set(dict_reader.fieldnames) - set(
         required_fields + optional_fields
     )
     if len(unexpected_fields) > 0:
         raise Exception(
-            "Received unexpected field(s) {} in {} csv.".format(
-                list(unexpected_fields), csv_name
-            )
+            f"Received unexpected field(s) {list(unexpected_fields)} in {csv_name} csv."
         )
 
 
@@ -94,6 +90,7 @@ def _csv_reader(csv_filename):
 def _handle_officers_csv(
     officers_csv: str,
     department_name: str,
+    department_state: str,
     department_id: int,
     id_to_officer,
     force_create,
@@ -103,7 +100,9 @@ def _handle_officers_csv(
     with _csv_reader(officers_csv) as csv_reader:
         _check_provided_fields(
             csv_reader,
-            required_fields=["id", "department_name"] if not force_create else ["id"],
+            required_fields=["id", "department_name", "department_state"]
+            if not force_create
+            else ["id"],
             optional_fields=[
                 "last_name",
                 "first_name",
@@ -115,7 +114,9 @@ def _handle_officers_csv(
                 "birth_year",
                 "unique_internal_identifier",
                 "department_name",
-                # the following are unused, but allowed since they are included in the csv output
+                "department_state",
+                # the following are unused, but allowed since they are included in the
+                # csv output
                 "badge_number",
                 "unique_identifier",
                 "job_title",
@@ -130,6 +131,7 @@ def _handle_officers_csv(
             # can only update department with given name
             if not force_create:
                 assert row["department_name"] == department_name
+                assert row["department_state"] == department_state
             row["department_id"] = department_id
             connection_id = row["id"]
             if row["id"].startswith("#"):
@@ -146,8 +148,8 @@ def _handle_officers_csv(
                 new_officers[connection_id] = officer
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} officers.".format(counter))
-    print("Done with officers. Processed {} rows.".format(counter))
+                print(f"Processed {counter} officers.")
+    print(f"Done with officers. Processed {counter} rows.")
     return new_officers
 
 
@@ -162,7 +164,7 @@ def _handle_assignments_csv(
     with _csv_reader(assignments_csv) as csv_reader:
         field_names = csv_reader.fieldnames
         if "start_date" in field_names:
-            field_names[field_names.index("start_date")] = "star_date"
+            field_names[field_names.index("start_date")] = "start_date"
         if "badge_number" in field_names:
             field_names[field_names.index("badge_number")] = "star_no"
         if "end_date" in field_names:
@@ -181,7 +183,7 @@ def _handle_assignments_csv(
                 "star_no",
                 "unit_id",
                 "unit_name",
-                "star_date",
+                "start_date",
                 "resign_date",
                 "officer_unique_identifier",
             ],
@@ -193,8 +195,8 @@ def _handle_assignments_csv(
         job_title_to_id = {
             job.job_title.strip().lower(): job.id for job in jobs_for_department
         }
-        unit_descrip_to_id = {
-            unit.descrip.strip().lower(): unit.id
+        unit_description_to_id = {
+            unit.description.strip().lower(): unit.id
             for unit in Unit.query.filter_by(department_id=department_id).all()
         }
         if overwrite_assignments:
@@ -211,7 +213,8 @@ def _handle_assignments_csv(
             )
             if len(wrong_department) > 0:
                 raise Exception(
-                    "Referenced {} officers in assignment csv that belong to different department. Example ids: {}".format(
+                    "Referenced {} officers in assignment csv that belong to different "
+                    "department. Example ids: {}".format(
                         len(wrong_department),
                         ", ".join(map(str, list(wrong_department)[:3])),
                     )
@@ -231,7 +234,7 @@ def _handle_assignments_csv(
             csv_reader = rows
         else:
             existing_assignments = (
-                Assignment.query.join(Assignment.baseofficer)
+                Assignment.query.join(Assignment.base_officer)
                 .filter(Officer.department_id == department_id)
                 .all()
             )
@@ -253,17 +256,17 @@ def _handle_assignments_csv(
                 )
             elif row.get("unit_name"):
                 unit_name = row["unit_name"].strip()
-                descrip = unit_name.lower()
-                unit_id = unit_descrip_to_id.get(descrip)
+                description = unit_name.lower()
+                unit_id = unit_description_to_id.get(description)
                 if unit_id is None:
                     unit = Unit(
-                        descrip=unit_name,
+                        description=unit_name,
                         department_id=officer.department_id,
                     )
                     db.session.add(unit)
                     db.session.flush()
                     unit_id = unit.id
-                    unit_descrip_to_id[descrip] = unit_id
+                    unit_description_to_id[description] = unit_id
                 row["unit_id"] = unit_id
             job_title = row["job_title"].strip().lower()
             job_id = job_title_to_id.get(job_title)
@@ -300,8 +303,8 @@ def _handle_assignments_csv(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} assignments.".format(counter))
-    print("Done with assignments. Processed {} rows.".format(counter))
+                print(f"Processed {counter} assignments.")
+    print(f"Done with assignments. Processed {counter} rows.")
 
 
 def _handle_salaries(
@@ -343,13 +346,14 @@ def _handle_salaries(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} salaries.".format(counter))
-    print("Done with salaries. Processed {} rows.".format(counter))
+                print(f"Processed {counter} salaries.")
+    print(f"Done with salaries. Processed {counter} rows.")
 
 
 def _handle_incidents_csv(
     incidents_csv: str,
     department_name: str,
+    department_state: str,
     department_id: int,
     all_officers: Dict[str, Officer],
     id_to_incident: Dict[int, Incident],
@@ -360,7 +364,7 @@ def _handle_incidents_csv(
     with _csv_reader(incidents_csv) as csv_reader:
         _check_provided_fields(
             csv_reader,
-            required_fields=["id", "department_name"],
+            required_fields=["id", "department_name", "department_state"],
             optional_fields=[
                 "date",
                 "time",
@@ -372,8 +376,8 @@ def _handle_incidents_csv(
                 "city",
                 "state",
                 "zip_code",
-                "creator_id",
-                "last_updated_id",
+                "created_by",
+                "last_updated_by",
                 "officer_ids",
                 "license_plates",
             ],
@@ -382,6 +386,7 @@ def _handle_incidents_csv(
 
         for row in csv_reader:
             assert row["department_name"] == department_name
+            assert row["department_state"] == department_state
             row["department_id"] = department_id
             row["officers"] = _objects_from_split_field(
                 row.get("officer_ids"), all_officers
@@ -415,8 +420,8 @@ def _handle_incidents_csv(
                 new_incidents[connection_id] = incident
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} incidents.".format(counter))
-        print("Done with incidents. Processed {} rows.".format(counter))
+                print(f"Processed {counter} incidents.")
+        print(f"Done with incidents. Processed {counter} rows.")
     return new_incidents
 
 
@@ -437,7 +442,7 @@ def _handle_links_csv(
                 "link_type",
                 "description",
                 "author",
-                "creator_id",
+                "created_by",
                 "officer_ids",
                 "incident_ids",
             ],
@@ -473,12 +478,13 @@ def _handle_links_csv(
             )
             counter += 1
             if counter % 1000 == 0:
-                print("Processed {} links.".format(counter))
-        print("Done with links. Processed {} rows.".format(counter))
+                print(f"Processed {counter} links.")
+        print(f"Done with links. Processed {counter} rows.")
 
 
 def import_csv_files(
     department_name: str,
+    department_state: str,
     officers_csv: Optional[str],
     assignments_csv: Optional[str],
     salaries_csv: Optional[str],
@@ -487,10 +493,13 @@ def import_csv_files(
     force_create: bool = False,
     overwrite_assignments: bool = False,
 ):
-    department = Department.query.filter_by(name=department_name).one_or_none()
+    department = Department.query.filter_by(
+        name=department_name, state=department_state
+    ).one_or_none()
     if department is None:
         raise Exception(
-            "Department with name '{}' does not exist!".format(department_name)
+            f"Department with name '{department_name}' in {department_state} "
+            "does not exist!"
         )
     department_id = department.id
 
@@ -500,7 +509,12 @@ def import_csv_files(
 
     if officers_csv is not None:
         new_officers = _handle_officers_csv(
-            officers_csv, department_name, department_id, id_to_officer, force_create
+            officers_csv,
+            department_name,
+            department_state,
+            department_id,
+            id_to_officer,
+            force_create,
         )
         all_officers.update(new_officers)
 
@@ -525,6 +539,7 @@ def import_csv_files(
         new_incidents = _handle_incidents_csv(
             incidents_csv,
             department_name,
+            department_state,
             department_id,
             all_officers,
             id_to_incident,

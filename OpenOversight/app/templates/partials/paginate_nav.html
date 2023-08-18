@@ -1,27 +1,25 @@
 <nav aria-label="Page navigation - {{ location }}">
-    <ul class="pager">
-      {% if paginate.has_prev %}
-        <li class="previous">
-          <a role="button" href="{{ prev_url }}">
-            <span aria-hidden="true">&larr;</span>
-            Previous
-          </a>
-        </li>
-      {% endif %}
-      {% if paginate.has_next %}
-      Showing {{(paginate.page-1)*paginate.per_page + 1 }}-{{(paginate.page)*paginate.per_page}} of {{paginate.total}}
+  <ul class="pager">
+    {% if paginate.has_prev %}
+      <li class="previous">
+        <a role="button" href="{{ prev_url }}">
+          <span aria-hidden="true">←</span>
+          Previous
+        </a>
+      </li>
+    {% endif %}
+    {% if paginate.has_next %}
+      Showing {{ (paginate.page-1) * paginate.per_page + 1 }}-{{ (paginate.page) * paginate.per_page }} of {{ paginate.total }}
       <li class="next">
         <a role="button" href="{{ next_url }}">
           Next
-          <span aria-hidden="true">&rarr;</span>
+          <span aria-hidden="true">→</span>
         </a>
       </li>
-      {% elif paginate.total == 0 %}
-          {% if location == 'top' %}
-          Showing 0 of 0
-          {% endif %}
-      {% else %}
-      Showing {{(paginate.page-1)*paginate.per_page + 1 }}-{{paginate.total}} of {{paginate.total}}
-      {% endif %}
-    </ul>
-  </nav>
+    {% elif paginate.total == 0 %}
+      {% if location == 'top' %}Showing 0 of 0{% endif %}
+    {% else %}
+      Showing {{ (paginate.page-1) * paginate.per_page + 1 }}-{{ paginate.total }} of {{ paginate.total }}
+    {% endif %}
+  </ul>
+</nav>
