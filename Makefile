@@ -94,7 +94,7 @@ attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
 
 .PHONY: create_empty_secret
-create_empty_secret: # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
+create_empty_secret: ## This is needed to make sure docker doesn't create an empty directory, or delete that directory first
 	touch service_account_key.json || \
 	(echo "Need to delete that empty directory first"; \
 	 sudo rm -d service_account_key.json/; \

@@ -101,6 +101,10 @@ class Department(BaseModel):
             "unique_internal_identifier_label": self.unique_internal_identifier_label,
         }
 
+    @property
+    def display_name(self):
+        return self.name if not self.state else f"[{self.state}] {self.name}"
+
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_ASSIGNMENTS_LAST_UPDATED))
     def latest_assignment_update(self) -> datetime.date:
         assignment_updated = (

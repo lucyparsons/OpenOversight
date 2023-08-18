@@ -45,11 +45,11 @@
     <h3>Select the department that the police officer in your image belongs to:</h3>
     <div class="form-group">
       <form class="form"
-            name="deptselect"
-            id="deptselect"
+            name="dept-select"
+            id="dept-select"
             method="post"
             role="form"
-            label="deptselect">
+            label="dept-select">
         {{ wtf.form_field(form.department) }}
       </form>
       <br>
@@ -79,12 +79,12 @@
         // Select user's preferred department by default
         document.getElementById("department").selectedIndex = {{ preferred_dept_id }} - 1;
         // Save the preferred department in dept_id
-        var dept_id = document.getElementById("department").selectedIndex + 1;
-        var csrf_token = "{{ csrf_token() }}";
+        let dept_id = document.getElementById("department").selectedIndex + 1;
+        const csrf_token = "{{ csrf_token() }}";
 
         // Store changes in drop down list in dept_id variable
         $(function() {
-            select_dept = $('#deptselect');
+            const select_dept = $('#dept-select');
             select_dept.on('change', function() {
                 // fires when department selection changes
                 dept_id = document.getElementById("department").value;

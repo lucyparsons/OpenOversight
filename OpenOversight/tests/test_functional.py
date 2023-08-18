@@ -123,7 +123,7 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1")
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element("tag name", "body").text
-    expected = f"Showing 1-{current_app.config['OFFICERS_PER_PAGE']} of {total}"
+    expected = f"Showing 1-{current_app.config[KEY_OFFICERS_PER_PAGE]} of {total}"
     assert expected in page_text
 
     # last page of results
@@ -176,8 +176,8 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
     dept_selector.select_by_value(dept_id)
     browser.find_element("id", "activate-step-2").click()
 
-    results = browser.find_elements("id", "#uii-question")
-    assert len(results) == 0
+    uii_elements = browser.find_elements("id", "#uii-question")
+    assert len(uii_elements) == 0
 
 
 @pytest.mark.xdist_group
