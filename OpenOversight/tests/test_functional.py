@@ -150,8 +150,8 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
     dept_selector.select_by_value(dept_id)
     browser.find_element_by_id("activate-step-2").click()
 
-    uii_elements = browser.find_elements_by_id("#uii-question")
-    assert len(uii_elements) == 1
+    page_text = browser.find_element_by_tag_name("body").text
+    assert "Do you know any part of the Officer's" in page_text
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
