@@ -141,7 +141,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
 ):
     browser.get(f"http://localhost:{server_port}/find")
 
-    dept_with_uii = Department.query.filter_by(
+    dept_with_uii = Department.query.filter(
         Department.unique_internal_identifier_label.isnot(None)
     ).first()
     dept_id = str(dept_with_uii.id)
