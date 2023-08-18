@@ -97,12 +97,10 @@ class FindOfficerForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=55)],
     )
-    # TODO: Figure out why this test is failing when the departments are sorted using
-    #  the dept_choices function.
     dept = QuerySelectField(
         "dept",
         validators=[DataRequired()],
-        query_factory=unsorted_dept_choices,
+        query_factory=dept_choices,
         get_label="display_name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])

@@ -99,6 +99,7 @@ from OpenOversight.app.utils.db import (
     compute_leaderboard_stats,
     dept_choices,
     unit_choices,
+    unsorted_dept_choices,
 )
 from OpenOversight.app.utils.forms import (
     add_new_assignment,
@@ -179,7 +180,11 @@ def browse():
 def get_officer():
     form = FindOfficerForm()
 
-    departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
+    # TODO: Figure out why this test is failing when the departments are sorted using
+    #  the dept_choices function.
+    departments_dict = [
+        dept_choice.to_custom_dict() for dept_choice in unsorted_dept_choices()
+    ]
 
     if getattr(current_user, "dept_pref_rel", None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
