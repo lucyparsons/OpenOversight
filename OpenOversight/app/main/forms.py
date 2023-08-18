@@ -40,7 +40,7 @@ from OpenOversight.app.utils.choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.db import dept_choices, unit_choices
+from OpenOversight.app.utils.db import dept_choices, unit_choices, unsorted_dept_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 
@@ -97,11 +97,13 @@ class FindOfficerForm(Form):
         default="",
         validators=[Regexp(r"\w*"), Length(max=55)],
     )
+    # TODO: Figure out why this test is failing when the departments are sorted using
+    #  the dept_choices function.
     dept = QuerySelectField(
         "dept",
         validators=[DataRequired()],
-        query_factory=dept_choices,
-        get_label="name",
+        query_factory=unsorted_dept_choices,
+        get_label="display_name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
@@ -306,7 +308,7 @@ class AddOfficerForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     first_name = StringField(
         "First name",
@@ -433,7 +435,7 @@ class EditOfficerForm(Form):
         "Department",
         validators=[Optional()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     submit = SubmitField(label="Update")
 
@@ -448,7 +450,7 @@ class AddUnitForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     created_by = HiddenField(
         validators=[
@@ -463,7 +465,7 @@ class AddImageForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
 
 
@@ -574,7 +576,7 @@ class IncidentForm(DateFieldForm):
         "Department*",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="name",
+        get_label="display_name",
     )
     address = FormField(LocationForm)
     officers = FieldList(

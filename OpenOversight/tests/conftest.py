@@ -83,7 +83,7 @@ class PoliceDepartment:
         name,
         short_name,
         state="",
-        unique_internal_identifier_label="",
+        uid_label="",
         exclude_state="",
     ):
         self.name = name
@@ -95,11 +95,7 @@ class PoliceDepartment:
                 [s for s in DEPARTMENT_STATE_CHOICES if s[0] != exclude_state]
             )[0]
         )
-        self.unique_internal_identifier_label = (
-            unique_internal_identifier_label
-            if unique_internal_identifier_label
-            else pick_uid()
-        )
+        self.uid_label = uid_label if uid_label else pick_uid()
 
 
 OFFICERS = [
@@ -424,7 +420,7 @@ def add_mockdata(session):
         name=SPRINGFIELD_PD.name,
         short_name=SPRINGFIELD_PD.short_name,
         state=SPRINGFIELD_PD.state,
-        unique_internal_identifier_label=SPRINGFIELD_PD.unique_internal_identifier_label,
+        unique_internal_identifier_label=SPRINGFIELD_PD.uid_label,
         created_by=test_admin.id,
     )
     session.add(department)
