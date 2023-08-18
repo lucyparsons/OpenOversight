@@ -110,24 +110,6 @@ def test_user_can_get_to_complaint(mockdata, browser, server_port):
     assert "File a Complaint" in title_text
 
 
-def test_find_officer_can_see_uii_question_for_depts_with_uiis(
-    mockdata, browser, server_port
-):
-    browser.get(f"http://localhost:{server_port}/find")
-
-    dept_with_uii = Department.query.filter(
-        Department.unique_internal_identifier_label.isnot(None)
-    ).first()
-    dept_id = str(dept_with_uii.id)
-
-    dept_selector = Select(browser.find_element_by_id("dept"))
-    dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
-
-    uii_elements = browser.find_elements_by_id("#uii-question")
-    assert len(uii_elements) == 1
-
-
 def test_officer_browse_pagination(mockdata, browser, server_port):
     total = Officer.query.filter_by(department_id=AC_DEPT).count()
 
@@ -152,6 +134,24 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     )
     expected = f"Showing {start_of_page}-{total} of {total}"
     assert expected in page_text
+
+
+def test_find_officer_can_see_uii_question_for_depts_with_uiis(
+    mockdata, browser, server_port
+):
+    browser.get(f"http://localhost:{server_port}/find")
+
+    dept_with_uii = Department.query.filter(
+        Department.unique_internal_identifier_label.isnot(None)
+    ).first()
+    dept_id = str(dept_with_uii.id)
+
+    dept_selector = Select(browser.find_element_by_id("dept"))
+    dept_selector.select_by_value(dept_id)
+    browser.find_element_by_id("activate-step-2").click()
+
+    uii_elements = browser.find_elements_by_id("#uii-question")
+    assert len(uii_elements) == 1
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
