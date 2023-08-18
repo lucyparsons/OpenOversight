@@ -40,7 +40,7 @@ from OpenOversight.app.utils.choices import (
     STATE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.db import dept_choices, unit_choices, unsorted_dept_choices
+from OpenOversight.app.utils.db import dept_choices, unit_choices
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 

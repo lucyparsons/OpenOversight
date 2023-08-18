@@ -97,7 +97,6 @@ from OpenOversight.app.utils.db import (
     add_department_query,
     add_unit_query,
     compute_leaderboard_stats,
-    dept_choices,
     unit_choices,
     unsorted_dept_choices,
 )
