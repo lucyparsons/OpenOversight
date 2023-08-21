@@ -504,7 +504,7 @@ def validate_oo_id(self, oo_id):
             officer = Officer.query.get(oo_id.data)
 
         if not officer:
-                raise ValidationError("Not a valid officer id")
+            raise ValidationError("Not a valid officer id")
 
 
 class OOIdForm(Form):
