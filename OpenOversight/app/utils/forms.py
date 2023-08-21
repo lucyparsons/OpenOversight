@@ -2,7 +2,6 @@ import datetime
 
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
-from sqlalchemy.sql.expression import cast
 
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
@@ -15,7 +14,6 @@ from OpenOversight.app.main.forms import (
 from OpenOversight.app.models.database import (
     Assignment,
     Description,
-    Face,
     Incident,
     Job,
     LicensePlate,
