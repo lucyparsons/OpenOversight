@@ -382,7 +382,6 @@ def redirect_add_assignment(officer_id: int):
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
-    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
@@ -399,7 +398,7 @@ def add_assignment(officer_id: int):
             and officer.department_id == current_user.ac_department_id
         ):
             try:
-                add_new_assignment(officer_id, form)
+                add_new_assignment(officer_id, form, current_user)
                 Department(id=officer.department_id).remove_database_cache_entries(
                     [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
                 )
@@ -1143,9 +1142,6 @@ def redirect_add_officer():
 @ac_or_admin_required
 def add_officer():
     form = AddOfficerForm()
-    form.created_by.data = current_user.get_id()
-    for link in form.links:
-        link.created_by.data = current_user.id
     add_unit_query(form, current_user)
     add_department_query(form, current_user)
     set_dynamic_default(form.department, current_user.dept_pref_rel)
@@ -2018,8 +2014,6 @@ class IncidentApi(ModelView):
         if request.args.get("officer_id"):
             form.officers[0].oo_id.data = request.args.get("officer_id")
 
-        for link in form.links:
-            link.created_by.data = current_user.id
         return form
 
     def get_edit_form(self, obj: Incident):
@@ -2028,11 +2022,6 @@ class IncidentApi(ModelView):
         no_license_plates = len(obj.license_plates)
         no_links = len(obj.links)
         no_officers = len(obj.officers)
-        for link in form.links:
-            if link.created_by.data:
-                continue
-            else:
-                link.created_by.data = current_user.id
 
         for officer_idx, officer in enumerate(obj.officers):
             form.officers[officer_idx].oo_id.data = officer.id

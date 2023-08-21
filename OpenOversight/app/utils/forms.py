@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
 
+from OpenOversight.app.main.forms import AddOfficerForm, AssignmentForm, IncidentForm
 from OpenOversight.app.models.database import (
     Assignment,
     Description,
@@ -17,13 +18,14 @@ from OpenOversight.app.models.database import (
     Officer,
     Salary,
     Unit,
+    User,
     db,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.general import get_or_create
 
 
-def add_new_assignment(officer_id, form):
+def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User):
     if form.unit.data:
         unit_id = form.unit.data.id
     else:
@@ -41,12 +43,13 @@ def add_new_assignment(officer_id, form):
         unit_id=unit_id,
         start_date=form.start_date.data,
         resign_date=form.resign_date.data,
+        created_by=current_user.get_id(),
     )
     db.session.add(new_assignment)
     db.session.commit()
 
 
-def add_officer_profile(form, current_user):
+def add_officer_profile(form: AddOfficerForm, current_user: User):
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -57,6 +60,7 @@ def add_officer_profile(form, current_user):
         birth_year=form.birth_year.data,
         employment_date=form.employment_date.data,
         department_id=form.department.data.id,
+        created_by=current_user.get_id(),
     )
     db.session.add(officer)
     db.session.commit()
@@ -72,6 +76,7 @@ def add_officer_profile(form, current_user):
         job_id=form.job_id.data,
         unit=officer_unit,
         start_date=form.employment_date.data,
+        created_by=current_user.get_id(),
     )
     db.session.add(assignment)
     if form.links.data:
@@ -91,6 +96,7 @@ def add_officer_profile(form, current_user):
                     officer=officer,
                     created_at=datetime.datetime.now(),
                     updated_at=datetime.datetime.now(),
+                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -103,6 +109,7 @@ def add_officer_profile(form, current_user):
                     officer=officer,
                     created_at=datetime.datetime.now(),
                     updated_at=datetime.datetime.now(),
+                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -115,6 +122,7 @@ def add_officer_profile(form, current_user):
                     overtime_pay=salary["overtime_pay"],
                     year=salary["year"],
                     is_fiscal_year=salary["is_fiscal_year"],
+                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_salary)
 
@@ -132,7 +140,7 @@ def create_description(self, form):
     )
 
 
-def create_incident(self, form):
+def create_incident(self, form: IncidentForm):
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
