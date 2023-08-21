@@ -186,16 +186,9 @@ def create_incident(self, form: IncidentForm, current_user: User):
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
-                of = Officer.query.filter_by(
-                    unique_internal_identifier=if_exists_or_none(officer["oo_id"])
-                ).one()
-                if not of:
-                    of = Officer(
-                        created_by=current_user.get_id(),
-                        unique_internal_identifier=if_exists_or_none(officer["oo_id"]),
-                    )
-                    db.session.add(of)
-                fields["officers"].append(of)
+                of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
+                if of:
+                    fields["officers"].append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
@@ -203,7 +196,7 @@ def create_incident(self, form: IncidentForm, current_user: User):
                 pl = LicensePlate.query.filter_by(
                     number=if_exists_or_none(plate["number"]),
                     state=if_exists_or_none(plate["state"]),
-                ).one()
+                ).first()
                 if not pl:
                     pl = LicensePlate(
                         created_by=current_user.get_id(),
