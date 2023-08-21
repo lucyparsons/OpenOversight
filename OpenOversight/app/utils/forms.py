@@ -160,30 +160,72 @@ def create_incident(self, form: IncidentForm, current_user: User):
     }
 
     if "address" in form.data:
-        address, _ = get_or_create(db.session, Location, **form.data["address"])
-        fields["address"] = address
+        address = form.data["address"]
+        location = Location.query.filter_by(
+            cross_street1=address["cross_street1"],
+            cross_street2=address["cross_street2"],
+            city=address["city"],
+            state=address["state"],
+            street_name=address["street_name"],
+            zip_code=address["zip_code"],
+        ).first()
+        if not location:
+            location = Location(
+                created_by=current_user.get_id(),
+                cross_street1=address["cross_street1"],
+                cross_street2=address["cross_street2"],
+                city=address["city"],
+                state=address["state"],
+                street_name=address["street_name"],
+                zip_code=address["zip_code"],
+            )
+        fields["address"] = location
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
-                of, _ = get_or_create(db.session, Officer, **officer)
-                if of:
-                    fields["officers"].append(of)
+                of = Officer.query.filter_by(
+                    unique_internal_identifier=officer["oo_id"]
+                ).one()
+                if not of:
+                    of = Officer(
+                        created_by=current_user.get_id(),
+                        unique_internal_identifier=officer["oo_id"],
+                    )
+                fields["officers"].append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
             if plate["number"]:
-                pl, _ = get_or_create(db.session, LicensePlate, **plate)
-                if pl:
-                    fields["license_plates"].append(pl)
+                pl = LicensePlate.query.filter_by(
+                    number=plate["number"], state=plate["state"]
+                ).one()
+                if not pl:
+                    pl = LicensePlate(
+                        created_by=current_user.get_id(),
+                        number=plate["number"],
+                        state=plate["state"],
+                    )
+                    db.session.add(pl)
+                fields["license_plates"].append(pl)
 
     if "links" in form.data:
         for link in form.data["links"]:
             # don't try to create with a blank string
             if link["url"]:
-                li, _ = get_or_create(db.session, Link, **link)
-                if li:
-                    fields["links"].append(li)
+                li = Link.query.filter_by(
+                    link_type=link["link_type"], url=link["url"]
+                ).first()
+                if not li:
+                    li = Link(
+                        author=link["author"],
+                        created_by=current_user.get_id(),
+                        description=link["description"],
+                        link_type=link["link_type"],
+                        title=link["title"],
+                        url=link["url"],
+                    )
+                fields["links"].append(li)
 
     return Incident(
         date=fields["date"],
