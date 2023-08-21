@@ -494,7 +494,6 @@ def redirect_add_salary(officer_id: int):
 @ac_or_admin_required
 def add_salary(officer_id: int):
     form = SalaryForm()
-    form.created_by.data = current_user.get_id()
     officer = Officer.query.filter_by(id=officer_id).first()
     if not officer:
         flash("Officer not found")
@@ -514,6 +513,7 @@ def add_salary(officer_id: int):
                 overtime_pay=form.overtime_pay.data,
                 year=form.year.data,
                 is_fiscal_year=form.is_fiscal_year.data,
+                created_by=current_user.get_id(),
             )
             db.session.add(new_salary)
             db.session.commit()
