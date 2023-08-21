@@ -442,7 +442,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         assert new_officer.id in [off.id for off in inc.officers]
 
 
-def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
+def test_admins_cannot_edit_non_existing_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
