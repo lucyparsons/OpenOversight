@@ -4,7 +4,14 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import cast
 
-from OpenOversight.app.main.forms import AddOfficerForm, AssignmentForm, IncidentForm
+from OpenOversight.app.main.forms import (
+    AddOfficerForm,
+    AssignmentForm,
+    BrowseForm,
+    EditOfficerForm,
+    IncidentForm,
+    TextForm,
+)
 from OpenOversight.app.models.database import (
     Assignment,
     Description,
@@ -194,7 +201,7 @@ def create_incident(self, form: IncidentForm):
     )
 
 
-def create_note(self, form):
+def create_note(self, form: TextForm):
     return Note(
         text_contents=form.text_contents.data,
         created_by=form.created_by.data,
@@ -204,7 +211,7 @@ def create_note(self, form):
     )
 
 
-def edit_existing_assignment(assignment, form):
+def edit_existing_assignment(assignment, form: AssignmentForm):
     assignment.star_no = form.star_no.data
 
     job = form.job_title.data
@@ -223,7 +230,7 @@ def edit_existing_assignment(assignment, form):
     return assignment
 
 
-def edit_officer_profile(officer, form):
+def edit_officer_profile(officer, form: EditOfficerForm):
     for field, data in form.data.items():
         setattr(officer, field, data)
 
@@ -232,7 +239,7 @@ def edit_officer_profile(officer, form):
     return officer
 
 
-def filter_by_form(form_data, officer_query, department_id=None):
+def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
     if form_data.get("last_name"):
         officer_query = officer_query.filter(
             Officer.last_name.ilike(f"%%{form_data['last_name']}%%")
