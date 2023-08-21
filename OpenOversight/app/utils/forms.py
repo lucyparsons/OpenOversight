@@ -201,10 +201,10 @@ def create_incident(self, form: IncidentForm):
     )
 
 
-def create_note(self, form: TextForm):
+def create_note(self, form: TextForm, current_user: User):
     return Note(
         text_contents=form.text_contents.data,
-        created_by=form.created_by.data,
+        created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
         updated_at=datetime.datetime.now(),
