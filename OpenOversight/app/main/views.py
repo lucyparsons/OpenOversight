@@ -749,7 +749,6 @@ def edit_department(department_id: int):
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
-    form.created_by.data = department.created_by
     if form.validate_on_submit():
         if form.name.data != previous_name:
             does_already_department_exist = (
