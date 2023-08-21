@@ -194,6 +194,7 @@ def create_incident(self, form: IncidentForm, current_user: User):
                         created_by=current_user.get_id(),
                         unique_internal_identifier=if_exists_or_none(officer["oo_id"]),
                     )
+                    db.session.add(of)
                 fields["officers"].append(of)
 
     if "license_plates" in form.data:
@@ -229,6 +230,7 @@ def create_incident(self, form: IncidentForm, current_user: User):
                         title=if_exists_or_none(link["title"]),
                         url=if_exists_or_none(link["url"]),
                     )
+                    db.session.add(li)
                 fields["links"].append(li)
 
     return Incident(
