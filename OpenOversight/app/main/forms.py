@@ -492,14 +492,16 @@ class OfficerIdField(StringField):
 
 def validate_oo_id(self, field):
     if field.data:
-        try:
-            officer_id = int(field.data)
-            officer = Officer.query.get(officer_id)
+        if isinstance(field.data, str):
+            try:
+                officer_id = field.data.split('value="')[1][:-2]
+                officer = Officer.query.get(officer_id)
 
-        # Sometimes we get a string in field.data with py.test, this parses it
-        except ValueError:
-            officer_id = field.data.split('value="')[1][:-2]
-            officer = Officer.query.get(officer_id)
+            # Sometimes we get a string in field.data with py.test, this parses it
+            except IndexError:
+                officer = None
+        else:
+            officer = Officer.query.get(field.data)
 
         if not officer:
             raise ValidationError("Not a valid officer id")
