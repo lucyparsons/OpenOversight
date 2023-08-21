@@ -1,4 +1,5 @@
 import datetime
+from typing import Any, Union
 
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
@@ -146,6 +147,9 @@ def create_description(self, form: TextForm, current_user: User):
 
 
 def create_incident(self, form: IncidentForm, current_user: User):
+    def if_exists_or_none(val: Union[str, Any]):
+        return val if val else None
+
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -160,22 +164,22 @@ def create_incident(self, form: IncidentForm, current_user: User):
     if "address" in form.data:
         address = form.data["address"]
         location = Location.query.filter_by(
-            cross_street1=address["cross_street1"],
-            cross_street2=address["cross_street2"],
-            city=address["city"],
-            state=address["state"],
-            street_name=address["street_name"],
-            zip_code=address["zip_code"],
+            cross_street1=if_exists_or_none(address["cross_street1"]),
+            cross_street2=if_exists_or_none(address["cross_street2"]),
+            city=if_exists_or_none(address["city"]),
+            state=if_exists_or_none(address["state"]),
+            street_name=if_exists_or_none(address["street_name"]),
+            zip_code=if_exists_or_none(address["zip_code"]),
         ).first()
         if not location:
             location = Location(
                 created_by=current_user.get_id(),
-                cross_street1=address["cross_street1"],
-                cross_street2=address["cross_street2"],
-                city=address["city"],
-                state=address["state"],
-                street_name=address["street_name"],
-                zip_code=address["zip_code"],
+                cross_street1=if_exists_or_none(address["cross_street1"]),
+                cross_street2=if_exists_or_none(address["cross_street2"]),
+                city=if_exists_or_none(address["city"]),
+                state=if_exists_or_none(address["state"]),
+                street_name=if_exists_or_none(address["street_name"]),
+                zip_code=if_exists_or_none(address["zip_code"]),
             )
         fields["address"] = location
 
@@ -183,12 +187,12 @@ def create_incident(self, form: IncidentForm, current_user: User):
         for officer in form.data["officers"]:
             if officer["oo_id"]:
                 of = Officer.query.filter_by(
-                    unique_internal_identifier=officer["oo_id"]
+                    unique_internal_identifier=if_exists_or_none(officer["oo_id"])
                 ).one()
                 if not of:
                     of = Officer(
                         created_by=current_user.get_id(),
-                        unique_internal_identifier=officer["oo_id"],
+                        unique_internal_identifier=if_exists_or_none(officer["oo_id"]),
                     )
                 fields["officers"].append(of)
 
@@ -196,13 +200,14 @@ def create_incident(self, form: IncidentForm, current_user: User):
         for plate in form.data["license_plates"]:
             if plate["number"]:
                 pl = LicensePlate.query.filter_by(
-                    number=plate["number"], state=plate["state"]
+                    number=if_exists_or_none(plate["number"]),
+                    state=if_exists_or_none(plate["state"]),
                 ).one()
                 if not pl:
                     pl = LicensePlate(
                         created_by=current_user.get_id(),
-                        number=plate["number"],
-                        state=plate["state"],
+                        number=if_exists_or_none(plate["number"]),
+                        state=if_exists_or_none(plate["state"]),
                     )
                     db.session.add(pl)
                 fields["license_plates"].append(pl)
@@ -212,16 +217,17 @@ def create_incident(self, form: IncidentForm, current_user: User):
             # don't try to create with a blank string
             if link["url"]:
                 li = Link.query.filter_by(
-                    link_type=link["link_type"], url=link["url"]
+                    link_type=if_exists_or_none(link["link_type"]),
+                    url=if_exists_or_none(link["url"]),
                 ).first()
                 if not li:
                     li = Link(
-                        author=link["author"],
+                        author=if_exists_or_none(link["author"]),
                         created_by=current_user.get_id(),
-                        description=link["description"],
-                        link_type=link["link_type"],
-                        title=link["title"],
-                        url=link["url"],
+                        description=if_exists_or_none(link["description"]),
+                        link_type=if_exists_or_none(link["link_type"]),
+                        title=if_exists_or_none(link["title"]),
+                        url=if_exists_or_none(link["url"]),
                     )
                 fields["links"].append(li)
 
