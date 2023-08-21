@@ -211,7 +211,9 @@ def create_incident(self, form: IncidentForm, current_user: User):
             # don't try to create with a blank string
             if link["url"]:
                 li = Link.query.filter_by(
+                    author=if_exists_or_none(link["author"]),
                     link_type=if_exists_or_none(link["link_type"]),
+                    title=if_exists_or_none(link["title"]),
                     url=if_exists_or_none(link["url"]),
                 ).first()
                 if not li:
