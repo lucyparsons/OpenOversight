@@ -295,13 +295,12 @@ RedirectPD = PoliceDepartment("Redirect Police Department", "RPD")
 
 def test_redirect_add_department(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
 
         form = DepartmentForm(
             name=RedirectPD.name,
             short_name=RedirectPD.short_name,
             state=RedirectPD.state,
-            created_by=user.id,
         )
 
         resp_no_redirect = client.post(
