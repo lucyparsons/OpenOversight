@@ -137,17 +137,17 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     return officer
 
 
-def create_description(self, form):
+def create_description(self, form: TextForm, current_user: User):
     return Description(
         text_contents=form.text_contents.data,
-        created_by=form.created_by.data,
+        created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
         created_at=datetime.datetime.now(),
         updated_at=datetime.datetime.now(),
     )
 
 
-def create_incident(self, form: IncidentForm):
+def create_incident(self, form: IncidentForm, current_user: User):
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -155,8 +155,8 @@ def create_incident(self, form: IncidentForm):
         "license_plates": [],
         "links": [],
         "address": "",
-        "created_by": form.created_by.data,
-        "last_updated_by": form.last_updated_by.data,
+        "created_by": current_user.get_id(),
+        "last_updated_by": current_user.get_id(),
     }
 
     if "address" in form.data:
@@ -195,8 +195,8 @@ def create_incident(self, form: IncidentForm):
         report_number=form.data["report_number"],
         license_plates=fields["license_plates"],
         links=fields["links"],
-        created_by=fields["created_by"],
-        last_updated_by=fields["last_updated_by"],
+        created_by=current_user.get_id(),
+        last_updated_by=current_user.get_id(),
         last_updated_at=datetime.datetime.now(),
     )
 

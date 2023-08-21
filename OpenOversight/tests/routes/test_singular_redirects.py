@@ -162,9 +162,8 @@ def test_redirect_edit_assignment(client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            "main.edit_assignment",
+            "main.officer_profile",
             officer_id=officer.id,
-            assignment_id=assignment.id,
         )
 
 

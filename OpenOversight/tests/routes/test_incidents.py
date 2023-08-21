@@ -749,7 +749,6 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
-            created_by=inc.created_by,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
