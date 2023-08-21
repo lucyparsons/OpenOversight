@@ -387,27 +387,6 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
     return officer_query
 
 
-def filter_roster(form, officer_query):
-    if "name" in form and form["name"]:
-        officer_query = officer_query.filter(
-            Officer.last_name.ilike(f"%%{form['name']}%%")
-        )
-
-    officer_query = officer_query.outerjoin(Assignment)
-    if "badge" in form and form["badge"]:
-        officer_query = officer_query.filter(
-            cast(Assignment.star_no, db.String).like(f"%%{form['badge']}%%")
-        )
-    if "dept" in form and form["dept"]:
-        officer_query = officer_query.filter(Officer.department_id == form["dept"].id)
-
-    return (
-        officer_query.outerjoin(Face)
-        .order_by(Face.officer_id.asc())
-        .order_by(Officer.id.desc())
-    )
-
-
 def grab_officers(form):
     return filter_by_form(form, Officer.query)
 
