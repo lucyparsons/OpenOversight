@@ -73,8 +73,8 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video", created_by=user.id)
-        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
+        link_form = LinkForm(link_type="video")
+        license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
@@ -255,7 +255,6 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
 def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -281,7 +280,6 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             department="1",
             address=address_form.data,
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -319,7 +317,6 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             department="1",
             address=address_form.data,
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
