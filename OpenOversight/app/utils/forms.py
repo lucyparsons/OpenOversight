@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union
+from typing import Union
 
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
@@ -30,11 +30,13 @@ from OpenOversight.app.models.database import (
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 
 
-def if_exists_or_none(val: Union[str, Any]):
+def if_exists_or_none(val: Union[str, None]) -> Union[str, None]:
     return val if val else None
 
 
-def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User):
+def add_new_assignment(
+    officer_id: int, form: AssignmentForm, current_user: User
+) -> None:
     unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
@@ -55,7 +57,7 @@ def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User
     db.session.commit()
 
 
-def add_officer_profile(form: AddOfficerForm, current_user: User):
+def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -131,7 +133,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     return officer
 
 
-def create_description(self, form: TextForm, current_user: User):
+def create_description(self, form: TextForm, current_user: User) -> Description:
     return Description(
         text_contents=form.text_contents.data,
         created_by=current_user.get_id(),
@@ -141,7 +143,7 @@ def create_description(self, form: TextForm, current_user: User):
     )
 
 
-def create_incident(self, form: IncidentForm, current_user: User):
+def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -218,7 +220,7 @@ def create_incident(self, form: IncidentForm, current_user: User):
     )
 
 
-def create_note(self, form: TextForm, current_user: User):
+def create_note(self, form: TextForm, current_user: User) -> Note:
     return Note(
         text_contents=form.text_contents.data,
         created_by=current_user.get_id(),
@@ -228,7 +230,7 @@ def create_note(self, form: TextForm, current_user: User):
     )
 
 
-def edit_existing_assignment(assignment, form: AssignmentForm):
+def edit_existing_assignment(assignment, form: AssignmentForm) -> Assignment:
     assignment.star_no = form.star_no.data
 
     job = form.job_title.data
@@ -269,7 +271,7 @@ def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, N
     return link
 
 
-def edit_officer_profile(officer, form: EditOfficerForm):
+def edit_officer_profile(officer, form: EditOfficerForm) -> Officer:
     for field, data in form.data.items():
         setattr(officer, field, data)
 
