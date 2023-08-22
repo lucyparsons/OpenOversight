@@ -420,7 +420,6 @@ def test_images_added_with_user_id(mockdata, faker):
         filepath=faker.url(),
         hash_img="1234",
         is_tagged=False,
-        created_at=datetime.datetime.now(),
         department_id=1,
         taken_at=datetime.datetime.now(),
         created_by=user_id,

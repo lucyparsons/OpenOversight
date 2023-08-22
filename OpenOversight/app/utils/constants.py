@@ -25,11 +25,6 @@ KEY_OO_MAIL_SUBJECT_PREFIX = "OO_MAIL_SUBJECT_PREFIX"
 KEY_S3_BUCKET_NAME = "S3_BUCKET_NAME"
 KEY_TIMEZONE = "TIMEZONE"
 
-# Flash Message Constants
-FLASH_MSG_PERMANENT_REDIRECT = (
-    "This page's address has changed, please update your bookmark!"
-)
-
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
 SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator only
@@ -43,3 +38,9 @@ KILOBYTE = 1024 * BYTE
 MEGABYTE = 1024 * KILOBYTE
 MINUTE = 60
 HOUR = 60 * MINUTE
+
+# UI Constants
+FIELD_NOT_AVAILABLE = "Field Not Available"
+FLASH_MSG_PERMANENT_REDIRECT = (
+    "This page's address has changed, please update your bookmark!"
+)

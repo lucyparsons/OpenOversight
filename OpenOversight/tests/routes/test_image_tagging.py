@@ -173,8 +173,7 @@ def test_user_can_add_tag(mockdata, client, session):
 
 def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
     with current_app.test_request_context():
-        login_user(client)
-        user = User.query.filter_by(is_administrator=True).first()
+        _, user = login_user(client)
 
         tag = Face.query.first()
         form = FaceTag(
@@ -200,8 +199,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
 
 def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
     with current_app.test_request_context():
-        login_user(client)
-        user = User.query.filter_by(is_administrator=True).first()
+        _, user = login_user(client)
 
         tag = Face.query.first()
         form = FaceTag(
@@ -224,9 +222,8 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
 
 def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_user(client)
+        _, user = login_user(client)
         tag = Face.query.first()
-        user = User.query.filter_by(is_administrator=True).first()
 
         form = FaceTag(
             officer_id=tag.officer_id,
@@ -348,9 +345,8 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
 )
 def test_featured_tag_replaces_others(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, user = login_admin(client)
 
-        user = User.query.filter_by(is_administrator=True).first()
         tag1 = Face.query.first()
         officer = Officer.query.filter_by(id=tag1.officer_id).one()
 

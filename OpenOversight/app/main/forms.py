@@ -140,11 +140,6 @@ class FaceTag(Form):
     dataY = IntegerField("dataY", validators=[InputRequired()])
     dataWidth = IntegerField("dataWidth", validators=[InputRequired()])
     dataHeight = IntegerField("dataHeight", validators=[InputRequired()])
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Face Tags must have a valid user ID for creating.")
-        ]
-    )
 
 
 class AssignmentForm(Form):
@@ -169,11 +164,6 @@ class AssignmentForm(Form):
     resign_date = DateField(
         "Assignment end date", validators=[Optional(), validate_end_date]
     )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Assignments must have a valid user ID for creating.")
-        ]
-    )
 
 
 class SalaryForm(Form):
@@ -189,11 +179,6 @@ class SalaryForm(Form):
         validators=[NumberRange(min=1900, max=2100)],
     )
     is_fiscal_year = BooleanField("Is fiscal year?", default=False)
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Salaries must have a valid user ID for creating.")
-        ]
-    )
 
     def validate(self, extra_validators=None):
         if not self.data.get("salary") and not self.data.get("overtime_pay"):
@@ -224,11 +209,6 @@ class DepartmentForm(Form):
     jobs = FieldList(
         StringField("Job", default="", validators=[Regexp(r"\w*")]), label="Ranks"
     )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Departments must have a valid user ID for creating.")
-        ]
-    )
     submit = SubmitField(label="Add")
 
 
@@ -257,11 +237,6 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default="",
         validators=[AnyOf(allowed_values(LINK_CHOICES))],
-    )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Links must have a valid user ID for creating.")
-        ]
     )
 
     def validate(self, extra_validators=None):
@@ -295,11 +270,6 @@ class EditTextForm(BaseTextForm):
 class TextForm(EditTextForm):
     officer_id = HiddenField(
         validators=[DataRequired(message="Not a valid officer ID")]
-    )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Text fields must have a valid user ID for creating.")
-        ]
     )
 
 
@@ -386,11 +356,6 @@ class AddOfficerForm(Form):
         min_entries=1,
         widget=BootstrapListWidget(),
     )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Officers must have a valid user ID for creating.")
-        ]
-    )
 
     submit = SubmitField(label="Add")
 
@@ -452,11 +417,6 @@ class AddUnitForm(Form):
         query_factory=dept_choices,
         get_label="display_name",
     )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Units must have a valid user ID for creating.")
-        ]
-    )
     submit = SubmitField(label="Add")
 
 
@@ -507,11 +467,6 @@ class LocationForm(Form):
             Regexp(r"^\d{5}$", message="Zip codes must have 5 digits."),
         ],
     )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(message="Locations must have a valid user ID for creating.")
-        ]
-    )
 
 
 class LicensePlateForm(Form):
@@ -520,13 +475,6 @@ class LicensePlateForm(Form):
         "State",
         choices=STATE_CHOICES,
         validators=[AnyOf(allowed_values(STATE_CHOICES))],
-    )
-    created_by = HiddenField(
-        validators=[
-            DataRequired(
-                message="License Plates must have a valid user ID for creating."
-            )
-        ]
     )
 
     def validate_state(self, field):
@@ -542,16 +490,18 @@ class OfficerIdField(StringField):
             self.data = value
 
 
-def validate_oo_id(self, field):
-    if field.data:
-        try:
-            officer_id = int(field.data)
-            officer = Officer.query.get(officer_id)
+def validate_oo_id(self, oo_id):
+    if oo_id.data and isinstance(oo_id.data, str):
+        if oo_id.data.isnumeric():
+            officer = Officer.query.get(oo_id.data)
+        else:
+            try:
+                officer_id = oo_id.data.split('value="')[1][:-2]
+                officer = Officer.query.get(officer_id)
 
-        # Sometimes we get a string in field.data with py.test, this parses it
-        except ValueError:
-            officer_id = field.data.split('value="')[1][:-2]
-            officer = Officer.query.get(officer_id)
+            # Sometimes we get a string in field.data with py.test, this parses it
+            except IndexError:
+                officer = None
 
         if not officer:
             raise ValidationError("Not a valid officer id")
@@ -596,17 +546,6 @@ class IncidentForm(DateFieldForm):
         description="Links to articles about or videos of the incident.",
         min_entries=1,
         widget=BootstrapListWidget(),
-    )
-    created_by = HiddenField(
-        validators=[DataRequired(message="Incidents must have a user id for creating.")]
-    )
-    last_updated_by = HiddenField(
-        validators=[DataRequired(message="Incidents must have a user ID for editing.")]
-    )
-    last_updated_at = HiddenField(
-        validators=[
-            DataRequired(message="Incidents must have a timestamp for editing.")
-        ]
     )
 
     submit = SubmitField(label="Submit")

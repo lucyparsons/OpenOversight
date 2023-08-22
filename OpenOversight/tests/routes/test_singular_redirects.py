@@ -162,9 +162,8 @@ def test_redirect_edit_assignment(client, session):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            "main.edit_assignment",
+            "main.officer_profile",
             officer_id=officer.id,
-            assignment_id=assignment.id,
         )
 
 
@@ -295,13 +294,12 @@ RedirectPD = PoliceDepartment("Redirect Police Department", "RPD")
 
 def test_redirect_add_department(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
 
         form = DepartmentForm(
             name=RedirectPD.name,
             short_name=RedirectPD.short_name,
             state=RedirectPD.state,
-            created_by=user.id,
         )
 
         resp_no_redirect = client.post(
