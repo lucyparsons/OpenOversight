@@ -70,7 +70,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
 
 def test_admins_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        rv, admin = login_admin(client)
         officer = Officer.query.first()
         text_contents = "I can haz descriptionz"
         form = TextForm(text_contents=text_contents, officer_id=officer.id)
@@ -89,11 +89,13 @@ def test_admins_can_create_descriptions(mockdata, client, session):
         ).first()
         assert created_description is not None
         assert created_description.created_at is not None
+        assert created_description.created_by == admin.id
+        assert created_description.last_updated_by == admin.id
 
 
 def test_acs_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
+        rv, ac = login_ac(client)
         officer = Officer.query.first()
         description = "A description"
         form = TextForm(text_contents=description, officer_id=officer.id)
@@ -112,11 +114,14 @@ def test_acs_can_create_descriptions(mockdata, client, session):
         ).first()
         assert created_description is not None
         assert created_description.created_at is not None
+        assert created_description.created_by == ac.id
+        assert created_description.last_updated_by == ac.id
 
 
 def test_admins_can_edit_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        rv, admin = login_admin(client)
+        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -124,7 +129,10 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            updated_at=original_date,
+            created_at=original_date,
+            last_updated_at=original_date,
+            created_by=ac.id,
+            last_updated_by=ac.id,
         )
         db.session.add(description)
         db.session.commit()
@@ -145,20 +153,27 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated_at > original_date
+        assert description.created_at == original_date
+        assert description.last_updated_at > original_date
+        assert description.created_by == ac.id
+        assert description.last_updated_by == admin.id
 
 
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
+        rv, ac = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        user = User.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
         original_date = datetime.now()
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            updated_at=original_date,
+            created_at=original_date,
+            last_updated_at=original_date,
+            created_by=user.id,
+            last_updated_by=user.id,
         )
         db.session.add(description)
         db.session.commit()
@@ -179,20 +194,27 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated_at > original_date
+        assert description.created_at == original_date
+        assert description.last_updated_at > original_date
+        assert description.created_by == user.id
+        assert description.last_updated_by == ac.id
 
 
 def test_ac_can_edit_others_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
+        rv, ac = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        user = User.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
         original_date = datetime.now()
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            updated_at=original_date,
+            created_at=original_date,
+            last_updated_at=original_date,
+            created_by=user.id,
+            last_updated_by=user.id,
         )
         db.session.add(description)
         db.session.commit()
@@ -213,7 +235,9 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
         assert "updated" in rv.data.decode(ENCODING_UTF_8)
 
         assert description.text_contents == new_description
-        assert description.updated_at > original_date
+        assert description.last_updated_at > original_date
+        assert description.created_by == user.id
+        assert description.last_updated_by == ac.id
 
 
 def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):
@@ -229,7 +253,8 @@ def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, s
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            updated_at=original_date,
+            created_at=original_date,
+            last_updated_at=original_date,
         )
         db.session.add(description)
         db.session.commit()
@@ -274,10 +299,12 @@ def test_acs_can_delete_their_descriptions_in_their_department(
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+        now = datetime.now()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            updated_at=datetime.now(),
+            created_at=now,
+            last_updated_at=now,
         )
         db.session.add(description)
         db.session.commit()
@@ -302,10 +329,12 @@ def test_acs_cannot_delete_descriptions_not_in_their_department(
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
+        now = datetime.now()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            updated_at=datetime.now(),
+            created_at=now,
+            last_updated_at=now,
         )
         db.session.add(description)
         db.session.commit()
@@ -330,7 +359,6 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -353,7 +381,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
             text_contents="Hello",
             officer_id=officer.id,
             created_by=user.id - 1,
-            updated_at=datetime.now(),
+            last_updated_by=user.id - 1,
         )
         db.session.add(description)
         db.session.commit()
@@ -377,7 +405,6 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -398,7 +425,6 @@ def test_users_can_see_descriptions(mockdata, client, session):
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -420,7 +446,6 @@ def test_admins_can_see_descriptions(mockdata, client, session):
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -441,7 +466,6 @@ def test_acs_can_see_descriptions_in_their_department(mockdata, client, session)
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -465,7 +489,6 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            updated_at=datetime.now(),
         )
         db.session.add(description)
         db.session.commit()
@@ -489,7 +512,8 @@ def test_anonymous_users_cannot_see_description_creators(mockdata, client, sessi
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            updated_at=datetime.now(),
+            created_by=ac.id,
+            last_updated_by=ac.id,
         )
         db.session.add(description)
         db.session.commit()
