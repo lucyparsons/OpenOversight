@@ -71,7 +71,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
 
 def test_admins_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, admin = login_admin(client)
+        _, admin = login_admin(client)
         officer = Officer.query.first()
         text_contents = "I can haz descriptionz"
         form = TextForm(text_contents=text_contents, officer_id=officer.id)
@@ -96,7 +96,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
 
 def test_acs_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, ac = login_ac(client)
+        _, ac = login_ac(client)
         officer = Officer.query.first()
         description = "A description"
         form = TextForm(text_contents=description, officer_id=officer.id)
