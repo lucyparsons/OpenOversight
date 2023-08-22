@@ -20,7 +20,12 @@ depends_on = None
 def upgrade():
     with op.batch_alter_table("assignments", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -33,7 +38,12 @@ def upgrade():
 
     with op.batch_alter_table("departments", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -46,14 +56,16 @@ def upgrade():
 
     with op.batch_alter_table("descriptions", schema=None) as batch_op:
         batch_op.alter_column("updated_at", new_column_name="last_updated_at")
-        # batch_op.add_column(sa.Column('last_updated_at', sa.DateTime(timezone=True), nullable=True))
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
-        # batch_op.create_foreign_key(None, 'users', ['last_updated_by'], ['id'], ondelete='SET NULL')
-        # batch_op.drop_column('updated_at')
 
     with op.batch_alter_table("faces", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.drop_constraint("faces_created_by_fkey", type_="foreignkey")
@@ -74,7 +86,12 @@ def upgrade():
 
     with op.batch_alter_table("jobs", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -87,7 +104,12 @@ def upgrade():
 
     with op.batch_alter_table("license_plates", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -100,7 +122,12 @@ def upgrade():
 
     with op.batch_alter_table("links", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -113,7 +140,12 @@ def upgrade():
 
     with op.batch_alter_table("locations", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -126,14 +158,16 @@ def upgrade():
 
     with op.batch_alter_table("notes", schema=None) as batch_op:
         batch_op.alter_column("updated_at", new_column_name="last_updated_at")
-        # batch_op.add_column(sa.Column('last_updated_at', sa.DateTime(timezone=True), nullable=True))
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
-        # batch_op.create_foreign_key(None, 'users', ['last_updated_by'], ['id'], ondelete='SET NULL')
-        # batch_op.drop_column('updated_at')
 
     with op.batch_alter_table("officers", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -146,7 +180,12 @@ def upgrade():
 
     with op.batch_alter_table("raw_images", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.alter_column(
@@ -166,7 +205,12 @@ def upgrade():
 
     with op.batch_alter_table("salaries", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -179,7 +223,12 @@ def upgrade():
 
     with op.batch_alter_table("unit_types", schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column("last_updated_at", sa.DateTime(timezone=True), nullable=True)
+            sa.Column(
+                "last_updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=True,
+            )
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
@@ -229,10 +278,7 @@ def downgrade():
 
     with op.batch_alter_table("notes", schema=None) as batch_op:
         batch_op.alter_column("last_updated_at", new_column_name="updated_at")
-        # batch_op.add_column(sa.Column('updated_at', postgresql.TIMESTAMP(timezone=True), autoincrement=False, nullable=True))
-        # batch_op.drop_constraint(None, type_='foreignkey')
         batch_op.drop_column("last_updated_by")
-        # batch_op.drop_column('last_updated_at')
 
     with op.batch_alter_table("locations", schema=None) as batch_op:
         batch_op.drop_constraint(
@@ -269,10 +315,7 @@ def downgrade():
 
     with op.batch_alter_table("descriptions", schema=None) as batch_op:
         batch_op.alter_column("last_updated_at", new_column_name="updated_at")
-        # batch_op.add_column(sa.Column('updated_at', postgresql.TIMESTAMP(timezone=True), autoincrement=False, nullable=True))
-        # batch_op.drop_constraint(None, type_='foreignkey')
         batch_op.drop_column("last_updated_by")
-        # batch_op.drop_column('last_updated_at')
 
     with op.batch_alter_table("departments", schema=None) as batch_op:
         batch_op.drop_constraint(

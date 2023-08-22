@@ -12,6 +12,9 @@ KEY_DEPT_TOTAL_ASSIGNMENTS = "total_department_assignments"
 KEY_DEPT_TOTAL_INCIDENTS = "total_department_incidents"
 KEY_DEPT_TOTAL_OFFICERS = "total_department_officers"
 
+# Database Key Constants
+KEY_DB_CREATOR = "creator"
+
 # Config Key Constants
 KEY_ALLOWED_EXTENSIONS = "ALLOWED_EXTENSIONS"
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"

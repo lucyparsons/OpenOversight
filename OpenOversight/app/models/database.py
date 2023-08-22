@@ -21,6 +21,7 @@ from OpenOversight.app.models.database_cache import (
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
+    KEY_DB_CREATOR,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
@@ -76,7 +77,8 @@ class TrackUpdates:
     )
     last_updated_at = db.Column(
         db.DateTime(timezone=True),
-        nullable=True,
+        nullable=False,
+        server_default=sql_func.now(),
         unique=False,
     )
 
@@ -587,22 +589,24 @@ class User(UserMixin, BaseModel):
 
     # creator backlinks
     classifications = db.relationship(
-        "Image", back_populates="creator", foreign_keys="[Image.created_by]"
+        "Image", back_populates=KEY_DB_CREATOR, foreign_keys="Image.created_by"
     )
     descriptions = db.relationship(
-        "Description", back_populates="creator", foreign_keys="[Description.created_by]"
+        "Description",
+        back_populates=KEY_DB_CREATOR,
+        foreign_keys="Description.created_by",
     )
     incidents_created = db.relationship(
-        "Incident", back_populates="creator", foreign_keys="[Incident.created_by]"
+        "Incident", back_populates=KEY_DB_CREATOR, foreign_keys="Incident.created_by"
     )
     links = db.relationship(
-        "Link", back_populates="creator", foreign_keys="[Link.created_by]"
+        "Link", back_populates=KEY_DB_CREATOR, foreign_keys="Link.created_by"
     )
     notes = db.relationship(
-        "Note", back_populates="creator", foreign_keys="[Note.created_by]"
+        "Note", back_populates=KEY_DB_CREATOR, foreign_keys="Note.created_by"
     )
     tags = db.relationship(
-        "Face", back_populates="creator", foreign_keys="[Face.created_by]"
+        "Face", back_populates=KEY_DB_CREATOR, foreign_keys="Face.created_by"
     )
 
     created_at = db.Column(
