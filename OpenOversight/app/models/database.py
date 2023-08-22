@@ -36,8 +36,18 @@ BaseModel: DeclarativeMeta = db.Model
 
 officer_links = db.Table(
     "officer_links",
-    db.Column("officer_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True),
-    db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column(
+        "officer_id",
+        db.Integer,
+        db.ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
+        primary_key=True,
+    ),
+    db.Column(
+        "link_id",
+        db.Integer,
+        db.ForeignKey("links.id", name="officer_links_link_id_fkey"),
+        primary_key=True,
+    ),
     db.Column(
         "created_at",
         db.DateTime(timezone=True),
@@ -49,9 +59,17 @@ officer_links = db.Table(
 
 officer_incidents = db.Table(
     "officer_incidents",
-    db.Column("officer_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True),
     db.Column(
-        "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
+        "officer_id",
+        db.Integer,
+        db.ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
+        primary_key=True,
+    ),
+    db.Column(
+        "incident_id",
+        db.Integer,
+        db.ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
+        primary_key=True,
     ),
     db.Column(
         "created_at",
@@ -162,7 +180,9 @@ class Job(BaseModel, TrackUpdates):
     job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
     is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
     order = db.Column(db.Integer, index=True, unique=False, nullable=False)
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="jobs_department_id_fkey")
+    )
     department = db.relationship("Department", backref="jobs")
 
     __table_args__ = (
@@ -210,7 +230,9 @@ class Officer(BaseModel, TrackUpdates):
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="officers_department_id_fkey")
+    )
     department = db.relationship("Department", backref="officers")
     unique_internal_identifier = db.Column(
         db.String(50), index=True, unique=True, nullable=True
@@ -303,7 +325,12 @@ class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
 
     id = db.Column(db.Integer, primary_key=True)
-    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+    officer_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "officers.id", name="salaries_officer_id_fkey", ondelete="CASCADE"
+        ),
+    )
     officer = db.relationship("Officer", back_populates="salaries")
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
     overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
@@ -318,12 +345,25 @@ class Assignment(BaseModel, TrackUpdates):
     __tablename__ = "assignments"
 
     id = db.Column(db.Integer, primary_key=True)
-    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+    officer_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "officers.id", name="assignments_officer_id_fkey", ondelete="CASCADE"
+        ),
+    )
     base_officer = db.relationship("Officer", back_populates="assignments")
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
-    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"), nullable=False)
+    job_id = db.Column(
+        db.Integer,
+        db.ForeignKey("jobs.id", name="assignments_job_id_fkey"),
+        nullable=False,
+    )
     job = db.relationship("Job")
-    unit_id = db.Column(db.Integer, db.ForeignKey("unit_types.id"), nullable=True)
+    unit_id = db.Column(
+        db.Integer,
+        db.ForeignKey("unit_types.id", name="assignments_unit_id_fkey"),
+        nullable=True,
+    )
     unit = db.relationship("Unit")
     start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
@@ -337,7 +377,10 @@ class Unit(BaseModel, TrackUpdates):
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(120), index=True, unique=False)
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer,
+        db.ForeignKey("departments.id", name="unit_types_department_id_fkey"),
+    )
     department = db.relationship(
         "Department", backref="unit_types", order_by="Unit.description.asc()"
     )
@@ -350,7 +393,9 @@ class Face(BaseModel, TrackUpdates):
     __tablename__ = "faces"
 
     id = db.Column(db.Integer, primary_key=True)
-    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id"))
+    officer_id = db.Column(
+        db.Integer, db.ForeignKey("officers.id", name="faces_officer_id_fkey")
+    )
     img_id = db.Column(
         db.Integer,
         db.ForeignKey(
@@ -404,7 +449,10 @@ class Image(BaseModel, TrackUpdates):
 
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer,
+        db.ForeignKey("departments.id", name="raw_images_department_id_fkey"),
+    )
     department = db.relationship("Department", backref="raw_images")
 
     def __repr__(self):
@@ -414,9 +462,17 @@ class Image(BaseModel, TrackUpdates):
 incident_links = db.Table(
     "incident_links",
     db.Column(
-        "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
+        "incident_id",
+        db.Integer,
+        db.ForeignKey("incidents.id", name="incident_links_incident_id_fkey"),
+        primary_key=True,
     ),
-    db.Column("link_id", db.Integer, db.ForeignKey("links.id"), primary_key=True),
+    db.Column(
+        "link_id",
+        db.Integer,
+        db.ForeignKey("links.id", name="incident_links_link_id_fkey"),
+        primary_key=True,
+    ),
     db.Column(
         "created_at",
         db.DateTime(timezone=True),
@@ -429,12 +485,17 @@ incident_links = db.Table(
 incident_license_plates = db.Table(
     "incident_license_plates",
     db.Column(
-        "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
+        "incident_id",
+        db.Integer,
+        db.ForeignKey("incidents.id", name="incident_license_plates_incident_id_fkey"),
+        primary_key=True,
     ),
     db.Column(
         "license_plate_id",
         db.Integer,
-        db.ForeignKey("license_plates.id"),
+        db.ForeignKey(
+            "license_plates.id", name="incident_license_plates_license_plate_id_fkey"
+        ),
         primary_key=True,
     ),
     db.Column(
@@ -449,10 +510,16 @@ incident_license_plates = db.Table(
 incident_officers = db.Table(
     "incident_officers",
     db.Column(
-        "incident_id", db.Integer, db.ForeignKey("incidents.id"), primary_key=True
+        "incident_id",
+        db.Integer,
+        db.ForeignKey("incidents.id", name="incident_officers_incident_id_fkey"),
+        primary_key=True,
     ),
     db.Column(
-        "officers_id", db.Integer, db.ForeignKey("officers.id"), primary_key=True
+        "officers_id",
+        db.Integer,
+        db.ForeignKey("officers.id", name="incident_officers_officers_id_fkey"),
+        primary_key=True,
     ),
     db.Column(
         "created_at",
@@ -552,7 +619,9 @@ class Incident(BaseModel, TrackUpdates):
     )
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
-    address_id = db.Column(db.Integer, db.ForeignKey("locations.id"))
+    address_id = db.Column(
+        db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
+    )
     address = db.relationship("Location", backref="incidents")
     license_plates = db.relationship(
         "LicensePlate",
@@ -572,7 +641,9 @@ class Incident(BaseModel, TrackUpdates):
         lazy="subquery",
         backref=db.backref("incidents"),
     )
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
+    )
     department = db.relationship("Department", backref="incidents", lazy=True)
 
 
@@ -585,13 +656,17 @@ class User(UserMixin, BaseModel):
     confirmed = db.Column(db.Boolean, default=False)
     approved = db.Column(db.Boolean, default=False)
     is_area_coordinator = db.Column(db.Boolean, default=False)
-    ac_department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    ac_department_id = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="users_ac_department_id_fkey")
+    )
     ac_department = db.relationship(
         "Department", backref="coordinators", foreign_keys=[ac_department_id]
     )
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
-    dept_pref = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    dept_pref = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")
+    )
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
 
     # creator backlinks

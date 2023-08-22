@@ -27,13 +27,9 @@ def upgrade():
         sa.Column("date_created", sa.DateTime(), nullable=True),
         sa.Column("date_updated", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["officer_id"],
-            ["officers.id"],
+            ["officer_id"], ["officers.id"], "notes_officer_id_fkey"
         ),
-        sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.id"],
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], "notes_user_id_fkey"),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###

@@ -26,8 +26,18 @@ def upgrade():
         sa.Column("officer_id", sa.Integer(), nullable=True),
         sa.Column("date_created", sa.DateTime(), nullable=True),
         sa.Column("date_updated", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(["creator_id"], ["users.id"], ondelete="SET NULL"),
-        sa.ForeignKeyConstraint(["officer_id"], ["officers.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["creator_id"],
+            ["users.id"],
+            "descriptions_creator_id_fkey",
+            ondelete="SET NULL",
+        ),
+        sa.ForeignKeyConstraint(
+            ["officer_id"],
+            ["officers.id"],
+            "descriptions_officer_id_fkey",
+            ondelete="CASCADE",
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.alter_column("notes", "note", new_column_name="text_contents")

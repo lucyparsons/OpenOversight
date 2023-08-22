@@ -26,7 +26,12 @@ def upgrade():
         sa.Column("overtime_pay", sa.Numeric(), nullable=True),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("is_fiscal_year", sa.Boolean(), nullable=False),
-        sa.ForeignKeyConstraint(["officer_id"], ["officers.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["officer_id"],
+            ["officers.id"],
+            "salaries_officer_id_fkey",
+            ondelete="CASCADE",
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

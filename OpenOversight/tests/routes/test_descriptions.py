@@ -8,7 +8,7 @@ from OpenOversight.app.main.forms import EditTextForm, TextForm
 from OpenOversight.app.models.database import Description, Officer, User, db
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
-from OpenOversight.tests.constants import GENERAL_USER_EMAIL
+from OpenOversight.tests.constants import ADMIN_USER_EMAIL, GENERAL_USER_EMAIL
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -419,9 +419,11 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
 
 def test_users_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
+        admin = User.query.filter_by(email=ADMIN_USER_EMAIL).first()
         officer = Officer.query.first()
         text_contents = "You can see me"
         description = Description(
+            created_by=admin.id,
             text_contents=text_contents,
             officer_id=officer.id,
         )
