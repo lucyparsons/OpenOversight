@@ -235,7 +235,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
 
         assert description.text_contents == new_description
         assert description.last_updated_at > original_date
-        assert description.created_by == user.id
+        assert description.created_by == user.id - 1
         assert description.last_updated_by == user.id
 
 
