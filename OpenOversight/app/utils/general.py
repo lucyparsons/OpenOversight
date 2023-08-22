@@ -148,7 +148,7 @@ def serve_image(filepath):
         return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
 
 
-def str_is_true(string: str):
+def str_is_true(string: str) -> int:
     return strtobool(string.lower())
 
 
