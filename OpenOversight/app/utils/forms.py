@@ -28,14 +28,14 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
-from OpenOversight.app.utils.general import get_or_create
+
+
+def if_exists_or_none(val: Union[str, Any]):
+    return val if val else None
 
 
 def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User):
-    if form.unit.data:
-        unit_id = form.unit.data.id
-    else:
-        unit_id = None
+    unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
         department_id=form.job_title.data.department_id,
@@ -71,10 +71,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     db.session.add(officer)
     db.session.commit()
 
-    if form.unit.data:
-        officer_unit = form.unit.data
-    else:
-        officer_unit = None
+    officer_unit = form.unit.data if form.unit.data else None
 
     assignment = Assignment(
         base_officer=officer,
@@ -89,9 +86,23 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
         for link in form.data["links"]:
             # don't try to create with a blank string
             if link["url"]:
-                li, _ = get_or_create(db.session, Link, **link)
-                if li:
-                    officer.links.append(li)
+                li = Link.query.filter_by(
+                    author=if_exists_or_none(link["author"]),
+                    link_type=if_exists_or_none(link["link_type"]),
+                    title=if_exists_or_none(link["title"]),
+                    url=if_exists_or_none(link["url"]),
+                ).first()
+                if not li:
+                    li = Link(
+                        author=if_exists_or_none(link["author"]),
+                        created_by=current_user.get_id(),
+                        description=if_exists_or_none(link["description"]),
+                        link_type=if_exists_or_none(link["link_type"]),
+                        title=if_exists_or_none(link["title"]),
+                        url=if_exists_or_none(link["url"]),
+                    )
+                    db.session.add(li)
+                officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
             # don't try to create with a blank string
@@ -147,9 +158,6 @@ def create_description(self, form: TextForm, current_user: User):
 
 
 def create_incident(self, form: IncidentForm, current_user: User):
-    def if_exists_or_none(val: Union[str, Any]):
-        return val if val else None
-
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
