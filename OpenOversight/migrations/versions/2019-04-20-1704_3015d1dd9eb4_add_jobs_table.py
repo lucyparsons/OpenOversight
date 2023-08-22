@@ -26,8 +26,7 @@ def upgrade():
         sa.Column("order", sa.Integer(), nullable=True),
         sa.Column("department_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["department_id"],
-            ["departments.id"],
+            ["department_id"], ["departments.id"], "jobs_department_id_fkey"
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(

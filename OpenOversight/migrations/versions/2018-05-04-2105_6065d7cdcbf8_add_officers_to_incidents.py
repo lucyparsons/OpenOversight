@@ -23,12 +23,10 @@ def upgrade():
         sa.Column("incident_id", sa.Integer(), nullable=False),
         sa.Column("officers_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["incident_id"],
-            ["incidents.id"],
+            ["incident_id"], ["incidents.id"], "incident_officers_incident_id_fkey"
         ),
         sa.ForeignKeyConstraint(
-            ["officers_id"],
-            ["officers.id"],
+            ["officers_id"], ["officers.id"], "incident_officers_officers_id_fkey"
         ),
         sa.PrimaryKeyConstraint("incident_id", "officers_id"),
     )
@@ -42,7 +40,11 @@ def upgrade():
         type_="foreignkey",
     )
     op.create_foreign_key(
-        None, "incident_license_plates", "license_plates", ["license_plate_id"], ["id"]
+        "incident_license_plates_license_plate_id_fkey",
+        "incident_license_plates",
+        "license_plates",
+        ["license_plate_id"],
+        ["id"],
     )
     op.drop_column("incident_license_plates", "link_id")
     # ### end Alembic commands ###
@@ -54,7 +56,11 @@ def downgrade():
         "incident_license_plates",
         sa.Column("link_id", sa.INTEGER(), autoincrement=False, nullable=False),
     )
-    op.drop_constraint(None, "incident_license_plates", type_="foreignkey")
+    op.drop_constraint(
+        "incident_license_plates_license_plate_id_fkey",
+        "incident_license_plates",
+        type_="foreignkey",
+    )
     op.create_foreign_key(
         "incident_license_plates_link_id_fkey",
         "incident_license_plates",
