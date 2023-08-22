@@ -84,24 +84,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     db.session.add(assignment)
     if form.links.data:
         for link in form.data["links"]:
-            # don't try to create with a blank string
             if link["url"]:
-                li = Link.query.filter_by(
-                    author=if_exists_or_none(link["author"]),
-                    link_type=if_exists_or_none(link["link_type"]),
-                    title=if_exists_or_none(link["title"]),
-                    url=if_exists_or_none(link["url"]),
-                ).first()
-                if not li:
-                    li = Link(
-                        author=if_exists_or_none(link["author"]),
-                        created_by=current_user.get_id(),
-                        description=if_exists_or_none(link["description"]),
-                        link_type=if_exists_or_none(link["link_type"]),
-                        title=if_exists_or_none(link["title"]),
-                        url=if_exists_or_none(link["url"]),
-                    )
-                    db.session.add(li)
+                li = get_or_create_link_from_form(link, current_user)
                 officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
@@ -216,24 +200,8 @@ def create_incident(self, form: IncidentForm, current_user: User):
 
     if "links" in form.data:
         for link in form.data["links"]:
-            # don't try to create with a blank string
             if link["url"]:
-                li = Link.query.filter_by(
-                    author=if_exists_or_none(link["author"]),
-                    link_type=if_exists_or_none(link["link_type"]),
-                    title=if_exists_or_none(link["title"]),
-                    url=if_exists_or_none(link["url"]),
-                ).first()
-                if not li:
-                    li = Link(
-                        author=if_exists_or_none(link["author"]),
-                        created_by=current_user.get_id(),
-                        description=if_exists_or_none(link["description"]),
-                        link_type=if_exists_or_none(link["link_type"]),
-                        title=if_exists_or_none(link["title"]),
-                        url=if_exists_or_none(link["url"]),
-                    )
-                    db.session.add(li)
+                li = get_or_create_link_from_form(link, current_user)
                 fields["links"].append(li)
 
     return Incident(
@@ -279,6 +247,28 @@ def edit_existing_assignment(assignment, form: AssignmentForm):
     db.session.add(assignment)
     db.session.commit()
     return assignment
+
+
+def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, None]:
+    link = None
+    if link_form["url"]:
+        link = Link.query.filter_by(
+            author=if_exists_or_none(link_form["author"]),
+            link_type=if_exists_or_none(link_form["link_type"]),
+            title=if_exists_or_none(link_form["title"]),
+            url=if_exists_or_none(link_form["url"]),
+        ).first()
+        if not link:
+            link = Link(
+                author=if_exists_or_none(link_form["author"]),
+                created_by=current_user.get_id(),
+                description=if_exists_or_none(link_form["description"]),
+                link_type=if_exists_or_none(link_form["link_type"]),
+                title=if_exists_or_none(link_form["title"]),
+                url=if_exists_or_none(link_form["url"]),
+            )
+            db.session.add(link)
+    return link
 
 
 def edit_officer_profile(officer, form: EditOfficerForm):
