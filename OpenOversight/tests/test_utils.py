@@ -304,7 +304,7 @@ def test_save_image_to_s3_and_db_unrecognized_format(
 # will be detected as jpegs and PIL does not support them as `format` parameters.
 @pytest.mark.parametrize("extension", ["jpeg", "png", "gif", "webp"])
 def test_save_image_to_s3_and_db_recognized_format(
-    mockdata, test_png_BytesIO, client, extension
+    mockdata, test_png_bytes_io, client, extension
 ):
     try:
         test_img_bytes = create_test_image_bytes_io(extension)

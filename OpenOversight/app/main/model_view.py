@@ -77,14 +77,9 @@ class ModelView(MethodView):
                 add_department_query(form, current_user)
                 if getattr(current_user, "dept_pref_rel", None):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
-            if hasattr(form, "created_by") and not form.created_by.data:
-                form.created_by.data = current_user.get_id()
-            if hasattr(form, "last_updated_by"):
-                form.last_updated_by.data = current_user.get_id()
-                form.last_updated_at.data = datetime.datetime.now()
 
         if form.validate_on_submit():
-            new_obj = self.create_function(form)
+            new_obj = self.create_function(form, current_user)
             db.session.add(new_obj)
             db.session.commit()
             match self.model.__name__:

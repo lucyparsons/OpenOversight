@@ -4,7 +4,7 @@ from datetime import datetime
 import pytz as pytz
 from flask import Flask, session
 
-from OpenOversight.app.utils.constants import KEY_TIMEZONE
+from OpenOversight.app.utils.constants import FIELD_NOT_AVAILABLE, KEY_TIMEZONE
 
 
 def instantiate_filters(app: Flask):
@@ -34,22 +34,42 @@ def instantiate_filters(app: Flask):
         """
         return " in " if form_data.get(field) else ""
 
+    @app.template_filter("display_date")
+    def display_date(value: datetime) -> str:
+        """Convert UTC datetime.datetime into a localized date string."""
+        if value:
+            return value.strftime("%b %d, %Y")
+        return FIELD_NOT_AVAILABLE
+
     @app.template_filter("local_date")
     def local_date(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date string."""
-        return value.astimezone(pytz.timezone(get_timezone())).strftime("%b %d, %Y")
+        if value:
+            return value.astimezone(pytz.timezone(get_timezone())).strftime("%b %d, %Y")
+        return FIELD_NOT_AVAILABLE
 
     @app.template_filter("local_date_time")
     def local_date_time(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date time string."""
-        return value.astimezone(pytz.timezone(get_timezone())).strftime(
-            "%I:%M %p on %b %d, %Y"
-        )
+        if value:
+            return value.astimezone(pytz.timezone(get_timezone())).strftime(
+                "%I:%M %p on %b %d, %Y"
+            )
+        return FIELD_NOT_AVAILABLE
+
+    @app.template_filter("display_time")
+    def display_time(value: datetime) -> str:
+        """Convert UTC datetime.datetime into a localized date string."""
+        if value:
+            return value.strftime("%I:%M %p")
+        return FIELD_NOT_AVAILABLE
 
     @app.template_filter("local_time")
     def local_time(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized time string."""
-        return value.astimezone(pytz.timezone(get_timezone())).strftime("%I:%M %p")
+        if value:
+            return value.astimezone(pytz.timezone(get_timezone())).strftime("%I:%M %p")
+        return FIELD_NOT_AVAILABLE
 
     @app.template_filter("thousands_seperator")
     def thousands_seperator(value: int) -> str:

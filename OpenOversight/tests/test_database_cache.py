@@ -131,12 +131,11 @@ def test_latest_incident_update(mockdata, client, faker):
             city=faker.city(),
             state=random.choice(STATE_CHOICES)[0],
             zip_code=faker.postcode(),
-            created_by=user.id,
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video", created_by=user.id)
-        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
+        link_form = LinkForm(link_type="video")
+        license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
@@ -147,7 +146,6 @@ def test_latest_incident_update(mockdata, client, faker):
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
-            created_by=user.id,
             last_updated_by=user.id,
             last_updated_at=test_date,
         )
@@ -183,8 +181,8 @@ def test_latest_officer_update(mockdata, client, faker):
         assert has_database_cache_entry(department, KEY_DEPT_OFFICERS_LAST_UPDATED)
 
         links = [
-            LinkForm(url=faker.url(), link_type="link", created_by=user.id).data,
-            LinkForm(url=faker.url(), link_type="video", created_by=user.id).data,
+            LinkForm(url=faker.url(), link_type="link").data,
+            LinkForm(url=faker.url(), link_type="video").data,
         ]
         job = Job.query.filter_by(department_id=department.id).first()
         last_name = faker.last_name()
@@ -200,7 +198,6 @@ def test_latest_officer_update(mockdata, client, faker):
             department=department.id,
             birth_year=int(faker.year()),
             links=links,
-            created_by=user.id,
         )
 
         rv = client.post(

@@ -44,10 +44,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
         login_admin(client)
         officer = Officer.query.first()
         text_contents = "I can haz descriptionz"
-        admin = User.query.filter_by(is_administrator=True).first()
-        form = TextForm(
-            text_contents=text_contents, officer_id=officer.id, created_by=admin.id
-        )
+        form = TextForm(text_contents=text_contents, officer_id=officer.id)
 
         rv = client.post(
             url_for("main.description_api", officer_id=officer.id),
@@ -70,10 +67,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
         login_ac(client)
         officer = Officer.query.first()
         description = "A description"
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
-        form = TextForm(
-            text_contents=description, officer_id=officer.id, created_by=ac.id
-        )
+        form = TextForm(text_contents=description, officer_id=officer.id)
 
         rv = client.post(
             url_for("main.description_api", officer_id=officer.id),
@@ -94,7 +88,6 @@ def test_acs_can_create_descriptions(mockdata, client, session):
 def test_admins_can_edit_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         officer = Officer.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -102,8 +95,6 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            created_by=user.id,
-            created_at=original_date,
             updated_at=original_date,
         )
         db.session.add(description)
@@ -131,7 +122,6 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -139,8 +129,6 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=original_date,
             updated_at=original_date,
         )
         db.session.add(description)
@@ -168,7 +156,6 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
 def test_ac_can_edit_others_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -176,8 +163,6 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=original_date,
             updated_at=original_date,
         )
         db.session.add(description)
@@ -205,8 +190,6 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
 def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
-
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
@@ -217,8 +200,6 @@ def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, s
         description = Description(
             text_contents=old_description,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=original_date,
             updated_at=original_date,
         )
         db.session.add(description)
@@ -263,13 +244,10 @@ def test_acs_can_delete_their_descriptions_in_their_department(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -292,15 +270,12 @@ def test_acs_cannot_delete_descriptions_not_in_their_department(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -323,12 +298,9 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -346,14 +318,12 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
 
 def test_acs_can_get_others_edit_form(mockdata, client, session):
     with current_app.test_request_context():
-        login_ac(client)
+        _, user = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            created_by=ac.id - 1,
-            created_at=datetime.now(),
+            created_by=user.id - 1,
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -372,15 +342,12 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
 def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -397,14 +364,11 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
 
 def test_users_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        admin = User.query.filter_by(is_administrator=True).first()
         officer = Officer.query.first()
         text_contents = "You can see me"
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            created_by=admin.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -422,14 +386,11 @@ def test_users_can_see_descriptions(mockdata, client, session):
 def test_admins_can_see_descriptions(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        admin = User.query.filter_by(is_administrator=True).first()
         officer = Officer.query.first()
         text_contents = "Kittens see everything"
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            created_by=admin.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -446,14 +407,11 @@ def test_admins_can_see_descriptions(mockdata, client, session):
 def test_acs_can_see_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
         text_contents = "I can haz descriptionz"
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -473,14 +431,11 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
-        login_ac(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, user = login_ac(client)
         text_contents = "Hello it me"
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
@@ -494,7 +449,7 @@ def test_acs_can_see_descriptions_not_in_their_department(mockdata, client, sess
         assert description in officer.descriptions
         assert rv.status_code == HTTPStatus.OK
         assert text_contents in response_text
-        assert ac.username in response_text
+        assert user.username in response_text
 
 
 def test_anonymous_users_cannot_see_description_creators(mockdata, client, session):
@@ -505,8 +460,6 @@ def test_anonymous_users_cannot_see_description_creators(mockdata, client, sessi
         description = Description(
             text_contents=text_contents,
             officer_id=officer.id,
-            created_by=ac.id,
-            created_at=datetime.now(),
             updated_at=datetime.now(),
         )
         db.session.add(description)
