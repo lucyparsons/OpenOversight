@@ -51,7 +51,6 @@ def add_new_assignment(
         unit_id=unit_id,
         start_date=form.start_date.data,
         resign_date=form.resign_date.data,
-        created_by=current_user.get_id(),
     )
     db.session.add(new_assignment)
     db.session.commit()
@@ -68,7 +67,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         birth_year=form.birth_year.data,
         employment_date=form.employment_date.data,
         department_id=form.department.data.id,
-        created_by=current_user.get_id(),
     )
     db.session.add(officer)
     db.session.commit()
@@ -81,7 +79,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         job_id=form.job_id.data,
         unit=officer_unit,
         start_date=form.employment_date.data,
-        created_by=current_user.get_id(),
     )
     db.session.add(assignment)
     if form.links.data:
@@ -97,9 +94,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     note=note["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    created_at=datetime.datetime.now(),
-                    updated_at=datetime.datetime.now(),
-                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -110,9 +104,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     description=description["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
-                    created_at=datetime.datetime.now(),
-                    updated_at=datetime.datetime.now(),
-                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -125,7 +116,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     overtime_pay=salary["overtime_pay"],
                     year=salary["year"],
                     is_fiscal_year=salary["is_fiscal_year"],
-                    created_by=current_user.get_id(),
                 )
                 db.session.add(new_salary)
 
@@ -136,10 +126,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
 def create_description(self, form: TextForm, current_user: User) -> Description:
     return Description(
         text_contents=form.text_contents.data,
-        created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
-        created_at=datetime.datetime.now(),
-        updated_at=datetime.datetime.now(),
     )
 
 
@@ -165,7 +152,6 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
         ).first()
         if not location:
             location = Location(
-                created_by=current_user.get_id(),
                 cross_street1=if_exists_or_none(address["cross_street1"]),
                 cross_street2=if_exists_or_none(address["cross_street2"]),
                 city=if_exists_or_none(address["city"]),
@@ -191,7 +177,6 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
                 ).first()
                 if not pl:
                     pl = LicensePlate(
-                        created_by=current_user.get_id(),
                         number=if_exists_or_none(plate["number"]),
                         state=if_exists_or_none(plate["state"]),
                     )
@@ -214,19 +199,13 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
         report_number=form.data["report_number"],
         license_plates=fields["license_plates"],
         links=fields["links"],
-        created_by=current_user.get_id(),
-        last_updated_by=current_user.get_id(),
-        last_updated_at=datetime.datetime.now(),
     )
 
 
 def create_note(self, form: TextForm, current_user: User) -> Note:
     return Note(
         text_contents=form.text_contents.data,
-        created_by=current_user.get_id(),
         officer_id=form.officer_id.data,
-        created_at=datetime.datetime.now(),
-        updated_at=datetime.datetime.now(),
     )
 
 
@@ -261,7 +240,6 @@ def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, N
         if not link:
             link = Link(
                 author=if_exists_or_none(link_form["author"]),
-                created_by=current_user.get_id(),
                 description=if_exists_or_none(link_form["description"]),
                 link_type=if_exists_or_none(link_form["link_type"]),
                 title=if_exists_or_none(link_form["title"]),

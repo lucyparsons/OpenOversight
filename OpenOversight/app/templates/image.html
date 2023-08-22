@@ -78,7 +78,7 @@
                     <b>Classified by user</b>
                   </td>
                   <td>
-                    <a href="{{ url_for('main.profile', username=image.user.username) }}">{{ image.user.username }}</a>
+                    <a href="{{ url_for('main.profile', username=image.creator.username) }}">{{ image.creator.username }}</a>
                   </td>
                 </tr>
               </tbody>
