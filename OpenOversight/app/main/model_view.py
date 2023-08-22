@@ -80,8 +80,13 @@ class ModelView(MethodView):
 
         if form.validate_on_submit():
             new_obj = self.create_function(form, current_user)
+            if hasattr(new_obj, "created_by"):
+                new_obj.created_by = current_user.get_id()
+            if hasattr(new_obj, "last_updated_by"):
+                new_obj.last_updated_by = current_user.get_id()
             db.session.add(new_obj)
             db.session.commit()
+
             match self.model.__name__:
                 case Incident.__name__:
                     Department(id=new_obj.department_id).remove_database_cache_entries(
@@ -117,31 +122,6 @@ class ModelView(MethodView):
 
         if not form:
             form = self.get_edit_form(obj)
-            now = datetime.datetime.now()
-            # if the object doesn't have a creator id set it to current user
-            if (
-                hasattr(obj, "created_by")
-                and hasattr(form, "created_by")
-                and getattr(obj, "created_by")
-            ):
-                form.created_by.data = obj.created_by
-            elif hasattr(form, "created_by"):
-                form.created_by.data = current_user.get_id()
-
-            # TODO: Add created_at field to forms
-            if (
-                hasattr(obj, "created_at")
-                and hasattr(form, "created_at")
-                and getattr(obj, "created_at")
-            ):
-                form.created_at.data = obj.created_at
-            elif hasattr(form, "created_at"):
-                form.created_at.data = now
-
-            # if the object keeps track of who updated it last, set to current user
-            if hasattr(obj, "last_updated_by") and hasattr(form, "last_updated_by"):
-                form.last_updated_by.data = current_user.get_id()
-                form.last_updated_at.data = now
 
         if hasattr(form, "department"):
             add_department_query(form, current_user)
@@ -236,8 +216,15 @@ class ModelView(MethodView):
 
     def populate_obj(self, form, obj):
         form.populate_obj(obj)
+
+        # if the object doesn't have a creator id set it to current user
+        if hasattr(obj, "created_by") and not getattr(obj, "created_by"):
+            obj.created_by = current_user.get_id()
+        # if the object keeps track of who updated it last, set to current user
         if hasattr(obj, "last_updated_at"):
             obj.last_updated_at = datetime.datetime.now()
+            obj.last_updated_by = current_user.get_id()
+
         db.session.add(obj)
         db.session.commit()
 
