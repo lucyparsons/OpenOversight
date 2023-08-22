@@ -402,7 +402,6 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         officer = Officer.query.except_(
             Officer.query.filter_by(department_id=AC_DEPT)
         ).first()
-        now = datetime.now()
         description = Description(
             text_contents="Hello",
             officer_id=officer.id,
