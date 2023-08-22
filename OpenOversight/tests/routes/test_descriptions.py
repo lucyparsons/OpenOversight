@@ -121,8 +121,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
 
 def test_admins_can_edit_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, admin = login_admin(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, admin = login_admin(client)
         officer = Officer.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -132,8 +131,8 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
             officer_id=officer.id,
             created_at=original_date,
             last_updated_at=original_date,
-            created_by=ac.id,
-            last_updated_by=ac.id,
+            created_by=admin.id,
+            last_updated_by=admin.id,
         )
         db.session.add(description)
         db.session.commit()
@@ -156,7 +155,7 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         assert description.text_contents == new_description
         assert description.created_at == original_date
         assert description.last_updated_at > original_date
-        assert description.created_by == ac.id
+        assert description.created_by == admin.id
         assert description.last_updated_by == admin.id
 
 
