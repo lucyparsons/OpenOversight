@@ -66,8 +66,7 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("address_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["address_id"],
-            ["locations.id"],
+            ["address_id"], ["locations.id"], "incidents_address_id_fkey"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -82,10 +81,12 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["incident_id"],
             ["incidents.id"],
+            "incident_license_plates_incident_id_fkey",
         ),
         sa.ForeignKeyConstraint(
             ["link_id"],
             ["license_plates.id"],
+            "incident_license_plates_license_plate_id_fkey",
         ),
         sa.PrimaryKeyConstraint("incident_id", "link_id"),
     )
@@ -94,12 +95,10 @@ def upgrade():
         sa.Column("incident_id", sa.Integer(), nullable=False),
         sa.Column("link_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["incident_id"],
-            ["incidents.id"],
+            ["incident_id"], ["incidents.id"], "incident_links_incident_id_fkey"
         ),
         sa.ForeignKeyConstraint(
-            ["link_id"],
-            ["links.id"],
+            ["link_id"], ["links.id"], "incident_links_link_id_fkey"
         ),
         sa.PrimaryKeyConstraint("incident_id", "link_id"),
     )
@@ -108,12 +107,10 @@ def upgrade():
         sa.Column("officer_id", sa.Integer(), nullable=False),
         sa.Column("incident_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["incident_id"],
-            ["incidents.id"],
+            ["incident_id"], ["incidents.id"], "officer_incidents_officer_id_fkey"
         ),
         sa.ForeignKeyConstraint(
-            ["officer_id"],
-            ["officers.id"],
+            ["officer_id"], ["officers.id"], "officer_incidents_incident_id_fkey"
         ),
         sa.PrimaryKeyConstraint("officer_id", "incident_id"),
     )
@@ -122,12 +119,10 @@ def upgrade():
         sa.Column("officer_id", sa.Integer(), nullable=False),
         sa.Column("link_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["link_id"],
-            ["links.id"],
+            ["link_id"], ["links.id"], "officer_links_link_id_fkey"
         ),
         sa.ForeignKeyConstraint(
-            ["officer_id"],
-            ["officers.id"],
+            ["officer_id"], ["officers.id"], "officer_links_officer_id_fkey"
         ),
         sa.PrimaryKeyConstraint("officer_id", "link_id"),
     )
