@@ -29,7 +29,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_assignments_last_updated_by_users",
+            "assignments_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -47,7 +47,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_departments_last_updated_by_users",
+            "departments_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -70,14 +70,14 @@ def upgrade():
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.drop_constraint("faces_created_by_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
-            "fk_faces_created_by_users",
+            "faces_created_by_users_fkey",
             "users",
             ["created_by"],
             ["id"],
             ondelete="SET NULL",
         )
         batch_op.create_foreign_key(
-            "fk_faces_last_updated_by_users",
+            "faces_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -95,7 +95,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_jobs_last_updated_by_users",
+            "jobs_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -113,7 +113,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_licence_plates_last_updated_by_users",
+            "licence_plates_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -131,7 +131,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_links_last_updated_by_users",
+            "links_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -149,7 +149,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_locations_last_updated_by_users",
+            "locations_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -171,7 +171,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_officers_last_updated_by_users",
+            "officers_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -196,7 +196,7 @@ def upgrade():
         )
         batch_op.drop_index("ix_raw_images_created_at")
         batch_op.create_foreign_key(
-            "fk_raw_images_last_updated_by_users",
+            "raw_images_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -214,7 +214,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_salaries_last_updated_by_users",
+            "salaries_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -232,7 +232,7 @@ def upgrade():
         )
         batch_op.add_column(sa.Column("last_updated_by", sa.Integer(), nullable=True))
         batch_op.create_foreign_key(
-            "fk_unit_types_last_updated_by_users",
+            "unit_types_last_updated_by_users_fkey",
             "users",
             ["last_updated_by"],
             ["id"],
@@ -243,21 +243,21 @@ def upgrade():
 def downgrade():
     with op.batch_alter_table("unit_types", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_unit_types_last_updated_by_users", type_="foreignkey"
+            "unit_types_last_updated_by_users", type_="_fkeyforeignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("salaries", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_salaries_last_updated_by_users", type_="foreignkey"
+            "salaries_last_updated_by_users", type_="_fkeyforeignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("raw_images", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_raw_images_last_updated_by_users", type_="foreignkey"
+            "raw_images_last_updated_by_users", type_="_fkeyforeignkey"
         )
         batch_op.create_index("ix_raw_images_created_at", ["created_at"], unique=False)
         batch_op.alter_column(
@@ -271,7 +271,7 @@ def downgrade():
 
     with op.batch_alter_table("officers", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_officers_last_updated_by_users", type_="foreignkey"
+            "officers_last_updated_by_users", type_="_fkeyforeignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
@@ -282,31 +282,31 @@ def downgrade():
 
     with op.batch_alter_table("locations", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_locations_last_updated_by_users", type_="foreignkey"
+            "locations_last_updated_by_users", type_="_fkeyforeignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("links", schema=None) as batch_op:
-        batch_op.drop_constraint("fk_links_last_updated_by_users", type_="foreignkey")
+        batch_op.drop_constraint("links_last_updated_by_users_fkey", type_="foreignkey")
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("license_plates", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_licence_plates_last_updated_by_users", type_="foreignkey"
+            "licence_plates_last_updated_by_users_fkey", type_="foreignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("jobs", schema=None) as batch_op:
-        batch_op.drop_constraint("fk_jobs_last_updated_by_users", type_="foreignkey")
+        batch_op.drop_constraint("jobs_last_updated_by_users_fkey", type_="foreignkey")
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("faces", schema=None) as batch_op:
-        batch_op.drop_constraint("fk_faces_last_updated_by_users", type_="foreignkey")
-        batch_op.drop_constraint("fk_faces_created_by_users", type_="foreignkey")
+        batch_op.drop_constraint("faces_last_updated_by_users_fkey", type_="foreignkey")
+        batch_op.drop_constraint("faces_created_by_users_fkey", type_="foreignkey")
         batch_op.create_foreign_key(
             "faces_created_by_fkey", "users", ["created_by"], ["id"]
         )
@@ -319,14 +319,14 @@ def downgrade():
 
     with op.batch_alter_table("departments", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_departments_last_updated_by_users", type_="foreignkey"
+            "departments_last_updated_by_users_fkey", type_="foreignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
 
     with op.batch_alter_table("assignments", schema=None) as batch_op:
         batch_op.drop_constraint(
-            "fk_assignments_last_updated_by_users", type_="foreignkey"
+            "assignments_last_updated_by_users_fkey", type_="foreignkey"
         )
         batch_op.drop_column("last_updated_by")
         batch_op.drop_column("last_updated_at")
