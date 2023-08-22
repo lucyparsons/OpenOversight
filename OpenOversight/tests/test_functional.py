@@ -344,7 +344,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     wait_for_page_load(browser)
 
     dept_select = Select(browser.find_element("id", "department"))
-    dept_select.select_by_visible_text("Auburn Police Department")
+    dept_select.select_by_visible_text("[WA] Auburn Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")

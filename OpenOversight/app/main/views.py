@@ -1815,7 +1815,7 @@ def download_dept_descriptions_csv(department_id: int):
         "created_by",
         "officer_id",
         "created_at",
-        "updated_at",
+        "last_updated_at",
     ]
     return make_downloadable_csv(
         notes, department_id, "Notes", field_names, descriptions_record_maker

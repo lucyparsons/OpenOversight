@@ -12,6 +12,9 @@ KEY_DEPT_ASSIGNMENTS_LAST_UPDATED = "assignments_last_updated"
 KEY_DEPT_INCIDENTS_LAST_UPDATED = "incidents_last_updated"
 KEY_DEPT_OFFICERS_LAST_UPDATED = "officers_last_updated"
 
+# Database Key Constants
+KEY_DB_CREATOR = "creator"
+
 # Config Key Constants
 KEY_ALLOWED_EXTENSIONS = "ALLOWED_EXTENSIONS"
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"

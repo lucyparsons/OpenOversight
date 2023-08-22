@@ -228,7 +228,7 @@ def build_note(officer: Officer, user: User, content=None) -> Note:
         officer_id=officer.id,
         created_by=user.id,
         created_at=date,
-        updated_at=date,
+        last_updated_at=date,
     )
 
 
@@ -241,7 +241,7 @@ def build_description(officer: Officer, user: User, content=None) -> Description
         officer_id=officer.id,
         created_by=user.id,
         created_at=date,
-        updated_at=date,
+        last_updated_at=date,
     )
 
 
