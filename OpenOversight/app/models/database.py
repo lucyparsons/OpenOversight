@@ -39,13 +39,13 @@ officer_links = db.Table(
     db.Column(
         "officer_id",
         db.Integer,
-        db.ForeignKey("officers.id", name="fk_officer_links_officer_id"),
+        db.ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
         primary_key=True,
     ),
     db.Column(
         "link_id",
         db.Integer,
-        db.ForeignKey("links.id", name="fk_officer_links_link_id"),
+        db.ForeignKey("links.id", name="officer_links_link_id_fkey"),
         primary_key=True,
     ),
     db.Column(
@@ -62,13 +62,13 @@ officer_incidents = db.Table(
     db.Column(
         "officer_id",
         db.Integer,
-        db.ForeignKey("officers.id", name="fk_officer_incidents_officer_id"),
+        db.ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
         primary_key=True,
     ),
     db.Column(
         "incident_id",
         db.Integer,
-        db.ForeignKey("incidents.id", name="fk_officer_incidents_incident_id"),
+        db.ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
         primary_key=True,
     ),
     db.Column(
@@ -154,7 +154,7 @@ class Job(BaseModel):
     is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
     order = db.Column(db.Integer, index=True, unique=False, nullable=False)
     department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_jobs_department_id")
+        db.Integer, db.ForeignKey("departments.id", name="jobs_department_id_fkey")
     )
     department = db.relationship("Department", backref="jobs")
     created_at = db.Column(
@@ -191,7 +191,7 @@ class Note(BaseModel):
     creator = db.relationship("User", backref="notes")
     officer_id = db.Column(
         db.Integer,
-        db.ForeignKey("officers.id", name="fk_notes_officer_id", ondelete="CASCADE"),
+        db.ForeignKey("officers.id", name="notes_officer_id_fkey", ondelete="CASCADE"),
     )
     officer = db.relationship("Officer", back_populates="notes")
     created_at = db.Column(
@@ -216,7 +216,7 @@ class Description(BaseModel):
     officer_id = db.Column(
         db.Integer,
         db.ForeignKey(
-            "officers.id", name="fk_descriptions_officer_id", ondelete="CASCADE"
+            "officers.id", name="descriptions_officer_id_fkey", ondelete="CASCADE"
         ),
     )
     created_at = db.Column(
@@ -243,7 +243,7 @@ class Officer(BaseModel):
     assignments = db.relationship("Assignment", back_populates="base_officer")
     face = db.relationship("Face", backref="officer")
     department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_officers_department_id")
+        db.Integer, db.ForeignKey("departments.id", name="officers_department_id_fkey")
     )
     department = db.relationship("Department", backref="officers")
     unique_internal_identifier = db.Column(
@@ -348,7 +348,9 @@ class Salary(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(
         db.Integer,
-        db.ForeignKey("officers.id", name="fk_salaries_officer_id", ondelete="CASCADE"),
+        db.ForeignKey(
+            "officers.id", name="salaries_officer_id_fkey", ondelete="CASCADE"
+        ),
     )
     officer = db.relationship("Officer", back_populates="salaries")
     salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
@@ -376,20 +378,20 @@ class Assignment(BaseModel):
     officer_id = db.Column(
         db.Integer,
         db.ForeignKey(
-            "officers.id", name="fk_assignments_officer_id", ondelete="CASCADE"
+            "officers.id", name="assignments_officer_id_fkey", ondelete="CASCADE"
         ),
     )
     base_officer = db.relationship("Officer", back_populates="assignments")
     star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
     job_id = db.Column(
         db.Integer,
-        db.ForeignKey("jobs.id", name="fk_assignments_job_id"),
+        db.ForeignKey("jobs.id", name="assignments_job_id_fkey"),
         nullable=False,
     )
     job = db.relationship("Job")
     unit_id = db.Column(
         db.Integer,
-        db.ForeignKey("unit_types.id", name="fk_assignments_unit_id"),
+        db.ForeignKey("unit_types.id", name="assignments_unit_id_fkey"),
         nullable=True,
     )
     unit = db.relationship("Unit")
@@ -415,7 +417,8 @@ class Unit(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(120), index=True, unique=False)
     department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_unit_types_department_id")
+        db.Integer,
+        db.ForeignKey("departments.id", name="unit_types_department_id_fkey"),
     )
     department = db.relationship(
         "Department", backref="unit_types", order_by="Unit.description.asc()"
@@ -439,7 +442,7 @@ class Face(BaseModel):
 
     id = db.Column(db.Integer, primary_key=True)
     officer_id = db.Column(
-        db.Integer, db.ForeignKey("officers.id", name="fk_faces_officer_id")
+        db.Integer, db.ForeignKey("officers.id", name="faces_officer_id_fkey")
     )
     img_id = db.Column(
         db.Integer,
@@ -515,7 +518,10 @@ class Image(BaseModel):
     user = db.relationship("User", back_populates="classifications")
     is_tagged = db.Column(db.Boolean, default=False, unique=False, nullable=True)
 
-    department_id = db.Column(db.Integer, db.ForeignKey("departments.id"))
+    department_id = db.Column(
+        db.Integer,
+        db.ForeignKey("departments.id", name="raw_images_department_id_fkey"),
+    )
     department = db.relationship("Department", backref="raw_images")
 
     def __repr__(self):
@@ -527,13 +533,13 @@ incident_links = db.Table(
     db.Column(
         "incident_id",
         db.Integer,
-        db.ForeignKey("incidents.id", name="fk_incident_links_incident_id"),
+        db.ForeignKey("incidents.id", name="incident_links_incident_id_fkey"),
         primary_key=True,
     ),
     db.Column(
         "link_id",
         db.Integer,
-        db.ForeignKey("links.id", name="fk_incident_links_link_id"),
+        db.ForeignKey("links.id", name="incident_links_link_id_fkey"),
         primary_key=True,
     ),
     db.Column(
@@ -550,14 +556,14 @@ incident_license_plates = db.Table(
     db.Column(
         "incident_id",
         db.Integer,
-        db.ForeignKey("incidents.id", name="fk_incident_license_plates_incident_id"),
+        db.ForeignKey("incidents.id", name="incident_license_plates_incident_id_fkey"),
         primary_key=True,
     ),
     db.Column(
         "license_plate_id",
         db.Integer,
         db.ForeignKey(
-            "license_plates.id", name="fk_incident_license_plates_license_plate_id"
+            "license_plates.id", name="incident_license_plates_license_plate_id_fkey"
         ),
         primary_key=True,
     ),
@@ -575,13 +581,13 @@ incident_officers = db.Table(
     db.Column(
         "incident_id",
         db.Integer,
-        db.ForeignKey("incidents.id", name="fk_incident_officers_incident_id"),
+        db.ForeignKey("incidents.id", name="incident_officers_incident_id_fkey"),
         primary_key=True,
     ),
     db.Column(
         "officers_id",
         db.Integer,
-        db.ForeignKey("officers.id", name="fk_incident_officers_officers_id"),
+        db.ForeignKey("officers.id", name="incident_officers_officers_id_fkey"),
         primary_key=True,
     ),
     db.Column(
@@ -713,7 +719,7 @@ class Incident(BaseModel):
     report_number = db.Column(db.String(50), index=True)
     description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(
-        db.Integer, db.ForeignKey("locations.id", name="fk_incidents_address_id")
+        db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
     )
     address = db.relationship("Location", backref="incidents")
     license_plates = db.relationship(
@@ -735,7 +741,7 @@ class Incident(BaseModel):
         backref=db.backref("incidents"),
     )
     department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_incidents_department_id")
+        db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
     )
     department = db.relationship("Department", backref="incidents", lazy=True)
     created_at = db.Column(
@@ -776,7 +782,7 @@ class User(UserMixin, BaseModel):
     approved = db.Column(db.Boolean, default=False)
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_users_ac_department_id")
+        db.Integer, db.ForeignKey("departments.id", name="users_ac_department_id_fkey")
     )
     ac_department = db.relationship(
         "Department", backref="coordinators", foreign_keys=[ac_department_id]
@@ -784,7 +790,7 @@ class User(UserMixin, BaseModel):
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
     dept_pref = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="fk_users_dept_pref")
+        db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")
     )
     dept_pref_rel = db.relationship("Department", foreign_keys=[dept_pref])
     classifications = db.relationship("Image", back_populates="user")
