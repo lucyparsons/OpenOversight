@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union
+from typing import Union
 
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
@@ -28,14 +28,16 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
-from OpenOversight.app.utils.general import get_or_create
 
 
-def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User):
-    if form.unit.data:
-        unit_id = form.unit.data.id
-    else:
-        unit_id = None
+def if_exists_or_none(val: Union[str, None]) -> Union[str, None]:
+    return val if val else None
+
+
+def add_new_assignment(
+    officer_id: int, form: AssignmentForm, current_user: User
+) -> None:
+    unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
         department_id=form.job_title.data.department_id,
@@ -54,7 +56,7 @@ def add_new_assignment(officer_id: int, form: AssignmentForm, current_user: User
     db.session.commit()
 
 
-def add_officer_profile(form: AddOfficerForm, current_user: User):
+def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -69,10 +71,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     db.session.add(officer)
     db.session.commit()
 
-    if form.unit.data:
-        officer_unit = form.unit.data
-    else:
-        officer_unit = None
+    officer_unit = form.unit.data if form.unit.data else None
 
     assignment = Assignment(
         base_officer=officer,
@@ -84,11 +83,9 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     db.session.add(assignment)
     if form.links.data:
         for link in form.data["links"]:
-            # don't try to create with a blank string
             if link["url"]:
-                li, _ = get_or_create(db.session, Link, **link)
-                if li:
-                    officer.links.append(li)
+                li = get_or_create_link_from_form(link, current_user)
+                officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
             # don't try to create with a blank string
@@ -126,17 +123,14 @@ def add_officer_profile(form: AddOfficerForm, current_user: User):
     return officer
 
 
-def create_description(self, form: TextForm, current_user: User):
+def create_description(self, form: TextForm, current_user: User) -> Description:
     return Description(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
     )
 
 
-def create_incident(self, form: IncidentForm, current_user: User):
-    def if_exists_or_none(val: Union[str, Any]):
-        return val if val else None
-
+def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -191,23 +185,8 @@ def create_incident(self, form: IncidentForm, current_user: User):
 
     if "links" in form.data:
         for link in form.data["links"]:
-            # don't try to create with a blank string
             if link["url"]:
-                li = Link.query.filter_by(
-                    author=if_exists_or_none(link["author"]),
-                    link_type=if_exists_or_none(link["link_type"]),
-                    title=if_exists_or_none(link["title"]),
-                    url=if_exists_or_none(link["url"]),
-                ).first()
-                if not li:
-                    li = Link(
-                        author=if_exists_or_none(link["author"]),
-                        description=if_exists_or_none(link["description"]),
-                        link_type=if_exists_or_none(link["link_type"]),
-                        title=if_exists_or_none(link["title"]),
-                        url=if_exists_or_none(link["url"]),
-                    )
-                    db.session.add(li)
+                li = get_or_create_link_from_form(link, current_user)
                 fields["links"].append(li)
 
     return Incident(
@@ -223,14 +202,14 @@ def create_incident(self, form: IncidentForm, current_user: User):
     )
 
 
-def create_note(self, form: TextForm, current_user: User):
+def create_note(self, form: TextForm, current_user: User) -> Note:
     return Note(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
     )
 
 
-def edit_existing_assignment(assignment, form: AssignmentForm):
+def edit_existing_assignment(assignment, form: AssignmentForm) -> Assignment:
     assignment.star_no = form.star_no.data
 
     job = form.job_title.data
@@ -249,7 +228,28 @@ def edit_existing_assignment(assignment, form: AssignmentForm):
     return assignment
 
 
-def edit_officer_profile(officer, form: EditOfficerForm):
+def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, None]:
+    link = None
+    if link_form["url"]:
+        link = Link.query.filter_by(
+            author=if_exists_or_none(link_form["author"]),
+            link_type=if_exists_or_none(link_form["link_type"]),
+            title=if_exists_or_none(link_form["title"]),
+            url=if_exists_or_none(link_form["url"]),
+        ).first()
+        if not link:
+            link = Link(
+                author=if_exists_or_none(link_form["author"]),
+                description=if_exists_or_none(link_form["description"]),
+                link_type=if_exists_or_none(link_form["link_type"]),
+                title=if_exists_or_none(link_form["title"]),
+                url=if_exists_or_none(link_form["url"]),
+            )
+            db.session.add(link)
+    return link
+
+
+def edit_officer_profile(officer, form: EditOfficerForm) -> Officer:
     for field, data in form.data.items():
         setattr(officer, field, data)
 
