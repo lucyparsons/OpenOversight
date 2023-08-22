@@ -1,4 +1,5 @@
 import datetime
+import random
 import time
 
 from pytest import raises
@@ -19,6 +20,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.utils.choices import SUFFIX_CHOICES
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -92,6 +94,19 @@ def test_officer_repr(mockdata):
             repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
             f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
         )
+
+
+def test_officer_no_middle_initial(faker):
+    officer = Officer(
+        id=faker.random_number(),
+        first_name=faker.first_name(),
+        last_name=faker.last_name(),
+        suffix=random.choice(SUFFIX_CHOICES[1:])[0],
+    )
+    assert (
+        repr(officer)
+        == f"<Officer ID {officer.id}: {officer.first_name} {officer.last_name} {officer.suffix}>"
+    )
 
 
 def test_assignment_repr(mockdata):
