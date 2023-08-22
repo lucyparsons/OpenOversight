@@ -149,8 +149,6 @@ def create_incident(self, form: IncidentForm, current_user: User):
         "license_plates": [],
         "links": [],
         "address": "",
-        "created_by": current_user.get_id(),
-        "last_updated_by": current_user.get_id(),
     }
 
     if "address" in form.data:
