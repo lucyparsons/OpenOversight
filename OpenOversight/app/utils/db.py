@@ -35,7 +35,7 @@ def compute_leaderboard_stats(select_top=25):
     top_sorters = (
         db.session.query(User, func.count(Image.created_by))
         .select_from(Image)
-        .join(User)
+        .join(User, Image.created_by == User.id)
         .group_by(User)
         .order_by(func.count(Image.created_by).desc())
         .limit(select_top)
@@ -44,7 +44,7 @@ def compute_leaderboard_stats(select_top=25):
     top_taggers = (
         db.session.query(User, func.count(Face.created_by))
         .select_from(Face)
-        .join(User)
+        .join(User, Face.created_by == User.id)
         .group_by(User)
         .order_by(func.count(Face.created_by).desc())
         .limit(select_top)
