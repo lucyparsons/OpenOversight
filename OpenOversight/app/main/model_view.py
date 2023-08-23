@@ -79,7 +79,7 @@ class ModelView(MethodView):
                     set_dynamic_default(form.department, current_user.dept_pref_rel)
 
         if form.validate_on_submit():
-            new_obj = self.create_function(form, current_user)
+            new_obj = self.create_function(form)
             if hasattr(new_obj, "created_by"):
                 new_obj.created_by = current_user.get_id()
             if hasattr(new_obj, "last_updated_by"):

@@ -121,7 +121,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     return officer
 
 
-def create_description(self, form: TextForm, current_user: User) -> Description:
+def create_description(self, form: TextForm) -> Description:
     return Description(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
@@ -206,7 +206,7 @@ def create_incident(self, form: IncidentForm) -> Incident:
     return incident
 
 
-def create_note(self, form: TextForm, current_user: User) -> Note:
+def create_note(self, form: TextForm) -> Note:
     return Note(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,

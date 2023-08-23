@@ -1733,7 +1733,7 @@ def test_assignments_csv(mockdata, client, session, department):
         form = AssignmentForm(
             star_no="9181", job_title=job, start_date=date(2020, 6, 16)
         )
-        add_new_assignment(officer.id, form, user)
+        add_new_assignment(officer.id, form)
         rv = client.get(
             url_for("main.download_dept_assignments_csv", department_id=department.id),
             follow_redirects=True,
