@@ -735,7 +735,6 @@ def test_bulk_add_officers__write_static_field__flag_set(
     officer.birth_year = 1979
     session.add(officer)
     session.commit()
-    officer_uuid = officer.unique_internal_identifier
 
     new_birth_year = 1983
 
@@ -756,7 +755,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
                 "department_id": department.id,
                 "first_name": officer.first_name,
                 "last_name": officer.last_name,
-                "unique_internal_identifier": officer_uuid,
+                "unique_internal_identifier": officer.unique_internal_identifier,
                 "birth_year": new_birth_year,
             }
         )
@@ -771,7 +770,9 @@ def test_bulk_add_officers__write_static_field__flag_set(
     assert result.exception is None
 
     # confirm that officer's birth year was updated in database
-    officer = Officer.query.filter_by(unique_internal_identifier=officer_uuid).one()
+    officer = Officer.query.filter_by(
+        unique_internal_identifier=officer.unique_internal_identifier
+    ).one()
     assert officer.birth_year == new_birth_year
 
 
