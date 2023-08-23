@@ -61,7 +61,7 @@ def test_route_admin_or_required(route, client, mockdata):
 )
 def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         test_date = datetime(2000, 5, 25, 1, 45)
 
         address_form = LocationForm(
