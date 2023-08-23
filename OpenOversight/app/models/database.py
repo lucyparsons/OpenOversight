@@ -312,13 +312,10 @@ class Officer(BaseModel, TrackUpdates):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-                + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
+                f"<Officer ID {self.id}: {self.full_name()} "
+                f"({self.unique_internal_identifier})>"
             )
-        return (
-            f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-            + f"{self.last_name} {self.suffix}>"
-        )
+        return f"<Officer ID {self.id}: {self.full_name()}>"
 
 
 class Salary(BaseModel, TrackUpdates):
