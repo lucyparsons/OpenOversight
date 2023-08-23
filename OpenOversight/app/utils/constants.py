@@ -31,6 +31,7 @@ KEY_TIMEZONE = "TIMEZONE"
 
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
+FILE_TYPE_HTML = "html"
 SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator only
 
 # File Name Constants

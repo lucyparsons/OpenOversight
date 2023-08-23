@@ -24,7 +24,7 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.models.emails import Email
-from OpenOversight.app.utils.constants import KEY_OO_SERVICE_EMAIL
+from OpenOversight.app.utils.constants import FILE_TYPE_HTML, KEY_OO_SERVICE_EMAIL
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -92,7 +92,7 @@ def test_email_create_message(faker):
 
     email = Email(email_body, email_subject, email_receiver)
 
-    test_message = MIMEText(email_body, "html")
+    test_message = MIMEText(email_body, FILE_TYPE_HTML)
     test_message["to"] = email_receiver
     test_message["from"] = current_app.config[KEY_OO_SERVICE_EMAIL]
     test_message["subject"] = email_subject

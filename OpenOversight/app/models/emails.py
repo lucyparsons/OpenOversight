@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from flask import current_app, render_template
 
 from OpenOversight.app.utils.constants import (
+    FILE_TYPE_HTML,
     KEY_OO_MAIL_SUBJECT_PREFIX,
     KEY_OO_SERVICE_EMAIL,
 )
@@ -18,7 +19,7 @@ class Email:
         self.subject = subject
 
     def create_message(self):
-        message = MIMEText(self.body, "html")
+        message = MIMEText(self.body, FILE_TYPE_HTML)
         message["to"] = self.receiver
         message["from"] = current_app.config[KEY_OO_SERVICE_EMAIL]
         message["subject"] = self.subject
