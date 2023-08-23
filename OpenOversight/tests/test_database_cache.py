@@ -143,8 +143,6 @@ def test_documented_incidents(mockdata, client, faker):
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
-            last_updated_by=user.id,
-            last_updated_at=test_date,
         )
         data = process_form_data(form.data)
 
