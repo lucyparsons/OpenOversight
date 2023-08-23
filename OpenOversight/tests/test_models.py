@@ -85,38 +85,39 @@ def test_officer_repr(session):
         and_(
             Officer.middle_initial.isnot(None),
             Officer.unique_internal_identifier.isnot(None),
+            Officer.suffix.is_(None),
         )
     ).first()
 
     assert (
         repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
-        f"{officer_uii.full_name()} "
+        f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
         f"({officer_uii.unique_internal_identifier})>"
     )
 
     officer_no_uii = Officer.query.filter(
         and_(
-            Officer.middle_initial.isnot(None),
+            Officer.middle_initial.isnot(""),
             Officer.unique_internal_identifier.is_(None),
+            Officer.suffix.isnot(None),
         )
     ).first()
 
     assert (
         repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
-        f"{officer_no_uii.full_name()}>"
+        f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
+        f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
     )
 
-
-def test_officer_no_middle_initial(session):
-    officer = Officer.query.filter(
-        and_(Officer.middle_initial.isnot(None), Officer.suffix.isnot(None))
+    officer_no_mi = Officer.query.filter(
+        and_(Officer.middle_initial.is_(""), Officer.suffix.isnot(None))
     ).first()
-    print(f"!!!!!! {officer.middle_initial == ''}")
 
     assert (
-        repr(officer)
-        == f"<Officer ID {officer.id}: {officer.first_name} {officer.last_name} "
-        f"{officer.suffix} ({officer.unique_internal_identifier})>"
+        repr(officer_no_mi)
+        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
+        f"({officer_no_mi.unique_internal_identifier})>"
     )
 
 

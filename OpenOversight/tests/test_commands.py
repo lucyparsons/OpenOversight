@@ -636,11 +636,10 @@ def test_bulk_add_officers__write_static_null_field(
     monkeypatch.setattr("builtins.input", lambda: "y")
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     # start with an officer whose birth_year is missing
-    officer = generate_officer(department, user)
+    officer = generate_officer(department, user, True)
     officer.birth_year = None
     session.add(officer)
     session.commit()
-    fo_uuid = officer.unique_internal_identifier
 
     birth_year = 1983
     field_names = [
@@ -660,7 +659,7 @@ def test_bulk_add_officers__write_static_null_field(
                 "department_id": department.id,
                 "first_name": officer.first_name,
                 "last_name": officer.last_name,
-                "unique_internal_identifier": fo_uuid,
+                "unique_internal_identifier": officer.unique_internal_identifier,
                 "birth_year": birth_year,
             }
         )
@@ -673,7 +672,9 @@ def test_bulk_add_officers__write_static_null_field(
     assert result.exception is None
 
     # officer information is updated in the database
-    officer = Officer.query.filter_by(unique_internal_identifier=fo_uuid).one()
+    officer = Officer.query.filter_by(
+        unique_internal_identifier=officer.unique_internal_identifier
+    ).one()
     assert officer.birth_year == birth_year
 
 
@@ -730,7 +731,7 @@ def test_bulk_add_officers__write_static_field__flag_set(
     monkeypatch.setattr("builtins.input", lambda: "y")
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     # officer with birth year set
-    officer = generate_officer(department, user)
+    officer = generate_officer(department, user, True)
     officer.birth_year = 1979
     session.add(officer)
     session.commit()
@@ -780,7 +781,7 @@ def test_bulk_add_officers__no_create_flag(
     monkeypatch.setattr("builtins.input", lambda: "y")
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     # department with one officer
-    officer = generate_officer(department_without_officers, user)
+    officer = generate_officer(department_without_officers, user, True)
     officer.gender = None
     session.add(officer)
     session.commit()
