@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block head %}
   <link href="{{ url_for('static', filename='css/cropper.css') }}"
-        rel="stylesheet">
+        rel="stylesheet"
+        xmlns="http://www.w3.org/1999/html">
   <link href="{{ url_for('static', filename='css/tagger.css') }}"
         rel="stylesheet">
 {% endblock head %}
@@ -42,104 +43,98 @@
           </div>
           <div class="col-sm-3 text-center">
             <div class="docs-data">
-              {% if department %}
-                <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id) }}"
-                      method="post">
-                </form>
-              {% else %}
-                <form action="{{ url_for('main.label_data', image_id=image.id) }}"
-                      method="post">
-                </form>
-              {% endif %}
-              {{ form.hidden_tag() }}
-              <div class="input-group input-group-sm">
-                <input type="text"
-                       class="hidden form-control"
-                       name="dataX"
-                       id="dataX"
-                       placeholder="x">
-              </div>
-              {% for error in form.dataX.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <div class="input-group input-group-sm">
-                <input type="text"
-                       class="hidden form-control"
-                       name="dataY"
-                       id="dataY"
-                       placeholder="y">
-              </div>
-              <div class="input-group input-group-sm"></div>
-              {% for error in form.dataY.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <div class="input-group input-group-sm">
-                <input type="text"
-                       class="hidden form-control"
-                       name="dataWidth"
-                       id="dataWidth"
-                       placeholder="width">
-              </div>
-              {% for error in form.dataWidth.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <div class="input-group input-group-sm">
-                <input type="text"
-                       class="hidden form-control"
-                       name="dataHeight"
-                       id="dataHeight"
-                       placeholder="height">
-              </div>
-              {% for error in form.dataHeight.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <div class="input-group input-group-sm id-input">
-                <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
-                <input type="text"
-                       class="form-control"
-                       name="officer_id"
-                       id="officer_id"
-                       placeholder="officer ID">
-              </div>
-              {% for error in form.officer_id.errors %}
-                <p>
-                  <span style="color: red;">[{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <input type="text"
-                     class="hidden form-control"
-                     name="image_id"
-                     id="image_id"
-                     placeholder="image ID"
-                     value="{{ image.id }}">
-              {% for error in form.image_id.errors %}
-                <p>
-                  <span style="color: red;">Image: [{{ error }}]</span>
-                </p>
-              {% endfor %}
-              <p>
-                <div class="input-group addface-button">
-                  <input type="submit"
-                         class="btn btn-sm btn-primary form-control"
-                         value="Add identified face" />
+              <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
+                    method="post">
+                {{ form.hidden_tag() }}
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                         class="hidden form-control"
+                         name="dataX"
+                         id="dataX"
+                         placeholder="x">
                 </div>
-              </p>
-              <div class="text-center input-explanation">
-                <div class="text addface-button-explanation">
-                  <b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.
+                {% for error in form.dataX.errors %}
+                  <p>
+                    <span style="color: red;">[{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                         class="hidden form-control"
+                         name="dataY"
+                         id="dataY"
+                         placeholder="y">
                 </div>
-                <div class="text id-explanation">
-                  <b>Explanation</b>: after matching the officer's name, badge number, or face to the roster, enter the officer's OpenOversight ID here.
+                <div class="input-group input-group-sm"></div>
+                {% for error in form.dataY.errors %}
+                  <p>
+                    <span style="color: red;">[{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                         class="hidden form-control"
+                         name="dataWidth"
+                         id="dataWidth"
+                         placeholder="width">
                 </div>
-              </div>
+                {% for error in form.dataWidth.errors %}
+                  <p>
+                    <span style="color: red;">[{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <div class="input-group input-group-sm">
+                  <input type="text"
+                         class="hidden form-control"
+                         name="dataHeight"
+                         id="dataHeight"
+                         placeholder="height">
+                </div>
+                {% for error in form.dataHeight.errors %}
+                  <p>
+                    <span style="color: red;">[{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <div class="input-group input-group-sm id-input">
+                  <label class="input-group-addon" for="officer_id">OpenOversight ID</label>
+                  <input type="text"
+                         class="form-control"
+                         name="officer_id"
+                         id="officer_id"
+                         placeholder="officer ID">
+                </div>
+                {% for error in form.officer_id.errors %}
+                  <p>
+                    <span style="color: red;">[{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <input type="text"
+                       class="hidden form-control"
+                       name="image_id"
+                       id="image_id"
+                       placeholder="image ID"
+                       value="{{ image.id }}">
+                {% for error in form.image_id.errors %}
+                  <p>
+                    <span style="color: red;">Image: [{{ error }}]</span>
+                  </p>
+                {% endfor %}
+                <p>
+                  <div class="input-group addface-button">
+                    <input type="submit"
+                           class="btn btn-sm btn-primary form-control"
+                           value="Add identified face" />
+                  </div>
+                </p>
+                <div class="text-center input-explanation">
+                  <div class="text addface-button-explanation">
+                    <b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.
+                  </div>
+                  <div class="text id-explanation">
+                    <b>Explanation</b>: after matching the officer's name, badge number, or face to the roster, enter the officer's OpenOversight ID here.
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
           <div class="col-sm-2 text-center skip-button">
