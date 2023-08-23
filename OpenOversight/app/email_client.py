@@ -4,7 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from OpenOversight.app.models.emails import Email
-from OpenOversight.app.utils.constants import SERVICE_ACCOUNT_FILE
+from OpenOversight.app.utils.constants import KEY_OO_SERVICE_EMAIL, SERVICE_ACCOUNT_FILE
 
 
 class EmailClient(object):
@@ -26,7 +26,9 @@ class EmailClient(object):
             credentials = service_account.Credentials.from_service_account_file(
                 SERVICE_ACCOUNT_FILE, scopes=cls.SCOPES
             )
-            delegated_credentials = credentials.with_subject(config["OO_SERVICE_EMAIL"])
+            delegated_credentials = credentials.with_subject(
+                config[KEY_OO_SERVICE_EMAIL]
+            )
             cls.service = build("gmail", "v1", credentials=delegated_credentials)
             cls._instance = super(EmailClient, cls).__new__(cls)
         return cls._instance

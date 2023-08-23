@@ -8,6 +8,7 @@ from OpenOversight.app.utils.constants import (
     KEY_ENV_TESTING,
     KEY_OFFICERS_PER_PAGE,
     KEY_OO_MAIL_SUBJECT_PREFIX,
+    KEY_OO_SERVICE_EMAIL,
     KEY_S3_BUCKET_NAME,
     KEY_TIMEZONE,
     MEGABYTE,
@@ -48,7 +49,7 @@ class BaseConfig:
         self.OO_MAIL_SUBJECT_PREFIX = os.environ.get(
             KEY_OO_MAIL_SUBJECT_PREFIX, "[OpenOversight]"
         )
-        self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
+        self.OO_SERVICE_EMAIL = os.environ.get(KEY_OO_SERVICE_EMAIL)
         # TODO: Remove the default once we are able to update the production .env file
         # TODO: Once that is done, we can re-alpha sort these variables.
         self.OO_HELP_EMAIL = os.environ.get("OO_HELP_EMAIL", self.OO_SERVICE_EMAIL)
