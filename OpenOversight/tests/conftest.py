@@ -38,7 +38,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
+from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES, SUFFIX_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
@@ -187,10 +187,12 @@ def pick_salary():
     return random.randint(100, 100000000) / 100
 
 
-def generate_officer(department: Department, user: User) -> Officer:
+def generate_officer(
+    department: Department, user: User, require_uii: bool = False
+) -> Officer:
     year_born = pick_birth_date()
     f_name, m_initial, l_name = pick_name()
-    return Officer(
+    officer = Officer(
         last_name=l_name,
         first_name=f_name,
         middle_initial=m_initial,
@@ -199,9 +201,16 @@ def generate_officer(department: Department, user: User) -> Officer:
         birth_year=year_born,
         employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=department.id,
-        unique_internal_identifier=pick_uid(),
         created_by=user.id,
     )
+
+    if random.random() >= 0.7:
+        officer.suffix = random.choice(SUFFIX_CHOICES[1:])[0]
+
+    if require_uii or random.random() >= 0.5:
+        officer.unique_internal_identifier = pick_uid()
+
+    return officer
 
 
 def build_assignment(
