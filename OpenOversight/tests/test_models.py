@@ -1,6 +1,9 @@
+import base64
 import datetime
 import time
+from email.mime.text import MIMEText
 
+from flask import current_app
 from pytest import raises
 from sqlalchemy import and_
 
@@ -20,6 +23,8 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.models.emails import Email
+from OpenOversight.app.utils.constants import KEY_OO_SERVICE_EMAIL
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -78,6 +83,23 @@ def test_department_total_documented_incidents(mockdata):
     )
 
     assert springfield_incidents == test_count
+
+
+def test_email_create_message(faker):
+    email_body = faker.paragraph(nb_sentences=5)
+    email_receiver = faker.ascii_email()
+    email_subject = faker.paragraph(nb_sentences=1)
+
+    email = Email(email_body, email_subject, email_receiver)
+
+    test_message = MIMEText(email_body, "html")
+    test_message["to"] = email_receiver
+    test_message["from"] = current_app.config[KEY_OO_SERVICE_EMAIL]
+    test_message["subject"] = email_subject
+
+    assert email.create_message() == {
+        "raw": base64.urlsafe_b64encode(test_message.as_bytes()).decode()
+    }
 
 
 def test_officer_repr(session):
