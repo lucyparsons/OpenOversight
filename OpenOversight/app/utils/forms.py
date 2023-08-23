@@ -158,7 +158,8 @@ def create_incident(self, form: IncidentForm) -> Incident:
                 street_name=if_exists_or_none(address["street_name"]),
                 zip_code=if_exists_or_none(address["zip_code"]),
             )
-        incident.address.append(location)
+            db.session.add(location)
+        incident.address = location
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
