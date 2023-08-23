@@ -203,7 +203,8 @@ def generate_officer(department: Department, user: User) -> Officer:
         created_by=user.id,
     )
 
-    if random.random() >= 0.5:
+    # Having roughly 30% of officers with suffixes is fine.
+    if random.random() >= 0.7:
         officer.suffix = random.choice(SUFFIX_CHOICES[1:])[0]
 
     return officer
