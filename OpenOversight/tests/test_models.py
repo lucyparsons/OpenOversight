@@ -1,8 +1,8 @@
 import datetime
-import random
 import time
 
 from pytest import raises
+from sqlalchemy import and_
 
 from OpenOversight.app.models.database import (
     Assignment,
@@ -20,7 +20,6 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.utils.choices import SUFFIX_CHOICES
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -81,31 +80,43 @@ def test_department_total_documented_incidents(mockdata):
     assert springfield_incidents == test_count
 
 
-def test_officer_repr(mockdata):
-    officer = Officer.query.first()
-    if officer.unique_internal_identifier:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
-            f"({officer.unique_internal_identifier})>"
+def test_officer_repr(session):
+    officer_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(None),
+            Officer.unique_internal_identifier.isnot(None),
         )
-    else:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
-        )
+    ).first()
 
-
-def test_officer_no_middle_initial(faker):
-    officer = Officer(
-        id=faker.random_number(),
-        first_name=faker.first_name(),
-        last_name=faker.last_name(),
-        suffix=random.choice(SUFFIX_CHOICES[1:])[0],
+    assert (
+        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        f"{officer_uii.full_name()} "
+        f"({officer_uii.unique_internal_identifier})>"
     )
+
+    officer_no_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(None),
+            Officer.unique_internal_identifier.is_(None),
+        )
+    ).first()
+
+    assert (
+        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        f"{officer_no_uii.full_name()}>"
+    )
+
+
+def test_officer_no_middle_initial(session):
+    officer = Officer.query.filter(
+        and_(Officer.middle_initial.isnot(None), Officer.suffix.isnot(None))
+    ).first()
+    print(f"!!!!!! {officer.middle_initial == ''}")
+
     assert (
         repr(officer)
-        == f"<Officer ID {officer.id}: {officer.first_name} {officer.last_name} {officer.suffix}>"
+        == f"<Officer ID {officer.id}: {officer.first_name} {officer.last_name} "
+        f"{officer.suffix} ({officer.unique_internal_identifier})>"
     )
 
 
