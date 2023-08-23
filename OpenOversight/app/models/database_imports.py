@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, time
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
@@ -21,7 +21,7 @@ from OpenOversight.app.utils.choices import (
     RACE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.general import get_or_create, str_is_true
+from OpenOversight.app.utils.general import get_or_create, get_timezone, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
 
@@ -36,16 +36,24 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> Optional[datetime.date]:
+def parse_date(date_str: Optional[str]) -> date:
     if date_str:
         return dateutil.parser.parse(date_str).date()
-    return None
+    return datetime.now().date()
 
 
-def parse_time(time_str: Optional[str]) -> Optional[datetime.time]:
+def parse_date_time(date_time_str: Union[str, None]) -> datetime:
+    if date_time_str and isinstance(date_time_str, str):
+        return datetime.combine(
+            parse_date(date_time_str), parse_time(date_time_str)
+        ).astimezone(get_timezone())
+    return datetime.now().astimezone(get_timezone())
+
+
+def parse_time(time_str: Optional[str]) -> time:
     if time_str:
         return dateutil.parser.parse(time_str).time()
-    return None
+    return datetime.now().time()
 
 
 def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
@@ -284,7 +292,7 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         department_id=parse_int(data.get("department_id")),
         created_by=parse_int(data.get("created_by")),
         last_updated_by=parse_int(data.get("last_updated_by")),
-        last_updated_at=datetime.datetime.now(),
+        last_updated_at=datetime.now(),
     )
 
     incident.officers = data.get("officers", [])
@@ -315,7 +323,7 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.created_by = parse_int(data.get("created_by"))
     if "last_updated_by" in data:
         incident.last_updated_by = parse_int(data.get("last_updated_by"))
-        incident.last_updated_at = datetime.datetime.now()
+        incident.last_updated_at = datetime.now()
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:

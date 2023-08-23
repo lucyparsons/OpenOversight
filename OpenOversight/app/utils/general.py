@@ -5,9 +5,10 @@ from distutils.util import strtobool
 from typing import Optional
 from urllib.parse import urlparse
 
-from flask import current_app, url_for
+import pytz
+from flask import current_app, session, url_for
 
-from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
+from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_TIMEZONE
 
 
 def ac_can_edit_officer(officer, ac):
@@ -21,6 +22,17 @@ def allowed_file(filename: str):
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
         in current_app.config[KEY_ALLOWED_EXTENSIONS]
+    )
+
+
+def get_timezone() -> pytz.timezone:
+    """Return the applicable timezone for a given session."""
+    return pytz.timezone(
+        (
+            session[KEY_TIMEZONE]
+            if KEY_TIMEZONE in session
+            else current_app.config.get(KEY_TIMEZONE)
+        )
     )
 
 

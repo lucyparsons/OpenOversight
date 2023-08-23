@@ -34,9 +34,7 @@ def if_exists_or_none(val: Union[str, None]) -> Union[str, None]:
     return val if val else None
 
 
-def add_new_assignment(
-    officer_id: int, form: AssignmentForm, current_user: User
-) -> None:
+def add_new_assignment(officer_id: int, form: AssignmentForm) -> None:
     unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
@@ -84,7 +82,7 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     if form.links.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
+                li = get_or_create_link_from_form(link)
                 officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
@@ -92,7 +90,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             if note["text_contents"]:
                 new_note = Note(
                     note=note["text_contents"],
-                    user_id=current_user.get_id(),
                     officer=officer,
                 )
                 db.session.add(new_note)
@@ -102,7 +99,6 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             if description["text_contents"]:
                 new_description = Description(
                     description=description["text_contents"],
-                    user_id=current_user.get_id(),
                     officer=officer,
                 )
                 db.session.add(new_description)
@@ -130,15 +126,16 @@ def create_description(self, form: TextForm, current_user: User) -> Description:
     )
 
 
-def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
-    fields = {
-        "date": form.date_field.data,
-        "time": form.time_field.data,
-        "officers": [],
-        "license_plates": [],
-        "links": [],
-        "address": "",
-    }
+def create_incident(self, form: IncidentForm) -> Incident:
+    incident = Incident(
+        address=[],
+        description=form.data["description"],
+        department=form.data["department"],
+        officers=[],
+        report_number=form.data["report_number"],
+        license_plates=[],
+        links=[],
+    )
 
     if "address" in form.data:
         address = form.data["address"]
@@ -159,47 +156,45 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
                 street_name=if_exists_or_none(address["street_name"]),
                 zip_code=if_exists_or_none(address["zip_code"]),
             )
-        fields["address"] = location
+        incident.address.append(location)
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
                 of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
                 if of:
-                    fields["officers"].append(of)
+                    incident.officers.append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
             if plate["number"]:
-                pl = LicensePlate.query.filter_by(
+                lp = LicensePlate.query.filter_by(
                     number=if_exists_or_none(plate["number"]),
                     state=if_exists_or_none(plate["state"]),
                 ).first()
-                if not pl:
-                    pl = LicensePlate(
+                if not lp:
+                    lp = LicensePlate(
                         number=if_exists_or_none(plate["number"]),
                         state=if_exists_or_none(plate["state"]),
                     )
-                    db.session.add(pl)
-                fields["license_plates"].append(pl)
+                    db.session.add(lp)
+                incident.license_plates.append(lp)
 
     if "links" in form.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
-                fields["links"].append(li)
+                li = get_or_create_link_from_form(
+                    link,
+                )
+                incident.links.append(li)
 
-    return Incident(
-        date=fields["date"],
-        time=fields["time"],
-        description=form.data["description"],
-        department=form.data["department"],
-        address=fields["address"],
-        officers=fields["officers"],
-        report_number=form.data["report_number"],
-        license_plates=fields["license_plates"],
-        links=fields["links"],
-    )
+    if form.date_field.data and form.time_field.data:
+        incident.occurred_at = 0
+    else:
+        incident.date = form.date_field.data
+        incident.time = form.time_field.data
+
+    return incident
 
 
 def create_note(self, form: TextForm, current_user: User) -> Note:
@@ -228,7 +223,7 @@ def edit_existing_assignment(assignment, form: AssignmentForm) -> Assignment:
     return assignment
 
 
-def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, None]:
+def get_or_create_link_from_form(link_form) -> Union[Link, None]:
     link = None
     if link_form["url"]:
         link = Link.query.filter_by(

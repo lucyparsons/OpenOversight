@@ -401,7 +401,7 @@ def add_assignment(officer_id: int):
             and officer.department_id == current_user.ac_department_id
         ):
             try:
-                add_new_assignment(officer_id, form, current_user)
+                add_new_assignment(officer_id, form)
                 Department(id=officer.department_id).remove_database_cache_entries(
                     [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
                 )
