@@ -11,8 +11,6 @@ from alembic import op
 
 revision = "8ce3de7679c2"
 down_revision = "3015d1dd9eb4"
-branch_labels = None
-depends_on = None
 
 
 def upgrade():

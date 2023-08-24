@@ -11,8 +11,6 @@ from alembic import op
 
 revision = "cd39b33b5360"
 down_revision = "86eb228e4bc0"
-branch_labels = None
-depends_on = None
 
 
 def get_update_statement(normalized, options):

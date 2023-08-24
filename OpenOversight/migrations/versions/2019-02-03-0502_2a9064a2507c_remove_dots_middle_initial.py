@@ -18,8 +18,6 @@ from OpenOversight.app.models.database import Officer, db  # noqa: E402
 
 revision = "2a9064a2507c"
 down_revision = "5c5b80cab45e"
-branch_labels = None
-depends_on = None
 
 
 def upgrade():

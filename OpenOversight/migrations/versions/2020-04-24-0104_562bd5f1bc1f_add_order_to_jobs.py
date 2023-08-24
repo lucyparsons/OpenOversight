@@ -12,8 +12,6 @@ from sqlalchemy.sql import column, table
 
 revision = "562bd5f1bc1f"
 down_revision = "6045f42587ec"
-branch_labels = None
-depends_on = None
 
 
 def upgrade():

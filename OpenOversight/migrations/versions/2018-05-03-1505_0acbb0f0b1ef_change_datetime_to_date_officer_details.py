@@ -12,8 +12,6 @@ from sqlalchemy.dialects import postgresql
 
 revision = "0acbb0f0b1ef"
 down_revision = "0ed957db0058"
-branch_labels = None
-depends_on = None
 
 
 def upgrade():

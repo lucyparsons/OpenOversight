@@ -20,8 +20,6 @@ from OpenOversight.app.utils.cloud import crop_image  # noqa: E402
 
 revision = "59e9993c169c"
 down_revision = "4a490771dda1"
-branch_labels = None
-depends_on = None
 
 
 def upgrade():

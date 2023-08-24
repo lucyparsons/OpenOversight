@@ -15,8 +15,7 @@ from sqlalchemy.sql import func as sql_func
 
 revision = "1931b987ce0d"
 down_revision = "07ace5f956ca"
-branch_labels = None
-depends_on = None
+
 
 TIMEZONE = os.getenv("TIMEZONE", "America/Chicago")
 
