@@ -732,6 +732,10 @@ class User(UserMixin, BaseModel):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
         self.regenerate_uuid()
 
+    @property
+    def uuid(self):
+        return self._uuid
+
     @staticmethod
     def _case_insensitive_equality(field, value):
         return User.query.filter(func.lower(field) == func.lower(value))
