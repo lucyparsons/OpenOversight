@@ -22,6 +22,7 @@ from OpenOversight.app.utils.choices import (
     RACE_CHOICES,
     SUFFIX_CHOICES,
 )
+from OpenOversight.app.utils.constants import OO_DATE_FORMAT, OO_TIME_FORMAT
 from OpenOversight.app.utils.general import get_or_create, get_timezone, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
@@ -43,10 +44,11 @@ def parse_date(date_str: Optional[str]) -> date:
     return datetime.now().date()
 
 
-def parse_date_time_to_session_timezone(date_time_str: Union[str, None]) -> datetime:
-    if date_time_str and isinstance(date_time_str, str):
+def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datetime:
+    if date_str and time_str:
         return datetime.combine(
-            parse_date(date_time_str), parse_time(date_time_str)
+            parse_date(date_str.strftime(OO_DATE_FORMAT)),
+            parse_time(time_str.strftime(OO_TIME_FORMAT)),
         ).astimezone(get_timezone())
     return datetime.now().astimezone(get_timezone())
 
@@ -307,8 +309,6 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
     admin_user = User.query.filter_by(is_administrator=True).first()
 
     incident = Incident(
-        date=parse_date(data.get("date", None)),
-        time=parse_time(data.get("time", None)),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
@@ -316,6 +316,17 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         created_by=parse_int(data.get("created_by", admin_user.id)),
         last_updated_by=parse_int(data.get("created_by", admin_user.id)),
     )
+
+    date_field = data.get("date", None)
+    time_field = data.get("time", None)
+
+    if date_field and time_field:
+        incident.occurred_at = parse_date_time_to_session_timezone(
+            parse_date(date_field), parse_time(time_field)
+        )
+    else:
+        incident.date = parse_date(date_field)
+        incident.time = parse_time(time_field)
 
     incident.officers = data.get("officers", [])
     incident.license_plates = data.get("license_plate_objects", [])
@@ -329,10 +340,6 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
 
 
 def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incident:
-    if "date" in data:
-        incident.date = parse_date(data.get("date"))
-    if "time" in data:
-        incident.time = parse_time(data.get("time"))
     if "report_number" in data:
         incident.report_number = parse_str(data.get("report_number"), None)
     if "description" in data:
@@ -345,6 +352,18 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
+
+    date_field = data.get("date", None)
+    time_field = data.get("time", None)
+
+    if date_field and time_field:
+        incident.occurred_at = parse_date_time_to_session_timezone(
+            parse_date(date_field), parse_time(time_field)
+        )
+    else:
+        incident.date = parse_date(date_field)
+        incident.time = parse_time(time_field)
+
     incident.last_updated_at = datetime.now()
     incident.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
