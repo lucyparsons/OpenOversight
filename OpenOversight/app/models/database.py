@@ -721,10 +721,6 @@ class User(UserMixin, BaseModel):
     def password(self):
         raise AttributeError("password is not a readable attribute")
 
-    @property
-    def uuid(self):
-        return self._uuid
-
     # mypy has difficulty with mixins, specifically the ones where we define a function
     # twice.
     @password.setter  # type: ignore
