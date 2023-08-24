@@ -129,15 +129,10 @@ def create_description(self, form: TextForm) -> Description:
 
 
 def create_incident(self, form: IncidentForm) -> Incident:
-    incident = Incident(
-        address=[],
-        description=form.data["description"],
-        department=form.data["department"],
-        officers=[],
-        report_number=form.data["report_number"],
-        license_plates=[],
-        links=[],
-    )
+    address_model = None
+    officers = []
+    license_plates = []
+    links = []
 
     if "address" in form.data:
         address = form.data["address"]
@@ -159,14 +154,14 @@ def create_incident(self, form: IncidentForm) -> Incident:
                 zip_code=if_exists_or_none(address["zip_code"]),
             )
             db.session.add(location)
-        incident.address = location
+        address_model = location
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
                 of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
                 if of:
-                    incident.officers.append(of)
+                    officers.append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
@@ -181,7 +176,7 @@ def create_incident(self, form: IncidentForm) -> Incident:
                         state=if_exists_or_none(plate["state"]),
                     )
                     db.session.add(lp)
-                incident.license_plates.append(lp)
+                license_plates.append(lp)
 
     if "links" in form.data:
         for link in form.data["links"]:
@@ -189,10 +184,13 @@ def create_incident(self, form: IncidentForm) -> Incident:
                 li = get_or_create_link_from_form(
                     link,
                 )
-                incident.links.append(li)
+                links.append(li)
 
+    date = None
+    occurred_at = None
+    time = None
     if form.date_field.data and form.time_field.data:
-        incident.occurred_at = parse_date_time(
+        occurred_at = parse_date_time(
             " ".join(
                 [
                     form.date_field.data.strftime(OO_DATE_FORMAT),
@@ -201,10 +199,21 @@ def create_incident(self, form: IncidentForm) -> Incident:
             )
         )
     else:
-        incident.date = form.date_field.data
-        incident.time = form.time_field.data
+        date = form.date_field.data
+        time = form.time_field.data
 
-    return incident
+    return Incident(
+        address=address_model,
+        date=date,
+        department=form.data["department"],
+        description=form.data["description"],
+        license_plates=license_plates,
+        links=links,
+        occurred_at=occurred_at,
+        officers=officers,
+        report_number=form.data["report_number"],
+        time=time,
+    )
 
 
 def create_note(self, form: TextForm) -> Note:
