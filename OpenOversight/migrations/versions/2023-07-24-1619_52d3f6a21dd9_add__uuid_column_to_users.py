@@ -9,6 +9,9 @@ import uuid
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.orm import Session
+
+from OpenOversight.app.models.database import User, db
 
 
 revision = "52d3f6a21dd9"
@@ -21,11 +24,17 @@ def upgrade():
         sa.Column(
             "_uuid",
             sa.String(36),
-            nullable=False,
-            server_default=lambda: str(uuid.uuid4()),
         ),
     )
+
+    bind = op.get_bind()
+    session = Session(bind=bind)
+    for user in session.query(User).all():
+        user._uuid = str(uuid.uuid4())
+        session.commit()
+
     op.create_index(op.f("ix_users__uuid"), "users", ["_uuid"], unique=True)
+    op.alter_column("users", "_uuid", nullable=False)
 
 
 def downgrade():
