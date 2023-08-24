@@ -101,6 +101,7 @@ def test_admins_can_create_basic_incidents(
         assert inc is not None
         assert inc.date is None
         assert inc.time is None
+        assert inc.occurred_at is not None
 
 
 def test_admins_cannot_create_incident_with_invalid_report_number(
