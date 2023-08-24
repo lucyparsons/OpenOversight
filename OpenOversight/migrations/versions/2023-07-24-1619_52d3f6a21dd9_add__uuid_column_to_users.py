@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.orm import Session
 
-from OpenOversight.app.models.database import User, db
+from OpenOversight.app.models.database import User
 
 
 revision = "52d3f6a21dd9"
