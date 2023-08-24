@@ -761,14 +761,14 @@ class User(UserMixin, BaseModel):
     def password(self):
         raise AttributeError("password is not a readable attribute")
 
-    @property
-    def uuid(self):
-        return self._uuid
-
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
         self.regenerate_uuid()
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @staticmethod
     def _case_insensitive_equality(field, value):
