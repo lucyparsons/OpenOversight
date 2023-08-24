@@ -725,8 +725,10 @@ class User(UserMixin, BaseModel):
     def uuid(self):
         return self._uuid
 
-    @password.setter
-    def password(self, password):
+    # mypy has difficulty with mixins, specifically the ones where we define a function
+    # twice.
+    @password.setter  # type: ignore
+    def password(self, password):  # type: ignore
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
         self.regenerate_uuid()
 
