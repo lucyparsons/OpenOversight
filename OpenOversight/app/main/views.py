@@ -1161,7 +1161,7 @@ def add_officer():
             if re.fullmatch(r"salaries-\d+-is_fiscal_year", key):
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
-        officer = add_officer_profile(form, current_user)
+        officer = add_officer_profile(form)
         Department(id=officer.department_id).remove_database_cache_entries(
             [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS]
         )
