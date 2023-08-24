@@ -24,7 +24,6 @@ from OpenOversight.app.models.database import (
     Officer,
     Salary,
     Unit,
-    User,
     db,
 )
 from OpenOversight.app.models.database_imports import (
