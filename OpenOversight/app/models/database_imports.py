@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 import pytz
+from flask_login import current_user
 
 from OpenOversight.app import login_manager
 from OpenOversight.app.models.database import (
@@ -168,6 +169,8 @@ def update_assignment_from_dict(
         assignment.start_date = parse_date(data.get("start_date"))
     if "resign_date" in data.keys():
         assignment.resign_date = parse_date(data.get("resign_date"))
+    assignment.last_updated_at = datetime.now()
+    assignment.last_updated_by = current_user.get_id()
     db.session.flush()
 
     return assignment
@@ -180,6 +183,8 @@ def create_salary_from_dict(data: Dict[str, Any], force_id: bool = False) -> Sal
         overtime_pay=parse_float(data.get("overtime_pay")),
         year=int(data["year"]),
         is_fiscal_year=parse_bool(data.get("is_fiscal_year")),
+        created_by=current_user.get_id(),
+        last_updated_by=current_user.get_id(),
     )
     if force_id and data.get("id"):
         salary.id = data["id"]
@@ -199,6 +204,8 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
         salary.year = int(data["year"])
     if "is_fiscal_year" in data.keys():
         salary.is_fiscal_year = parse_bool(data.get("is_fiscal_year"))
+    salary.last_updated_at = datetime.now()
+    salary.last_updated_by = current_user.get_id()
     db.session.flush()
 
     return salary
@@ -211,7 +218,8 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         link_type=validate_choice(data.get("link_type"), LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
-        created_by=parse_int(data.get("created_by")),
+        created_by=current_user.get_id(),
+        last_updated_by=current_user.get_id(),
     )
 
     if force_id and data.get("id"):
@@ -236,12 +244,12 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
         link.description = parse_str(data.get("description"), None)
     if "author" in data:
         link.author = parse_str(data.get("author"), None)
-    if "created_by" in data:
-        link.created_by = parse_int(data.get("created_by"))
     if "officers" in data:
         link.officers = data.get("officers") or []
     if "incidents" in data:
         link.incidents = data.get("incidents") or []
+    link.last_updated_at = datetime.now()
+    link.last_updated_by = current_user.get_id()
     db.session.flush()
 
     return link
@@ -289,15 +297,14 @@ def get_or_create_location_from_dict(
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     incident = Incident(
-        date=parse_date(data.get("date")),
-        time=parse_time(data.get("time")),
+        date=parse_date(data.get("date", None)),
+        time=parse_time(data.get("time", None)),
         report_number=parse_str(data.get("report_number"), None),
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
-        created_by=parse_int(data.get("created_by")),
-        last_updated_by=parse_int(data.get("last_updated_by")),
-        last_updated_at=datetime.now(),
+        created_by=current_user.get_id(),
+        last_updated_by=current_user.get_id(),
     )
 
     incident.officers = data.get("officers", [])
@@ -324,15 +331,12 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.address_id = data.get("address_id")
     if "department_id" in data:
         incident.department_id = parse_int(data.get("department_id"))
-    if "created_by" in data:
-        incident.created_by = parse_int(data.get("created_by"))
-    if "last_updated_by" in data:
-        incident.last_updated_by = parse_int(data.get("last_updated_by"))
-        incident.last_updated_at = datetime.now()
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
+    incident.last_updated_at = datetime.now()
+    incident.last_updated_by = current_user.get_id()
     db.session.flush()
     return incident
 
