@@ -1,5 +1,6 @@
 import re
 import time
+import uuid
 from datetime import date
 from typing import List
 
@@ -25,12 +26,13 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    SIGNATURE_ALGORITHM,
 )
 from OpenOversight.app.validators import state_validator, url_validator
 
 
 db = SQLAlchemy()
-jwt = JsonWebToken("HS512")
+jwt = JsonWebToken(SIGNATURE_ALGORITHM)
 BaseModel: DeclarativeMeta = db.Model
 
 
@@ -640,6 +642,17 @@ class Incident(BaseModel, TrackUpdates):
 class User(UserMixin, BaseModel):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
+
+    # A universally unique identifier (UUID) that can be
+    # used in place of the user's primary key for things like user
+    # lookup queries.
+    _uuid = db.Column(
+        db.String(36),
+        unique=True,
+        nullable=False,
+        index=True,
+        default=lambda: str(uuid.uuid4()),
+    )
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
@@ -690,7 +703,7 @@ class User(UserMixin, BaseModel):
 
     def _jwt_encode(self, payload, expiration):
         secret = current_app.config["SECRET_KEY"]
-        header = {"alg": "HS512"}
+        header = {"alg": SIGNATURE_ALGORITHM}
 
         now = int(time.time())
         payload["iat"] = now
@@ -708,9 +721,14 @@ class User(UserMixin, BaseModel):
     def password(self):
         raise AttributeError("password is not a readable attribute")
 
+    @property
+    def uuid(self):
+        return self._uuid
+
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+        self.regenerate_uuid()
 
     @staticmethod
     def _case_insensitive_equality(field, value):
@@ -728,7 +746,7 @@ class User(UserMixin, BaseModel):
         return check_password_hash(self.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
-        payload = {"confirm": self.id}
+        payload = {"confirm": self.uuid}
         return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def confirm(self, token):
@@ -737,9 +755,11 @@ class User(UserMixin, BaseModel):
         except JoseError as e:
             current_app.logger.warning("failed to decrypt token: %s", e)
             return False
-        if data.get("confirm") != self.id:
+        if data.get("confirm") != self.uuid:
             current_app.logger.warning(
-                "incorrect id here, expected %s, got %s", data.get("confirm"), self.id
+                "incorrect uuid here, expected %s, got %s",
+                data.get("confirm"),
+                self.uuid,
             )
             return False
         self.confirmed = True
@@ -748,7 +768,7 @@ class User(UserMixin, BaseModel):
         return True
 
     def generate_reset_token(self, expiration=3600):
-        payload = {"reset": self.id}
+        payload = {"reset": self.uuid}
         return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def reset_password(self, token, new_password):
@@ -756,7 +776,7 @@ class User(UserMixin, BaseModel):
             data = self._jwt_decode(token)
         except JoseError:
             return False
-        if data.get("reset") != self.id:
+        if data.get("reset") != self.uuid:
             return False
         self.password = new_password
         db.session.add(self)
@@ -764,7 +784,7 @@ class User(UserMixin, BaseModel):
         return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
-        payload = {"change_email": self.id, "new_email": new_email}
+        payload = {"change_email": self.uuid, "new_email": new_email}
         return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
     def change_email(self, token):
@@ -772,7 +792,7 @@ class User(UserMixin, BaseModel):
             data = self._jwt_decode(token)
         except JoseError:
             return False
-        if data.get("change_email") != self.id:
+        if data.get("change_email") != self.uuid:
             return False
         new_email = data.get("new_email")
         if new_email is None:
@@ -780,9 +800,13 @@ class User(UserMixin, BaseModel):
         if self.query.filter_by(email=new_email).first() is not None:
             return False
         self.email = new_email
+        self.regenerate_uuid()
         db.session.add(self)
         db.session.commit()
         return True
+
+    def regenerate_uuid(self):
+        self._uuid = str(uuid.uuid4())
 
     @property
     def is_active(self):

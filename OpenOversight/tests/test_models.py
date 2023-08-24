@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from flask import current_app
 from pytest import raises
 from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.models.database import (
     Assignment,
@@ -192,6 +193,16 @@ def test_password_set_success(mockdata):
     assert user.password_hash is not None
 
 
+def test_password_setter_regenerates_uuid(mockdata):
+    user = User(password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    initial_uuid = user.uuid
+    user.password = "pork belly"
+    assert user.uuid is not None
+    assert user.uuid != initial_uuid
+
+
 def test_password_verification_success(mockdata):
     user = User(password="bacon")
     assert user.verify_password("bacon") is True
@@ -206,6 +217,34 @@ def test_password_salting(mockdata):
     user1 = User(password="bacon")
     user2 = User(password="bacon")
     assert user1.password_hash != user2.password_hash
+
+
+def test__uuid_default(mockdata):
+    user = User(password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    assert user._uuid is not None
+
+
+def test__uuid_uniqueness_constraint(mockdata):
+    user1 = User(password="bacon")
+    user2 = User(password="vegan bacon")
+    user2._uuid = user1._uuid
+    db.session.add(user1)
+    db.session.add(user2)
+    with raises(IntegrityError):
+        db.session.commit()
+
+
+def test_uuid(mockdata):
+    user = User(password="bacon")
+    assert user.uuid is not None
+    assert user.uuid == user._uuid
+
+
+def test_uuid_setter(mockdata):
+    with raises(AttributeError):
+        User(uuid="8e9f1393-99b8-466c-80ce-8a56a7d9849d")
 
 
 def test_valid_confirmation_token(mockdata):
@@ -240,8 +279,10 @@ def test_valid_reset_token(mockdata):
     db.session.add(user)
     db.session.commit()
     token = user.generate_reset_token()
+    pre_reset_uuid = user.uuid
     assert user.reset_password(token, "vegan bacon") is True
     assert user.verify_password("vegan bacon") is True
+    assert user.uuid != pre_reset_uuid
 
 
 def test_invalid_reset_token(mockdata):
@@ -268,9 +309,11 @@ def test_valid_email_change_token(mockdata):
     user = User(email="brian@example.com", password="bacon")
     db.session.add(user)
     db.session.commit()
+    pre_reset_uuid = user.uuid
     token = user.generate_email_change_token("lucy@example.org")
     assert user.change_email(token) is True
     assert user.email == "lucy@example.org"
+    assert user.uuid != pre_reset_uuid
 
 
 def test_email_change_token_no_email(mockdata):

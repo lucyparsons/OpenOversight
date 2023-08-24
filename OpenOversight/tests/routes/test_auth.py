@@ -297,6 +297,31 @@ def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session
         assert b"Your password has been updated." not in rv.data
 
 
+def test_user_cannot_reset_password_multiple_times_with_same_token(
+    mockdata, client, session
+):
+    with current_app.test_request_context():
+        form = PasswordResetForm(
+            email="jen@example.org", password="catdog", password2="catdog"
+        )
+        user = User.query.filter_by(email="jen@example.org").one()
+        token = user.generate_reset_token()
+
+        client.post(
+            url_for("auth.password_reset", token=token),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        rv = client.post(
+            url_for("auth.password_reset", token=token),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert b"Your password has been updated." not in rv.data
+
+
 def test_user_cannot_get_email_reset_token_sent_without_valid_password(
     mockdata, client, session
 ):

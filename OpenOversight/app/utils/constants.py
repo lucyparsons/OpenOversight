@@ -37,6 +37,9 @@ SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator on
 # File Name Constants
 SERVICE_ACCOUNT_FILE = "service_account_key.json"
 
+# JWT Constants
+SIGNATURE_ALGORITHM = "HS512"
+
 # Numerical Constants
 BYTE = 1
 KILOBYTE = 1024 * BYTE
