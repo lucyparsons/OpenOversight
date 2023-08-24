@@ -1,3 +1,4 @@
+import os
 import random
 import sys
 from datetime import datetime, timezone
@@ -27,13 +28,15 @@ def allowed_file(filename: str):
 
 def get_timezone() -> pytz.timezone:
     """Return the applicable timezone for a given session."""
-    return pytz.timezone(
-        (
+    if session:
+        tz_str = (
             session[KEY_TIMEZONE]
             if KEY_TIMEZONE in session
             else current_app.config.get(KEY_TIMEZONE)
         )
-    )
+    else:
+        tz_str = os.getenv(KEY_TIMEZONE)
+    return pytz.timezone(tz_str)
 
 
 # This function is also used in the `utils/forms.py` file, so there's potential
