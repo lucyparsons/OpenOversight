@@ -1,7 +1,7 @@
 """add _uuid column to users
 
 Revision ID: 52d3f6a21dd9
-Revises: b38c133bed3c
+Revises: a35aa1a114fa
 Create Date: 2023-07-24 16:19:01.375427
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "52d3f6a21dd9"
-down_revision = "b38c133bed3c"
+down_revision = "a35aa1a114fa"
 branch_labels = None
 depends_on = None
 
