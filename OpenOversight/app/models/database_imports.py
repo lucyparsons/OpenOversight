@@ -2,6 +2,7 @@ from datetime import date, datetime, time
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
+import pytz
 
 from OpenOversight.app import login_manager
 from OpenOversight.app.models.database import (
@@ -42,12 +43,16 @@ def parse_date(date_str: Optional[str]) -> date:
     return datetime.now().date()
 
 
-def parse_date_time(date_time_str: Union[str, None]) -> datetime:
+def parse_date_time_to_session_timezone(date_time_str: Union[str, None]) -> datetime:
     if date_time_str and isinstance(date_time_str, str):
         return datetime.combine(
             parse_date(date_time_str), parse_time(date_time_str)
         ).astimezone(get_timezone())
     return datetime.now().astimezone(get_timezone())
+
+
+def parse_datetime_from_utc_timezone(dt: datetime) -> datetime:
+    return dt.astimezone(pytz.UTC)
 
 
 def parse_time(time_str: Optional[str]) -> time:

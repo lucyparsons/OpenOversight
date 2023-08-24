@@ -27,7 +27,9 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
-from OpenOversight.app.models.database_imports import parse_date_time
+from OpenOversight.app.models.database_imports import (
+    parse_date_time_to_session_timezone,
+)
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import OO_DATE_FORMAT, OO_TIME_FORMAT
 
@@ -56,7 +58,7 @@ def add_new_assignment(officer_id: int, form: AssignmentForm) -> None:
     db.session.commit()
 
 
-def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
+def add_officer_profile(form: AddOfficerForm) -> Officer:
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -190,7 +192,7 @@ def create_incident(self, form: IncidentForm) -> Incident:
     occurred_at = None
     time = None
     if form.date_field.data and form.time_field.data:
-        occurred_at = parse_date_time(
+        occurred_at = parse_date_time_to_session_timezone(
             " ".join(
                 [
                     form.date_field.data.strftime(OO_DATE_FORMAT),
