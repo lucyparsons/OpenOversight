@@ -323,7 +323,7 @@ def test_redirect_add_department(client, session):
 
 def test_redirect_edit_department(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         resp_no_redirect = client.get(
             url_for("main.redirect_edit_department", department_id=AC_DEPT),
             follow_redirects=False,

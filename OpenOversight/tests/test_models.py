@@ -1,7 +1,11 @@
+import base64
 import datetime
 import time
+from email.mime.text import MIMEText
 
+from flask import current_app
 from pytest import raises
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.models.database import (
@@ -20,6 +24,8 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.models.emails import Email
+from OpenOversight.app.utils.constants import FILE_TYPE_HTML, KEY_OO_SERVICE_EMAIL
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -80,19 +86,62 @@ def test_department_total_documented_incidents(mockdata):
     assert springfield_incidents == test_count
 
 
-def test_officer_repr(mockdata):
-    officer = Officer.query.first()
-    if officer.unique_internal_identifier:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
-            f"({officer.unique_internal_identifier})>"
+def test_email_create_message(faker):
+    email_body = faker.paragraph(nb_sentences=5)
+    email_receiver = faker.ascii_email()
+    email_subject = faker.paragraph(nb_sentences=1)
+
+    email = Email(email_body, email_subject, email_receiver)
+
+    test_message = MIMEText(email_body, FILE_TYPE_HTML)
+    test_message["to"] = email_receiver
+    test_message["from"] = current_app.config[KEY_OO_SERVICE_EMAIL]
+    test_message["subject"] = email_subject
+
+    assert email.create_message() == {
+        "raw": base64.urlsafe_b64encode(test_message.as_bytes()).decode()
+    }
+
+
+def test_officer_repr(session):
+    officer_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(None),
+            Officer.unique_internal_identifier.isnot(None),
+            Officer.suffix.is_(None),
         )
-    else:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
+    ).first()
+
+    assert (
+        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
+        f"({officer_uii.unique_internal_identifier})>"
+    )
+
+    officer_no_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(""),
+            Officer.unique_internal_identifier.is_(None),
+            Officer.suffix.isnot(None),
         )
+    ).first()
+
+    assert (
+        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
+        f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
+    )
+
+    officer_no_mi = Officer.query.filter(
+        and_(Officer.middle_initial.is_(""), Officer.suffix.isnot(None))
+    ).first()
+
+    assert (
+        repr(officer_no_mi)
+        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
+        f"({officer_no_mi.unique_internal_identifier})>"
+    )
 
 
 def test_assignment_repr(mockdata):

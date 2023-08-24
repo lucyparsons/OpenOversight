@@ -25,11 +25,13 @@ KEY_ENV_PROD = "production"
 KEY_NUM_OFFICERS = "NUM_OFFICERS"
 KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
 KEY_OO_MAIL_SUBJECT_PREFIX = "OO_MAIL_SUBJECT_PREFIX"
+KEY_OO_SERVICE_EMAIL = "OO_SERVICE_EMAIL"
 KEY_S3_BUCKET_NAME = "S3_BUCKET_NAME"
 KEY_TIMEZONE = "TIMEZONE"
 
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
+FILE_TYPE_HTML = "html"
 SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator only
 
 # File Name Constants
