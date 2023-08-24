@@ -14,15 +14,12 @@ down_revision = "a35aa1a114fa"
 
 
 def upgrade():
-    op.execute("CREATE EXTENSION pgcrypto;")
-
     op.add_column(
         "users",
         sa.Column(
             "_uuid",
             sa.String(36),
             nullable=False,
-            server_default=sa.text("gen_random_uuid()"),
         ),
     )
     op.create_index(op.f("ix_users__uuid"), "users", ["_uuid"], unique=True)
@@ -31,4 +28,3 @@ def upgrade():
 def downgrade():
     op.drop_index(op.f("ix_users__uuid"), table_name="users")
     op.drop_column("users", "_uuid")
-    op.execute("DROP EXTENSION pgcrypto;")
