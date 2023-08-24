@@ -17,6 +17,8 @@ depends_on = None
 
 
 def upgrade():
+    op.execute("CREATE EXTENSION pgcrypto;")
+
     op.add_column(
         "users",
         sa.Column(
@@ -32,3 +34,4 @@ def upgrade():
 def downgrade():
     op.drop_index(op.f("ix_users__uuid"), table_name="users")
     op.drop_column("users", "_uuid")
+    op.execute("DROP EXTENSION pgcrypto;")
