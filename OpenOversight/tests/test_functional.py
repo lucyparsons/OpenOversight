@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
 from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
-from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
+from OpenOversight.app.utils.constants import FILE_TYPE_HTML, KEY_OFFICERS_PER_PAGE
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
@@ -21,7 +21,7 @@ DESCRIPTION_CUTOFF = 700
 
 @contextmanager
 def wait_for_page_load(browser, timeout=10):
-    old_page = browser.find_element_by_tag_name("html")
+    old_page = browser.find_element_by_tag_name(FILE_TYPE_HTML)
     yield
     WebDriverWait(browser, timeout).until(expected_conditions.staleness_of(old_page))
 

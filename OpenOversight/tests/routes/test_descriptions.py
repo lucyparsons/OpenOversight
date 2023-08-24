@@ -161,9 +161,8 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
 
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
-        _, ac = login_ac(client)
+        _, user = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
         original_date = datetime.now()
@@ -197,7 +196,7 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         assert description.created_at == original_date
         assert description.last_updated_at > original_date
         assert description.created_by == user.id
-        assert description.last_updated_by == ac.id
+        assert description.last_updated_by == user.id
 
 
 def test_ac_can_edit_others_descriptions(mockdata, client, session):

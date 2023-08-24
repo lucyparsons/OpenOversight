@@ -108,7 +108,7 @@ def test_documented_assignments(mockdata, client, faker):
 
 def test_documented_incidents(mockdata, client, faker):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         department = Department.query.first()
         department.total_documented_assignments()
         department.total_documented_incidents()
@@ -160,7 +160,7 @@ def test_documented_incidents(mockdata, client, faker):
 
 def test_documented_officers(mockdata, client, faker):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         department = Department.query.first()
         department.total_documented_assignments()
         department.total_documented_incidents()

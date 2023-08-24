@@ -601,7 +601,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department", "MPD", exclude_state=CorrectedPD.state
         )
 
-        _, user = login_admin(client)
+        login_admin(client)
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
