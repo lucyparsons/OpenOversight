@@ -325,13 +325,10 @@ class Officer(BaseModel, TrackUpdates):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-                + f"{self.last_name} {self.suffix} ({self.unique_internal_identifier})>"
+                f"<Officer ID {self.id}: {self.full_name()} "
+                f"({self.unique_internal_identifier})>"
             )
-        return (
-            f"<Officer ID {self.id}: {self.first_name} {self.middle_initial} "
-            + f"{self.last_name} {self.suffix}>"
-        )
+        return f"<Officer ID {self.id}: {self.full_name()}>"
 
 
 class Currency(TypeDecorator):
@@ -761,8 +758,10 @@ class User(UserMixin, BaseModel):
     def password(self):
         raise AttributeError("password is not a readable attribute")
 
-    @password.setter
-    def password(self, password):
+    # mypy has difficulty with mixins, specifically the ones where we define a function
+    # twice.
+    @password.setter  # type: ignore
+    def password(self, password):  # type: ignore
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
         self.regenerate_uuid()
 

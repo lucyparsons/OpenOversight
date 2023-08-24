@@ -42,7 +42,7 @@ def test_route_admin_or_required(route, client, mockdata):
 
 def test_admins_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, admin = login_admin(client)
+        _, admin = login_admin(client)
         officer = Officer.query.first()
         text_contents = "I can haz descriptionz"
         form = TextForm(text_contents=text_contents, officer_id=officer.id)
@@ -67,7 +67,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
 
 def test_acs_can_create_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, ac = login_ac(client)
+        _, ac = login_ac(client)
         officer = Officer.query.first()
         description = "A description"
         form = TextForm(text_contents=description, officer_id=officer.id)
@@ -92,8 +92,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
 
 def test_admins_can_edit_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, admin = login_admin(client)
-        ac = User.query.filter_by(ac_department_id=AC_DEPT).first()
+        _, admin = login_admin(client)
         officer = Officer.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
@@ -103,8 +102,8 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
             officer_id=officer.id,
             created_at=original_date,
             last_updated_at=original_date,
-            created_by=ac.id,
-            last_updated_by=ac.id,
+            created_by=admin.id,
+            last_updated_by=admin.id,
         )
         db.session.add(description)
         db.session.commit()
@@ -127,15 +126,14 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
         assert description.text_contents == new_description
         assert description.created_at == original_date
         assert description.last_updated_at > original_date
-        assert description.created_by == ac.id
+        assert description.created_by == admin.id
         assert description.last_updated_by == admin.id
 
 
 def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, session):
     with current_app.test_request_context():
-        rv, ac = login_ac(client)
+        _, user = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        user = User.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
         original_date = datetime.now()
@@ -169,14 +167,13 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
         assert description.created_at == original_date
         assert description.last_updated_at > original_date
         assert description.created_by == user.id
-        assert description.last_updated_by == ac.id
+        assert description.last_updated_by == user.id
 
 
 def test_ac_can_edit_others_descriptions(mockdata, client, session):
     with current_app.test_request_context():
-        rv, ac = login_ac(client)
+        _, user = login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
-        user = User.query.first()
         old_description = "meow"
         new_description = "I can haz editing descriptionz"
         original_date = datetime.now()
@@ -185,7 +182,7 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
             officer_id=officer.id,
             created_at=original_date,
             last_updated_at=original_date,
-            created_by=user.id,
+            created_by=user.id - 1,
             last_updated_by=user.id,
         )
         db.session.add(description)
@@ -208,8 +205,8 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
 
         assert description.text_contents == new_description
         assert description.last_updated_at > original_date
-        assert description.created_by == user.id
-        assert description.last_updated_by == ac.id
+        assert description.created_by == user.id - 1
+        assert description.last_updated_by == user.id
 
 
 def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, session):

@@ -111,7 +111,7 @@ def test_latest_assignment_update(mockdata, client, faker):
 
 def test_latest_incident_update(mockdata, client, faker):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         department = Department.query.first()
         department.latest_assignment_update()
         department.latest_incident_update()
@@ -146,8 +146,6 @@ def test_latest_incident_update(mockdata, client, faker):
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
-            last_updated_by=user.id,
-            last_updated_at=test_date,
         )
         data = process_form_data(form.data)
 
@@ -168,7 +166,7 @@ def test_latest_incident_update(mockdata, client, faker):
 
 def test_latest_officer_update(mockdata, client, faker):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
         department = Department.query.first()
         department.latest_assignment_update()
         department.latest_incident_update()

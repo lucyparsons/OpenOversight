@@ -4,6 +4,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 import pytest
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.models.database import (
@@ -23,6 +24,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
 def test_department_repr(mockdata):
@@ -33,19 +35,78 @@ def test_department_repr(mockdata):
     )
 
 
-def test_officer_repr(mockdata):
-    officer = Officer.query.first()
-    if officer.unique_internal_identifier:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
-            f"({officer.unique_internal_identifier})>"
+def test_department_latest_assignment_update(mockdata):
+    dept = Department.query.filter_by(
+        name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state
+    ).one()
+    assignments = (
+        Assignment.query.join(Officer, Assignment.officer_id == Officer.id)
+        .join(Department, Officer.department_id == Department.id)
+        .filter(Department.id == dept.id)
+    )
+    latest_update = max(
+        [assignment.last_updated_at.date() for assignment in assignments]
+    )
+    assert latest_update == dept.latest_assignment_update()
+
+
+def test_department_latest_incident_update(mockdata):
+    dept = Department.query.filter_by(
+        name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state
+    ).one()
+    incidents = Incident.query.filter_by(department_id=dept.id)
+    latest_update = max([incident.last_updated_at.date() for incident in incidents])
+    assert latest_update == dept.latest_incident_update()
+
+
+def test_department_latest_officer_update(mockdata):
+    dept = Department.query.filter_by(
+        name=SPRINGFIELD_PD.name, state=SPRINGFIELD_PD.state
+    ).one()
+    officers = Officer.query.filter_by(department_id=dept.id)
+    latest_update = max([officer.last_updated_at.date() for officer in officers])
+    assert latest_update == dept.latest_officer_update()
+
+
+def test_officer_repr(session):
+    officer_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(None),
+            Officer.unique_internal_identifier.isnot(None),
+            Officer.suffix.is_(None),
         )
-    else:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
+    ).first()
+
+    assert (
+        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
+        f"({officer_uii.unique_internal_identifier})>"
+    )
+
+    officer_no_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(""),
+            Officer.unique_internal_identifier.is_(None),
+            Officer.suffix.isnot(None),
         )
+    ).first()
+
+    assert (
+        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
+        f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
+    )
+
+    officer_no_mi = Officer.query.filter(
+        and_(Officer.middle_initial.is_(""), Officer.suffix.isnot(None))
+    ).first()
+
+    assert (
+        repr(officer_no_mi)
+        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
+        f"({officer_no_mi.unique_internal_identifier})>"
+    )
 
 
 def test_assignment_repr(mockdata):

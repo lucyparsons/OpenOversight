@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block head %}
   <link href="{{ url_for('static', filename='css/cropper.css') }}"
-        rel="stylesheet">
+        rel="stylesheet"
+        xmlns="http://www.w3.org/1999/html">
   <link href="{{ url_for('static', filename='css/tagger.css') }}"
         rel="stylesheet">
 {% endblock head %}
@@ -42,7 +43,7 @@
           </div>
           <div class="col-sm-3 text-center">
             <div class="docs-data">
-              <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else None) }}"
+              <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
                     method="post">
                 {{ form.hidden_tag() }}
                 <div class="input-group input-group-sm">
