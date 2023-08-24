@@ -59,10 +59,13 @@ def test_route_admin_or_required(route, client, mockdata):
         "PPP Case 92",
     ],
 )
-def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
+def test_admins_can_create_basic_incidents(
+    report_number, mockdata, client, session, faker
+):
     with current_app.test_request_context():
         login_admin(client)
         test_date = datetime(2000, 5, 25, 1, 45)
+        test_description = faker.sentence(nb_words=20)
 
         address_form = LocationForm(
             street_name="AAAAA",
@@ -79,7 +82,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
             report_number=report_number,
-            description="Something happened",
+            description=test_description,
             department="1",
             address=address_form.data,
             links=[link_form.data],
@@ -94,7 +97,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
 
-        inc = Incident.query.filter_by(date=test_date.date()).first()
+        inc = Incident.query.filter_by(description=test_description).first()
         assert inc is not None
 
 
