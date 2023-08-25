@@ -146,6 +146,15 @@ def test_officer_repr(session):
     )
 
 
+def test_officer_race_label(faker):
+    officer = Officer(
+        first_name=faker.first_name(),
+        last_name=faker.last_name(),
+    )
+
+    assert officer.race_label() == "Data Missing"
+
+
 def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
     assert (
