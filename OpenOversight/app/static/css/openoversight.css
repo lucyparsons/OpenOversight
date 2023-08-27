@@ -600,6 +600,12 @@ tr:hover .row-actions {
 
 #face-carousel .item {
     margin-top: 0;
+    min-height: 0;
+}
+
+#face-carousel {
+    margin-bottom: 0;
+    min-height: 100%;
 }
 
 #face-carousel .carousel-control {
@@ -608,27 +614,18 @@ tr:hover .row-actions {
 }
 
 @media (min-width: 992px) {
-    #face-carousel {
-        max-height: 485px;
-    }
     .item .officer-face.officer-profile {
-        height: 510px;
+        height: 490px;
     }
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-    #face-carousel {
-        max-height: 565px;
-    }
     .item .officer-face.officer-profile {
         height: 590px;
     }
 }
 
 @media (max-width: 767px) {
-    #face-carousel {
-        max-height: 435px;
-    }
     .item .officer-face.officer-profile {
         height: 460px;
         padding-bottom: 10px;
