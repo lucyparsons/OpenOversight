@@ -86,8 +86,9 @@ repos:
     hooks:
         - id: flake8
           args:
-            - --ignore=E203,E402,E501,E800,W503,W391,E261
+            - --ignore=E203,E402,E501,E800,W503,W391,E261,W504
             - --select=B,C,E,F,W,T4,B9
+            - --exclude=./OpenOversight/app/db_repository/versions/
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
