@@ -584,6 +584,10 @@ tr:hover .row-actions {
     bottom: 10px;
 }
 
+#face-carousel {
+    min-height: 300px;
+}
+
 .officer-face {
     border: none;
     height: 300px;
@@ -594,20 +598,38 @@ tr:hover .row-actions {
     display: block;
 }
 
+#face-carousel .item {
+    margin-top: 0;
+}
+
+#face-carousel .carousel-control {
+    background-image: none;
+    color: black;
+}
+
 @media (min-width: 992px) {
-    .officer-face.officer-profile {
+    #face-carousel {
+        max-height: 485px;
+    }
+    .item .officer-face.officer-profile {
         height: 510px;
     }
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-    .officer-face.officer-profile {
+    #face-carousel {
+        max-height: 565px;
+    }
+    .item .officer-face.officer-profile {
         height: 590px;
     }
 }
 
 @media (max-width: 767px) {
-    .officer-face.officer-profile {
+    #face-carousel {
+        max-height: 435px;
+    }
+    .item .officer-face.officer-profile {
         height: 460px;
         padding-bottom: 10px;
     }
