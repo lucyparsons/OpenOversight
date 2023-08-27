@@ -6,11 +6,15 @@
     {% for path in paths %}
       <div class="item{{ ' active' if loop.index == 1 else '' }}">
         {# Don't try to link if only image is the placeholder #}
-        {% if faces %}<a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">{% endif %}
-          <img class="officer-face officer-profile"
-               src="{{ path }}"
-               alt="Submission">
-          {% if faces %}</a>{% endif %}
+        <div class="row text-center">
+          <div class="col-12">
+            {% if faces %}<a href="{{ url_for('main.display_tag', tag_id=faces[loop.index - 1].id) }}">{% endif %}
+              <img class="officer-face officer-profile"
+                   src="{{ path }}"
+                   alt="Submission">
+              {% if faces %}</a>{% endif %}
+          </div>
+        </div>
       </div>
     {% endfor %}
   </div>
