@@ -616,12 +616,14 @@ tr:hover .row-actions {
 @media (min-width: 992px) {
     .item .officer-face.officer-profile {
         height: 490px;
+        width: auto;
     }
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
     .item .officer-face.officer-profile {
         height: 590px;
+        width: auto;
     }
 }
 
@@ -629,6 +631,7 @@ tr:hover .row-actions {
     .item .officer-face.officer-profile {
         height: 460px;
         padding-bottom: 10px;
+        width: auto;
     }
 }
 
