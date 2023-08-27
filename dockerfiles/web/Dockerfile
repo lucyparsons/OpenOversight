@@ -48,7 +48,6 @@ COPY package.json /usr/src/app/
 RUN yarn
 
 COPY test_data.py /usr/src/app/
-COPY .flake8 /usr/src/app/
 COPY mypy.ini /usr/src/app/
 EXPOSE 3000
 
