@@ -1,3 +1,0 @@
-[flake8]
-ignore = E501,W503,W504
-exclude = ./OpenOversight/app/db_repository/versions/
