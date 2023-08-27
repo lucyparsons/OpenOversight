@@ -3,7 +3,6 @@ import hashlib
 import os
 import sys
 from io import BytesIO
-from traceback import format_exc
 from urllib.request import urlopen
 
 import boto3
@@ -149,7 +148,5 @@ def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
         db.session.commit()
         return new_image
     except ClientError:
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error uploading to S3: {error_str}")
+        current_app.logger.exception("Error uploading to S3")
         return None

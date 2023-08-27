@@ -3,7 +3,6 @@ import os
 import re
 import sys
 from http import HTTPMethod, HTTPStatus
-from traceback import format_exc
 
 from flask import (
     Response,
@@ -314,9 +313,7 @@ def officer_profile(officer_id: int):
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error finding officer: {error_str}")
+        current_app.logger.exception("Error finding officer")
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -337,9 +334,7 @@ def officer_profile(officer_id: int):
             # Add in the placeholder image if no faces are found
             face_paths = [url_for("static", filename="images/placeholder.png")]
     except:  # noqa: E722
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error loading officer profile: {error_str}")
+        current_app.logger.exception("Error loading officer profile")
     if faces:
         officer.image_url = faces[0].image.filepath
         if not officer.image_url.startswith("http"):
@@ -653,9 +648,7 @@ def classify_submission(image_id: int, contains_cops: int):
         flash("Updated image classification")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error classifying image: {error_str}")
+        current_app.logger.exception("Error classifying image")
     return redirect(redirect_url())
 
 
@@ -1324,9 +1317,7 @@ def set_featured_tag(tag_id: int):
         flash("Successfully set this tag as featured")
     except:  # noqa: E722
         flash("Unknown error occurred")
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error setting featured tag: {error_str}")
+        current_app.logger.exception("Error setting featured tag")
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
