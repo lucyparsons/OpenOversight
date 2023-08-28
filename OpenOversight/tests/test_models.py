@@ -1,4 +1,5 @@
 import datetime
+import random
 import time
 from decimal import Decimal
 from unittest.mock import MagicMock
@@ -24,6 +25,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.utils.choices import STATE_CHOICES
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -107,6 +109,15 @@ def test_officer_repr(session):
         f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
         f"({officer_no_mi.unique_internal_identifier})>"
     )
+
+
+def test_officer_race_label(faker):
+    officer = Officer(
+        first_name=faker.first_name(),
+        last_name=faker.last_name(),
+    )
+
+    assert officer.race_label() == "Data Missing"
 
 
 def test_assignment_repr(mockdata):
@@ -345,6 +356,64 @@ def test_locations_must_have_valid_zip_codes(mockdata):
             state="MA",
             zip_code="543",
         )
+
+
+def test_location_repr(faker):
+    street_name = faker.street_address()
+    cross_street_one = faker.street_name()
+    cross_street_two = faker.street_name()
+    state = random.choice(STATE_CHOICES)[0]
+    city = faker.city()
+    zip_code = faker.postcode()
+
+    no_cross_streets = Location(
+        street_name=street_name,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert repr(no_cross_streets) == f"{city} {state}"
+
+    cross_street1 = Location(
+        street_name=street_name,
+        cross_street1=cross_street_one,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert (
+        repr(cross_street1)
+        == f"Intersection of {street_name} and {cross_street_one}, {city} {state}"
+    )
+
+    cross_street2 = Location(
+        street_name=street_name,
+        cross_street2=cross_street_two,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert (
+        repr(cross_street2)
+        == f"Intersection of {street_name} and {cross_street_two}, {city} {state}"
+    )
+
+    both_cross_streets = Location(
+        street_name=street_name,
+        cross_street1=cross_street_one,
+        cross_street2=cross_street_two,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert repr(both_cross_streets) == (
+        f"Intersection of {street_name} between {cross_street_one} and "
+        f"{cross_street_two}, {city} {state}"
+    )
 
 
 def test_locations_can_be_saved_with_valid_zip_codes(mockdata):

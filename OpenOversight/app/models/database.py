@@ -591,7 +591,12 @@ class Location(BaseModel, TrackUpdates):
         return state_validator(state)
 
     def __repr__(self):
-        if self.street_name and self.cross_street2:
+        if self.street_name and self.cross_street1 and self.cross_street2:
+            return (
+                f"Intersection of {self.street_name} between {self.cross_street1} "
+                f"and {self.cross_street2}, {self.city} {self.state}"
+            )
+        elif self.street_name and self.cross_street2:
             return (
                 f"Intersection of {self.street_name} and {self.cross_street2}, "
                 + f"{self.city} {self.state}"
@@ -600,11 +605,6 @@ class Location(BaseModel, TrackUpdates):
             return (
                 f"Intersection of {self.street_name} and {self.cross_street1}, "
                 + f"{self.city} {self.state}"
-            )
-        elif self.street_name and self.cross_street1 and self.cross_street2:
-            return (
-                f"Intersection of {self.street_name} between {self.cross_street1} "
-                f"and {self.cross_street2}, {self.city} {self.state}"
             )
         else:
             return f"{self.city} {self.state}"
