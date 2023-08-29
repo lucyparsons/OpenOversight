@@ -19,7 +19,7 @@ from selenium import webdriver
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
-from OpenOversight.app import EmailClient, create_app
+from OpenOversight.app import create_app
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
@@ -287,11 +287,6 @@ def app(request):
     app.config["WTF_CSRF_ENABLED"] = False
 
     yield app
-
-
-@pytest.fixture(autouse=True)
-def email_client():
-    EmailClient(testing=True)
 
 
 @pytest.fixture(autouse=True)
