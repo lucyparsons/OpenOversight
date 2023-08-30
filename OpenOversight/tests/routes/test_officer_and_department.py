@@ -505,7 +505,7 @@ TestPD = PoliceDepartment("Test Police Department", "TPD")
 
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, user = login_admin(client)
 
         form = DepartmentForm(
             name=TestPD.name,
@@ -526,6 +526,8 @@ def test_admin_can_add_police_department(mockdata, client, session):
         department = Department.query.filter_by(name=TestPD.name).one()
         assert department.short_name == TestPD.short_name
         assert department.state == TestPD.state
+        assert department.created_by == user.id
+        assert department.last_updated_by == user.id
 
 
 def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
@@ -601,7 +603,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             "Misspelled Police Department", "MPD", exclude_state=CorrectedPD.state
         )
 
-        login_admin(client)
+        _, user = login_admin(client)
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
@@ -645,6 +647,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         corrected_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert corrected_department.short_name == MisspelledPD.short_name
         assert corrected_department.state == MisspelledPD.state
+        assert corrected_department.last_updated_by == user.id
 
         # Check that the old name is no longer present:
         assert Department.query.filter_by(name=MisspelledPD.name).count() == 0
@@ -692,6 +695,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert edit_state_department.short_name == CorrectedPD.short_name
         assert edit_state_department.state == CorrectedPD.state
+        assert edit_state_department.last_updated_by == user.id
         # Check that the old short is no longer present:
         assert (
             Department.query.filter_by(
