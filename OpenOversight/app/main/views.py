@@ -769,6 +769,7 @@ def edit_department(department_id: int):
         department.name = form.name.data
         department.short_name = form.short_name.data
         department.state = form.state.data
+        # Without this cast, the assertions on the relevant tests break.
         department.last_updated_by = int(current_user.get_id())
         department.last_updated_at = datetime.now()
         db.session.flush()
