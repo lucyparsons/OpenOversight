@@ -1,7 +1,7 @@
-import datetime
 import os
 import re
 import sys
+from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 
@@ -675,7 +675,6 @@ def redirect_add_department():
 @admin_required
 def add_department():
     form = DepartmentForm()
-    form.created_by = current_user.get_id()
     if form.validate_on_submit():
         department_does_not_exist = (
             Department.query.filter_by(
@@ -690,6 +689,7 @@ def add_department():
                 short_name=form.short_name.data,
                 state=form.state.data,
                 created_by=current_user.get_id(),
+                last_updated_by=current_user.get_id(),
             )
             db.session.add(department)
             db.session.flush()
@@ -769,6 +769,8 @@ def edit_department(department_id: int):
         department.name = form.name.data
         department.short_name = form.short_name.data
         department.state = form.state.data
+        department.last_updated_by = current_user.get_id()
+        department.last_updated_at = datetime.now()
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
@@ -1967,12 +1969,12 @@ class IncidentApi(ModelView):
             )
 
         if occurred_before := request.args.get("occurred_before"):
-            before_date = datetime.datetime.strptime(occurred_before, "%Y-%m-%d").date()
+            before_date = datetime.strptime(occurred_before, "%Y-%m-%d").date()
             form.occurred_before.data = before_date
             incidents = incidents.filter(self.model.date < before_date)
 
         if occurred_after := request.args.get("occurred_after"):
-            after_date = datetime.datetime.strptime(occurred_after, "%Y-%m-%d").date()
+            after_date = datetime.strptime(occurred_after, "%Y-%m-%d").date()
             form.occurred_after.data = after_date
             incidents = incidents.filter(self.model.date > after_date)
 
