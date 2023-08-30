@@ -696,6 +696,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         assert edit_state_department.short_name == CorrectedPD.short_name
         assert edit_state_department.state == CorrectedPD.state
         assert edit_state_department.last_updated_by == user.id
+        assert edit_state_department.last_updated_at > edit_state_department.created_at
         # Check that the old short is no longer present:
         assert (
             Department.query.filter_by(
