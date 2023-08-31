@@ -1,7 +1,13 @@
+import base64
 import datetime
+import random
 import time
+from email.mime.text import MIMEText
 
+from flask import current_app
 from pytest import raises
+from sqlalchemy import and_
+from sqlalchemy.exc import IntegrityError
 
 from OpenOversight.app.models.database import (
     Assignment,
@@ -19,6 +25,9 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.models.emails import Email
+from OpenOversight.app.utils.choices import STATE_CHOICES
+from OpenOversight.app.utils.constants import FILE_TYPE_HTML, KEY_OO_SERVICE_EMAIL
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
 
 
@@ -79,19 +88,71 @@ def test_department_total_documented_incidents(mockdata):
     assert springfield_incidents == test_count
 
 
-def test_officer_repr(mockdata):
-    officer = Officer.query.first()
-    if officer.unique_internal_identifier:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix} "
-            f"({officer.unique_internal_identifier})>"
+def test_email_create_message(faker):
+    email_body = faker.paragraph(nb_sentences=5)
+    email_receiver = faker.ascii_email()
+    email_subject = faker.paragraph(nb_sentences=1)
+
+    email = Email(email_body, email_subject, email_receiver)
+
+    test_message = MIMEText(email_body, FILE_TYPE_HTML)
+    test_message["to"] = email_receiver
+    test_message["from"] = current_app.config[KEY_OO_SERVICE_EMAIL]
+    test_message["subject"] = email_subject
+
+    assert email.create_message() == {
+        "raw": base64.urlsafe_b64encode(test_message.as_bytes()).decode()
+    }
+
+
+def test_officer_repr(session):
+    officer_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(None),
+            Officer.unique_internal_identifier.isnot(None),
+            Officer.suffix.is_(None),
         )
-    else:
-        assert (
-            repr(officer) == f"<Officer ID {officer.id}: {officer.first_name} "
-            f"{officer.middle_initial} {officer.last_name} {officer.suffix}>"
+    ).first()
+
+    assert (
+        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
+        f"({officer_uii.unique_internal_identifier})>"
+    )
+
+    officer_no_uii = Officer.query.filter(
+        and_(
+            Officer.middle_initial.isnot(""),
+            Officer.unique_internal_identifier.is_(None),
+            Officer.suffix.isnot(None),
         )
+    ).first()
+
+    assert (
+        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
+        f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
+    )
+
+    officer_no_mi = Officer.query.filter(
+        and_(Officer.middle_initial.is_(""), Officer.suffix.isnot(None))
+    ).first()
+
+    assert (
+        repr(officer_no_mi)
+        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
+        f"({officer_no_mi.unique_internal_identifier})>"
+    )
+
+
+def test_officer_race_label(faker):
+    officer = Officer(
+        first_name=faker.first_name(),
+        last_name=faker.last_name(),
+    )
+
+    assert officer.race_label() == "Data Missing"
 
 
 def test_assignment_repr(mockdata):
@@ -143,6 +204,16 @@ def test_password_set_success(mockdata):
     assert user.password_hash is not None
 
 
+def test_password_setter_regenerates_uuid(mockdata):
+    user = User(password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    initial_uuid = user.uuid
+    user.password = "pork belly"
+    assert user.uuid is not None
+    assert user.uuid != initial_uuid
+
+
 def test_password_verification_success(mockdata):
     user = User(password="bacon")
     assert user.verify_password("bacon") is True
@@ -157,6 +228,34 @@ def test_password_salting(mockdata):
     user1 = User(password="bacon")
     user2 = User(password="bacon")
     assert user1.password_hash != user2.password_hash
+
+
+def test__uuid_default(mockdata):
+    user = User(password="bacon")
+    db.session.add(user)
+    db.session.commit()
+    assert user._uuid is not None
+
+
+def test__uuid_uniqueness_constraint(mockdata):
+    user1 = User(password="bacon")
+    user2 = User(password="vegan bacon")
+    user2._uuid = user1._uuid
+    db.session.add(user1)
+    db.session.add(user2)
+    with raises(IntegrityError):
+        db.session.commit()
+
+
+def test_uuid(mockdata):
+    user = User(password="bacon")
+    assert user.uuid is not None
+    assert user.uuid == user._uuid
+
+
+def test_uuid_setter(mockdata):
+    with raises(AttributeError):
+        User(uuid="8e9f1393-99b8-466c-80ce-8a56a7d9849d")
 
 
 def test_valid_confirmation_token(mockdata):
@@ -191,8 +290,10 @@ def test_valid_reset_token(mockdata):
     db.session.add(user)
     db.session.commit()
     token = user.generate_reset_token()
+    pre_reset_uuid = user.uuid
     assert user.reset_password(token, "vegan bacon") is True
     assert user.verify_password("vegan bacon") is True
+    assert user.uuid != pre_reset_uuid
 
 
 def test_invalid_reset_token(mockdata):
@@ -219,9 +320,11 @@ def test_valid_email_change_token(mockdata):
     user = User(email="brian@example.com", password="bacon")
     db.session.add(user)
     db.session.commit()
+    pre_reset_uuid = user.uuid
     token = user.generate_email_change_token("lucy@example.org")
     assert user.change_email(token) is True
     assert user.email == "lucy@example.org"
+    assert user.uuid != pre_reset_uuid
 
 
 def test_email_change_token_no_email(mockdata):
@@ -288,6 +391,64 @@ def test_locations_must_have_valid_zip_codes(mockdata):
             state="MA",
             zip_code="543",
         )
+
+
+def test_location_repr(faker):
+    street_name = faker.street_address()
+    cross_street_one = faker.street_name()
+    cross_street_two = faker.street_name()
+    state = random.choice(STATE_CHOICES)[0]
+    city = faker.city()
+    zip_code = faker.postcode()
+
+    no_cross_streets = Location(
+        street_name=street_name,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert repr(no_cross_streets) == f"{city} {state}"
+
+    cross_street1 = Location(
+        street_name=street_name,
+        cross_street1=cross_street_one,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert (
+        repr(cross_street1)
+        == f"Intersection of {street_name} and {cross_street_one}, {city} {state}"
+    )
+
+    cross_street2 = Location(
+        street_name=street_name,
+        cross_street2=cross_street_two,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert (
+        repr(cross_street2)
+        == f"Intersection of {street_name} and {cross_street_two}, {city} {state}"
+    )
+
+    both_cross_streets = Location(
+        street_name=street_name,
+        cross_street1=cross_street_one,
+        cross_street2=cross_street_two,
+        state=state,
+        city=city,
+        zip_code=zip_code,
+    )
+
+    assert repr(both_cross_streets) == (
+        f"Intersection of {street_name} between {cross_street_one} and "
+        f"{cross_street_two}, {city} {state}"
+    )
 
 
 def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
@@ -420,7 +581,6 @@ def test_images_added_with_user_id(mockdata, faker):
         filepath=faker.url(),
         hash_img="1234",
         is_tagged=False,
-        created_at=datetime.datetime.now(),
         department_id=1,
         taken_at=datetime.datetime.now(),
         created_by=user_id,

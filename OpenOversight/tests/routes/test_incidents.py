@@ -62,7 +62,6 @@ def test_route_admin_or_required(route, client, mockdata):
 def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         test_date = datetime(2000, 5, 25, 1, 45)
 
         address_form = LocationForm(
@@ -71,12 +70,11 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             city="FFFFF",
             state="IA",
             zip_code="03435",
-            created_by=user.id,
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video", created_by=user.id)
-        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
+        link_form = LinkForm(link_type="video")
+        license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
@@ -87,9 +85,6 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
             links=[link_form.data],
             license_plates=[license_plates_form.data],
             officers=[],
-            created_by=user.id,
-            last_updated_by=user.id,
-            last_updated_at=datetime.now(),
         )
         data = process_form_data(form.data)
 
@@ -108,7 +103,6 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
 ):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         test_date = datetime(2000, 5, 25, 1, 45)
         report_number = "Will Not Work! #45"
 
@@ -118,12 +112,11 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             city="FFFFF",
             state="IA",
             zip_code="03435",
-            created_by=user.id,
         )
         # These have to have a dropdown selected because if not, an empty Unicode
         # string is sent, which does not mach the '' selector.
-        link_form = LinkForm(link_type="video", created_by=user.id)
-        license_plates_form = LicensePlateForm(state="AZ", created_by=user.id)
+        link_form = LinkForm(link_type="video")
+        license_plates_form = LicensePlateForm(state="AZ")
         form = IncidentForm(
             date_field=str(test_date.date()),
             time_field=str(test_date.time()),
@@ -150,7 +143,6 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -166,14 +158,12 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             city="Boston",
             state="NH",
             zip_code="03435",
-            created_by=user.id,
         )
         links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
-            for link in inc.links
+            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
         ]
         license_plates_forms = [
-            LicensePlateForm(number=lp.number, state=lp.state, created_by=user.id).data
+            LicensePlateForm(number=lp.number, state=lp.state).data
             for lp in inc.license_plates
         ]
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
@@ -188,7 +178,6 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
             links=links_forms,
             license_plates=license_plates_forms,
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -208,7 +197,6 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
 def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, faker):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -222,20 +210,16 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
-            created_by=inc.created_by,
         )
         old_links = inc.links
         old_links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
-            for link in inc.links
+            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
         ]
         new_url = faker.url()
-        link_form = LinkForm(url=new_url, link_type="video", created_by=user.id)
+        link_form = LinkForm(url=new_url, link_type="video")
         old_license_plates = inc.license_plates
         new_number = "453893"
-        license_plates_form = LicensePlateForm(
-            number=new_number, state="IA", created_by=user.id
-        )
+        license_plates_form = LicensePlateForm(number=new_number, state="IA")
         ooid_forms = [OOIdForm(ooid=officer.id) for officer in inc.officers]
 
         form = IncidentForm(
@@ -248,7 +232,6 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
             links=old_links_forms + [link_form.data],
             license_plates=[license_plates_form.data],
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -272,7 +255,6 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
 def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        user = User.query.filter_by(is_administrator=True).first()
         inc = Incident.query.options(
             joinedload(Incident.links),
             joinedload(Incident.license_plates),
@@ -298,7 +280,6 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
             department="1",
             address=address_form.data,
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -336,7 +317,6 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
             department="1",
             address=address_form.data,
             officers=ooid_forms,
-            created_by=user.id,
         )
         data = process_form_data(form.data)
 
@@ -462,7 +442,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         assert new_officer.id in [off.id for off in inc.officers]
 
 
-def test_admins_cannot_edit_nonexisting_officers(mockdata, client, session):
+def test_admins_cannot_edit_non_existing_officers(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -769,7 +749,6 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
             city=inc.address.city,
             state=inc.address.state,
             zip_code=inc.address.zip_code,
-            created_by=inc.created_by,
         )
         links_forms = [
             LinkForm(url=link.url, link_type=link.link_type, created_by=user.id).data
