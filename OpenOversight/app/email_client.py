@@ -1,7 +1,8 @@
+import base64
 import os.path
 from abc import ABC, abstractmethod
 from threading import Thread
-from typing import Optional
+from typing import Optional, Self
 
 from flask import current_app
 from flask_mail import Mail, Message
@@ -9,7 +10,13 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from OpenOversight.app.models.emails import Email
-from OpenOversight.app.utils.constants import KEY_OO_SERVICE_EMAIL, SERVICE_ACCOUNT_FILE
+from OpenOversight.app.utils.constants import (
+    KEY_MAIL_PORT,
+    KEY_MAIL_SERVER,
+    KEY_OO_HELP_EMAIL,
+    KEY_OO_SERVICE_EMAIL,
+    SERVICE_ACCOUNT_FILE,
+)
 
 
 class EmailProvider(ABC):
@@ -20,7 +27,7 @@ class EmailProvider(ABC):
         """Set up the email provider."""
 
     @abstractmethod
-    def is_configured(self):
+    def is_configured(self) -> bool:
         """Determine the required env variables for this provider are configured."""
 
     @abstractmethod
@@ -42,59 +49,51 @@ class GmailEmailProvider(EmailProvider):
         )
         self.service = build("gmail", "v1", credentials=delegated_credentials)
 
-    def is_configured(self):
+    def is_configured(self) -> bool:
         return (
             os.path.isfile(SERVICE_ACCOUNT_FILE)
             and os.path.getsize(SERVICE_ACCOUNT_FILE) > 0
         )
 
     def send_email(self, email: Email):
-        (
-            self.service.users()
-            .messages()
-            .send(userId="me", body=email.create_message())
-            .execute()
-        )
+        message = email.create_message()
+        resource = {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
+
+        (self.service.users().messages().send(userId="me", body=resource).execute())
 
 
 class SMTPEmailProvider(EmailProvider):
     """Sends email with SMTP using Flask-Mail."""
 
-    CONFIG_SENDER_KEY = "OO_MAIL_SENDER"
-    CONFIG_MAIL_SERVER = "MAIL_SERVER"
-    CONFIG_MAIL_PORT = "MAIL_PORT"
-
     def start(self):
-        self.mail = Mail()
-        self.mail.init_app(current_app)
+        self.mail = Mail(current_app)
 
-    def is_configured(self):
-        return all(
-            key in current_app.config
-            for key in [
-                self.CONFIG_SENDER_KEY,
-                self.CONFIG_MAIL_SERVER,
-                self.CONFIG_MAIL_PORT,
-            ]
+    def is_configured(self) -> bool:
+        return bool(
+            current_app.config.get(KEY_MAIL_SERVER)
+            and current_app.config.get(KEY_MAIL_PORT)
         )
 
     def send_email(self, email: Email):
+        app = current_app._get_current_object()
         msg = Message(
             email.subject,
-            sender=current_app.config["OO_MAIL_SENDER"],
+            sender=app.config[KEY_OO_SERVICE_EMAIL],
             recipients=[email.receiver],
+            reply_to=app.config[KEY_OO_HELP_EMAIL],
         )
         msg.body = email.body
+        msg.html = email.html
 
         thread = Thread(
             target=SMTPEmailProvider.send_async_email,
-            args=[self.mail, current_app, msg],
+            args=[self.mail, app, msg],
         )
         current_app.logger.info("Sent email.")
         thread.start()
 
     @staticmethod
-    def send_async_email(mail, app, msg):
+    def send_async_email(mail: Mail, app, msg: Message):
         with app.app_context():
             mail.send(msg)
 
@@ -114,31 +113,31 @@ class SimulatedEmailProvider(EmailProvider):
 
 class EmailClient:
     """
-    EmailClient is a Singleton class used for sending email. It autodetects
+    EmailClient is a Singleton class used for sending email. It auto-detects
     the email provider implementation based on whether the required
     configuration is provided for each implementation.
     """
 
-    DEFAULT_PROVIDER = SimulatedEmailProvider()
-    PROVIDER_PRECEDENCE = [
+    DEFAULT_PROVIDER: EmailProvider = SimulatedEmailProvider()
+    PROVIDER_PRECEDENCE: list[EmailProvider] = [
         GmailEmailProvider(),
         SMTPEmailProvider(),
         DEFAULT_PROVIDER,
     ]
 
     _provider: Optional[EmailProvider] = None
-    _instance = None
+    _instance: Optional[Self] = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._provider = cls.autodetect()
+            cls._provider = cls.auto_detect()
             cls._provider.start()
             current_app.logger.info(f"Using email provider: {cls._provider.__class__}")
             cls._instance = super(EmailClient, cls).__new__(cls)
         return cls._instance
 
     @classmethod
-    def autodetect(cls):
+    def auto_detect(cls):
         """Auto-detect the configured email provider to use for email sending."""
         if current_app.debug or current_app.testing:
             return cls.DEFAULT_PROVIDER
