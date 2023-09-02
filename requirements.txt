@@ -1,5 +1,5 @@
 Authlib==1.2.1
-boto3==1.26.144
+boto3==1.28.39
 cachetools==5.3.1
 email-validator==2.0.0.post2
 Fabric3==1.14.post1
