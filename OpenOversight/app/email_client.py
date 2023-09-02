@@ -102,7 +102,11 @@ class SimulatedEmailProvider(EmailProvider):
     """Writes messages sent with this provider to log for dev/test usage."""
 
     def start(self):
-        pass
+        if not current_app.debug and not current_app.testing:
+            current_app.logger.warning(
+                "Using simulated email provider in non-development environment. "
+                "Please see CONTRIB.md to set up a email provider."
+            )
 
     def is_configured(self):
         return True
@@ -132,7 +136,9 @@ class EmailClient:
         if cls._instance is None:
             cls._provider = cls.auto_detect()
             cls._provider.start()
-            current_app.logger.info(f"Using email provider: {cls._provider.__class__}")
+            current_app.logger.info(
+                f"Using email provider: {cls._provider.__class__.__name__}"
+            )
             cls._instance = super(EmailClient, cls).__new__(cls)
         return cls._instance
 
