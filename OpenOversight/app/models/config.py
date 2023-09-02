@@ -19,6 +19,7 @@ from OpenOversight.app.utils.constants import (
     KEY_TIMEZONE,
     MEGABYTE,
 )
+from OpenOversight.app.utils.general import str_is_true
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -63,7 +64,7 @@ class BaseConfig:
         # Flask-Mail-related settings
         setattr(self, KEY_MAIL_SERVER, os.environ.get(KEY_MAIL_SERVER))
         setattr(self, KEY_MAIL_PORT, os.environ.get(KEY_MAIL_PORT))
-        setattr(self, KEY_MAIL_USE_TLS, os.environ.get(KEY_MAIL_USE_TLS))
+        setattr(self, KEY_MAIL_USE_TLS, str_is_true(os.environ.get(KEY_MAIL_USE_TLS)))
         setattr(self, KEY_MAIL_USERNAME, os.environ.get(KEY_MAIL_USERNAME))
         setattr(self, KEY_MAIL_PASSWORD, os.environ.get(KEY_MAIL_PASSWORD))
 

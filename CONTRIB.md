@@ -49,17 +49,35 @@ $ docker exec -it openoversight-web-1 bash
 
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
-## Gmail Requirements
-**NOTE:** If you are running on dev and do not currently have a `service_account_key.json` file, create one and leave it empty. The email client will then default to an empty object and simulate emails in the logs.
+## Setting Up Email
+**NOTE:** If you are running on dev and do not currently have a `service_account_key.json` file, create one and leave it empty. This file is required by docker compose.
 
-For the application to work properly, you will need a [Google Cloud Platform service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to a GSuite email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
+OpenOversight tries to auto-detect which email implementation to use based on which of the following is configured (in this order):
+* Google: `service_account_key.json` exists and is not empty
+* SMTP: `MAIL_SERVER` and `MAIL_PORT` environment variables are set
+* Simulated: If neither of the previous 2 implementations are configured, emails will only be logged
+
+### GSuite
+To send email using a GSuite email account, you will need a [Google Cloud Platform service account](https://cloud.google.com/iam/docs/service-account-overview) that is attached to that email address. Here are some general tips for working with service accounts: [Link](https://support.google.com/a/answer/7378726?hl=en).
 We would suggest that you do not use a personal email address, but instead one that is used strictly for sending out OpenOversight emails.
 
 You will need to do these two things for the service account to work as a Gmail bot:
 1. Enable domain-wide delegation for the service account: [Link](https://support.google.com/a/answer/162106?hl=en)
 2. Enable the `https://www.googleapis.com/auth/gmail.send` scope in the Gmail API for your service account: [Link](https://developers.google.com/gmail/api/auth/scopes#scopes)
 3. Save the service account key file in OpenOversight's base folder as `service_account_key.json`. The file is in the `.gitignore` file GitHub will not allow you to save it, provided you've named it correctly.
-4. For production, save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_SERVICE_EMAIL` variable in the `docker-compose.yml` file.
+
+### SMTP
+To send email using SMTP, set the following environment variables in your docker-compose.yml file or .env file:
+* `MAIL_SERVER`
+* `MAIL_PORT`
+* `MAIL_USE_TLS`
+* `MAIL_USERNAME`
+* `MAIL_PASSWORD`
+
+For more information about these settings, please see the [Flask-Mail](https://flask-mail.readthedocs.io/en/latest/) documentation.
+
+### Setting email aliases
+Regardless of implementation, save the email address associated with your service account to a variable named `OO_SERVICE_EMAIL` in a `.env` file in the base directory of this repository. For development and testing, update the `OO_SERVICE_EMAIL` variable in the `docker-compose.yml` file.
 
 Example `.env` variable:
 ```shell
