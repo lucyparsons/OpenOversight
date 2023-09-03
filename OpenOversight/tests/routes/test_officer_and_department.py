@@ -647,6 +647,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         corrected_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert corrected_department.short_name == MisspelledPD.short_name
         assert corrected_department.state == MisspelledPD.state
+        assert corrected_department.created_by == user.id
         assert corrected_department.last_updated_by == user.id
 
         # Check that the old name is no longer present:
