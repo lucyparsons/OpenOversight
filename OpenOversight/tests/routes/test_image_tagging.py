@@ -249,12 +249,16 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
 
 def test_user_can_finish_tagging(mockdata, client, session):
     with current_app.test_request_context():
-        login_user(client)
+        _, user = login_user(client)
+        image_id = 4
 
         rv = client.get(
-            url_for("main.complete_tagging", image_id=4), follow_redirects=True
+            url_for("main.complete_tagging", image_id=image_id), follow_redirects=True
         )
+        image = Image.query.filter_by(id=image_id).one()
+
         assert b"Marked image as completed." in rv.data
+        assert image.last_updated_by == user.id
 
 
 def test_user_can_view_leaderboard(mockdata, client, session):
