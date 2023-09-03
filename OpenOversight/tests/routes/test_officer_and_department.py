@@ -510,7 +510,7 @@ TestPD = PoliceDepartment("Test Police Department", "TPD")
 
 def test_admin_can_add_police_department(mockdata, client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, user = login_admin(client)
 
         form = DepartmentForm(
             name=TestPD.name,
@@ -531,6 +531,8 @@ def test_admin_can_add_police_department(mockdata, client, session):
         department = Department.query.filter_by(name=TestPD.name).one()
         assert department.short_name == TestPD.short_name
         assert department.state == TestPD.state
+        assert department.created_by == user.id
+        assert department.last_updated_by == user.id
 
 
 def test_admin_cannot_add_police_department_without_state(mockdata, client, session):
@@ -610,7 +612,7 @@ def test_admin_can_edit_police_department(mockdata, client, session):
             ),
         )
 
-        login_admin(client)
+        _, user = login_admin(client)
 
         misspelled_form = DepartmentForm(
             name=MisspelledPD.name,
@@ -654,6 +656,8 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         corrected_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert corrected_department.short_name == MisspelledPD.short_name
         assert corrected_department.state == MisspelledPD.state
+        assert corrected_department.created_by == user.id
+        assert corrected_department.last_updated_by == user.id
 
         # Check that the old name is no longer present:
         assert Department.query.filter_by(name=MisspelledPD.name).count() == 0
@@ -701,6 +705,8 @@ def test_admin_can_edit_police_department(mockdata, client, session):
         edit_state_department = Department.query.filter_by(name=CorrectedPD.name).one()
         assert edit_state_department.short_name == CorrectedPD.short_name
         assert edit_state_department.state == CorrectedPD.state
+        assert edit_state_department.last_updated_by == user.id
+        assert edit_state_department.last_updated_at > edit_state_department.created_at
         # Check that the old short is no longer present:
         assert (
             Department.query.filter_by(
@@ -2070,7 +2076,7 @@ def test_upload_photo_sends_500_on_s3_error(
                 content_type="multipart/form-data",
                 data=data,
             )
-            assert rv.status_code == 500
+            assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert b"error" in rv.data
             # check that Face was not added to database
             assert len(officer.face) == officer_face_count
@@ -2093,7 +2099,7 @@ def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
                 content_type="multipart/form-data",
                 data=data,
             )
-        assert rv.status_code == 415
+        assert rv.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
         assert b"not allowed" in rv.data
 
 
