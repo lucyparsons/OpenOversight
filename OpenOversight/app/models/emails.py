@@ -65,12 +65,12 @@ class ChangePasswordEmail(Email):
         body = render_template(
             "auth/email/change_password.txt",
             user=user,
-            help_email=current_app.config["OO_HELP_EMAIL"],
+            help_email=current_app.config[KEY_OO_HELP_EMAIL],
         )
         html = render_template(
             "auth/email/change_password.html",
             user=user,
-            help_email=current_app.config["OO_HELP_EMAIL"],
+            help_email=current_app.config[KEY_OO_HELP_EMAIL],
         )
         super().__init__(body, html, subject, receiver)
 

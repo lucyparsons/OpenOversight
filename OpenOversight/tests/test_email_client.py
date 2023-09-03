@@ -14,6 +14,8 @@ from OpenOversight.app.email_client import (
 from OpenOversight.app.models.database import User
 from OpenOversight.app.models.emails import ChangePasswordEmail, Email
 from OpenOversight.app.utils.constants import (
+    FILE_TYPE_HTML,
+    FILE_TYPE_PLAIN,
     KEY_MAIL_PORT,
     KEY_MAIL_SERVER,
     KEY_OO_HELP_EMAIL,
@@ -34,8 +36,8 @@ def test_email_create_message(faker):
     test_message["From"] = current_app.config[KEY_OO_SERVICE_EMAIL]
     test_message["Subject"] = email_subject
     test_message["Reply-To"] = current_app.config[KEY_OO_HELP_EMAIL]
-    test_message.attach(MIMEText(email_body, "plain"))
-    test_message.attach(MIMEText(email_html, "html"))
+    test_message.attach(MIMEText(email_body, FILE_TYPE_PLAIN))
+    test_message.attach(MIMEText(email_html, FILE_TYPE_HTML))
 
     actual_message = email.create_message()
 
