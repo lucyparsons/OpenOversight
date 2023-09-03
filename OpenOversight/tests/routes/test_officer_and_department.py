@@ -2065,7 +2065,7 @@ def test_upload_photo_sends_500_on_s3_error(
                 content_type="multipart/form-data",
                 data=data,
             )
-            assert rv.status_code == 500
+            assert rv.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
             assert b"error" in rv.data
             # check that Face was not added to database
             assert len(officer.face) == officer_face_count
@@ -2088,7 +2088,7 @@ def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
                 content_type="multipart/form-data",
                 data=data,
             )
-        assert rv.status_code == 415
+        assert rv.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
         assert b"not allowed" in rv.data
 
 
