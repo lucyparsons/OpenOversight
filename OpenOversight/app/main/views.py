@@ -1,7 +1,7 @@
-import datetime
 import os
 import re
 import sys
+from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 
@@ -516,7 +516,8 @@ def add_salary(officer_id: int):
                 overtime_pay=form.overtime_pay.data,
                 year=form.year.data,
                 is_fiscal_year=form.is_fiscal_year.data,
-                created_by=current_user.get_id(),
+                created_by=current_user.id,
+                last_updated_by=current_user.id,
             )
             db.session.add(new_salary)
             db.session.commit()
@@ -647,11 +648,12 @@ def classify_submission(image_id: int, contains_cops: int):
         if image.contains_cops is not None and not current_user.is_administrator:
             flash("Only administrator can re-classify image")
             return redirect(redirect_url())
-        image.created_by = current_user.get_id()
         if contains_cops == 1:
             image.contains_cops = True
         elif contains_cops == 0:
             image.contains_cops = False
+        image.last_updated_by = current_user.id
+        image.last_updated_at = datetime.now()
         db.session.commit()
         flash("Updated image classification")
     except:  # noqa: E722
@@ -678,7 +680,6 @@ def redirect_add_department():
 @admin_required
 def add_department():
     form = DepartmentForm()
-    form.created_by = current_user.get_id()
     if form.validate_on_submit():
         department_does_not_exist = (
             Department.query.filter_by(
@@ -692,7 +693,8 @@ def add_department():
                 name=form.name.data,
                 short_name=form.short_name.data,
                 state=form.state.data,
-                created_by=current_user.get_id(),
+                created_by=current_user.id,
+                last_updated_by=current_user.id,
             )
             db.session.add(department)
             db.session.flush()
@@ -772,6 +774,8 @@ def edit_department(department_id: int):
         department.name = form.name.data
         department.short_name = form.short_name.data
         department.state = form.state.data
+        department.last_updated_by = current_user.id
+        department.last_updated_at = datetime.now()
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
@@ -1448,7 +1452,8 @@ def label_data(department_id: int = 0, image_id: int = 0):
                     face_position_y=upper,
                     face_width=form.dataWidth.data,
                     face_height=form.dataHeight.data,
-                    created_by=current_user.get_id(),
+                    created_by=current_user.id,
+                    last_updated_by=current_user.id,
                 )
                 db.session.add(new_tag)
                 db.session.commit()
@@ -1488,6 +1493,8 @@ def complete_tagging(image_id: int):
     if not image:
         abort(HTTPStatus.NOT_FOUND)
     image.is_tagged = True
+    image.last_updated_at = datetime.now()
+    image.last_updated_by = current_user.id
     db.session.commit()
     flash("Marked image as completed.")
     department_id = request.args.get("department_id")
@@ -1902,7 +1909,8 @@ def upload(department_id: int = 0, officer_id: int = 0):
                 # we set both images to the uploaded one
                 img_id=image.id,
                 original_image_id=image.id,
-                created_by=current_user.get_id(),
+                created_by=current_user.id,
+                last_updated_by=current_user.id,
             )
             db.session.add(face)
             db.session.commit()
@@ -1968,12 +1976,12 @@ class IncidentApi(ModelView):
             )
 
         if occurred_before := request.args.get("occurred_before"):
-            before_date = datetime.datetime.strptime(occurred_before, "%Y-%m-%d").date()
+            before_date = datetime.strptime(occurred_before, "%Y-%m-%d").date()
             form.occurred_before.data = before_date
             incidents = incidents.filter(self.model.date < before_date)
 
         if occurred_after := request.args.get("occurred_after"):
-            after_date = datetime.datetime.strptime(occurred_after, "%Y-%m-%d").date()
+            after_date = datetime.strptime(occurred_after, "%Y-%m-%d").date()
             form.occurred_after.data = after_date
             incidents = incidents.filter(self.model.date > after_date)
 
@@ -2363,7 +2371,8 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
-                created_by=current_user.get_id(),
+                created_by=current_user.id,
+                last_updated_by=current_user.id,
             )
             self.officer.links.append(link)
             db.session.add(link)
