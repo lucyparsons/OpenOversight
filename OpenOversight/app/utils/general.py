@@ -163,8 +163,10 @@ def serve_image(filepath):
         return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
 
 
-def str_is_true(string: str):
-    return strtobool(string.lower())
+def str_is_true(str_):
+    if str_ is None:
+        return False
+    return strtobool(str_.lower())
 
 
 def validate_redirect_url(url: Optional[str]) -> Optional[str]:
