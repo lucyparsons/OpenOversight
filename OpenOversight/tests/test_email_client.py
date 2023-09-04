@@ -96,7 +96,7 @@ def test_email_client_auto_detect_no_configured_providers_raises_error(app):
 
 
 @pytest.mark.parametrize(
-    ("isfile", "size", "result"),
+    ("is_file", "size", "result"),
     [
         (False, None, False),
         (True, 0, False),
@@ -106,15 +106,15 @@ def test_email_client_auto_detect_no_configured_providers_raises_error(app):
 @patch("os.path.getsize")
 @patch("os.path.isfile")
 def test_gmail_email_provider_is_configured(
-    mock_isfile, mock_getsize, isfile, size, result
+    mock_isfile, mock_getsize, is_file, size, result
 ):
     mock_getsize.return_value = size
-    mock_isfile.return_value = isfile
+    mock_isfile.return_value = is_file
 
     assert GmailEmailProvider().is_configured() is result
 
     mock_isfile.assert_called_once()
-    if isfile:
+    if is_file:
         mock_getsize.assert_called_once()
 
 
