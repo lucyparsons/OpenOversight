@@ -50,8 +50,6 @@ $ docker exec -it openoversight-web-1 bash
 Once you're done, `make stop` and `make clean` to stop and remove the containers respectively.
 
 ## Setting Up Email
-**NOTE:** If you are running on dev and do not currently have a `service_account_key.json` file, create one and leave it empty. This file is required by docker compose.
-
 OpenOversight tries to auto-detect which email implementation to use based on which of the following is configured (in this order):
 * Google: `service_account_key.json` exists and is not empty
 * SMTP: `MAIL_SERVER` and `MAIL_PORT` environment variables are set
