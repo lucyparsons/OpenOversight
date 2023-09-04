@@ -1,6 +1,15 @@
 import os
 
-from OpenOversight.app.utils.constants import MEGABYTE
+from OpenOversight.app.utils.constants import (
+    KEY_MAIL_PASSWORD,
+    KEY_MAIL_PORT,
+    KEY_MAIL_SERVER,
+    KEY_MAIL_USE_TLS,
+    KEY_MAIL_USERNAME,
+    KEY_OO_HELP_EMAIL,
+    MEGABYTE,
+)
+from OpenOversight.app.utils.general import str_is_true
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -39,7 +48,14 @@ class BaseConfig:
         self.OO_SERVICE_EMAIL = os.environ.get("OO_SERVICE_EMAIL")
         # TODO: Remove the default once we are able to update the production .env file
         # TODO: Once that is done, we can re-alpha sort these variables.
-        self.OO_HELP_EMAIL = os.environ.get("OO_HELP_EMAIL", self.OO_SERVICE_EMAIL)
+        self.OO_HELP_EMAIL = os.environ.get(KEY_OO_HELP_EMAIL, self.OO_SERVICE_EMAIL)
+
+        # Flask-Mail-related settings
+        setattr(self, KEY_MAIL_SERVER, os.environ.get(KEY_MAIL_SERVER))
+        setattr(self, KEY_MAIL_PORT, os.environ.get(KEY_MAIL_PORT))
+        setattr(self, KEY_MAIL_USE_TLS, str_is_true(os.environ.get(KEY_MAIL_USE_TLS)))
+        setattr(self, KEY_MAIL_USERNAME, os.environ.get(KEY_MAIL_USERNAME))
+        setattr(self, KEY_MAIL_PASSWORD, os.environ.get(KEY_MAIL_PASSWORD))
 
         # AWS Settings
         self.AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")

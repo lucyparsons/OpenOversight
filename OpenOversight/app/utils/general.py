@@ -146,6 +146,8 @@ def serve_image(filepath):
 
 
 def str_is_true(str_):
+    if str_ is None:
+        return False
     return strtobool(str_.lower())
 
 

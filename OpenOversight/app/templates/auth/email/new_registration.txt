@@ -1,0 +1,16 @@
+Dear {{ admin.username }},
+
+A new user has registered with the following information:
+
+Username: {{ user.username }}
+Email: {{ user.email }}
+
+To approve or delete this user, click on the following link:
+
+{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}
+
+Sincerely,
+
+The OpenOversight Team
+
+Note: replies to this email address are not monitored.

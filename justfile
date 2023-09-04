@@ -91,7 +91,7 @@ db +migrateargs:
 
 # Run unit tests in the web container
 test *pytestargs:
-    just run --no-deps web pytest -n auto {{ pytestargs }}
+    ENV=testing just run --no-deps web pytest -n auto {{ pytestargs }}
 
 # Back up the postgres data using loomchild/volume-backup
 backup location:

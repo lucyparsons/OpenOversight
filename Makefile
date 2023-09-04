@@ -33,7 +33,7 @@ assets:
 	docker-compose run --rm web yarn build
 
 .PHONY: dev
-dev: build start create_db populate
+dev: create_empty_secret build start create_db populate
 
 .PHONY: populate
 populate: create_db ## Build and run containers
