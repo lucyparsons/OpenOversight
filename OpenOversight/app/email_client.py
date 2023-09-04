@@ -145,7 +145,7 @@ class EmailClient:
     @classmethod
     def auto_detect(cls):
         """Auto-detect the configured email provider to use for email sending."""
-        if current_app.debug or current_app.testing:
+        if current_app.testing:
             return cls.DEFAULT_PROVIDER
 
         for provider in cls.PROVIDER_PRECEDENCE:
