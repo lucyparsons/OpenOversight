@@ -21,6 +21,7 @@ from OpenOversight.app.utils.constants import (
     KEY_OO_HELP_EMAIL,
     KEY_OO_SERVICE_EMAIL,
 )
+from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
 
 def test_email_create_message(faker):
@@ -139,7 +140,7 @@ def test_smtp_email_provider_send_email(app, mockdata):
     with app.app_context():
         mail = MagicMock()
         user = User.query.first()
-        msg = ChangePasswordEmail("test@example.org", user)
+        msg = ChangePasswordEmail(ADMIN_USER_EMAIL, user)
 
         provider = SMTPEmailProvider()
         provider.mail = mail
