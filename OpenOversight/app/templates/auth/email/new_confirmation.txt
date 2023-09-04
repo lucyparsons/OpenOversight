@@ -1,0 +1,16 @@
+Dear {{ admin.username }},
+
+A new user account with the following information has been confirmed:
+
+Username: {{ user.username }}
+Email: {{ user.email }}
+
+To view or delete this user, click on the following link:
+
+{{ url_for('auth.edit_user', user_id=user.id, _external=True) }}
+
+Sincerely,
+
+The OpenOversight Team
+
+Note: replies to this email address are not monitored.
