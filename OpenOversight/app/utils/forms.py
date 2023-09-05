@@ -91,8 +91,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             # don't try to create with a blank string
             if note["text_contents"]:
                 new_note = Note(
-                    note=note["text_contents"],
-                    user_id=current_user.get_id(),
+                    text_contents=note["text_contents"],
+                    created_by=current_user.id,
                     officer=officer,
                 )
                 db.session.add(new_note)
@@ -101,8 +101,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             # don't try to create with a blank string
             if description["text_contents"]:
                 new_description = Description(
-                    description=description["text_contents"],
-                    user_id=current_user.get_id(),
+                    text_contents=description["text_contents"],
+                    created_by=current_user.id,
                     officer=officer,
                 )
                 db.session.add(new_description)

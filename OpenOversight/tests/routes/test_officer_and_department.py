@@ -1166,7 +1166,7 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
 def test_admin_can_add_new_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
-        login_admin(client)
+        rv, admin = login_admin(client)
 
         links = [
             LinkForm(url=faker.url(), link_type="link").data,
@@ -1184,6 +1184,8 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
             department=department.id,
             birth_year=1990,
             links=links,
+            notes=[{"text_contents": "note"}],
+            descriptions=[{"text_contents": "description"}],
         )
 
         data = process_form_data(form.data)
@@ -1197,6 +1199,14 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
         assert officer.first_name == "Test"
         assert officer.race == "WHITE"
         assert officer.gender == "M"
+
+        assert len(officer.notes) == 1
+        assert officer.notes[0].text_contents == "note"
+        assert officer.notes[0].created_by == admin.id
+
+        assert len(officer.descriptions) == 1
+        assert officer.descriptions[0].text_contents == "description"
+        assert officer.descriptions[0].created_by == admin.id
 
 
 def test_admin_can_add_new_officer_with_unit(
