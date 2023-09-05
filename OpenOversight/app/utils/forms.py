@@ -67,6 +67,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         birth_year=form.birth_year.data,
         employment_date=form.employment_date.data,
         department_id=form.department.data.id,
+        created_by=current_user.id,
+        last_updated_by=current_user.id,
     )
     db.session.add(officer)
     db.session.commit()
@@ -79,6 +81,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         job_id=form.job_id.data,
         unit=officer_unit,
         start_date=form.employment_date.data,
+        created_by=current_user.id,
+        last_updated_by=current_user.id,
     )
     db.session.add(assignment)
     if form.links.data:
@@ -92,8 +96,9 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             if note["text_contents"]:
                 new_note = Note(
                     text_contents=note["text_contents"],
-                    created_by=current_user.id,
                     officer=officer,
+                    created_by=current_user.id,
+                    last_updated_by=current_user.id,
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -102,8 +107,9 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
             if description["text_contents"]:
                 new_description = Description(
                     text_contents=description["text_contents"],
-                    created_by=current_user.id,
                     officer=officer,
+                    created_by=current_user.id,
+                    last_updated_by=current_user.id,
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -116,6 +122,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     overtime_pay=salary["overtime_pay"],
                     year=salary["year"],
                     is_fiscal_year=salary["is_fiscal_year"],
+                    created_by=current_user.id,
+                    last_updated_by=current_user.id,
                 )
                 db.session.add(new_salary)
 

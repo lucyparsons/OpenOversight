@@ -4,6 +4,7 @@ import json
 import random
 import re
 from datetime import date, datetime
+from decimal import Decimal
 from http import HTTPStatus
 from io import BytesIO
 
@@ -1166,7 +1167,7 @@ def test_expected_dept_appears_in_submission_dept_selection(mockdata, client, se
 
 def test_admin_can_add_new_officer(mockdata, client, session, department, faker):
     with current_app.test_request_context():
-        rv, admin = login_admin(client)
+        _, admin = login_admin(client)
 
         links = [
             LinkForm(url=faker.url(), link_type="link").data,
@@ -1186,6 +1187,7 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
             links=links,
             notes=[{"text_contents": "note"}],
             descriptions=[{"text_contents": "description"}],
+            salaries=[{"salary": "123.45", "overtime_pay": "543.21"}],
         )
 
         data = process_form_data(form.data)
@@ -1199,14 +1201,29 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
         assert officer.first_name == "Test"
         assert officer.race == "WHITE"
         assert officer.gender == "M"
+        assert officer.created_by == admin.id
+        assert officer.last_updated_by == admin.id
+
+        assert len(officer.assignments) == 1
+        assert officer.assignments[0].star_no == "666"
+        assert officer.assignments[0].created_by == admin.id
+        assert officer.assignments[0].last_updated_by == admin.id
 
         assert len(officer.notes) == 1
         assert officer.notes[0].text_contents == "note"
         assert officer.notes[0].created_by == admin.id
+        assert officer.notes[0].last_updated_by == admin.id
 
         assert len(officer.descriptions) == 1
         assert officer.descriptions[0].text_contents == "description"
         assert officer.descriptions[0].created_by == admin.id
+        assert officer.descriptions[0].last_updated_by == admin.id
+
+        assert len(officer.salaries) == 1
+        assert officer.salaries[0].salary == Decimal("123.45")
+        assert officer.salaries[0].overtime_pay == Decimal("543.21")
+        assert officer.salaries[0].created_by == admin.id
+        assert officer.descriptions[0].last_updated_by == admin.id
 
 
 def test_admin_can_add_new_officer_with_unit(
