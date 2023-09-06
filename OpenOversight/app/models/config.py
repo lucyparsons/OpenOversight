@@ -83,6 +83,7 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     def __init__(self):
         super(TestingConfig, self).__init__()
+        self.APPROVE_REGISTRATIONS = False
         self.TESTING = True
         self.WTF_CSRF_ENABLED = False
         self.NUM_OFFICERS = 120
