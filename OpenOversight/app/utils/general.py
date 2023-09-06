@@ -9,10 +9,11 @@ from urllib.parse import urlparse
 import pytz
 from flask import current_app, session, url_for
 
+from OpenOversight.app.models.database import Officer, User
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_TIMEZONE
 
 
-def ac_can_edit_officer(officer, ac):
+def ac_can_edit_officer(officer: Officer, ac: User) -> bool:
     if officer.department_id == ac.ac_department_id:
         return True
     return False
@@ -156,7 +157,7 @@ def replace_list(items, obj, attr, model, db):
     setattr(obj, attr, new_list)
 
 
-def serve_image(filepath):
+def serve_image(filepath: str):
     if "http" in filepath:
         return filepath
     if "static" in filepath:
