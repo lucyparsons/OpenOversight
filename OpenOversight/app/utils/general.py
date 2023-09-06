@@ -3,7 +3,7 @@ import random
 import sys
 from datetime import datetime, timezone
 from distutils.util import strtobool
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urlparse
 
 import pytz
@@ -98,7 +98,7 @@ def merge_dicts(*dict_args):
     return result
 
 
-def normalize_gender(input_gender: str):
+def normalize_gender(input_gender: str) -> Union[str, None]:
     if input_gender is None:
         return None
     normalized_genders = {
