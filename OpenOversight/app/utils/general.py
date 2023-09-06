@@ -18,7 +18,7 @@ def ac_can_edit_officer(officer, ac):
     return False
 
 
-def allowed_file(filename: str):
+def allowed_file(filename: str) -> bool:
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
@@ -163,10 +163,10 @@ def serve_image(filepath):
         return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
 
 
-def str_is_true(str_):
+def str_is_true(str_) -> bool:
     if str_ is None:
         return False
-    return strtobool(str_.lower())
+    return bool(strtobool(str_.lower()))
 
 
 def validate_redirect_url(url: Optional[str]) -> Optional[str]:
