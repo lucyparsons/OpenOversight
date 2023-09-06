@@ -359,6 +359,18 @@ def test_area_coordinator_with_dept_is_valid(mockdata):
     assert user1.ac_department_id == 1
 
 
+def test_locations_must_have_valid_zip_codes(mockdata):
+    with raises(ValueError):
+        Location(
+            street_name="Brookford St",
+            cross_street1="Mass Ave",
+            cross_street2="None",
+            city="Cambridge",
+            state="MA",
+            zip_code="543",
+        )
+
+
 def test_location_repr(faker):
     street_name = faker.street_address()
     cross_street_one = faker.street_name()
@@ -415,18 +427,6 @@ def test_location_repr(faker):
         f"Intersection of {street_name} between {cross_street_one} and "
         f"{cross_street_two}, {city} {state}"
     )
-
-
-def test_locations_must_have_valid_zip_codes(mockdata):
-    with raises(ValueError):
-        Location(
-            street_name="Brookford St",
-            cross_street1="Mass Ave",
-            cross_street2="None",
-            city="Cambridge",
-            state="MA",
-            zip_code="543",
-        )
 
 
 def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
