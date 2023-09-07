@@ -2,7 +2,6 @@ from datetime import date, datetime, time
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
-import pytz
 
 from OpenOversight.app import login_manager
 from OpenOversight.app.models.database import (
@@ -22,7 +21,11 @@ from OpenOversight.app.utils.choices import (
     RACE_CHOICES,
     SUFFIX_CHOICES,
 )
-from OpenOversight.app.utils.constants import OO_DATE_FORMAT, OO_TIME_FORMAT
+from OpenOversight.app.utils.constants import (
+    OO_DATE_FORMAT,
+    OO_TIME_FORMAT,
+    TIMEZONE_UTC,
+)
 from OpenOversight.app.utils.general import get_or_create, get_timezone, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
@@ -57,7 +60,7 @@ def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datet
 
 
 def parse_datetime_from_utc_timezone(dt: datetime) -> datetime:
-    return dt.astimezone(pytz.UTC)
+    return dt.astimezone(TIMEZONE_UTC)
 
 
 def parse_time(time_str: Optional[str]) -> time:
@@ -324,8 +327,10 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
     time_field = data.get("time", None)
 
     if date_field and time_field:
-        incident.occurred_at = parse_date_time_to_session_timezone(
-            parse_date(date_field), parse_time(time_field)
+        incident.occurred_at = parse_datetime_from_utc_timezone(
+            parse_date_time_to_session_timezone(
+                parse_date(date_field), parse_time(time_field)
+            )
         )
     else:
         incident.date = parse_date(date_field)
@@ -364,14 +369,15 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     )
 
     if date_field and time_field:
-        incident.occurred_at = parse_date_time_to_session_timezone(
-            date_field, time_field
+        incident.occurred_at = parse_datetime_from_utc_timezone(
+            parse_date_time_to_session_timezone(date_field, time_field)
         )
         incident.date = None
         incident.time = None
     else:
         incident.date = date_field
         incident.time = time_field
+        incident.occurred_at = None
 
     incident.last_updated_at = datetime.now()
     incident.last_updated_by = User.query.filter_by(is_administrator=True).first().id

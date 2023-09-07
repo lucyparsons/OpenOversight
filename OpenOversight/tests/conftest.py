@@ -1,15 +1,16 @@
 import csv
-import datetime
 import math
 import os
 import random
 import sys
 import threading
-import time
 import uuid
+from datetime import date, datetime, time, timedelta
 from io import BytesIO
 from pathlib import Path
+from time import sleep
 from typing import List, Optional
+from zoneinfo import ZoneInfo
 
 import pytest
 from faker import Faker
@@ -38,13 +39,14 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
+from OpenOversight.app.models.database_imports import parse_datetime_from_utc_timezone
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES, SUFFIX_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
 )
-from OpenOversight.app.utils.general import get_timezone, merge_dicts
+from OpenOversight.app.utils.general import merge_dicts
 from OpenOversight.tests.constants import (
     AC_USER_EMAIL,
     AC_USER_PASSWORD,
@@ -130,7 +132,7 @@ def pick_birth_date():
 
 def pick_date(
     seed: bytes = b"", start_year: int = 2000, end_year: int = 2020
-) -> datetime.datetime:
+) -> datetime:
     # source: https://stackoverflow.com/q/40351791
     # Wanted to deterministically create a date from a seed string (e.g. the hash or
     # uuid on an officer object).
@@ -143,7 +145,7 @@ def pick_date(
     if seed == b"":
         seed = str(uuid.uuid4()).encode(ENCODING_UTF_8)
 
-    return datetime.datetime(start_year, 1, 1, 00, 00, 00) + datetime.timedelta(
+    return datetime(start_year, 1, 1, 00, 00, 00) + timedelta(
         days=365 * (end_year - start_year) * bytes_to_float(seed)
     )
 
@@ -199,7 +201,7 @@ def generate_officer(
         race=pick_race(),
         gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=department.id,
         created_by=user.id,
     )
@@ -686,8 +688,8 @@ def add_mockdata(session):
 
     test_incidents = [
         Incident(
-            date=datetime.date(2016, 3, 16),
-            time=datetime.time(4, 20),
+            date=date(2016, 3, 16),
+            time=time(4, 20),
             report_number="42",
             description="### A thing happened\n **Markup** description",
             department_id=1,
@@ -699,8 +701,8 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            date=datetime.date(2017, 12, 11),
-            time=datetime.time(2, 40),
+            date=date(2017, 12, 11),
+            time=time(2, 40),
             report_number="38",
             description="A thing happened",
             department_id=2,
@@ -712,7 +714,7 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            date=datetime.datetime(2019, 1, 15),
+            date=datetime(2019, 1, 15),
             report_number="39",
             description=(
                 Path(__file__).parent / "description_overflow.txt"
@@ -726,7 +728,9 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            occurred_at=datetime.datetime(2019, 1, 15, 2, 40, tzinfo=get_timezone()),
+            occurred_at=parse_datetime_from_utc_timezone(
+                datetime(2020, 7, 26, 21, 45, tzinfo=ZoneInfo("America/Los_Angeles"))
+            ),
             report_number="8675309",
             description="beep boop one zero one",
             department_id=2,
@@ -921,14 +925,14 @@ def browser(app, server_port):
         target=app.run, daemon=True, kwargs={"debug": False, "port": port}
     ).start()
     # give the server a few seconds to ensure it is up
-    time.sleep(10)
+    sleep(10)
 
     # start headless webdriver
     visual_display = Xvfb()
     visual_display.start()
     driver = webdriver.Firefox(service_log_path="/tmp/geckodriver.log")
     # wait for browser to start up
-    time.sleep(3)
+    sleep(3)
     yield driver
 
     # shutdown headless webdriver

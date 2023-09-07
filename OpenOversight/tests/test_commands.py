@@ -8,7 +8,6 @@ import uuid
 
 import pandas as pd
 import pytest
-import pytz
 from click.testing import CliRunner
 from sqlalchemy.orm.exc import MultipleResultsFound
 
@@ -31,9 +30,13 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
-from OpenOversight.app.utils.constants import OO_DATE_FORMAT, OO_TIME_FORMAT
+from OpenOversight.app.utils.constants import (
+    OO_DATE_FORMAT,
+    OO_TIME_FORMAT,
+    TIMEZONE_CHICAGO,
+    TIMEZONE_UTC,
+)
 from OpenOversight.app.utils.db import get_officer
-from OpenOversight.app.utils.general import get_timezone
 from OpenOversight.tests.conftest import (
     AC_DEPT,
     RANK_CHOICES_1,
@@ -893,7 +896,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     session.add(incident)
 
     incident_occurred_at = datetime.datetime(
-        2020, 7, 26, 23, 45, tzinfo=pytz.timezone("America/Chicago")
+        2020, 7, 26, 23, 45, tzinfo=TIMEZONE_CHICAGO
     )
 
     link = Link(
@@ -1021,14 +1024,19 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
     assert incident3.address is None
-    assert get_timezone().localize(incident3.occurred_at).strftime(
-        date_format
-    ) == incident_occurred_at.strftime(date_format)
+    assert TIMEZONE_UTC.localize(incident3.occurred_at).astimezone(
+        TIMEZONE_CHICAGO
+    ).strftime(date_format) == incident_occurred_at.strftime(date_format)
     assert incident3.date is None
     assert incident3.time is None
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
     assert lp.state is None
+
+    incident4 = Incident.query.filter_by(report_number="8675309").one_or_none()
+    assert TIMEZONE_UTC.localize(incident4.occurred_at).astimezone(
+        TIMEZONE_CHICAGO
+    ).strftime(date_format) == incident_occurred_at.strftime(date_format)
 
     link_new = cop4.links[0]
     assert [link_new] == list(cop1.links)

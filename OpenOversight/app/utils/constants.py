@@ -1,5 +1,7 @@
 import os
 
+import pytz
+
 
 # Cache Key Constants
 KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
@@ -38,6 +40,8 @@ KEY_DB_CREATOR = "creator"
 # DateTime Constants
 OO_DATE_FORMAT = "%b %d, %Y"
 OO_TIME_FORMAT = "%I:%M %p"
+TIMEZONE_CHICAGO = pytz.timezone("America/Chicago")
+TIMEZONE_UTC = pytz.timezone("Etc/UTC")
 
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
