@@ -47,7 +47,7 @@ def parse_date(date_str: Optional[str]) -> date:
     return datetime.now().date()
 
 
-def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datetime:
+def datetime_to_session_tz(date_str: date, time_str: time) -> datetime:
     dt: datetime
     if date_str and time_str:
         dt = datetime.combine(
@@ -59,7 +59,7 @@ def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datet
     return get_timezone().localize(dt)
 
 
-def parse_datetime_from_utc_timezone(dt: datetime) -> datetime:
+def datetime_to_utc(dt: datetime) -> datetime:
     return dt.astimezone(TIMEZONE_UTC)
 
 
@@ -327,10 +327,8 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
     time_field = data.get("time", None)
 
     if date_field and time_field:
-        incident.occurred_at = parse_datetime_from_utc_timezone(
-            parse_date_time_to_session_timezone(
-                parse_date(date_field), parse_time(time_field)
-            )
+        incident.occurred_at = datetime_to_utc(
+            datetime_to_session_tz(parse_date(date_field), parse_time(time_field))
         )
     else:
         incident.date = parse_date(date_field)
@@ -369,8 +367,8 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     )
 
     if date_field and time_field:
-        incident.occurred_at = parse_datetime_from_utc_timezone(
-            parse_date_time_to_session_timezone(date_field, time_field)
+        incident.occurred_at = datetime_to_utc(
+            datetime_to_session_tz(date_field, time_field)
         )
         incident.date = None
         incident.time = None

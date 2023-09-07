@@ -28,7 +28,8 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.models.database_imports import (
-    parse_date_time_to_session_timezone,
+    datetime_to_session_tz,
+    datetime_to_utc,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 
@@ -201,8 +202,8 @@ def create_incident(self, form: IncidentForm) -> Incident:
     occurred_at = None
     time = None
     if form.date_field.data and form.time_field.data:
-        occurred_at = parse_date_time_to_session_timezone(
-            form.date_field.data, form.time_field.data
+        occurred_at = datetime_to_utc(
+            datetime_to_session_tz(form.date_field.data, form.time_field.data)
         )
     else:
         date = form.date_field.data

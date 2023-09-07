@@ -39,7 +39,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.models.database import db as _db
-from OpenOversight.app.models.database_imports import parse_datetime_from_utc_timezone
+from OpenOversight.app.models.database_imports import datetime_to_utc
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES, SUFFIX_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -728,7 +728,7 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            occurred_at=parse_datetime_from_utc_timezone(
+            occurred_at=datetime_to_utc(
                 datetime(2020, 7, 26, 21, 45, tzinfo=ZoneInfo("America/Los_Angeles"))
             ),
             report_number="8675309",

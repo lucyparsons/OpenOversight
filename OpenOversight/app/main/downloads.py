@@ -15,6 +15,8 @@ from OpenOversight.app.models.database import (
     Officer,
     Salary,
 )
+from OpenOversight.app.models.database_imports import datetime_to_utc
+from OpenOversight.app.utils.general import get_timezone
 
 
 T = TypeVar("T")
@@ -140,8 +142,11 @@ def incidents_record_maker(incident: Incident) -> _Record:
     }
 
     if incident.occurred_at:
-        record["date"] = incident.occurred_at.date()
-        record["time"] = incident.occurred_at.time()
+        occurred_at_local = datetime_to_utc(incident.occurred_at).astimezone(
+            get_timezone()
+        )
+        record["date"] = occurred_at_local.date()
+        record["time"] = occurred_at_local.time()
     else:
         record["date"] = incident.date
         record["time"] = incident.time
