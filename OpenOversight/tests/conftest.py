@@ -426,6 +426,7 @@ def add_mockdata(session):
         state=SPRINGFIELD_PD.state,
         unique_internal_identifier_label=SPRINGFIELD_PD.uid_label,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(department)
     department2 = Department(
@@ -433,6 +434,7 @@ def add_mockdata(session):
         short_name=OTHER_PD.short_name,
         state=OTHER_PD.state,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(department2)
     empty_department = Department(
@@ -440,6 +442,7 @@ def add_mockdata(session):
         short_name=NO_OFFICER_PD.short_name,
         state=NO_OFFICER_PD.state,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(empty_department)
     session.commit()
@@ -462,6 +465,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=department.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
         session.add(
@@ -471,6 +475,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=empty_department.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
 
@@ -482,6 +487,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=department2.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
     session.commit()
@@ -490,18 +496,35 @@ def add_mockdata(session):
     random.seed(current_app.config["SEED"])
 
     test_units = [
-        Unit(description="test", department_id=1, created_by=test_admin.id),
-        Unit(description="District 13", department_id=1, created_by=test_admin.id),
-        Unit(description="Donut Devourers", department_id=1, created_by=test_admin.id),
+        Unit(
+            description="test",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
+        Unit(
+            description="District 13",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
+        Unit(
+            description="Donut Devourers",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
         Unit(
             description="Bureau of Organized Crime",
             department_id=2,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Unit(
             description="Porky's BBQ: Rub Division",
             department_id=2,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
     session.add_all(test_units)
@@ -513,6 +536,7 @@ def add_mockdata(session):
             filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department.id,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         )
         for x in range(5)
     ] + [
@@ -520,6 +544,7 @@ def add_mockdata(session):
             filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department2.id,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         )
         for x in range(5)
     ]
