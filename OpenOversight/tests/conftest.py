@@ -44,7 +44,7 @@ from OpenOversight.app.utils.constants import (
     KEY_ENV_TESTING,
     KEY_NUM_OFFICERS,
 )
-from OpenOversight.app.utils.general import merge_dicts
+from OpenOversight.app.utils.general import get_timezone, merge_dicts
 from OpenOversight.tests.constants import (
     AC_USER_EMAIL,
     AC_USER_PASSWORD,
@@ -629,6 +629,7 @@ def add_mockdata(session):
             state="AZ",
             zip_code="23456",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Location(
             street_name="Testing St",
@@ -638,6 +639,7 @@ def add_mockdata(session):
             state="ME",
             zip_code="23456",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
 
@@ -645,8 +647,18 @@ def add_mockdata(session):
     session.commit()
 
     test_license_plates = [
-        LicensePlate(number="603EEE", state="MA", created_by=test_admin.id),
-        LicensePlate(number="404301", state="WA", created_by=test_admin.id),
+        LicensePlate(
+            number="603EEE",
+            state="MA",
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
+        LicensePlate(
+            number="404301",
+            state="WA",
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
     ]
 
     session.add_all(test_license_plates)
@@ -658,12 +670,14 @@ def add_mockdata(session):
             link_type="link",
             creator=test_admin,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Link(
             url="http://www.youtube.com/?v=help",
             link_type="video",
             creator=test_admin,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
 
@@ -683,7 +697,6 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(4)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
         ),
         Incident(
             date=datetime.date(2017, 12, 11),
@@ -697,7 +710,6 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(3)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
         ),
         Incident(
             date=datetime.datetime(2019, 1, 15),
@@ -712,7 +724,18 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(1)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
+        ),
+        Incident(
+            occurred_at=datetime.datetime(2019, 1, 15, 2, 40, tzinfo=get_timezone()),
+            report_number="8675309",
+            description="beep boop one zero one",
+            department_id=2,
+            address=test_addresses[1],
+            license_plates=[test_license_plates[0]],
+            links=test_incident_links,
+            officers=[all_officers[o] for o in range(1)],
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
     session.add_all(test_incidents)

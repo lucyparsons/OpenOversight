@@ -45,13 +45,14 @@ def parse_date(date_str: Optional[str]) -> date:
 
 
 def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datetime:
+    dt: datetime
     if date_str and time_str:
         dt = datetime.combine(
             parse_date(date_str.strftime(OO_DATE_FORMAT)),
             parse_time(time_str.strftime(OO_TIME_FORMAT)),
         )
     else:
-        dt = datetime.now()
+        dt = datetime.now(tz=get_timezone())
     return get_timezone().localize(dt)
 
 
@@ -355,16 +356,22 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
 
-    date_field = data.get("date", None)
-    time_field = data.get("time", None)
+    date_field = (
+        parse_date(data.get("date")) if data.get("date", None) else incident.date
+    )
+    time_field = (
+        parse_date(data.get("time")) if data.get("time", None) else incident.time
+    )
 
     if date_field and time_field:
         incident.occurred_at = parse_date_time_to_session_timezone(
-            parse_date(date_field), parse_time(time_field)
+            date_field, time_field
         )
+        incident.date = None
+        incident.time = None
     else:
-        incident.date = parse_date(date_field)
-        incident.time = parse_time(time_field)
+        incident.date = date_field
+        incident.time = time_field
 
     incident.last_updated_at = datetime.now()
     incident.last_updated_by = User.query.filter_by(is_administrator=True).first().id
