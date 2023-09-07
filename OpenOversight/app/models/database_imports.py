@@ -46,11 +46,13 @@ def parse_date(date_str: Optional[str]) -> date:
 
 def parse_date_time_to_session_timezone(date_str: date, time_str: time) -> datetime:
     if date_str and time_str:
-        return datetime.combine(
+        dt = datetime.combine(
             parse_date(date_str.strftime(OO_DATE_FORMAT)),
             parse_time(time_str.strftime(OO_TIME_FORMAT)),
-        ).astimezone(get_timezone())
-    return datetime.now().astimezone(get_timezone())
+        )
+    else:
+        dt = datetime.now()
+    return get_timezone().localize(dt)
 
 
 def parse_datetime_from_utc_timezone(dt: datetime) -> datetime:

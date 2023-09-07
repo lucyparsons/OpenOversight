@@ -24,7 +24,7 @@ def instantiate_filters(app: Flask):
 
     @app.template_filter("get_age")
     def get_age_from_birth_year(birth_year: int) -> int:
-        return int(datetime.now(get_timezone()).year - birth_year)
+        return int(get_timezone().localize(datetime.now()).year - birth_year)
 
     @app.template_filter("field_in_query")
     def field_in_query(form_data, field) -> str:
@@ -51,15 +51,17 @@ def instantiate_filters(app: Flask):
     def local_date(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date string."""
         if value:
-            return value.astimezone(get_timezone()).strftime(OO_DATE_FORMAT)
+            return get_timezone().localize(value).strftime(OO_DATE_FORMAT)
         return FIELD_NOT_AVAILABLE
 
     @app.template_filter("local_date_time")
     def local_date_time(value: datetime) -> str:
         """Convert UTC datetime.datetime into a localized date time string."""
         if value:
-            return value.astimezone(get_timezone()).strftime(
-                f"{OO_TIME_FORMAT} on {OO_DATE_FORMAT}"
+            return (
+                get_timezone()
+                .localize(value)
+                .strftime(f"{OO_TIME_FORMAT} on {OO_DATE_FORMAT}")
             )
         return FIELD_NOT_AVAILABLE
 
