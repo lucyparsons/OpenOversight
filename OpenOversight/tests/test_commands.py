@@ -30,12 +30,7 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.utils.choices import DEPARTMENT_STATE_CHOICES
-from OpenOversight.app.utils.constants import (
-    OO_DATE_FORMAT,
-    OO_TIME_FORMAT,
-    TIMEZONE_CHICAGO,
-    TIMEZONE_UTC,
-)
+from OpenOversight.app.utils.constants import TIMEZONE_CHICAGO, TIMEZONE_UTC
 from OpenOversight.app.utils.db import get_officer
 from OpenOversight.tests.conftest import (
     AC_DEPT,
@@ -44,7 +39,11 @@ from OpenOversight.tests.conftest import (
     PoliceDepartment,
     generate_officer,
 )
-from OpenOversight.tests.constants import FILE_MODE_WRITE, GENERAL_USER_EMAIL
+from OpenOversight.tests.constants import (
+    DATE_TIME_FORMAT,
+    FILE_MODE_WRITE,
+    GENERAL_USER_EMAIL,
+)
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -1017,14 +1016,13 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident2.officers == [cop1]
 
     incident3 = Incident.query.get(123456)
-    date_format = " ".join([OO_DATE_FORMAT, OO_TIME_FORMAT])
     assert incident3.report_number == "CR-39283"
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
     assert incident3.address is None
     assert TIMEZONE_UTC.localize(incident3.occurred_at).astimezone(
         TIMEZONE_CHICAGO
-    ).strftime(date_format) == incident_occurred_at.strftime(date_format)
+    ).strftime(DATE_TIME_FORMAT) == incident_occurred_at.strftime(DATE_TIME_FORMAT)
     assert incident3.date is None
     assert incident3.time is None
     lp = incident3.license_plates[0]
@@ -1034,7 +1032,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     incident4 = Incident.query.filter_by(report_number="8675309").one_or_none()
     assert TIMEZONE_UTC.localize(incident4.occurred_at).astimezone(
         TIMEZONE_CHICAGO
-    ).strftime(date_format) == incident_occurred_at.strftime(date_format)
+    ).strftime(DATE_TIME_FORMAT) == incident_occurred_at.strftime(DATE_TIME_FORMAT)
 
     link_new = cop4.links[0]
     assert [link_new] == list(cop1.links)

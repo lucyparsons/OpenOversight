@@ -1,5 +1,11 @@
+from OpenOversight.app.utils.constants import OO_DATE_FORMAT, OO_TIME_FORMAT
+
+
 # File Mode Constants
 FILE_MODE_WRITE = "w"
+
+# Time Constants
+DATE_TIME_FORMAT = f"{OO_DATE_FORMAT} {OO_TIME_FORMAT}"
 
 # User Constants
 AC_USER_EMAIL = "raq929@example.org"

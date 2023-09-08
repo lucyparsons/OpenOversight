@@ -16,12 +16,11 @@ from OpenOversight.app.main.forms import (
 from OpenOversight.app.models.database import Department, Incident, Officer, User
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
-    OO_DATE_FORMAT,
-    OO_TIME_FORMAT,
     TIMEZONE_CHICAGO,
     TIMEZONE_UTC,
 )
 from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import DATE_TIME_FORMAT
 from OpenOversight.tests.routes.route_helpers import (
     login_ac,
     login_admin,
@@ -103,14 +102,16 @@ def test_admins_can_create_basic_incidents(
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
 
-        date_format = " ".join([OO_DATE_FORMAT, OO_TIME_FORMAT])
         inc = Incident.query.filter_by(description=test_description).first()
         assert inc is not None
         assert inc.date is None
         assert inc.time is None
         assert TIMEZONE_UTC.localize(inc.occurred_at).astimezone(
             TIMEZONE_CHICAGO
-        ).strftime(date_format) == test_date.strftime(date_format)
+        ).strftime(DATE_TIME_FORMAT) == test_date.strftime(DATE_TIME_FORMAT)
+        assert inc.occurred_at.strftime(DATE_TIME_FORMAT) == datetime(
+            2000, 5, 25, 6, 45, tzinfo=TIMEZONE_UTC
+        ).strftime(DATE_TIME_FORMAT)
 
 
 def test_admins_cannot_create_incident_with_invalid_report_number(
