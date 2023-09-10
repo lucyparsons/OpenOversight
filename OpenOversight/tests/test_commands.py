@@ -851,6 +851,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         last_name="InDatabase",
         birth_year=1951,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(officer)
 
@@ -861,6 +862,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         start_date=date(2020, 1, 1),
         job_id=department.jobs[0].id,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(assignment)
 
@@ -871,6 +873,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         year=2018,
         is_fiscal_year=False,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(salary)
 
@@ -881,6 +884,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         description="description",
         time=time(23, 45, 16),
         created_by=user.id,
+        last_updated_by=user.id,
     )
     incident.officers = [officer]
     session.add(incident)
@@ -890,6 +894,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         title="Existing Link",
         url="https://www.example.org",
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(link)
     officer.links = [link]
@@ -1009,8 +1014,8 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
     assert incident3.date == date(2020, 7, 26)
-    assert incident3.address is None
     assert incident3.time is None
+    assert incident3.address is None
 
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
