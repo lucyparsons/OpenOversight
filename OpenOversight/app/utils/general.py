@@ -3,10 +3,16 @@ import sys
 from distutils.util import strtobool
 from typing import Optional
 from urllib.parse import urlparse
+from zoneinfo import available_timezones
 
 from flask import current_app, url_for
 
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
+
+
+# Cache timezones since this function "may open a large number of files"
+# https://docs.python.org/3/library/zoneinfo.html#zoneinfo.available_timezones
+AVAILABLE_TIMEZONES = available_timezones()
 
 
 def ac_can_edit_officer(officer, ac):

@@ -18,7 +18,6 @@ gunicorn==20.1.0
 Pillow==10.0.0
 psycopg2-binary==2.9.5
 python-dateutil==2.8.2
-pytz==2023.3
 SQLAlchemy==2.0.19
 us==3.1.1
 werkzeug<3  # FIXME: Remove once flask is upgraded
