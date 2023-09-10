@@ -199,7 +199,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
         created_by=parse_int(data.get("created_by")),
-        last_updated_by=parse_int(data.get("created_by")),
+        last_updated_by=parse_int(data.get("last_updated_by")),
     )
 
     if force_id and data.get("id"):
