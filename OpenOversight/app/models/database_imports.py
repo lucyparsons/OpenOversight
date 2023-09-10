@@ -74,6 +74,7 @@ def parse_str(value: Optional[str], default: Optional[str] = "") -> Optional[str
 
 def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Officer:
     admin_user = User.query.filter_by(is_administrator=True).first()
+
     officer = Officer(
         department_id=int(data["department_id"]),
         last_name=parse_str(data.get("last_name", "")),
@@ -131,6 +132,7 @@ def create_assignment_from_dict(
     data: Dict[str, Any], force_id: bool = False
 ) -> Assignment:
     admin_user = User.query.filter_by(is_administrator=True).first()
+
     assignment = Assignment(
         officer_id=int(data["officer_id"]),
         star_no=parse_str(data.get("star_no"), None),
@@ -172,6 +174,7 @@ def update_assignment_from_dict(
 
 def create_salary_from_dict(data: Dict[str, Any], force_id: bool = False) -> Salary:
     admin_user = User.query.filter_by(is_administrator=True).first()
+
     salary = Salary(
         officer_id=int(data["officer_id"]),
         salary=float(data["salary"]),
@@ -208,6 +211,7 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
 
 def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
     admin_user = User.query.filter_by(is_administrator=True).first()
+
     link = Link(
         title=data.get("title", ""),
         url=url_validator(data["url"]),
@@ -293,6 +297,7 @@ def get_or_create_location_from_dict(
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
     admin_user = User.query.filter_by(is_administrator=True).first()
+
     incident = Incident(
         date=parse_date(data.get("date")),
         time=parse_time(data.get("time")),
