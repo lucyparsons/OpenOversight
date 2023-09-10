@@ -1,7 +1,7 @@
-import datetime
 import hashlib
 import os
 import sys
+from datetime import datetime
 from io import BytesIO
 from traceback import format_exc
 from urllib.request import urlopen
@@ -122,7 +122,7 @@ def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
 
     date_taken = get_date_taken(pimage)
     if date_taken:
-        date_taken = datetime.datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
+        date_taken = datetime.strptime(date_taken, "%Y:%m:%d %H:%M:%S")
     pimage.getexif().clear()
     scrubbed_image_buf = BytesIO()
     pimage.save(scrubbed_image_buf, image_format)
@@ -140,10 +140,10 @@ def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
         new_image = Image(
             filepath=url,
             hash_img=hash_img,
-            created_at=datetime.datetime.now(),
             department_id=department_id,
             taken_at=date_taken,
             created_by=user_id,
+            last_updated_by=user_id,
         )
         db.session.add(new_image)
         db.session.commit()
