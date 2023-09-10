@@ -56,7 +56,7 @@ def add_new_assignment(officer_id: int, form: AssignmentForm, user: User) -> Non
     db.session.commit()
 
 
-def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
+def add_officer_profile(form: AddOfficerForm, user: User) -> Officer:
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -67,8 +67,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         birth_year=form.birth_year.data,
         employment_date=form.employment_date.data,
         department_id=form.department.data.id,
-        created_by=current_user.id,
-        last_updated_by=current_user.id,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(officer)
     db.session.commit()
@@ -81,14 +81,14 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         job_id=form.job_id.data,
         unit=officer_unit,
         start_date=form.employment_date.data,
-        created_by=current_user.id,
-        last_updated_by=current_user.id,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(assignment)
     if form.links.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
+                li = get_or_create_link_from_form(link, user)
                 officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
@@ -97,8 +97,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                 new_note = Note(
                     text_contents=note["text_contents"],
                     officer=officer,
-                    created_by=current_user.id,
-                    last_updated_by=current_user.id,
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -108,8 +108,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                 new_description = Description(
                     text_contents=description["text_contents"],
                     officer=officer,
-                    created_by=current_user.id,
-                    last_updated_by=current_user.id,
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -122,8 +122,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     overtime_pay=salary["overtime_pay"],
                     year=salary["year"],
                     is_fiscal_year=salary["is_fiscal_year"],
-                    created_by=current_user.id,
-                    last_updated_by=current_user.id,
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_salary)
 
@@ -141,14 +141,10 @@ def create_description(self, form: TextForm, user: User) -> Description:
 
 
 def create_incident(self, form: IncidentForm, user: User) -> Incident:
-    fields = {
-        "date": form.date_field.data,
-        "time": form.time_field.data,
-        "officers": [],
-        "license_plates": [],
-        "links": [],
-        "address": "",
-    }
+    address_model = None
+    officers = []
+    license_plates = []
+    links = []
 
     if "address" in form.data:
         address = form.data["address"]
@@ -168,47 +164,52 @@ def create_incident(self, form: IncidentForm, user: User) -> Incident:
                 state=if_exists_or_none(address["state"]),
                 street_name=if_exists_or_none(address["street_name"]),
                 zip_code=if_exists_or_none(address["zip_code"]),
+                created_by=user.id,
+                last_updated_by=user.id,
             )
-        fields["address"] = location
+            db.session.add(location)
+        address_model = location
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
                 of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
                 if of:
-                    fields["officers"].append(of)
+                    officers.append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
             if plate["number"]:
-                pl = LicensePlate.query.filter_by(
+                lp = LicensePlate.query.filter_by(
                     number=if_exists_or_none(plate["number"]),
                     state=if_exists_or_none(plate["state"]),
                 ).first()
-                if not pl:
-                    pl = LicensePlate(
+                if not lp:
+                    lp = LicensePlate(
                         number=if_exists_or_none(plate["number"]),
                         state=if_exists_or_none(plate["state"]),
+                        created_by=user.id,
+                        last_updated_by=user.id,
                     )
-                    db.session.add(pl)
-                fields["license_plates"].append(pl)
+                    db.session.add(lp)
+                license_plates.append(lp)
 
     if "links" in form.data:
         for link in form.data["links"]:
             if link["url"]:
                 li = get_or_create_link_from_form(link, user)
-                fields["links"].append(li)
+                links.append(li)
 
     return Incident(
-        date=fields["date"],
-        time=fields["time"],
-        description=form.data["description"],
+        address=address_model,
+        date=form.date_field.data,
         department=form.data["department"],
-        address=fields["address"],
-        officers=fields["officers"],
+        description=form.data["description"],
+        license_plates=license_plates,
+        links=links,
+        officers=officers,
         report_number=form.data["report_number"],
-        license_plates=fields["license_plates"],
-        links=fields["links"],
+        time=form.time_field.data,
     )
 
 
@@ -240,7 +241,7 @@ def edit_existing_assignment(assignment, form: AssignmentForm) -> Assignment:
     return assignment
 
 
-def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, None]:
+def get_or_create_link_from_form(link_form, user: User) -> Union[Link, None]:
     link = None
     if link_form["url"]:
         link = Link.query.filter_by(
@@ -256,6 +257,8 @@ def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, N
                 link_type=if_exists_or_none(link_form["link_type"]),
                 title=if_exists_or_none(link_form["title"]),
                 url=if_exists_or_none(link_form["url"]),
+                created_by=user.id,
+                last_updated_by=user.id,
             )
             db.session.add(link)
     return link
