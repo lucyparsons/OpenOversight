@@ -119,6 +119,7 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
             data.get("unique_internal_identifier"), None
         )
     officer.last_updated_at = datetime.now()
+    officer.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
     return officer
 
@@ -157,6 +158,7 @@ def update_assignment_from_dict(
     if "resign_date" in data.keys():
         assignment.resign_date = parse_date(data.get("resign_date"))
     assignment.last_updated_at = datetime.now()
+    assignment.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
     return assignment
@@ -189,6 +191,7 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
     if "is_fiscal_year" in data.keys():
         salary.is_fiscal_year = parse_bool(data.get("is_fiscal_year"))
     salary.last_updated_at = datetime.now()
+    salary.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
     return salary
@@ -234,6 +237,7 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
     if "incidents" in data:
         link.incidents = data.get("incidents") or []
     link.last_updated_at = datetime.now()
+    link.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
     return link
@@ -324,6 +328,7 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
     incident.last_updated_at = datetime.now()
+    incident.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
     return incident
 
