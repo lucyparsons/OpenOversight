@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, time
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
@@ -36,13 +36,13 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> Optional[datetime.date]:
+def parse_date(date_str: Optional[str]) -> Optional[date]:
     if date_str:
         return dateutil.parser.parse(date_str).date()
     return None
 
 
-def parse_time(time_str: Optional[str]) -> Optional[datetime.time]:
+def parse_time(time_str: Optional[str]) -> Optional[time]:
     if time_str:
         return dateutil.parser.parse(time_str).time()
     return None
@@ -199,6 +199,7 @@ def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
         created_by=parse_int(data.get("created_by")),
+        last_updated_by=parse_int(data.get("created_by")),
     )
 
     if force_id and data.get("id"):
@@ -284,7 +285,6 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         department_id=parse_int(data.get("department_id")),
         created_by=parse_int(data.get("created_by")),
         last_updated_by=parse_int(data.get("last_updated_by")),
-        last_updated_at=datetime.datetime.now(),
     )
 
     incident.officers = data.get("officers", [])
@@ -315,7 +315,7 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
         incident.created_by = parse_int(data.get("created_by"))
     if "last_updated_by" in data:
         incident.last_updated_by = parse_int(data.get("last_updated_by"))
-        incident.last_updated_at = datetime.datetime.now()
+        incident.last_updated_at = datetime.now()
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
