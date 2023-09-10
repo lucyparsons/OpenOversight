@@ -35,6 +35,10 @@ KEY_MAIL_PASSWORD = "MAIL_PASSWORD"
 KEY_S3_BUCKET_NAME = "S3_BUCKET_NAME"
 KEY_TIMEZONE = "TIMEZONE"
 
+# DateTime Constants
+OO_DATE_FORMAT = "%b %d, %Y"
+OO_TIME_FORMAT = "%I:%M %p"
+
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"
 FILE_TYPE_HTML = "html"
