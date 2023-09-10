@@ -131,14 +131,16 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     return officer
 
 
-def create_description(self, form: TextForm, current_user: User) -> Description:
+def create_description(self, form: TextForm, user: User) -> Description:
     return Description(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
 
 
-def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
+def create_incident(self, form: IncidentForm, user: User) -> Incident:
     fields = {
         "date": form.date_field.data,
         "time": form.time_field.data,
@@ -194,7 +196,7 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
     if "links" in form.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
+                li = get_or_create_link_from_form(link, user)
                 fields["links"].append(li)
 
     return Incident(
@@ -210,10 +212,12 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
     )
 
 
-def create_note(self, form: TextForm, current_user: User) -> Note:
+def create_note(self, form: TextForm, user: User) -> Note:
     return Note(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
 
 
