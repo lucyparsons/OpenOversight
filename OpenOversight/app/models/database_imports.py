@@ -36,16 +36,16 @@ def validate_choice(
     return None
 
 
-def parse_date(date_str: Optional[str]) -> date:
+def parse_date(date_str: Optional[str]) -> Optional[date]:
     if date_str:
         return dateutil.parser.parse(date_str).date()
-    return datetime.now().date()
+    return None
 
 
-def parse_time(time_str: Optional[str]) -> time:
+def parse_time(time_str: Optional[str]) -> Optional[time]:
     if time_str:
         return dateutil.parser.parse(time_str).time()
-    return datetime.now().time()
+    return None
 
 
 def parse_int(value: Optional[Union[str, int]]) -> Optional[int]:
