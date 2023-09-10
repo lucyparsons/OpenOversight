@@ -73,6 +73,7 @@ def parse_str(value: Optional[str], default: Optional[str] = "") -> Optional[str
 
 
 def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Officer:
+    admin_user = User.query.filter_by(is_administrator=True).first()
     officer = Officer(
         department_id=int(data["department_id"]),
         last_name=parse_str(data.get("last_name", "")),
@@ -86,6 +87,8 @@ def create_officer_from_dict(data: Dict[str, Any], force_id: bool = False) -> Of
         unique_internal_identifier=parse_str(
             data.get("unique_internal_identifier"), None
         ),
+        created_by=admin_user.id,
+        last_updated_by=admin_user.id,
     )
     if force_id and data.get("id"):
         officer.id = data["id"]
@@ -127,6 +130,7 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
 def create_assignment_from_dict(
     data: Dict[str, Any], force_id: bool = False
 ) -> Assignment:
+    admin_user = User.query.filter_by(is_administrator=True).first()
     assignment = Assignment(
         officer_id=int(data["officer_id"]),
         star_no=parse_str(data.get("star_no"), None),
@@ -134,6 +138,8 @@ def create_assignment_from_dict(
         unit_id=parse_int(data.get("unit_id")),
         start_date=parse_date(data.get("start_date")),
         resign_date=parse_date(data.get("resign_date")),
+        created_by=admin_user.id,
+        last_updated_by=admin_user.id,
     )
     if force_id and data.get("id"):
         assignment.id = data["id"]
@@ -165,12 +171,15 @@ def update_assignment_from_dict(
 
 
 def create_salary_from_dict(data: Dict[str, Any], force_id: bool = False) -> Salary:
+    admin_user = User.query.filter_by(is_administrator=True).first()
     salary = Salary(
         officer_id=int(data["officer_id"]),
         salary=float(data["salary"]),
         overtime_pay=parse_float(data.get("overtime_pay")),
         year=int(data["year"]),
         is_fiscal_year=parse_bool(data.get("is_fiscal_year")),
+        created_by=admin_user.id,
+        last_updated_by=admin_user.id,
     )
     if force_id and data.get("id"):
         salary.id = data["id"]
@@ -198,14 +207,15 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
 
 
 def create_link_from_dict(data: Dict[str, Any], force_id: bool = False) -> Link:
+    admin_user = User.query.filter_by(is_administrator=True).first()
     link = Link(
         title=data.get("title", ""),
         url=url_validator(data["url"]),
         link_type=validate_choice(data.get("link_type"), LINK_CHOICES),
         description=parse_str(data.get("description"), None),
         author=parse_str(data.get("author"), None),
-        created_by=parse_int(data.get("created_by")),
-        last_updated_by=parse_int(data.get("last_updated_by")),
+        created_by=parse_int(data.get("created_by", admin_user.id)),
+        last_updated_by=parse_int(data.get("created_by", admin_user.id)),
     )
 
     if force_id and data.get("id"):
@@ -230,8 +240,6 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
         link.description = parse_str(data.get("description"), None)
     if "author" in data:
         link.author = parse_str(data.get("author"), None)
-    if "created_by" in data:
-        link.created_by = parse_int(data.get("created_by"))
     if "officers" in data:
         link.officers = data.get("officers") or []
     if "incidents" in data:
@@ -284,6 +292,7 @@ def get_or_create_location_from_dict(
 
 
 def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> Incident:
+    admin_user = User.query.filter_by(is_administrator=True).first()
     incident = Incident(
         date=parse_date(data.get("date")),
         time=parse_time(data.get("time")),
@@ -291,8 +300,8 @@ def create_incident_from_dict(data: Dict[str, Any], force_id: bool = False) -> I
         description=parse_str(data.get("description"), None),
         address_id=data.get("address_id"),
         department_id=parse_int(data.get("department_id")),
-        created_by=parse_int(data.get("created_by")),
-        last_updated_by=parse_int(data.get("last_updated_by")),
+        created_by=parse_int(data.get("created_by", admin_user.id)),
+        last_updated_by=parse_int(data.get("last_updated_by", admin_user.id)),
     )
 
     incident.officers = data.get("officers", [])
@@ -318,9 +327,11 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "address_id" in data:
         incident.address_id = data.get("address_id")
     if "department_id" in data:
-        incident.department_id = parse_int(data.get("department_id"))
-    if "created_by" in data:
-        incident.created_by = parse_int(data.get("created_by"))
+        incident.department_id = parse_int(
+            data.get(
+                "department_id", User.query.filter_by(is_administrator=True).first().id
+            )
+        )
     if "last_updated_by" in data:
         incident.last_updated_by = parse_int(data.get("last_updated_by"))
     if "officers" in data:
@@ -328,7 +339,6 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
     incident.last_updated_at = datetime.now()
-    incident.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
     return incident
 
