@@ -5,7 +5,7 @@ import random
 import sys
 import threading
 import uuid
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from io import BytesIO
 from pathlib import Path
 from time import sleep
@@ -676,8 +676,8 @@ def add_mockdata(session):
 
     test_incidents = [
         Incident(
-            date=datetime.date(2016, 3, 16),
-            time=datetime.time(4, 20),
+            date=date(2016, 3, 16),
+            time=time(4, 20),
             report_number="42",
             description="### A thing happened\n **Markup** description",
             department_id=1,
@@ -689,8 +689,8 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            date=datetime.date(2017, 12, 11),
-            time=datetime.time(2, 40),
+            date=date(2017, 12, 11),
+            time=time(2, 40),
             report_number="38",
             description="A thing happened",
             department_id=2,
@@ -702,7 +702,7 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            date=datetime.datetime(2019, 1, 15),
+            date=datetime(2019, 1, 15),
             report_number="39",
             description=(
                 Path(__file__).parent / "description_overflow.txt"

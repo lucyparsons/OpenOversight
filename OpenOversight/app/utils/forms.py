@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import Union
 
 from sqlalchemy import or_
@@ -306,7 +306,7 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
             )
 
     if form_data.get("min_age") and form_data.get("max_age"):
-        current_year = datetime.datetime.now().year
+        current_year = datetime.now().year
         min_birth_year = current_year - int(form_data["min_age"])
         max_birth_year = current_year - int(form_data["max_age"])
         officer_query = officer_query.filter(
