@@ -5,15 +5,20 @@ from datetime import datetime, timezone
 from distutils.util import strtobool
 from typing import Optional, Union
 from urllib.parse import urlparse
+from zoneinfo import available_timezones
 
 import pytz
 from flask import current_app, session, url_for
 
-from OpenOversight.app.models.database import Officer, User
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_TIMEZONE
 
 
-def ac_can_edit_officer(officer: Officer, ac: User) -> bool:
+# Cache timezones since this function "may open a large number of files"
+# https://docs.python.org/3/library/zoneinfo.html#zoneinfo.available_timezones
+AVAILABLE_TIMEZONES = available_timezones()
+
+
+def ac_can_edit_officer(officer, ac):
     if officer.department_id == ac.ac_department_id:
         return True
     return False

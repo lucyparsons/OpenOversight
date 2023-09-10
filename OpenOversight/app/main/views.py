@@ -112,6 +112,7 @@ from OpenOversight.app.utils.forms import (
     set_dynamic_default,
 )
 from OpenOversight.app.utils.general import (
+    AVAILABLE_TIMEZONES,
     ac_can_edit_officer,
     allowed_file,
     get_or_create,
@@ -157,11 +158,11 @@ def index():
 @main.route("/timezone", methods=[HTTPMethod.POST])
 def set_session_timezone():
     if KEY_TIMEZONE not in session:
-        session.permanent = True
         timezone = request.data.decode(ENCODING_UTF_8)
-        session[KEY_TIMEZONE] = (
-            timezone if timezone != "" else current_app.config.get(KEY_TIMEZONE)
-        )
+        if timezone != "" and timezone in AVAILABLE_TIMEZONES:
+            session[KEY_TIMEZONE] = timezone
+        else:
+            session[KEY_TIMEZONE] = current_app.config.get(KEY_TIMEZONE)
     return Response("User timezone saved", status=HTTPStatus.OK)
 
 
