@@ -34,9 +34,7 @@ def if_exists_or_none(val: Union[str, None]) -> Union[str, None]:
     return val if val else None
 
 
-def add_new_assignment(
-    officer_id: int, form: AssignmentForm, current_user: User
-) -> None:
+def add_new_assignment(officer_id: int, form: AssignmentForm, user: User) -> None:
     unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
@@ -51,6 +49,8 @@ def add_new_assignment(
         unit_id=unit_id,
         start_date=form.start_date.data,
         resign_date=form.resign_date.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(new_assignment)
     db.session.commit()
