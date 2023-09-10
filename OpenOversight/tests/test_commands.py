@@ -989,6 +989,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
 
     incident = cop4.incidents[0]
     assert incident.report_number == "CR-1234"
+
     license_plates = {plate.state: plate.number for plate in incident.license_plates}
     assert license_plates["NY"] == "ABC123"
     assert license_plates["IL"] == "98UMC"
@@ -1008,17 +1009,19 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
     assert incident3.date == date(2020, 7, 26)
+    assert incident3.address is None
+    assert incident3.time is None
+
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
     assert lp.state is None
-    assert incident3.address is None
-    assert incident3.time is None
 
     link_new = cop4.links[0]
     assert [link_new] == list(cop1.links)
     assert link_new.title == "A Link"
     assert link_new.url == "https://www.example.com"
     assert {officer.id for officer in link_new.officers} == {cop1.id, cop4.id}
+
     incident_link = incident2.links[0]
     assert incident_link.url == "https://www.example.com/incident"
     assert incident_link.title == "Another Link"
