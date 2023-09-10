@@ -702,7 +702,7 @@ def add_mockdata(session):
             last_updated_by=test_admin.id,
         ),
         Incident(
-            date=datetime(2019, 1, 15),
+            date=date(2019, 1, 15),
             report_number="39",
             description=(
                 Path(__file__).parent / "description_overflow.txt"
