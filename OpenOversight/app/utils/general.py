@@ -1,13 +1,11 @@
-import os
 import random
 import sys
 from datetime import datetime, timezone
 from distutils.util import strtobool
 from typing import Optional, Union
 from urllib.parse import urlparse
-from zoneinfo import available_timezones
+from zoneinfo import ZoneInfo, available_timezones
 
-import pytz
 from flask import current_app, session, url_for
 
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_TIMEZONE
@@ -32,17 +30,14 @@ def allowed_file(filename: str) -> bool:
     )
 
 
-def get_timezone() -> pytz.timezone:
-    """Return the applicable timezone for a given session."""
-    if session:
-        tz_str = (
-            session[KEY_TIMEZONE]
-            if KEY_TIMEZONE in session
-            else current_app.config.get(KEY_TIMEZONE)
-        )
-    else:
-        tz_str = os.getenv(KEY_TIMEZONE)
-    return pytz.timezone(tz_str)
+def get_timezone() -> ZoneInfo:
+    """Return the applicable timezone for the filter."""
+    user_timezone = session.get(KEY_TIMEZONE)
+    return ZoneInfo(
+        user_timezone
+        if user_timezone and user_timezone in AVAILABLE_TIMEZONES
+        else current_app.config.get(KEY_TIMEZONE)
+    )
 
 
 # This function is also used in the `utils/forms.py` file, so there's potential
