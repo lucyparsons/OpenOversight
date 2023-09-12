@@ -1,11 +1,11 @@
 import csv
-import datetime
 import math
 import os
 import random
 import sys
 import threading
 import uuid
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
@@ -129,7 +129,7 @@ def pick_birth_date():
 
 def pick_date(
     seed: bytes = b"", start_year: int = 2000, end_year: int = 2020
-) -> datetime.datetime:
+) -> datetime:
     # source: https://stackoverflow.com/q/40351791
     # Wanted to deterministically create a date from a seed string (e.g. the hash or
     # uuid on an officer object).
@@ -142,7 +142,7 @@ def pick_date(
     if seed == b"":
         seed = str(uuid.uuid4()).encode(ENCODING_UTF_8)
 
-    return datetime.datetime(start_year, 1, 1, 00, 00, 00) + datetime.timedelta(
+    return datetime(start_year, 1, 1, 00, 00, 00) + timedelta(
         days=365 * (end_year - start_year) * bytes_to_float(seed)
     )
 
@@ -198,7 +198,7 @@ def generate_officer(
         race=pick_race(),
         gender=pick_gender(),
         birth_year=year_born,
-        employment_date=datetime.datetime(year_born + 20, 4, 4, 1, 1, 1),
+        employment_date=datetime(year_born + 20, 4, 4, 1, 1, 1),
         department_id=department.id,
         created_by=user.id,
     )
@@ -229,28 +229,24 @@ def build_assignment(
 
 
 def build_note(officer: Officer, user: User, content=None) -> Note:
-    date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
     return Note(
         text_contents=content,
         officer_id=officer.id,
         created_by=user.id,
-        created_at=date,
-        last_updated_at=date,
+        last_updated_by=user.id,
     )
 
 
 def build_description(officer: Officer, user: User, content=None) -> Description:
-    date = factory.date_time_this_year()
     if content is None:
         content = factory.text()
     return Description(
         text_contents=content,
         officer_id=officer.id,
         created_by=user.id,
-        created_at=date,
-        last_updated_at=date,
+        last_updated_by=user.id,
     )
 
 
@@ -262,6 +258,7 @@ def build_salary(officer: Officer, user: User) -> Salary:
         year=random.randint(2000, 2019),
         is_fiscal_year=True if random.randint(0, 1) else False,
         created_by=user.id,
+        last_updated_by=user.id,
     )
 
 
@@ -274,6 +271,7 @@ def assign_faces(officer: Officer, images: Image, user: User):
             original_image_id=img_id,
             featured=False,
             created_by=user.id,
+            last_updated_by=user.id,
         )
     else:
         return False
@@ -425,6 +423,7 @@ def add_mockdata(session):
         state=SPRINGFIELD_PD.state,
         unique_internal_identifier_label=SPRINGFIELD_PD.uid_label,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(department)
     department2 = Department(
@@ -432,6 +431,7 @@ def add_mockdata(session):
         short_name=OTHER_PD.short_name,
         state=OTHER_PD.state,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(department2)
     empty_department = Department(
@@ -439,6 +439,7 @@ def add_mockdata(session):
         short_name=NO_OFFICER_PD.short_name,
         state=NO_OFFICER_PD.state,
         created_by=test_admin.id,
+        last_updated_by=test_admin.id,
     )
     session.add(empty_department)
     session.commit()
@@ -461,6 +462,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=department.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
         session.add(
@@ -470,6 +472,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=empty_department.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
 
@@ -481,6 +484,7 @@ def add_mockdata(session):
                 is_sworn_officer=True,
                 department_id=department2.id,
                 created_by=test_admin.id,
+                last_updated_by=test_admin.id,
             )
         )
     session.commit()
@@ -489,18 +493,35 @@ def add_mockdata(session):
     random.seed(current_app.config["SEED"])
 
     test_units = [
-        Unit(description="test", department_id=1, created_by=test_admin.id),
-        Unit(description="District 13", department_id=1, created_by=test_admin.id),
-        Unit(description="Donut Devourers", department_id=1, created_by=test_admin.id),
+        Unit(
+            description="test",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
+        Unit(
+            description="District 13",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
+        Unit(
+            description="Donut Devourers",
+            department_id=1,
+            created_by=test_admin.id,
+            last_updated_by=test_admin.id,
+        ),
         Unit(
             description="Bureau of Organized Crime",
             department_id=2,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Unit(
             description="Porky's BBQ: Rub Division",
             department_id=2,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
     session.add_all(test_units)
@@ -512,6 +533,7 @@ def add_mockdata(session):
             filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department.id,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         )
         for x in range(5)
     ] + [
@@ -519,6 +541,7 @@ def add_mockdata(session):
             filepath=f"/static/images/test_cop{x + 1}.png",
             department_id=department2.id,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         )
         for x in range(5)
     ]
@@ -531,6 +554,7 @@ def add_mockdata(session):
             title="OpenOversight",
             description="A public, searchable database of law enforcement officers.",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Link(
             url="http://www.youtube.com/?v=help",
@@ -538,6 +562,7 @@ def add_mockdata(session):
             title="Youtube",
             author="the internet",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
 
@@ -603,6 +628,7 @@ def add_mockdata(session):
             state="AZ",
             zip_code="23456",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Location(
             street_name="Testing St",
@@ -612,6 +638,7 @@ def add_mockdata(session):
             state="ME",
             zip_code="23456",
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
 
@@ -632,12 +659,14 @@ def add_mockdata(session):
             link_type="link",
             creator=test_admin,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
         Link(
             url="http://www.youtube.com/?v=help",
             link_type="video",
             creator=test_admin,
             created_by=test_admin.id,
+            last_updated_by=test_admin.id,
         ),
     ]
 
@@ -646,8 +675,8 @@ def add_mockdata(session):
 
     test_incidents = [
         Incident(
-            date=datetime.date(2016, 3, 16),
-            time=datetime.time(4, 20),
+            date=date(2016, 3, 16),
+            time=time(4, 20),
             report_number="42",
             description="A thing happened",
             department_id=1,
@@ -657,11 +686,10 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(4)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
         ),
         Incident(
-            date=datetime.date(2017, 12, 11),
-            time=datetime.time(2, 40),
+            date=date(2017, 12, 11),
+            time=time(2, 40),
             report_number="38",
             description="A thing happened",
             department_id=2,
@@ -671,10 +699,9 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(3)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
         ),
         Incident(
-            date=datetime.datetime(2019, 1, 15),
+            date=date(2019, 1, 15),
             report_number="39",
             description=(
                 Path(__file__).parent / "description_overflow.txt"
@@ -686,7 +713,6 @@ def add_mockdata(session):
             officers=[all_officers[o] for o in range(1)],
             created_by=test_admin.id,
             last_updated_by=test_admin.id,
-            last_updated_at=datetime.datetime.now(),
         ),
     ]
     session.add_all(test_incidents)

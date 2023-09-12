@@ -12,9 +12,6 @@ KEY_DEPT_ASSIGNMENTS_LAST_UPDATED = "assignments_last_updated"
 KEY_DEPT_INCIDENTS_LAST_UPDATED = "incidents_last_updated"
 KEY_DEPT_OFFICERS_LAST_UPDATED = "officers_last_updated"
 
-# Database Key Constants
-KEY_DB_CREATOR = "creator"
-
 # Config Key Constants
 KEY_ALLOWED_EXTENSIONS = "ALLOWED_EXTENSIONS"
 KEY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
@@ -34,6 +31,13 @@ KEY_MAIL_USERNAME = "MAIL_USERNAME"
 KEY_MAIL_PASSWORD = "MAIL_PASSWORD"
 KEY_S3_BUCKET_NAME = "S3_BUCKET_NAME"
 KEY_TIMEZONE = "TIMEZONE"
+
+# Database Key Constants
+KEY_DB_CREATOR = "creator"
+
+# DateTime Constants
+OO_DATE_FORMAT = "%b %d, %Y"
+OO_TIME_FORMAT = "%I:%M %p"
 
 # File Handling Constants
 ENCODING_UTF_8 = "utf-8"

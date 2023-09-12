@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from http import HTTPMethod
 from typing import Callable, Union
 
@@ -219,11 +219,11 @@ class ModelView(MethodView):
 
         # if the object doesn't have a creator id set it to current user
         if hasattr(obj, "created_by") and not getattr(obj, "created_by"):
-            obj.created_by = current_user.get_id()
+            obj.created_by = current_user.id
         # if the object keeps track of who updated it last, set to current user
         if hasattr(obj, "last_updated_at"):
-            obj.last_updated_at = datetime.datetime.now()
-            obj.last_updated_by = current_user.get_id()
+            obj.last_updated_at = datetime.now()
+            obj.last_updated_by = current_user.id
 
         db.session.add(obj)
         db.session.commit()

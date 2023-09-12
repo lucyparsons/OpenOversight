@@ -1,12 +1,13 @@
 import random
 import sys
 from distutils.util import strtobool
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urlparse
 from zoneinfo import available_timezones
 
 from flask import current_app, url_for
 
+from OpenOversight.app.models.database import Officer, User
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
 
 
@@ -15,13 +16,13 @@ from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS
 AVAILABLE_TIMEZONES = available_timezones()
 
 
-def ac_can_edit_officer(officer, ac):
+def ac_can_edit_officer(officer: Officer, ac: User) -> bool:
     if officer.department_id == ac.ac_department_id:
         return True
     return False
 
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower()
@@ -83,7 +84,7 @@ def merge_dicts(*dict_args):
     return result
 
 
-def normalize_gender(input_gender):
+def normalize_gender(input_gender: str) -> Union[str, None]:
     if input_gender is None:
         return None
     normalized_genders = {
@@ -141,7 +142,7 @@ def replace_list(items, obj, attr, model, db):
     setattr(obj, attr, new_list)
 
 
-def serve_image(filepath):
+def serve_image(filepath: str):
     # Custom change for development. Do not replace minio with localhost in
     # automated tests since these run inside the docker container.
     if "minio" in filepath and not current_app.config.get("TESTING"):
@@ -152,10 +153,10 @@ def serve_image(filepath):
         return url_for("static", filename=filepath.replace("static/", "").lstrip("/"))
 
 
-def str_is_true(str_):
+def str_is_true(str_) -> bool:
     if str_ is None:
         return False
-    return strtobool(str_.lower())
+    return bool(strtobool(str_.lower()))
 
 
 def validate_redirect_url(url: Optional[str]) -> Optional[str]:

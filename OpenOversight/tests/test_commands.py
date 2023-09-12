@@ -1,5 +1,4 @@
 import csv
-import datetime
 import operator
 import os
 import random
@@ -846,6 +845,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         last_name="InDatabase",
         birth_year=1951,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(officer)
 
@@ -853,9 +853,10 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         id=77021,
         officer_id=officer.id,
         star_no="4567",
-        start_date=datetime.date(2020, 1, 1),
+        start_date=date(2020, 1, 1),
         job_id=department.jobs[0].id,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(assignment)
 
@@ -866,6 +867,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         year=2018,
         is_fiscal_year=False,
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(salary)
 
@@ -874,8 +876,9 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         report_number="Old_Report_Number",
         department_id=1,
         description="description",
-        time=datetime.time(23, 45, 16),
+        time=time(23, 45, 16),
         created_by=user.id,
+        last_updated_by=user.id,
     )
     incident.officers = [officer]
     session.add(incident)
@@ -885,6 +888,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         title="Existing Link",
         url="https://www.example.org",
         created_by=user.id,
+        last_updated_by=user.id,
     )
     session.add(link)
     officer.links = [link]
@@ -922,7 +926,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert cop1.last_name == "Smith"
     assert cop1.gender == "M"
     assert cop1.race == "WHITE"
-    assert cop1.employment_date == datetime.date(2019, 7, 12)
+    assert cop1.employment_date == date(2019, 7, 12)
     assert cop1.birth_year == 1984
     assert cop1.middle_initial == "O"
     assert cop1.suffix is None
@@ -938,8 +942,8 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         cop1.assignments, key=operator.attrgetter("start_date")
     )
     assert assignment_po.star_no == "1234"
-    assert assignment_po.start_date == datetime.date(2019, 7, 12)
-    assert assignment_po.resign_date == datetime.date(2020, 1, 1)
+    assert assignment_po.start_date == date(2019, 7, 12)
+    assert assignment_po.resign_date == date(2020, 1, 1)
     assert assignment_po.job.job_title == "Police Officer"
     assert assignment_po.unit_id is None
 
@@ -976,14 +980,15 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
         cop4.assignments, key=operator.attrgetter("start_date")
     )
     assert updated_assignment.job.job_title == "Police Officer"
-    assert updated_assignment.resign_date == datetime.date(2020, 7, 10)
+    assert updated_assignment.resign_date == date(2020, 7, 10)
     assert updated_assignment.star_no == "4567"
     assert new_assignment.job.job_title == "Captain"
-    assert new_assignment.start_date == datetime.date(2020, 7, 10)
+    assert new_assignment.start_date == date(2020, 7, 10)
     assert new_assignment.star_no == "54321"
 
     incident = cop4.incidents[0]
     assert incident.report_number == "CR-1234"
+
     license_plates = {plate.state: plate.number for plate in incident.license_plates}
     assert license_plates["NY"] == "ABC123"
     assert license_plates["IL"] == "98UMC"
@@ -1002,18 +1007,20 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident3.report_number == "CR-39283"
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
-    assert incident3.date == datetime.date(2020, 7, 26)
+    assert incident3.date == date(2020, 7, 26)
+    assert incident3.time is None
+    assert incident3.address is None
+
     lp = incident3.license_plates[0]
     assert lp.number == "XYZ11"
     assert lp.state is None
-    assert incident3.address is None
-    assert incident3.time is None
 
     link_new = cop4.links[0]
     assert [link_new] == list(cop1.links)
     assert link_new.title == "A Link"
     assert link_new.url == "https://www.example.com"
     assert {officer.id for officer in link_new.officers} == {cop1.id, cop4.id}
+
     incident_link = incident2.links[0]
     assert incident_link.url == "https://www.example.com/incident"
     assert incident_link.title == "Another Link"

@@ -1,6 +1,7 @@
-import datetime
+from datetime import datetime
 from typing import Union
 
+from flask_login import current_user
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
@@ -34,9 +35,7 @@ def if_exists_or_none(val: Union[str, None]) -> Union[str, None]:
     return val if val else None
 
 
-def add_new_assignment(
-    officer_id: int, form: AssignmentForm, current_user: User
-) -> None:
+def add_new_assignment(officer_id: int, form: AssignmentForm, user: User) -> None:
     unit_id = form.unit.data.id if form.unit.data else None
 
     job = Job.query.filter_by(
@@ -51,12 +50,14 @@ def add_new_assignment(
         unit_id=unit_id,
         start_date=form.start_date.data,
         resign_date=form.resign_date.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(new_assignment)
     db.session.commit()
 
 
-def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
+def add_officer_profile(form: AddOfficerForm, user: User) -> Officer:
     officer = Officer(
         first_name=form.first_name.data,
         last_name=form.last_name.data,
@@ -67,6 +68,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         birth_year=form.birth_year.data,
         employment_date=form.employment_date.data,
         department_id=form.department.data.id,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(officer)
     db.session.commit()
@@ -79,12 +82,14 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
         job_id=form.job_id.data,
         unit=officer_unit,
         start_date=form.employment_date.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
     db.session.add(assignment)
     if form.links.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
+                li = get_or_create_link_from_form(link, user)
                 officer.links.append(li)
     if form.notes.data:
         for note in form.data["notes"]:
@@ -94,6 +99,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     note=note["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_note)
     if form.descriptions.data:
@@ -104,6 +111,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     description=description["text_contents"],
                     user_id=current_user.get_id(),
                     officer=officer,
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_description)
     if form.salaries.data:
@@ -116,6 +125,8 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
                     overtime_pay=salary["overtime_pay"],
                     year=salary["year"],
                     is_fiscal_year=salary["is_fiscal_year"],
+                    created_by=user.id,
+                    last_updated_by=user.id,
                 )
                 db.session.add(new_salary)
 
@@ -123,22 +134,20 @@ def add_officer_profile(form: AddOfficerForm, current_user: User) -> Officer:
     return officer
 
 
-def create_description(self, form: TextForm, current_user: User) -> Description:
+def create_description(self, form: TextForm, user: User) -> Description:
     return Description(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
 
 
-def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
-    fields = {
-        "date": form.date_field.data,
-        "time": form.time_field.data,
-        "officers": [],
-        "license_plates": [],
-        "links": [],
-        "address": "",
-    }
+def create_incident(self, form: IncidentForm, user: User) -> Incident:
+    address_model = None
+    officers = []
+    license_plates = []
+    links = []
 
     if "address" in form.data:
         address = form.data["address"]
@@ -158,54 +167,61 @@ def create_incident(self, form: IncidentForm, current_user: User) -> Incident:
                 state=if_exists_or_none(address["state"]),
                 street_name=if_exists_or_none(address["street_name"]),
                 zip_code=if_exists_or_none(address["zip_code"]),
+                created_by=user.id,
+                last_updated_by=user.id,
             )
-        fields["address"] = location
+            db.session.add(location)
+        address_model = location
 
     if "officers" in form.data:
         for officer in form.data["officers"]:
             if officer["oo_id"]:
                 of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
                 if of:
-                    fields["officers"].append(of)
+                    officers.append(of)
 
     if "license_plates" in form.data:
         for plate in form.data["license_plates"]:
             if plate["number"]:
-                pl = LicensePlate.query.filter_by(
+                lp = LicensePlate.query.filter_by(
                     number=if_exists_or_none(plate["number"]),
                     state=if_exists_or_none(plate["state"]),
                 ).first()
-                if not pl:
-                    pl = LicensePlate(
+                if not lp:
+                    lp = LicensePlate(
                         number=if_exists_or_none(plate["number"]),
                         state=if_exists_or_none(plate["state"]),
+                        created_by=user.id,
+                        last_updated_by=user.id,
                     )
-                    db.session.add(pl)
-                fields["license_plates"].append(pl)
+                    db.session.add(lp)
+                license_plates.append(lp)
 
     if "links" in form.data:
         for link in form.data["links"]:
             if link["url"]:
-                li = get_or_create_link_from_form(link, current_user)
-                fields["links"].append(li)
+                li = get_or_create_link_from_form(link, user)
+                links.append(li)
 
     return Incident(
-        date=fields["date"],
-        time=fields["time"],
-        description=form.data["description"],
+        address=address_model,
+        date=form.date_field.data,
         department=form.data["department"],
-        address=fields["address"],
-        officers=fields["officers"],
+        description=form.data["description"],
+        license_plates=license_plates,
+        links=links,
+        officers=officers,
         report_number=form.data["report_number"],
-        license_plates=fields["license_plates"],
-        links=fields["links"],
+        time=form.time_field.data,
     )
 
 
-def create_note(self, form: TextForm, current_user: User) -> Note:
+def create_note(self, form: TextForm, user: User) -> Note:
     return Note(
         text_contents=form.text_contents.data,
         officer_id=form.officer_id.data,
+        created_by=user.id,
+        last_updated_by=user.id,
     )
 
 
@@ -228,7 +244,7 @@ def edit_existing_assignment(assignment, form: AssignmentForm) -> Assignment:
     return assignment
 
 
-def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, None]:
+def get_or_create_link_from_form(link_form, user: User) -> Union[Link, None]:
     link = None
     if link_form["url"]:
         link = Link.query.filter_by(
@@ -244,6 +260,8 @@ def get_or_create_link_from_form(link_form, current_user: User) -> Union[Link, N
                 link_type=if_exists_or_none(link_form["link_type"]),
                 title=if_exists_or_none(link_form["title"]),
                 url=if_exists_or_none(link_form["url"]),
+                created_by=user.id,
+                last_updated_by=user.id,
             )
             db.session.add(link)
     return link
@@ -294,7 +312,7 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
             )
 
     if form_data.get("min_age") and form_data.get("max_age"):
-        current_year = datetime.datetime.now().year
+        current_year = datetime.now().year
         min_birth_year = current_year - int(form_data["min_age"])
         max_birth_year = current_year - int(form_data["max_age"])
         officer_query = officer_query.filter(
