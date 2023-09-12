@@ -1,5 +1,5 @@
-import datetime
 import re
+from datetime import datetime, time
 
 from flask_wtf import FlaskForm as Form
 from flask_wtf.file import FileAllowed, FileField, FileRequired
@@ -175,7 +175,7 @@ class SalaryForm(Form):
     )
     year = IntegerField(
         "Year",
-        default=datetime.datetime.now().year,
+        default=datetime.now().year,
         validators=[NumberRange(min=1900, max=2100)],
     )
     is_fiscal_year = BooleanField("Is fiscal year?", default=False)
@@ -434,7 +434,7 @@ class DateFieldForm(Form):
     time_field = TimeField("Time", validators=[Optional()])
 
     def validate_time_field(self, field):
-        if not type(field.data) == datetime.time:
+        if not type(field.data) == time:
             raise ValidationError("Not a valid time.")
 
     def validate_date_field(self, field):

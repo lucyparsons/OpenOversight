@@ -312,6 +312,7 @@ def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
         officer = Officer.query.filter_by(id=officer_id).one()
+        officer.incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
@@ -1946,8 +1947,6 @@ def server_shutdown():  # pragma: no cover
 class IncidentApi(ModelView):
     model = Incident
     model_name = "incident"
-    order_by = "date"
-    descending = True
     form = IncidentForm
     create_function = create_incident
     department_check = True
@@ -1986,7 +1985,7 @@ class IncidentApi(ModelView):
             incidents = incidents.filter(self.model.date > after_date)
 
         incidents = incidents.order_by(
-            getattr(self.model, self.order_by).desc()
+            Incident.date.desc(), Incident.time.desc()
         ).paginate(page=page, per_page=self.per_page, error_out=False)
 
         url = f"main.{self.model_name}_api"
