@@ -8,7 +8,12 @@ from bleach_allowlist import markdown_attrs, markdown_tags
 from flask import Flask, current_app, session
 from markupsafe import Markup
 
-from OpenOversight.app.utils.constants import FIELD_NOT_AVAILABLE, KEY_TIMEZONE
+from OpenOversight.app.utils.constants import (
+    FIELD_NOT_AVAILABLE,
+    KEY_TIMEZONE,
+    OO_DATE_FORMAT,
+    OO_TIME_FORMAT,
+)
 from OpenOversight.app.utils.general import AVAILABLE_TIMEZONES
 
 
@@ -47,21 +52,23 @@ def markdown(text: str) -> Markup:
 def display_date(value: datetime) -> str:
     """Convert UTC datetime.datetime into a localized date string."""
     if value:
-        return value.strftime("%b %d, %Y")
+        return value.strftime(OO_DATE_FORMAT)
     return FIELD_NOT_AVAILABLE
 
 
 def local_date(value: datetime) -> str:
     """Convert UTC datetime.datetime into a localized date string."""
     if value:
-        return value.astimezone(get_timezone()).strftime("%b %d, %Y")
+        return value.astimezone(get_timezone()).strftime(OO_DATE_FORMAT)
     return FIELD_NOT_AVAILABLE
 
 
 def local_date_time(value: datetime) -> str:
     """Convert UTC datetime.datetime into a localized date time string."""
     if value:
-        return value.astimezone(get_timezone()).strftime("%I:%M %p (%Z) on %b %d, %Y")
+        return value.astimezone(get_timezone()).strftime(
+            f"{OO_TIME_FORMAT} (%Z) on {OO_DATE_FORMAT}"
+        )
     return FIELD_NOT_AVAILABLE
 
 
@@ -69,7 +76,7 @@ def display_time(value: datetime) -> str:
     """Convert UTC datetime.datetime into a localized date string."""
     # This is used for incident times which are not currently tz-aware
     if value:
-        return value.strftime("%I:%M %p")
+        return value.strftime(OO_TIME_FORMAT)
     return FIELD_NOT_AVAILABLE
 
 
