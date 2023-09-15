@@ -83,7 +83,7 @@ def display_time(value: datetime) -> str:
 def local_time(value: datetime) -> str:
     """Convert UTC datetime.datetime into a localized time string."""
     if value:
-        return value.astimezone(get_timezone()).strftime("%I:%M %p (%Z)")
+        return value.astimezone(get_timezone()).strftime(f"{OO_TIME_FORMAT} (%Z)")
     return FIELD_NOT_AVAILABLE
 
 
