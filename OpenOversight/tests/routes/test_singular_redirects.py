@@ -38,11 +38,23 @@ def test_redirect_get_started_labeling(client, session):
         assert resp_redirect.request.path == url_for("main.get_started_labeling")
 
 
-def test_redirect_sort_images(client, session):
+@pytest.mark.parametrize(
+    "route",
+    [
+        ("main.redirect_sort_images", "main.sort_images"),
+        ("main.redirect_edit_department", "main.edit_department"),
+        (
+            "main.redirect_list_officer",
+            "main.list_officer",
+        ),
+        ("main.redirect_get_dept_ranks", "main.get_dept_ranks"),
+    ],
+)
+def test_redirect_with_department_id(client, session, route):
     with current_app.test_request_context():
-        login_user(client)
+        login_admin(client)
         resp_no_redirect = client.get(
-            url_for("main.redirect_sort_images", department_id=AC_DEPT),
+            url_for(route[0], department_id=AC_DEPT),
             follow_redirects=False,
         )
         with client.session_transaction() as session:
@@ -52,13 +64,11 @@ def test_redirect_sort_images(client, session):
         assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
         resp_redirect = client.get(
-            url_for("main.redirect_sort_images", department_id=AC_DEPT),
+            url_for(route[0], department_id=AC_DEPT),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.sort_images", department_id=AC_DEPT
-        )
+        assert resp_redirect.request.path == url_for(route[1], department_id=AC_DEPT)
 
 
 def test_redirect_officer_profile(client, session):
@@ -318,114 +328,6 @@ def test_redirect_add_department(client, session):
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
             "main.get_started_labeling",
-        )
-
-
-def test_redirect_edit_department(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        resp_no_redirect = client.get(
-            url_for("main.redirect_edit_department", department_id=AC_DEPT),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_edit_department", department_id=AC_DEPT),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.edit_department", department_id=AC_DEPT
-        )
-
-
-def test_redirect_list_officer(client, session):
-    with current_app.test_request_context():
-        resp_no_redirect = client.get(
-            url_for("main.redirect_list_officer", department_id=AC_DEPT),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_list_officer", department_id=AC_DEPT),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.list_officer", department_id=AC_DEPT
-        )
-
-
-def test_redirect_get_dept_ranks(client, session):
-    with current_app.test_request_context():
-        resp_no_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.get_dept_ranks", department_id=AC_DEPT
-        )
-
-
-def test_redirect_get_dept_units(client, session):
-    with current_app.test_request_context():
-        resp_no_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.get_dept_ranks", department_id=AC_DEPT
-        )
-    with current_app.test_request_context():
-        resp_no_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_get_dept_ranks", department_id=AC_DEPT),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.get_dept_ranks", department_id=AC_DEPT
         )
 
 
