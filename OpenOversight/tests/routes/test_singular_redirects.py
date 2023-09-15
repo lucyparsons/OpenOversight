@@ -358,14 +358,21 @@ def test_redirect_add_department(client, session):
         )
 
 
-def test_redirect_delete_tag(client, session):
+@pytest.mark.parametrize(
+    "route",
+    [
+        "main.redirect_delete_tag",
+        "main.redirect_set_featured_tag",
+    ],
+)
+def test_redirect_tag(client, session, route):
     with current_app.test_request_context():
         login_admin(client)
         image = Image.query.filter_by(department_id=AC_DEPT).first()
         face = Face.query.filter_by(img_id=image.id).first()
 
         resp_no_redirect = client.post(
-            url_for("main.redirect_delete_tag", tag_id=face.id),
+            url_for(route, tag_id=face.id),
             follow_redirects=False,
         )
         with client.session_transaction() as session:
@@ -375,33 +382,7 @@ def test_redirect_delete_tag(client, session):
         assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
         resp_redirect = client.post(
-            url_for("main.redirect_delete_tag", tag_id=face.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.officer_profile", officer_id=face.officer_id
-        )
-
-
-def test_redirect_set_featured_tag(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        image = Image.query.filter_by(department_id=AC_DEPT).first()
-        face = Face.query.filter_by(img_id=image.id).first()
-
-        resp_no_redirect = client.post(
-            url_for("main.redirect_set_featured_tag", tag_id=face.id),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.post(
-            url_for("main.redirect_set_featured_tag", tag_id=face.id),
+            url_for(route, tag_id=face.id),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
