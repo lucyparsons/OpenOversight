@@ -20,22 +20,27 @@ from OpenOversight.tests.conftest import AC_DEPT, PoliceDepartment
 from OpenOversight.tests.routes.route_helpers import login_admin, login_user
 
 
-def test_redirect_get_started_labeling(client, session):
+@pytest.mark.parametrize(
+    "route",
+    [
+        ("main.redirect_get_started_labeling", "main.get_started_labeling"),
+        ("main.redirect_add_officer", "main.add_officer"),
+        ("main.redirect_add_unit", "main.add_unit"),
+    ],
+)
+def test_redirect_no_params(client, session, route):
     with current_app.test_request_context():
-        resp_no_redirect = client.get(
-            url_for("main.redirect_get_started_labeling"), follow_redirects=False
-        )
+        login_admin(client)
+        resp_no_redirect = client.get(url_for(route[0]), follow_redirects=False)
         with client.session_transaction() as session:
             flash_message = dict(session["_flashes"]).get("message")
 
         assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
         assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
-        resp_redirect = client.get(
-            url_for("main.redirect_get_started_labeling"), follow_redirects=True
-        )
+        resp_redirect = client.get(url_for(route[0]), follow_redirects=True)
         assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for("main.get_started_labeling")
+        assert resp_redirect.request.path == url_for(route[1])
 
 
 @pytest.mark.parametrize(
@@ -71,11 +76,23 @@ def test_redirect_with_department_id(client, session, route):
         assert resp_redirect.request.path == url_for(route[1], department_id=AC_DEPT)
 
 
-def test_redirect_officer_profile(client, session):
+@pytest.mark.parametrize(
+    "route",
+    [
+        ("main.redirect_officer_profile", "main.officer_profile"),
+        ("main.redirect_edit_officer", "main.edit_officer"),
+        ("main.redirect_submit_officer_images", "main.submit_officer_images"),
+        ("main.redirect_new_note", "main.note_api"),
+        ("main.redirect_new_description", "main.description_api"),
+        ("main.redirect_new_link", "main.link_api_new"),
+    ],
+)
+def test_redirect_with_officer_id(client, session, route):
     with current_app.test_request_context():
+        login_admin(client)
         officer = Officer.query.filter_by(id=AC_DEPT).one()
         resp_no_redirect = client.get(
-            url_for("main.redirect_officer_profile", officer_id=officer.id),
+            url_for(route[0], officer_id=officer.id),
             follow_redirects=False,
         )
         with client.session_transaction() as session:
@@ -85,13 +102,11 @@ def test_redirect_officer_profile(client, session):
         assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
 
         resp_redirect = client.get(
-            url_for("main.redirect_officer_profile", officer_id=officer.id),
+            url_for(route[0], officer_id=officer.id),
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.officer_profile", officer_id=officer.id
-        )
+        assert resp_redirect.request.path == url_for(route[1], officer_id=officer.id)
 
 
 def test_redirect_add_assignment(client, session):
@@ -331,72 +346,6 @@ def test_redirect_add_department(client, session):
         )
 
 
-def test_redirect_add_officer(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        resp_no_redirect = client.get(
-            url_for("main.redirect_add_officer"),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_add_officer"),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for("main.add_officer")
-
-
-def test_redirect_edit_officer(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
-        resp_no_redirect = client.get(
-            url_for("main.redirect_edit_officer", officer_id=officer.id),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_edit_officer", officer_id=officer.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.edit_officer", officer_id=officer.id
-        )
-
-
-def test_redirect_add_unit(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        resp_no_redirect = client.get(
-            url_for("main.redirect_add_unit"),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_add_unit"),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for("main.add_unit")
-
-
 def test_redirect_delete_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -564,27 +513,6 @@ def test_redirect_download_csvs(route, client, session):
         assert resp_redirect.request.path == url_for(route[1], department_id=AC_DEPT)
 
 
-def test_redirect_submit_officer_images(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
-        resp_no_redirect = client.post(
-            url_for("main.redirect_submit_officer_images", officer_id=officer.id),
-            follow_redirects=False,
-        )
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-
-        resp_redirect = client.post(
-            url_for("main.redirect_submit_officer_images", officer_id=officer.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.submit_officer_images", officer_id=officer.id
-        )
-
-
 def test_redirect_upload(client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -615,30 +543,6 @@ def test_redirect_upload(client, session):
             "main.upload",
             department_id=officer.department_id,
             officer_id=officer.id,
-        )
-
-
-def test_redirect_new_note(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
-        resp_no_redirect = client.get(
-            url_for("main.redirect_new_note", officer_id=officer.id),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_new_note", officer_id=officer.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.note_api", officer_id=officer.id
         )
 
 
@@ -714,30 +618,6 @@ def test_redirect_delete_note(client, session):
             resp_redirect.request.path
             == url_for("main.note_api", officer_id=officer.id, obj_id=note.id)
             + "/delete"
-        )
-
-
-def test_redirect_new_description(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
-        resp_no_redirect = client.get(
-            url_for("main.redirect_new_description", officer_id=officer.id),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_new_description", officer_id=officer.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.description_api", officer_id=officer.id
         )
 
 
@@ -836,30 +716,6 @@ def test_redirect_delete_description(client, session):
         assert (
             resp_redirect.request.path
             == f"{url_for('main.description_api', officer_id=officer.id, obj_id=description.id)}/delete"
-        )
-
-
-def test_redirect_new_link(client, session):
-    with current_app.test_request_context():
-        login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
-        resp_no_redirect = client.get(
-            url_for("main.redirect_new_link", officer_id=officer.id),
-            follow_redirects=False,
-        )
-        with client.session_transaction() as session:
-            flash_message = dict(session["_flashes"]).get("message")
-
-        assert resp_no_redirect.status_code == HTTPStatus.PERMANENT_REDIRECT
-        assert flash_message == FLASH_MSG_PERMANENT_REDIRECT
-
-        resp_redirect = client.get(
-            url_for("main.redirect_new_link", officer_id=officer.id),
-            follow_redirects=True,
-        )
-        assert resp_redirect.status_code == HTTPStatus.OK
-        assert resp_redirect.request.path == url_for(
-            "main.link_api_new", officer_id=officer.id
         )
 
 
