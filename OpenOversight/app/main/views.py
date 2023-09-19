@@ -652,7 +652,6 @@ def classify_submission(image_id: int, contains_cops: int):
         elif contains_cops == 0:
             image.contains_cops = False
         image.last_updated_by = current_user.id
-        image.last_updated_at = datetime.now()
         db.session.commit()
         flash("Updated image classification")
     except:  # noqa: E722
@@ -774,7 +773,6 @@ def edit_department(department_id: int):
         department.short_name = form.short_name.data
         department.state = form.state.data
         department.last_updated_by = current_user.id
-        department.last_updated_at = datetime.now()
         db.session.flush()
         if form.jobs.data:
             new_ranks = []
@@ -1492,7 +1490,6 @@ def complete_tagging(image_id: int):
     if not image:
         abort(HTTPStatus.NOT_FOUND)
     image.is_tagged = True
-    image.last_updated_at = datetime.now()
     image.last_updated_by = current_user.id
     db.session.commit()
     flash("Marked image as completed.")
