@@ -100,6 +100,7 @@ class TrackUpdates:
         nullable=False,
         server_default=sql_func.now(),
         unique=False,
+        onupdate=func.now(),
     )
 
     @declared_attr
