@@ -151,7 +151,7 @@ $ flask db migrate -m "[THE NAME OF YOUR MIGRATION]" # NOTE: Slugs are limited t
 Next make your changes to the database models in `OpenOversight/app/models/database.py`. You'll then generate the migrations:
 
 ```shell
-$ flask db migrate
+$ flask db migrate -m "[what does this migration do in all lower case"
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
