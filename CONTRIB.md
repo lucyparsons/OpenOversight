@@ -143,7 +143,7 @@ From here on out, we'll be using the Flask CLI. First we need to 'stamp' the cur
 ```shell
 $ docker exec -it openoversight-web-1 bash # 'openoversight-web-1' is the name of the app container seen in the step above
 $ flask db stamp head
-$ flask db migrate -m "[THE NAME OF YOUR MIGRATION]" # NOTE: Slugs are limited to 40 characters and will be truncated after the limit
+$ flask db migrate -m "[THE NAME OF YOUR MIGRATION IN ALL LOWER CASE]" # NOTE: Slugs are limited to 40 characters and will be truncated after the limit
 ```
 
 (Hint: If you get errors when running `flask` commands, e.g. because of differing Python versions, you may need to run the commands in the docker container by prefacing them as so: `docker exec -it openoversight_web_1 flask db stamp head`)
@@ -151,7 +151,7 @@ $ flask db migrate -m "[THE NAME OF YOUR MIGRATION]" # NOTE: Slugs are limited t
 Next make your changes to the database models in `OpenOversight/app/models/database.py`. You'll then generate the migrations:
 
 ```shell
-$ flask db migrate -m "[what does this migration do in all lower case"
+$ flask db migrate -m "[THE NAME OF YOUR MIGRATION IN ALL LOWER CASE]"
 ```
 
 And then you should inspect/edit the migrations. You can then apply the migrations:
