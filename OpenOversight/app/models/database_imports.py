@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, time
 from decimal import Decimal
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -123,7 +123,6 @@ def update_officer_from_dict(data: Dict[str, Any], officer: Officer) -> Officer:
         officer.unique_internal_identifier = parse_str(
             data.get("unique_internal_identifier"), None
         )
-    officer.last_updated_at = datetime.now()
     officer.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
     return officer
@@ -166,7 +165,6 @@ def update_assignment_from_dict(
         assignment.start_date = parse_date(data.get("start_date"))
     if "resign_date" in data.keys():
         assignment.resign_date = parse_date(data.get("resign_date"))
-    assignment.last_updated_at = datetime.now()
     assignment.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
@@ -203,7 +201,6 @@ def update_salary_from_dict(data: Dict[str, Any], salary: Salary) -> Salary:
         salary.year = int(data["year"])
     if "is_fiscal_year" in data.keys():
         salary.is_fiscal_year = parse_bool(data.get("is_fiscal_year"))
-    salary.last_updated_at = datetime.now()
     salary.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
@@ -249,7 +246,6 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
         link.officers = data.get("officers") or []
     if "incidents" in data:
         link.incidents = data.get("incidents") or []
-    link.last_updated_at = datetime.now()
     link.last_updated_by = User.query.filter_by(is_administrator=True).first().id
     db.session.flush()
 
@@ -339,12 +335,15 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
             )
         )
     if "last_updated_by" in data:
-        incident.last_updated_by = parse_int(data.get("last_updated_by"))
+        incident.last_updated_by = parse_int(
+            data.get(
+                "last_updated_by", User.query.filter_by(is_administrator=True).first()
+            ),
+        )
     if "officers" in data:
         incident.officers = data["officers"] or []
     if "license_plate_objects" in data:
         incident.license_plates = data["license_plate_objects"] or []
-    incident.last_updated_at = datetime.now()
     db.session.flush()
     return incident
 

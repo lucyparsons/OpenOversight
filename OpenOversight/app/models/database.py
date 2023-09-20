@@ -1,8 +1,7 @@
-import datetime
 import re
 import time
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import List
 
@@ -103,6 +102,7 @@ class TrackUpdates:
         nullable=False,
         server_default=sql_func.now(),
         unique=False,
+        onupdate=datetime.utcnow,
     )
 
     @declared_attr
@@ -153,7 +153,7 @@ class Department(BaseModel, TrackUpdates):
         return self.name if not self.state else f"[{self.state}] {self.name}"
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_ASSIGNMENTS_LAST_UPDATED))
-    def latest_assignment_update(self) -> datetime.date:
+    def latest_assignment_update(self) -> date:
         assignment_updated = (
             db.session.query(func.max(Assignment.last_updated_at))
             .join(Officer)
@@ -164,7 +164,7 @@ class Department(BaseModel, TrackUpdates):
         return assignment_updated.date() if assignment_updated else None
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_INCIDENTS_LAST_UPDATED))
-    def latest_incident_update(self) -> datetime.date:
+    def latest_incident_update(self) -> date:
         incident_updated = (
             db.session.query(func.max(Incident.last_updated_at))
             .filter(Incident.department_id == self.id)
@@ -173,7 +173,7 @@ class Department(BaseModel, TrackUpdates):
         return incident_updated.date() if incident_updated else None
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_OFFICERS_LAST_UPDATED))
-    def latest_officer_update(self) -> datetime.date:
+    def latest_officer_update(self) -> date:
         officer_updated = (
             db.session.query(func.max(Officer.last_updated_at))
             .filter(Officer.department_id == self.id)

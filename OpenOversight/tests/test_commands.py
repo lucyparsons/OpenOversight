@@ -4,6 +4,7 @@ import os
 import random
 import traceback
 import uuid
+from datetime import date, time
 from decimal import Decimal
 
 import pandas as pd
@@ -679,7 +680,7 @@ def test_bulk_add_officers__write_static_null_field(session, department, csv_pat
 def test_bulk_add_officers__write_static_field_no_flag(session, department, csv_path):
     user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
     # officer with birth year set
-    officer = generate_officer(department, user)
+    officer = generate_officer(department, user, require_uii=True)
     old_birth_year = 1979
     officer.birth_year = old_birth_year
     session.add(officer)
