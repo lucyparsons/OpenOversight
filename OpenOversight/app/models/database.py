@@ -1,7 +1,7 @@
 import re
 import time
 import uuid
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 from authlib.jose import JoseError, JsonWebToken
@@ -100,6 +100,7 @@ class TrackUpdates:
         nullable=False,
         server_default=sql_func.now(),
         unique=False,
+        onupdate=datetime.utcnow,
     )
 
     @declared_attr
