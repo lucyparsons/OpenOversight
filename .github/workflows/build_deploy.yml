@@ -12,7 +12,7 @@ env:
   env_name: ${{ fromJson(vars.env_mapping)[github.ref_name] }}
   # docker_mapping: {"develop": "latest", "main": "stable"}
   docker_name: ${{ fromJson(vars.docker_mapping)[github.ref_name] }}
-  python_version: "3.11"
+  python_version: "3.12"
 
 jobs:
   push_to_registry:
