@@ -1,17 +1,21 @@
 name: Publish Docker image and deploy it
 
 on:
+  release:
+    types: [published]
   push:
     branches:
-      - develop
       - main
+      - develop
 
 env:
   image_name: lucyparsons/openoversight
-  # env_mapping: {"develop": "staging", "main": "prod"}
-  env_name: ${{ fromJson(vars.env_mapping)[github.ref_name] }}
-  # docker_mapping: {"develop": "latest", "main": "stable"}
-  docker_name: ${{ fromJson(vars.docker_mapping)[github.ref_name] }}
+  # env_name: 'prod' if ref_type is 'tag' indicating a release, otherwise 'staging'
+  env_name: ${{ github.ref_type == 'tag' && 'prod' || 'staging' }}
+  # docker_name: 'stable' if ref_type is 'tag', otherwise 'latest'
+  docker_name: ${{ github.ref_type == 'tag' && 'stable' || 'latest' }}
+  # release version if it is a release
+  release_version: ${{ github.ref_type == 'tag' && github.ref_name || 'latest'}}
   python_version: "3.11"
 
 jobs:
@@ -42,6 +46,7 @@ jobs:
             ghcr.io/${{ env.image_name }}:${{ github.sha }}
             ghcr.io/${{ env.image_name }}:${{ env.docker_name }}
             ghcr.io/${{ env.image_name }}:${{ env.docker_name }}-py${{ env.python_version }}
+            ghcr.io/${{ env.image_name }}:${{ env.release_version }}
   deploy:
     name: Deploy code to respective server
     needs: push_to_registry
