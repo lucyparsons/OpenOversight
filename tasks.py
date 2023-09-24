@@ -87,9 +87,9 @@ def get_configs(
     return configs[env]
 
 
-def pull_repository(c: Connection, config: HostConfig):
+def pull_repository(c: Connection, github_ref: str):
     """Pull the code on the repo down to the server."""
-    c.run(f"git fetch origin {config.git_branch}")
+    c.run(f"git fetch origin {github_ref}")
     c.run("git reset --hard FETCH_HEAD")
     c.run("git clean -df")
 
@@ -102,7 +102,7 @@ def migrate(c, config):
     )
 
 
-def deploy_(c: Connection, config: HostConfig):
+def deploy_(c: Connection, config: HostConfig, github_ref: str):
     """Deploy the most recent docker image for the given environment."""
     logging.info("Start new deployment.")
     with c.cd(config.code_dir):
@@ -120,7 +120,7 @@ def deploy_(c: Connection, config: HostConfig):
             echo=True,
         )
         logging.info("Get code changes from repo")
-        pull_repository(c, config)
+        pull_repository(c, github_ref)
         logging.info("Run necessary migrations.")
         migrate(c, config)
         logging.info("Bring docker service back up.")
@@ -136,13 +136,14 @@ def deploy_(c: Connection, config: HostConfig):
         "environment": "'staging' or 'prod' indicating which environment to target",
         "github_user": "GitHub user name to authenticate with",
         "github_token": "token to use together with github_user",
+        "github_ref": "ref of the branch or tag to deploy (e.g. /refs/tag/v1.0.1 or /refs/heads/main)",
     }
 )
-def deploy(c, environment, github_user, github_token):
+def deploy(c, environment, github_user, github_token, github_ref):
     """Deploy the most recent docker image for the given environment."""
     config = get_configs(environment, github_user, github_token)
     connection = config.get_connection()
-    deploy_(connection, config)
+    deploy_(connection, config, github_ref)
 
 
 def backup_(c: Connection, config: HostConfig):
