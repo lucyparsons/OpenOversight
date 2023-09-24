@@ -74,6 +74,6 @@ jobs:
       - name: backup db
         run: invoke backup ${{ env.env_name }}
       - name: deploy
-        run: invoke deploy ${{ env.env_name }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+        run: invoke deploy ${{ env.env_name }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} ${{ github.ref_name }}
       - name: cleanup
         run: invoke cleanup ${{ env.env_name }}
