@@ -19,8 +19,7 @@
                   {{ incident.id }}
                 {% endif %}
               </a>
-              {% if current_user.is_administrator or (current_user.is_area_coordinator and
-                current_user.ac_department_id == incident.department_id) %}
+              {% if current_user.is_admin_or_coordinator(incident.department) %}
                 <a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
                   <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                 </a>

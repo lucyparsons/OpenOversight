@@ -30,15 +30,12 @@
             {% else %}
               <td></td>
             {% endif %}
-            <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
+            <td>{{ '${:,.2f}'.format(salary.total_pay) }}</td>
           {% else %}
             <td></td>
             <td></td>
           {% endif %}
-          <td>
-            {% if salary.is_fiscal_year: %}FY{% endif %}
-            {{ salary.year }}
-          </td>
+          <td>salary.year_repr</td>
           {% if is_admin_or_coordinator %}
             <td>
               <a href="{{ url_for('main.edit_salary', officer_id=officer.id, salary_id=salary.id) }}">

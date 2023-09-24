@@ -340,6 +340,16 @@ class Salary(BaseModel, TrackUpdates):
     def __repr__(self):
         return f"<Salary: ID {self.officer_id} : {self.salary}"
 
+    @property
+    def total_pay(self) -> float:
+        return self.salary + self.overtime_pay
+
+    @property
+    def year_repr(self) -> str:
+        if self.is_fiscal_year:
+            return f"FY{self.year}"
+        return str(self.year)
+
 
 class Assignment(BaseModel, TrackUpdates):
     __tablename__ = "assignments"
@@ -701,6 +711,11 @@ class User(UserMixin, BaseModel):
         server_default=sql_func.now(),
         unique=False,
     )
+
+    def is_admin_or_coordinator(self, department: Department) -> bool:
+        return self.is_administrator or (
+            self.is_area_coordinator and self.ac_department_id == department.id
+        )
 
     def _jwt_encode(self, payload, expiration):
         secret = current_app.config["SECRET_KEY"]
