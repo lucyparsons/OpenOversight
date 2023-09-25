@@ -11,7 +11,7 @@ jobs:
       - uses: extractions/setup-just@v1
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.11.5
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: --all-files
