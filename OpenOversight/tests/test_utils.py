@@ -324,7 +324,7 @@ def test_crop_image_calls_save_image_to_s3_and_db_with_user_id(mockdata, client)
         ) as save_image_to_s3_and_db:
             crop_image(image, None, department.id)
 
-            assert current_user.get_id() in save_image_to_s3_and_db.call_args[0]
+            assert current_user.id in save_image_to_s3_and_db.call_args[0]
 
 
 @pytest.mark.parametrize(

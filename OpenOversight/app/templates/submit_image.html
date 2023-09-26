@@ -26,7 +26,7 @@
         The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="{{ url_for("main.get_started_labeling") }}">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.
       </p>
       <h3>Associations</h3>
-      {% if not current_user.get_id() %}
+      {% if not current_user.id %}
         <p>
           Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.
         </p>

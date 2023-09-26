@@ -175,7 +175,7 @@ def change_password():
             current_user.password = form.password.data
             db.session.add(current_user)
             db.session.commit()
-            flash("Your password has been updated.")
+            flash("Your password has been updated. Please log in again.")
             EmailClient.send_email(
                 ChangePasswordEmail(current_user.email, user=current_user)
             )
@@ -216,7 +216,7 @@ def password_reset(token):
         if user is None:
             return redirect(url_for("main.index"))
         if user.reset_password(token, form.password.data):
-            flash("Your password has been updated.")
+            flash("Your password has been updated. Please log in again.")
             return redirect(url_for("auth.login"))
         else:
             return redirect(url_for("main.index"))
@@ -252,7 +252,7 @@ def change_email_request():
 @login_required
 def change_email(token):
     if current_user.change_email(token):
-        flash("Your email address has been updated.")
+        flash("Your email address has been updated. Please log in again.")
     else:
         flash("Invalid request.")
     return redirect(url_for("main.index"))

@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Union
 
-from flask_login import current_user
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
@@ -97,7 +96,6 @@ def add_officer_profile(form: AddOfficerForm, user: User) -> Officer:
             if note["text_contents"]:
                 new_note = Note(
                     note=note["text_contents"],
-                    user_id=current_user.get_id(),
                     officer=officer,
                     created_by=user.id,
                     last_updated_by=user.id,
@@ -109,7 +107,6 @@ def add_officer_profile(form: AddOfficerForm, user: User) -> Officer:
             if description["text_contents"]:
                 new_description = Description(
                     description=description["text_contents"],
-                    user_id=current_user.get_id(),
                     officer=officer,
                     created_by=user.id,
                     last_updated_by=user.id,
