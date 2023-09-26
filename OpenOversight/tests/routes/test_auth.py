@@ -3,7 +3,7 @@ from unittest import TestCase
 from urllib.parse import urlparse
 
 import pytest
-from flask import current_app, g, url_for
+from flask import current_app, url_for
 from flask_login import current_user
 
 from OpenOversight.app.auth.forms import (
