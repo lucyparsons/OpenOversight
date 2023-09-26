@@ -291,7 +291,7 @@ def profile(username: str):
     else:
         abort(HTTPStatus.NOT_FOUND)
     try:
-        pref = User.query.filter_by(id=current_user.get_id()).one().dept_pref
+        pref = User.query.filter_by(id=current_user.id).one().dept_pref
         department = Department.query.filter_by(id=pref).one().name
     except NoResultFound:
         department = None
@@ -1527,10 +1527,8 @@ def submit_data():
     preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
-        if User.query.filter_by(id=current_user.get_id()).one().dept_pref:
-            preferred_dept_id = (
-                User.query.filter_by(id=current_user.get_id()).one().dept_pref
-            )
+        if User.query.filter_by(id=current_user.id).one().dept_pref:
+            preferred_dept_id = User.query.filter_by(id=current_user.id).one().dept_pref
             form = AddImageForm()
         else:
             form = AddImageForm()
@@ -1888,7 +1886,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
 
     try:
         image = save_image_to_s3_and_db(
-            file_to_upload, current_user.get_id(), department_id=department_id
+            file_to_upload, current_user.id, department_id=department_id
         )
     except ValueError:
         # Raised if MIME type not allowed

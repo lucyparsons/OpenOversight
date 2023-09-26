@@ -811,6 +811,10 @@ class User(UserMixin, BaseModel):
     def regenerate_uuid(self):
         self._uuid = str(uuid.uuid4())
 
+    def get_id(self):
+        """Get the Flask-Login user identifier, NOT THE DATABASE ID."""
+        return str(self.uuid)
+
     @property
     def is_active(self):
         """Override UserMixin.is_active to prevent disabled users from logging in."""

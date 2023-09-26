@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 import pytest
 from flask import current_app, url_for
+from flask_login import current_user
 
 from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
@@ -509,3 +510,29 @@ def test_user_can_change_dept_pref(mockdata, client, session):
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
         assert user.dept_pref == AC_DEPT
+
+
+def test_user_email_update_resets_session_token(mockdata, client, session, faker):
+    with current_app.test_request_context():
+        _, user = login_user(client)
+        original_uuid = user.uuid
+
+        token = user.generate_email_change_token(faker.ascii_email())
+        client.get(url_for("auth.change_email", token=token), follow_redirects=True)
+
+        assert original_uuid != current_user.uuid
+
+
+def test_user_password_update_resets_session_token(mockdata, client, session):
+    with current_app.test_request_context():
+        _, user = login_user(client)
+        original_uuid = user.uuid
+
+        form = ChangePasswordForm(
+            old_password="dog", password="validpasswd", password2="validpasswd"
+        )
+        client.post(
+            url_for("auth.change_password"), data=form.data, follow_redirects=True
+        )
+
+        assert original_uuid != current_user.uuid
