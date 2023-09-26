@@ -348,5 +348,8 @@ def update_incident_from_dict(data: Dict[str, Any], incident: Incident) -> Incid
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+def load_user(token):
+    # Identify user using alternative token so their sessions are
+    # automatically invalidated when they update their email or password.
+    # https://flask-login.readthedocs.io/en/latest/#alternative-tokens
+    return User.query.filter_by(_uuid=token).one_or_none()

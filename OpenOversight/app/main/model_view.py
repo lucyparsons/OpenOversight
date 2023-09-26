@@ -80,9 +80,9 @@ class ModelView(MethodView):
         if form.validate_on_submit():
             new_obj = self.create_function(form, current_user)
             if hasattr(new_obj, "created_by"):
-                new_obj.created_by = current_user.get_id()
+                new_obj.created_by = current_user.id
             if hasattr(new_obj, "last_updated_by"):
-                new_obj.last_updated_by = current_user.get_id()
+                new_obj.last_updated_by = current_user.id
             db.session.add(new_obj)
             db.session.commit()
 

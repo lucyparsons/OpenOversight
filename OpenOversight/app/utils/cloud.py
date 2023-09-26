@@ -59,9 +59,7 @@ def crop_image(image, crop_data=None, department_id=None):
     cropped_image_buf = BytesIO()
     pimage.save(cropped_image_buf, "jpeg", quality=95, optimize=True, progressive=True)
 
-    return save_image_to_s3_and_db(
-        cropped_image_buf, current_user.get_id(), department_id
-    )
+    return save_image_to_s3_and_db(cropped_image_buf, current_user.id, department_id)
 
 
 # 36867 in the exif tags holds the date and the original image was taken
