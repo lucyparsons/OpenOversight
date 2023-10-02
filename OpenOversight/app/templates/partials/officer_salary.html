@@ -23,19 +23,19 @@
     <tbody>
       {% for salary in officer.salaries %}
         <tr>
-          <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+          <td>{{ salary.salary | display_currency }}</td>
           {% if salary.overtime_pay %}
             {% if salary.overtime_pay > 0 %}
-              <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
+              <td>{{ salary.overtime_pay | display_currency }}</td>
             {% else %}
               <td></td>
             {% endif %}
-            <td>{{ '${:,.2f}'.format(salary.total_pay) }}</td>
+            <td>{{ salary.total_pay | display_currency }}</td>
           {% else %}
             <td></td>
             <td></td>
           {% endif %}
-          <td>salary.year_repr</td>
+          <td>{{ salary.year_repr }}</td>
           {% if is_admin_or_coordinator %}
             <td>
               <a href="{{ url_for('main.edit_salary', officer_id=officer.id, salary_id=salary.id) }}">

@@ -63,8 +63,7 @@
         </div>
       </div>
       {% include "partials/links_and_videos_row.html" %}
-      {% if current_user.is_administrator
-        or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
+      {% if current_user.is_admin_or_coordinator(incident.department_id) %}
         <div class="row">
           <div class="col-sm-12 col-md-6">
             <a class="btn btn-primary"

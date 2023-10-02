@@ -332,12 +332,10 @@ def officer_profile(officer_id: int):
             .all()
         )
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-        face_paths = []
-        for face in faces:
-            face_paths.append(serve_image(face.image.filepath))
+        face_paths = [(face, serve_image(face.image.filepath)) for face in faces]
         if not face_paths:
             # Add in the placeholder image if no faces are found
-            face_paths = [url_for("static", filename="images/placeholder.png")]
+            face_paths = [(None, url_for("static", filename="images/placeholder.png"))]
     except:  # noqa: E722
         exception_type, value, full_traceback = sys.exc_info()
         error_str = " ".join([str(exception_type), str(value), format_exc()])
@@ -355,8 +353,7 @@ def officer_profile(officer_id: int):
     return render_template(
         "officer.html",
         officer=officer,
-        paths=face_paths,
-        faces=faces,
+        face_paths=face_paths,
         assignments=assignments,
         form=form,
     )
@@ -2214,7 +2211,7 @@ def redirect_delete_note(officer_id: int, obj_id=None):
 note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/new",
-    endpoint="note_api_new",
+    endpoint="note_api",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2332,6 +2329,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/delete",
+    endpoint="description_api_delete",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )

@@ -35,7 +35,7 @@
           </div>
           <div class="text-danger">{{ wtf.form_errors(form.jobs, hiddens="only") }}</div>
           {% if form.jobs|length > 1 %}
-            {% for subfield in (form.jobs|rejectattr('data.is_sworn_officer','eq',False)|sort(attribute='data.order')|list) %}
+            {% for subfield in (form.jobs|sort(attribute='data.order')|list) %}
               <fieldset>
                 <div class="input-group {% if subfield.errors %} has-error{% endif -%} {%- if subfield.flags.required %} required{% endif -%}">
                   <div class="input-group-addon">

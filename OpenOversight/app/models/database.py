@@ -1,3 +1,4 @@
+import operator
 import re
 import time
 import uuid
@@ -294,21 +295,27 @@ class Officer(BaseModel, TrackUpdates):
     def job_title(self):
         if self.assignments:
             return max(
-                self.assignments, key=lambda x: x.start_date or date.min
+                self.assignments, key=operator.attrgetter("start_date_or_min")
             ).job.job_title
 
     def unit_description(self):
         if self.assignments:
-            unit = max(self.assignments, key=lambda x: x.start_date or date.min).unit
+            unit = max(
+                self.assignments, key=operator.attrgetter("start_date_or_min")
+            ).unit
             return unit.description if unit else None
 
     def badge_number(self):
         if self.assignments:
-            return max(self.assignments, key=lambda x: x.start_date or date.min).star_no
+            return max(
+                self.assignments, key=operator.attrgetter("start_date_or_min")
+            ).star_no
 
     def currently_on_force(self):
         if self.assignments:
-            most_recent = max(self.assignments, key=lambda x: x.start_date or date.min)
+            most_recent = max(
+                self.assignments, key=operator.attrgetter("start_date_or_min")
+            )
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
@@ -380,6 +387,14 @@ class Assignment(BaseModel, TrackUpdates):
 
     def __repr__(self):
         return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
+
+    @property
+    def start_date_or_min(self):
+        return self.start_date or date.min
+
+    @property
+    def start_date_or_max(self):
+        return self.start_date or date.max
 
 
 class Unit(BaseModel, TrackUpdates):
