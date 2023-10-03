@@ -1821,7 +1821,7 @@ def test_incidents_csv(mockdata, client, session, department, faker):
         )
         # add the incident
         rv = client.post(
-            url_for("main.incident_api") + "new",
+            url_for("main.incident_api_new"),
             data=process_form_data(form.data),
             follow_redirects=True,
         )

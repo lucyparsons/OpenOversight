@@ -85,7 +85,7 @@
   </script>
 {% endblock meta %}
 {% block content %}
-  {% set is_admin_or_coordinator = current_user.is_admin_or_coordinator(officer.department_id) %}
+  {% set is_admin_or_coordinator = current_user.is_admin_or_coordinator(officer.department) %}
   <div class="container theme-showcase" role="main">
     <div class="page-header">
       <ol class="breadcrumb">

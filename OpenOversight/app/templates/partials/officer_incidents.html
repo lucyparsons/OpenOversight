@@ -11,7 +11,7 @@
         <tr>
           <td colspan="2" style="border-top: 0; ">
             <h4>
-              <a href="{{ url_for('main.incident_api_get', obj_id=incident.id) }}">
+              <a href="{{ url_for('main.incident_api', obj_id=incident.id) }}">
                 Incident
                 {% if incident.report_number %}
                   {{ incident.report_number }}

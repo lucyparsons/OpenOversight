@@ -30,7 +30,7 @@
       </ul>
     {% endif %}
   {% endfor %}
-  {% if officer and (current_user.is_admin_or_coordinator(officer.department_id)) %}
+  {% if officer and (current_user.is_admin_or_coordinator(officer.department)) %}
     <a href="{{ url_for("main.link_api_new", officer_id=officer.id) }}"
        class="btn btn-primary">New Link/Video</a>
   {% endif %}
@@ -42,7 +42,7 @@
           {% with link_url = link.url.split("v=")[1] %}
             <li class="list-group-item">
               {% if link.title %}<h5>{{ link.title }}</h5>{% endif %}
-              {% if officer and (current_user.is_admin_or_coordinator(officer.department_id)
+              {% if officer and (current_user.is_admin_or_coordinator(officer.department)
                 or link.creator_id == current_user.id) %}
                 <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Edit</span>
@@ -81,7 +81,7 @@
         {% for link in list %}
           <li class="list-group-item">
             <a href="{{ link.url }}">{{ link.title or link.url }}</a>
-            {% if officer and (current_user.is_admin_or_coordinator(officer.department_id)
+            {% if officer and (current_user.is_admin_or_coordinator(officer.department)
               or link.creator_id == current_user.id) %}
               <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>

@@ -2115,7 +2115,7 @@ main.add_url_rule(
 @sitemap.register_generator
 def sitemap_incidents():
     for incident in Incident.query.all():
-        yield "main.incident_api_get", {"obj_id": incident.id}
+        yield "main.incident_api", {"obj_id": incident.id}
 
 
 class TextApi(ModelView):
@@ -2193,7 +2193,7 @@ def redirect_get_notes(officer_id: int, obj_id=None):
 def redirect_edit_note(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.note_api", officer_id=officer_id, obj_id=obj_id),
+        url_for("main.note_api_edit", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 

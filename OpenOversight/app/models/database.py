@@ -3,7 +3,7 @@ import re
 import time
 import uuid
 from datetime import date, datetime
-from typing import List
+from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -727,9 +727,10 @@ class User(UserMixin, BaseModel):
         unique=False,
     )
 
-    def is_admin_or_coordinator(self, department: Department) -> bool:
+    def is_admin_or_coordinator(self, department: Optional[Department]) -> bool:
         return self.is_administrator or (
-            self.is_area_coordinator and self.ac_department_id == department.id
+            department is not None
+            and (self.is_area_coordinator and self.ac_department_id == department.id)
         )
 
     def _jwt_encode(self, payload, expiration):
