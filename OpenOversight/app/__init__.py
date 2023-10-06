@@ -141,8 +141,6 @@ def create_app(config_name="default"):
     app.cli.add_command(add_job_title)
     app.cli.add_command(advanced_csv_import)
 
-    # locale.setlocale(locale.LC_ALL, '')
-
     return app
 
 
