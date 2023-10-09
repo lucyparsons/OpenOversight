@@ -83,8 +83,7 @@
                 </tr>
               </tbody>
             </table>
-            {% if current_user.is_administrator
-              or (current_user.is_area_coordinator and current_user.ac_department_id == image.department.id) %}
+            {% if current_user.is_admin_or_coordinator(image.department) %}
               <h3>
                 Classify <small>Admin only</small>
               </h3>

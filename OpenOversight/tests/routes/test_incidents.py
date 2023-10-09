@@ -89,7 +89,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+            url_for("main.incident_api_new"), data=data, follow_redirects=True
         )
         assert rv.status_code == HTTPStatus.OK
         assert "created" in rv.data.decode(ENCODING_UTF_8)
@@ -131,7 +131,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+            url_for("main.incident_api_new"), data=data, follow_redirects=True
         )
 
         assert rv.status_code == HTTPStatus.OK
@@ -182,7 +182,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -236,7 +236,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -284,7 +284,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -322,7 +322,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
 
         incident_count_before = Incident.query.count()
         rv = client.post(
-            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+            url_for("main.incident_api_new"), data=data, follow_redirects=True
         )
         assert rv.status_code == HTTPStatus.OK
         assert "Must select a state." in rv.data.decode(ENCODING_UTF_8)
@@ -370,7 +370,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
 
         incident_count_before = Incident.query.count()
         rv = client.post(
-            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+            url_for("main.incident_api_new"), data=data, follow_redirects=True
         )
         assert rv.status_code == HTTPStatus.OK
         assert "Must also select a state." in rv.data.decode(ENCODING_UTF_8)
@@ -431,7 +431,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -491,7 +491,7 @@ def test_admins_cannot_edit_non_existing_officers(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -541,7 +541,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -596,7 +596,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )
@@ -609,7 +609,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
         incident = Incident.query.first()
         inc_id = incident.id
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc_id) + "/delete",
+            url_for("main.incident_api_delete", obj_id=inc_id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -623,7 +623,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
         inc_id = incident.id
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc_id) + "/delete",
+            url_for("main.incident_api_delete", obj_id=inc_id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -639,7 +639,7 @@ def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, s
         ).first()
         inc_id = incident.id
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc_id) + "/delete",
+            url_for("main.incident_api_delete", obj_id=inc_id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.FORBIDDEN
@@ -652,7 +652,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         login_ac(client)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
         rv = client.get(
-            url_for("main.incident_api", obj_id=incident.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=incident.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -666,7 +666,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
             Incident.query.filter_by(department_id=AC_DEPT)
         ).first()
         rv = client.get(
-            url_for("main.incident_api", obj_id=incident.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=incident.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.FORBIDDEN
@@ -719,7 +719,7 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer_id = "1234"
-        rv = client.get(url_for("main.incident_api") + f"new?officer_id={officer_id}")
+        rv = client.get(url_for("main.incident_api_new", officer_id=officer_id))
         assert officer_id in rv.data.decode(ENCODING_UTF_8)
 
 
@@ -776,7 +776,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api", obj_id=inc.id) + "/edit",
+            url_for("main.incident_api_edit", obj_id=inc.id),
             data=data,
             follow_redirects=True,
         )

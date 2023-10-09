@@ -36,13 +36,10 @@
             {% elif user.is_disabled == False %}
               <p>Enabled</p>
             {% endif %}
-            {% if current_user.is_administrator and user.is_administrator == False %}
+            {% if current_user.is_administrator and not user.is_administrators %}
               <h3>
                 <a href="{{ url_for('auth.edit_user', user_id=user.id) }}">Edit user</a> <small>Admin only</small>
               </h3>
-              <!-- <p>
-            <a href="{{ url_for('auth.edit_user', user_id=user.id) }}">Change user access</a>
-          </p> -->
             {% endif %}
             {% if current_user.is_administrator %}
               <h3>User Email</h3>

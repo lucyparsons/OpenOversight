@@ -103,8 +103,7 @@
                   </tr>
                 </tbody>
               </table>
-              {% if current_user.is_administrator
-                or (current_user.is_area_coordinator and current_user.ac_department_id == face.image.department_id) %}
+              {% if current_user.is_admin_or_coordinator(face.image.department) %}
                 <h3>
                   Remove tag <small>Admin only</small>
                 </h3>

@@ -58,7 +58,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
         form = TextForm(text_contents=text_contents, officer_id=officer.id)
 
         rv = client.post(
-            url_for("main.description_api", officer_id=officer.id),
+            url_for("main.description_api_new", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -77,7 +77,7 @@ def test_admins_can_create_descriptions(mockdata, client, session):
         form = TextForm(text_contents=text_contents, officer_id=officer.id)
 
         rv = client.post(
-            url_for("main.description_api", officer_id=officer.id),
+            url_for("main.description_api_new", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -102,7 +102,7 @@ def test_acs_can_create_descriptions(mockdata, client, session):
         form = TextForm(text_contents=description, officer_id=officer.id)
 
         rv = client.post(
-            url_for("main.description_api", officer_id=officer.id),
+            url_for("main.description_api_new", officer_id=officer.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -143,9 +143,10 @@ def test_admins_can_edit_descriptions(mockdata, client, session):
 
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             data=form.data,
             follow_redirects=True,
         )
@@ -183,9 +184,10 @@ def test_ac_can_edit_their_descriptions_in_their_department(mockdata, client, se
 
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             data=form.data,
             follow_redirects=True,
         )
@@ -223,9 +225,10 @@ def test_ac_can_edit_others_descriptions(mockdata, client, session):
 
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             data=form.data,
             follow_redirects=True,
         )
@@ -263,9 +266,10 @@ def test_ac_cannot_edit_descriptions_not_in_their_department(mockdata, client, s
 
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             data=form.data,
             follow_redirects=True,
         )
@@ -279,11 +283,10 @@ def test_admins_can_delete_descriptions(mockdata, client, session):
         description_id = description.id
         rv = client.post(
             url_for(
-                "main.description_api",
+                "main.description_api_delete",
                 officer_id=description.officer_id,
                 obj_id=description_id,
-            )
-            + "/delete",
+            ),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -309,9 +312,10 @@ def test_acs_can_delete_their_descriptions_in_their_department(
         description_id = description.id
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/delete",
+                "main.description_api_delete",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -339,9 +343,10 @@ def test_acs_cannot_delete_descriptions_not_in_their_department(
         description_id = description.id
         rv = client.post(
             url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + "/delete",
+                "main.description_api_delete",
+                officer_id=officer.id,
+                obj_id=description.id,
+            ),
             follow_redirects=True,
         )
 
@@ -362,9 +367,10 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         db.session.commit()
         rv = client.get(
             url_for(
-                "main.description_api", obj_id=description.id, officer_id=officer.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                obj_id=description.id,
+                officer_id=officer.id,
+            ),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -385,9 +391,10 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
         db.session.commit()
         rv = client.get(
             url_for(
-                "main.description_api", obj_id=description.id, officer_id=officer.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                obj_id=description.id,
+                officer_id=officer.id,
+            ),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -408,9 +415,10 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         db.session.commit()
         rv = client.get(
             url_for(
-                "main.description_api", obj_id=description.id, officer_id=officer.id
-            )
-            + "/edit",
+                "main.description_api_edit",
+                obj_id=description.id,
+                officer_id=officer.id,
+            ),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.FORBIDDEN

@@ -67,7 +67,7 @@
           {% endif %}
         </ul>
         {% if current_user.is_administrator or current_user.is_area_coordinator %}
-          <a href="{{ url_for("main.incident_api") + 'new' }}"
+          <a href="{{ url_for("main.incident_api_new") }}"
              class="btn btn-primary"
              role="button">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>

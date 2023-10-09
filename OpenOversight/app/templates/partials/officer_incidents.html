@@ -19,9 +19,8 @@
                   {{ incident.id }}
                 {% endif %}
               </a>
-              {% if current_user.is_administrator or (current_user.is_area_coordinator and
-                current_user.ac_department_id == incident.department_id) %}
-                <a href="{{ url_for('main.incident_api', obj_id=incident.id) + '/edit' }}">
+              {% if current_user.is_admin_or_coordinator(incident.department) %}
+                <a href="{{ url_for('main.incident_api_edit', obj_id=incident.id) }}">
                   <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                 </a>
               {% endif %}
@@ -37,7 +36,7 @@
   {% endblock js_footer %}
 {% endif %}
 {% if is_admin_or_coordinator %}
-  <a href="{{ url_for("main.incident_api") + 'new?officer_id={}'.format(officer.id) }}"
+  <a href="{{ url_for("main.incident_api_new", officer_id=officer.id) }}"
      class="btn btn-primary">New
   Incident</a>
 {% endif %}

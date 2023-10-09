@@ -9,7 +9,7 @@
 {% block content %}
   <div class="container theme-showcase" role="main">
     {% if current_user and current_user.is_authenticated %}
-      {% if image and current_user.is_disabled == False %}
+      {% if image and not current_user.is_disabled %}
         <div class="row">
           <div class="text-center">
             <h1>
@@ -138,18 +138,12 @@
             </div>
           </div>
           <div class="col-sm-2 text-center skip-button">
-            {% if department %}
-              <a href="{{ url_for('main.label_data', department_id=department.id) }}"
-                 class="btn btn-lg btn-primary"
-                 role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
-            {% else %}
-              <a href="{{ url_for("main.label_data") }}"
-                 class="btn btn-lg btn-primary"
-                 role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
-            {% endif %}
+            <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
+               class="btn btn-lg btn-primary"
+               role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Next Photo</a>
           </div>
           <div class="col-sm-2 text-center done-button">
-            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}"
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
                class="btn btn-sm btn-success">
               <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
               All officers have been identified!
@@ -172,7 +166,7 @@
             </div>
           </div>
         </div>
-      {% elif current_user.is_disabled == True %}
+      {% elif current_user.is_disabled %}
         <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
         <p>
           <a href="mailto:info@lucyparsonslabs.com"
