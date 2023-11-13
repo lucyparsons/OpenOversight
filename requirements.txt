@@ -16,7 +16,7 @@ future==0.18.3
 google-api-python-client==2.92.0
 gunicorn==20.1.0
 Pillow==10.1.0
-psycopg2-binary==2.9.5
+psycopg2-binary==2.9.9
 python-dateutil==2.8.2
 SQLAlchemy==2.0.23
 us==3.1.1
