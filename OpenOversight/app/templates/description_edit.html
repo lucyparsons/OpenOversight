@@ -1,18 +1,14 @@
 {% extends "form.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
-
 {% block page_title %}
-	Update Description
+  Update Description
 {% endblock page_title %}
-
-
 {% block form %}
-	{% if form.errors %}
-		{% set post_url=url_for('main.description_api', officer_id=obj.officer_id, obj_id=obj.id) %}
-	{% else %}
-		{% set post_url="{}/edit".format(url_for('main.description_api', officer_id=obj.officer_id, obj_id=obj.id)) %}
-	{% endif %}
-	{{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
-	<br>
+  {% if form.errors %}
+    {% set post_url = url_for('main.description_api', officer_id=obj.officer_id, obj_id=obj.id) %}
+  {% else %}
+    {% set post_url = url_for('main.description_api_edit', officer_id=obj.officer_id, obj_id=obj.id) %}
+  {% endif %}
+  {{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
+  <br>
 {% endblock form %}

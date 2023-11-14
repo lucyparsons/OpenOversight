@@ -1,0 +1,23 @@
+name: Test Coverage
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      FLASK_APP: OpenOversight.app
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          python-version: "3.11"
+      - name: Run tests
+        run: |
+          PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
+      - name: Upload Coverage Results
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: OpenOversight/tests/coverage.xml

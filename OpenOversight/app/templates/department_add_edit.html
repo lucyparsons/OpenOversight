@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}
+  OpenOversight Admin -
+  {% if update %}
+    Update
+  {% else %}
+    Add
+  {% endif %}
+  Department
+{% endblock title %}
+{% block content %}
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>
+        {% if update %}
+          Update
+        {% else %}
+          Add
+        {% endif %}
+        Department
+      </h1>
+    </div>
+    <div class="col-md-6">
+      <form class="form" method="post" role="form">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, hiddens="only") }}
+        {{ wtf.form_field(form.name, autofocus="autofocus") }}
+        {{ wtf.form_field(form.short_name) }}
+        {{ wtf.form_field(form.state) }}
+        <div class="sortable sortable-fields">
+          <legend>{{ form.jobs.label }}</legend>
+          <div>
+            <h5>Enter ranks in hierarchical order, from lowest to highest rank:</h5>
+          </div>
+          <div class="text-danger">{{ wtf.form_errors(form.jobs, hiddens="only") }}</div>
+          {% if form.jobs|length > 1 %}
+            {% for subfield in (form.jobs|sort(attribute='data.order')|list) %}
+              <fieldset>
+                <div class="input-group {% if subfield.errors %} has-error{% endif -%} {%- if subfield.flags.required %} required{% endif -%}">
+                  <div class="input-group-addon">
+                    <span class="glyphicon glyphicon-sort" aria-hidden="true"></span>
+                  </div>
+                  {{ subfield(class="form-control") |safe }}
+                  <span class="input-group-btn">
+                    <button class="btn btn-danger js-remove-button" disabled>Remove</button>
+                  </span>
+                  {%- if subfield.errors %}
+                    {%- for error in subfield.errors %}<p class="help-block">{{ error }}</p>{%- endfor %}
+                  {%- endif %}
+                </div>
+              </fieldset>
+            {% endfor %}
+          {% else %}
+            <fieldset>
+              <div class="input-group">
+                <input class="form-control" id="jobs-0" name="jobs-0" type="text" value="">
+                <span class="input-group-btn">
+                  <button class="btn btn-danger js-remove-button">Remove</button>
+                </span>
+              </div>
+            </fieldset>
+          {% endif %}
+          <button class="btn btn-success js-add-another-button" disabled>Add another rank</button>
+        </div>
+        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+      </form>
+      <br>
+    </div>
+  </div>
+{% endblock content %}

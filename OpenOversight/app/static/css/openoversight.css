@@ -10,10 +10,14 @@ body {
 
 .footer {
   position: absolute;
-  bottom: 0;
+  bottom: 140px;
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 100px;
+}
+
+div[role=main] {
+    padding-bottom: 30px;
 }
 
 .social:hover {
@@ -36,7 +40,7 @@ body {
 
 .frontpage-leads {
   margin-top: 5%;
-  margin-bottom: 10%;
+  margin-bottom: 5%;
 }
 
 .subtle-pad {
@@ -65,6 +69,10 @@ body {
      position: static;
      display: block;
      margin-bottom: 20px;
+ }
+
+ .theme-showcase {
+     margin-bottom: 40px;
  }
 
  .theme-showcase > p > .btn {
@@ -111,6 +119,7 @@ a > .tutorial{
    min-height: 700px;
    margin-bottom: 50px;
  }
+
  /* Since positioning the image, we need to help out the caption */
  .carousel-caption {
    display:block;
@@ -171,7 +180,7 @@ a > .tutorial{
 
  .hero-section {
      /*TODO: get background image- using color as standin for now*/
-     background-color: #d3d3d3;
+     background-color: #eee;
      text-align: center;
      padding: 150px;
  }
@@ -181,7 +190,7 @@ a > .tutorial{
 }
 
 .hero {
-    color:white;
+    color: #111;
     font-size:40px;
     text-shadow: 1px 1px 1px #999;
 }
@@ -323,10 +332,6 @@ a > .tutorial{
     text-transform: uppercase;
     color: #555555;
     font-size: smaller;
-}
-
-.text-gray-lighter {
-    color: #D3D3D3;
 }
 
 .bg-light-gray {
@@ -479,6 +484,11 @@ tr:hover .row-actions {
     padding: 5px 0;
 }
 
+.filter-sidebar .panel-body-long {
+    max-height: 25vh;
+    overflow-y: auto;
+}
+
 .filter-sidebar .panel-heading .accordion-toggle:after {
     font-family: 'Glyphicons Halflings';
     content: "\e252";
@@ -489,6 +499,12 @@ tr:hover .row-actions {
 
 .filter-sidebar .panel-heading.collapsed .accordion-toggle:after {
     content: "\e253";
+}
+
+@media all and (min-width: 768px) and (max-width: 991px) {
+    .filter-sidebar > .form > .btn.btn-primary:first-of-type {
+        margin-bottom: 5px;
+    }
 }
 
 .search-results .list-group-item {
@@ -527,10 +543,10 @@ tr:hover .row-actions {
     .console .button-explanation {
     height:70px;
     }
-    
+
 }
 
-    
+
 .console .button-explanation .text {
     display:none;
 }
@@ -560,3 +576,81 @@ tr:hover .row-actions {
     display:block;
 }
 
+.setup-content {
+    margin-bottom: 20px;
+}
+
+.bottom-10 {
+    bottom: 10px;
+}
+
+#face-carousel {
+    min-height: 300px;
+}
+
+.officer-face {
+    border: none;
+    height: 300px;
+    margin: auto;
+}
+
+.officer-face.officer-profile {
+    display: block;
+}
+
+#face-carousel .item {
+    margin-top: 0;
+    min-height: 0;
+}
+
+#face-carousel {
+    margin-bottom: 0;
+    min-height: 100%;
+}
+
+#face-carousel .carousel-control {
+    background-image: none;
+    color: black;
+}
+
+@media (min-width: 992px) {
+    .item .officer-face.officer-profile {
+        height: 490px;
+        width: auto;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .item .officer-face.officer-profile {
+        height: 590px;
+        width: auto;
+    }
+}
+
+@media (max-width: 767px) {
+    .item .officer-face.officer-profile {
+        height: 460px;
+        padding-bottom: 10px;
+        width: auto;
+    }
+}
+
+#face-img {
+    border: none;
+    display: block;
+    margin: auto;
+    max-height: 500px;
+    padding-bottom: 10px;
+}
+
+.face-wrap {
+    margin: auto;
+    position: relative;
+}
+
+#face-tag-frame {
+    position: absolute;
+    border: 2px solid crimson;
+    visibility: hidden;
+    width: auto
+}

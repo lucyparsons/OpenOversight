@@ -1,69 +1,79 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% set incident = obj %}
-{% block title %}{{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %} - OpenOversight{% endblock %}
-{% block meta %}
-{% if incident.description != None %}
-<meta name="description" content="{{ incident.description }}">
-{% else %}
-<meta name="description" content="View details for {{ incident.department.name }} incident{% if incident.report_number %} {{incident.report_number}}{% endif %}.">
-{% endif %}
-<!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
-<script type="application/ld+json">
-	{
-		"@context": "https://schema.org",
-		"@type": "BreadcrumbList",
-		"itemListElement": [{
-		"@type": "ListItem",
-		"position": 1,
-		"name": "OpenOversight",
-		"item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
-		},{
-		"@type": "ListItem",
-		"position": 2,
-		"name": "{{ incident.department.name|title }} Incidents",
-		"item": "{{ url_for('main.incident_api', department_id=incident.department.id, _external=True) }}"
-		},{
-		"@type": "ListItem",
-		"position": 3,
-		"name": "Incident{% if incident.report_number %}{{incident.report_number}}{% endif %}"
-		}]
-	}
-	</script>
-{% endblock %}
-{% block content %}
-	<main class='container pt-35' role='main'>
-		<a href="{{ url_for('main.incident_api')}}">All Incidents</a>
-		{% if incident.department %}
-			<p>
-				<a href="{{ url_for('main.incident_api', department_id=incident.department_id)}}">More incidents in the {{ incident.department.name }}</a>
-			</p>
-		{% endif %}
-		<div class="col-sm-12 col-md-6">
-		<h1>Incident {% if incident.report_number %}{{incident.report_number}}{% endif %}</h1>
-			<div>
-				<table class='table table-hover table-responsive'>
-					<tbody>
-				{% with detail=True %}
-					{% include 'partials/incident_fields.html' %}
-				{% endwith %}
-			</tbody>
-		</table>
-			</div>
-		</div>
-		<div class="col-sm-12 col-md-6">
-				<h1>Incident Description</h1>
-				{{ incident.description | markdown}}
-			</div>
-		
-		{% include 'partials/links_and_videos_row.html' %}
-		{% if current_user.is_administrator
-              or (current_user.is_area_coordinator and current_user.ac_department_id == incident.department_id) %}
-			<div class="row">
-				<div class="col-sm-12 col-md-6">
-					<a class="btn btn-primary" href="{{ '{}/edit'.format(url_for('main.incident_api', obj_id=incident.id))}}" role="button">Edit</a>
-					<a class="btn btn-danger" href="{{ '{}/delete'.format(url_for('main.incident_api', obj_id=incident.id))}}" role="button">Delete</a>
-				</div>
-			</div>
-		{% endif %}
-	</main>
-{% endblock %}
+{% block title %}
+  {{ incident.department.name }} incident
+  {% if incident.report_number %}
+    {{ incident.report_number }}{%
+    endif %} - OpenOversight
+  {% endblock title %}
+  {% block meta %}
+    <meta name="description"
+          content="View details for {{ incident.department.name }} incident{% if incident.report_number %} {{ incident.report_number }}{% endif %}.">
+    <!-- Google Breadcrumb https://developers.google.com/search/docs/data-types/breadcrumb -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [{
+                "@type": "ListItem",
+                "position": 1,
+                "name": "OpenOversight",
+                "item": "{{ url_for('main.index', _external=True)|replace('/index','') }}"
+            }, {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ incident.department.name|title }} Incidents",
+                "item": "{{ url_for('main.incident_api', department_id=incident.department.id, _external=True) }}"
+            }, {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Incident{% if incident.report_number %}{{incident.report_number}}{% endif %}"
+            }]
+        }
+    </script>
+  {% endblock meta %}
+  {% block content %}
+    <main class="container pt-35 pb-50" role="main">
+      <a href="{{ url_for("main.incident_api") }}">All Incidents</a>
+      {% if incident.department %}
+        <p>
+          <a href="{{ url_for('main.incident_api', department_id=incident.department_id) }}">More incidents in the {{
+          incident.department.name }}</a>
+        </p>
+      {% endif %}
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <h1>
+            Incident
+            {% if incident.report_number %}{{ incident.report_number }}{% endif %}
+          </h1>
+          <div>
+            <table class="table table-hover table-responsive">
+              <tbody>
+                {% with detail=True %}
+                  {% include "partials/incident_fields.html" %}
+                {% endwith %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-sm-12 col-md-6">
+          <h1>Incident Description</h1>
+          {{ incident.description | markdown }}
+        </div>
+      </div>
+      {% include "partials/links_and_videos_row.html" %}
+      {% if current_user.is_admin_or_coordinator(incident.department) %}
+        <div class="row">
+          <div class="col-sm-12 col-md-6">
+            <a class="btn btn-primary"
+               href="{{ url_for('main.incident_api_edit', obj_id=incident.id) }}"
+               role="button">Edit</a>
+            <a class="btn btn-danger"
+               href="{{ url_for('main.incident_api_delete', obj_id=incident.id) }}"
+               role="button">Delete</a>
+          </div>
+        </div>
+      {% endif %}
+    </main>
+  {% endblock content %}

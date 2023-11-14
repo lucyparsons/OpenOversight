@@ -1,21 +1,9 @@
 {% extends "form.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
-
 {% block page_title %}
-	Update Incident {{ obj.report_number }}
+  Update Incident {{ obj.report_number }}
 {% endblock page_title %}
-
-
 {% block form %}
-	{% if form.errors %}
-		{% set post_url=url_for('main.incident_api', obj_id=obj.id) %}
-	{% else %}
-		{% set post_url="{}/edit".format(url_for('main.incident_api', obj_id=obj.id)) %}
-	{% endif %}
-	{% include "partials/incident_form.html" %}
+  {% include "partials/incident_form.html" %}
 {% endblock form %}
-
-{% block js_footer %}
-	<script src="{{ url_for('static', filename='js/dynamic_lists.js') }}"></script>
-{% endblock %}
+{% block js_footer %}<script src="{{ url_for('static', filename='js/dynamic_lists.js') }}"></script>{% endblock %}

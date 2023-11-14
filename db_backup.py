@@ -1,7 +1,8 @@
-from __future__ import print_function
-from OpenOversight.app import config
 import os
 
-db = config['default'].SQLALCHEMY_DATABASE_URI
-os.system("/usr/bin/pg_dump %s -f backup.sql" % db)
+from OpenOversight.app import config
+
+
+db = config["default"].SQLALCHEMY_DATABASE_URI
+os.system(f"/usr/bin/pg_dump {db} -f backup.sql")
 print("backup.sql created")

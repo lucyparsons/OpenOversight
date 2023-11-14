@@ -1,23 +1,18 @@
 {% extends "base.html" %}
-
 {% block content %}
-	<div class="container theme-showcase" role="main">
-
-		<div class="page-header">
-		    <h1>
-		    	Delete Description of officer {{ obj.officer_id }}
-		    </h1>
-		    <p>
-		    	{{ obj.description }}
-		    </p>
-		</div>
-		<p class="lead">
-			Are you sure you want to delete this description?
-			This cannot be undone.
-			<form action="{{ '{}/delete'.format(url_for('main.description_api', obj_id=obj.id, officer_id=obj.officer_id)) }}" method="post">
-				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-				<button class='btn btn-danger' type="submit">Delete</button>
-			</form>
-		</p>
-	</div>
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>Delete Description of officer {{ obj.officer_id }}</h1>
+      <p>{{ obj.description }}</p>
+    </div>
+    <p class="lead">
+      Are you sure you want to delete this description?
+      This cannot be undone.
+      <form action="{{ url_for('main.description_api_delete', obj_id=obj.id, officer_id=obj.officer_id) }}"
+            method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button class="btn btn-danger" type="submit">Delete</button>
+      </form>
+    </p>
+  </div>
 {% endblock content %}

@@ -1,0 +1,84 @@
+<div class="thumbnail">
+  <div class="caption">
+    <h3>
+      General Information
+      {% if is_admin_or_coordinator %}
+        <a href="{{ url_for('main.edit_officer', officer_id=officer.id) }}">
+          <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+        </a>
+      {% endif %}
+    </h3>
+    <table class="table table-hover">
+      <tbody>
+        <tr>
+          <td>
+            <b>Name</b>
+          </td>
+          <td>{{ officer.full_name() }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>OpenOversight ID</b>
+          </td>
+          <td>{{ officer.id }}</td>
+        </tr>
+        {% if officer.unique_internal_identifier %}
+          <tr>
+            <td>
+              <b>Unique Internal Identifier</b>
+            </td>
+            <td>{{ officer.unique_internal_identifier }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td>
+            <b>Department</b>
+          </td>
+          <td>{{ officer.department.display_name }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Race</b>
+          </td>
+          <td>{{ officer.race_label() }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Gender</b>
+          </td>
+          <td>{{ officer.gender_label() }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Birth Year (Age)</b>
+          </td>
+          <td>
+            {% if officer.birth_year %}
+              {{ officer.birth_year }} (~{{ officer.birth_year|get_age }} y/o)
+            {% else %}
+              Data Missing
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>First Employment Date</b>
+          </td>
+          <td>{{ officer.employment_date }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Number of known incidents</b>
+          </td>
+          <td>{{ officer.incidents | length }}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Currently on the force</b>
+          </td>
+          <td>{{ officer.currently_on_force() }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

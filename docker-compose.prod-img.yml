@@ -1,0 +1,25 @@
+version: "3.4"
+
+secrets:
+  service-account-key:
+    file: ./service_account_key.json
+
+services:
+  web:
+    image: ghcr.io/lucyparsons/openoversight:${DOCKER_IMAGE_TAG}
+    env_file:
+      - .env
+    environment:
+      ENV: production
+      FLASK_APP: OpenOversight.app
+    volumes:
+     - ./OpenOversight/:/usr/src/app/OpenOversight/
+     - ./static/:/usr/src/app/OpenOversight/static
+    ports:
+      - "4000:3000"
+    networks:
+      - default
+    restart: always
+    secrets:
+     - source: service-account-key
+       target: /usr/src/app/service_account_key.json

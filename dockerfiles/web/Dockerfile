@@ -1,6 +1,6 @@
-ARG TRAVIS_PYTHON_VERSION
+ARG MAKE_PYTHON_VERSION
 ARG DOCKER_BUILD_ENV
-FROM python:${TRAVIS_PYTHON_VERSION:-3.9}-buster
+FROM python:${MAKE_PYTHON_VERSION:-3.11}-buster
 
 WORKDIR /usr/src/app
 
@@ -10,9 +10,8 @@ ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 
 # install apt dependencies
-RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/backports.list
 RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
-    apt-get install -y -t stretch-backports libsqlite3-0 && apt-get clean
+    apt-get install -y libsqlite3-0 && apt-get clean
 
 # install node
 ENV NODE_SETUP_SHA=5d07994f59e3edc2904c547e772b818d10abb066f6ff36ab3db5d686b0fe9a73
@@ -48,8 +47,7 @@ RUN poetry install
 COPY package.json /usr/src/app/
 RUN yarn
 
-COPY create_db.py test_data.py /usr/src/app/
-COPY .flake8 /usr/src/app/
+COPY test_data.py /usr/src/app/
 COPY mypy.ini /usr/src/app/
 EXPOSE 3000
 
@@ -57,6 +55,6 @@ ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
-WORKDIR /usr/src/app/OpenOversight
+WORKDIR /usr/src/app/
 
-CMD ["scripts/entrypoint.sh"]
+CMD ["OpenOversight/scripts/entrypoint_dev.sh"]

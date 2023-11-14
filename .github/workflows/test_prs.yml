@@ -1,0 +1,36 @@
+name: CI
+
+# Controls when the action will run.
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+    env:
+      FLASK_APP: OpenOversight.app
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - uses: pre-commit/action@v3.0.0

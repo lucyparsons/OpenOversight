@@ -1,0 +1,119 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-case-conflict
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: check-symlinks
+      - id: mixed-line-ending
+      - id: fix-encoding-pragma
+        args:
+          - --remove
+      - id: pretty-format-json
+        args:
+          - --autofix
+      - id: requirements-txt-fixer
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-mock-methods
+      - id: python-no-eval
+      - id: python-no-log-warn
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: Run isort to sort imports
+        files: \.py$
+        # To keep consistent with the global isort skip config defined in setup.cfg
+        exclude: ^build/.*$|^.tox/.*$|^venv/.*$
+        args:
+          - --lines-after-imports=2
+          - --profile=black
+
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: Run pydocstyle
+        args:
+          - --convention=pep257
+          # Do not require docstrings, only check existing ones. (D1)
+          # Allow for a newline after a docstring. (D202)
+          # Don't require a summary line. (D205)
+          # Don't require a period on the first line. (D400)
+          - --add-ignore=D1,D202,D205,D400
+        exclude: tests/
+
+  - repo: local
+    hooks:
+      - id: no-shebang
+        language: pygrep
+        name: Do not use shebangs in non-executable files
+        description: Only executable files should have shebangs (e.g. '#!/usr/bin/env python')
+        entry: "#!/"
+        pass_filenames: true
+        exclude: bin|cli|manage.py|app.py|setup.py|docs|test_data.py
+        files: \.py$
+
+  - repo: https://github.com/ikamensh/flynt/
+    rev: '1.0.0'
+    hooks:
+        - id: flynt
+          exclude: ^build/.*$|^.tox/.*$|^venv/.*$
+          files: \.py$
+          args:
+            - --quiet
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.0.0
+    hooks:
+        - id: flake8
+          args:
+            - --ignore=E203,E402,E501,E800,W503,W391,E261,W504
+            - --select=B,C,E,F,W,T4,B9
+            - --exclude=./OpenOversight/app/db_repository/versions/
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+        - id: black
+          args:
+            - --safe
+            - "--target-version=py311"
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.4.1'
+    hooks:
+      - id: mypy
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.32.1
+    hooks:
+      - id: djlint-reformat
+        pass_filenames: false
+        args:
+          - OpenOversight/app/templates
+          - --format-css
+          - --profile=jinja
+          - --indent=2
+          - --quiet
+      - id: djlint
+        require_serial: true
+        pass_filenames: false
+        args:
+          - OpenOversight/app/templates
+          - --profile=jinja
+          - --use-gitignore
+          - --ignore=H006,T028,H031,H021,H013,H011

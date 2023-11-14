@@ -1,0 +1,52 @@
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim-bullseye as base
+ARG PYTHON_VERSION
+RUN echo "Building image based on python $PYTHON_VERSION"
+
+WORKDIR /usr/src/app
+
+# Avoid writing .pyc files in the image.
+ARG PYTHONDONTWRITEBYTECODE=1
+# Prevent installer from attempting to show dialog boxes during image build.
+ARG DEBIAN_FRONTEND=noninteractive
+# Make sure stdout and stderr are immediately flushed.
+ENV PYTHONUNBUFFERED=1
+# Prevent pip from caching which would only serve to increase the image size.
+ARG PIP_NO_CACHE_DIR=1
+# Install node.js 16.x; gcc and libpq-dev are needed to install psycopg2 from source.
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget -O - https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get update && \
+    apt-get install -y \
+        gcc \
+        libpq-dev \
+        nodejs \
+        libjpeg62-turbo-dev \
+        zlib1g-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install yarn and set up some needed folders and files
+# with wider permissions.
+RUN npm install -g yarn && \
+    mkdir /var/www ./node_modules /.cache /.yarn && \
+    touch /usr/src/app/yarn-error.log
+COPY yarn.lock /usr/src/app/
+RUN chmod -R 777 /usr/src/app/ /.cache /.yarn
+
+# Add prod requirements to base image.
+COPY requirements.txt /usr/src/app/
+# Install required python packages with pip.
+RUN pip3 install -r requirements.txt
+
+# Packages to install with yarn.
+COPY package.json /usr/src/app/
+RUN yarn
+
+WORKDIR /usr/src/app/
+
+FROM base as production
+# Copy source files.
+COPY OpenOversight OpenOversight
+CMD ["OpenOversight/scripts/entrypoint_prod.sh"]

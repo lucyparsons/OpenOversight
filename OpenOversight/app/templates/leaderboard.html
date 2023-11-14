@@ -1,39 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="container" role="main">
-
-
-  <div class="text-center">
-    <h1><small>Volunteer Leaderboard</small></h1>
-  </div>
-
-  <div class="row">
+  <div class="container" role="main">
     <div class="text-center">
-    <h2><small>Top Users by Number of Images Sorted</small></h2>
-      {% for sorter in top_sorters %}
-        {{ loop.index }}.
-        <a href="{{ url_for( 'main.profile', username=sorter[0].username ) }}">
-             {{ sorter[0].username }}</a>
-        - {{ sorter[1] }}
-        <br />
-      {% endfor %}
+      <h1>
+        <small>Volunteer Leaderboard</small>
+      </h1>
+    </div>
+    <div class="row">
+      <div class="text-center">
+        <h2>
+          <small>Top Users by Number of Images Sorted</small>
+        </h2>
+        {% for sorter, count in top_sorters %}
+          {{ loop.index }}.
+          <a href="{{ url_for('main.profile', username=sorter.username) }}">{{ sorter.username }}</a>
+          - {{ count }}
+          <br />
+        {% endfor %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="text-center">
+        <h2>
+          <small>Top Users by Number of Officers Found</small>
+        </h2>
+        {% for tagger, count in top_taggers %}
+          {{ loop.index }}.
+          <a href="{{ url_for('main.profile', username=tagger.username) }}">{{ tagger.username }}</a>
+          - {{ count }}
+          <br />
+        {% endfor %}
+      </div>
     </div>
   </div>
-
-  <div class="row">
-    <div class="text-center">
-    <h2><small>Top Users by Number of Officers Found</small></h2>
-      {% for tagger in top_taggers %}
-        {{ loop.index }}.
-        <a href="{{ url_for( 'main.profile', username=tagger[0].username ) }}">
-             {{ tagger[0].username }}</a>
-        - {{ tagger[1] }}
-        <br />
-      {% endfor %}
-    </div>
-  </div>
-
-</div>
-
-{% endblock %}
+{% endblock content %}

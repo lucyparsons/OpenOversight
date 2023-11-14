@@ -1,6 +1,9 @@
 {
+  "devDependencies": {
+    "sass": "^1.54.4"
+  },
+  "license": "GPL-3.0-only",
   "name": "openoversight",
-  "version": "1.0.0",
   "repository": "https://github.com/lucyparsons/OpenOversight",
   "scripts": {
     "build": "sass OpenOversight/app/static/scss/index.scss:OpenOversight/app/static/dist/index.css",
