@@ -116,4 +116,4 @@ repos:
           - OpenOversight/app/templates
           - --profile=jinja
           - --use-gitignore
-          - --ignore=H006,T028,H031,H011
+          - --ignore=H006,T028,H031,H013,H011
