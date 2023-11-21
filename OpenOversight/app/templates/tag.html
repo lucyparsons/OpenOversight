@@ -32,9 +32,10 @@
                    data-top="{{ face.face_position_y }}"
                    data-width="{{ face.face_width }}"
                    data-height="{{ face.face_height }}"
-                   src="{{ path }}" />
+                   src="{{ path }}"
+                   alt="{{ face.officer.full_name() | title }}" />
             {% else %}
-              <img id="face-img" src="{{ path }}" />
+              <img id="face-img" src="{{ path }}" alt="" />
             {% endif %}
             <div id="face-tag-frame"></div>
           </div>
