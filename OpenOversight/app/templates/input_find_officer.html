@@ -164,7 +164,8 @@
               </p>
               <img src="{{ url_for('static', filename='images/OfficerRank.png') }}"
                    width="50%"
-                   height="50%">
+                   height="50%"
+                   alt="A chart representing officer ranks and their symbols/shoulder patches. Superintendent: Four stars. First Deputy Superintendent: Three stars. Chief: Two stars. Deputy Chief: One star. Commander: A silver oak leaf. Captain: Two parallel vertical bars that can be gold or silver. Lieutenant: A vertical bar that is gold or silver. Sergeant: Three chevrons or stripes. Field Training Officer: A single chevron with a horizontal line across the bottom with the letters FTO inside. The following do not have a symbol or patch: Police Officer/Assigned as: Detective, Youth Officer, Gang Specialist, Police Agent, Major Accident Investigator.">
             </div>
             <h2>
               <small>Officer Unit</small>
@@ -253,8 +254,9 @@
                      id="user-notification"
                      name="submit-officer-search-form" />
               <img id="loader"
-                   class="no-display"
-                   src="{{ url_for('static', filename='images/page-loader.gif') }}">
+                   style="display:none"
+                   src="{{ url_for('static', filename='images/page-loader.gif') }}"
+                   alt="">
             </div>
           </div>
         </div>
