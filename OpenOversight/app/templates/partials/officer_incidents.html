@@ -2,7 +2,7 @@
 {% if officer.incidents %}
   <table class="table table-hover table-responsive">
     <tbody>
-      {% for incident in officer.incidents %}
+      {% for incident in officer.incidents | sort(attribute='date') | reverse %}
         {% if not loop.first %}
           <tr class="border:none">
             <td colspan="2">&nbsp;</td>
