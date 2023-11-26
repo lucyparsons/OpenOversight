@@ -2,11 +2,11 @@ Authlib==1.2.1
 boto3==1.28.39
 cachetools==5.3.1
 email-validator==2.0.0.post2
-Flask==2.3.3
+Flask==3.0.0
 Flask-Bootstrap==3.3.7.1
 Flask-Compress==1.13
 Flask-Limiter==3.3.1
-Flask-Login==0.6.2
+Flask-Login==0.6.3
 Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
@@ -20,6 +20,5 @@ psycopg2-binary==2.9.9
 python-dateutil==2.8.2
 SQLAlchemy==2.0.23
 us==3.1.1
-werkzeug<3  # FIXME: Remove once flask is upgraded
 WTForms==3.0.1
 WTForms-SQLAlchemy==0.3
