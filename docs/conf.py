@@ -1,7 +1,5 @@
 from typing import List, Tuple
 
-from recommonmark.parser import CommonMarkParser
-
 
 #
 # Configuration file for the Sphinx documentation builder.
@@ -30,7 +28,7 @@ release = ""
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["recommonmark"]
+extensions = ["myst_parser"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -41,10 +39,6 @@ templates_path = ["_templates"]
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
-}
-
-source_parsers = {
-    ".md": CommonMarkParser,
 }
 
 # The master toctree document.
