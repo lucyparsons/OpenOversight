@@ -21,7 +21,7 @@
               {{ department.display_name }}
               {% if current_user.is_administrator %}
                 <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
-                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                  <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
                 </a>
               {% endif %}
             </h2>
