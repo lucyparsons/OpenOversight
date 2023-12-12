@@ -101,3 +101,4 @@ vagrant/puppet/.tmp
 node_modules/
 OpenOverSight/app/static/dist/
 static/
+!OpenOversight/app/static/webfonts
