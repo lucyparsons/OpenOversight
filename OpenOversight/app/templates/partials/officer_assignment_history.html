@@ -44,7 +44,7 @@
           {% if is_admin_or_coordinator %}
             <a href="{{ url_for('main.edit_assignment', officer_id=officer.id, assignment_id=assignment.id) }}">
               <span class="sr-only">Edit</span>
-              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
             </a>
           {% endif %}
         </td>

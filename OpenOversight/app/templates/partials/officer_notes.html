@@ -9,11 +9,11 @@
       {% if note.created_by == current_user.id or current_user.is_administrator %}
         <a href="{{ url_for('main.note_api_edit', officer_id=officer.id, obj_id=note.id) }}">
           <span class="sr-only">Edit</span>
-          <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+          <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
         </a>
         <a href="{{ url_for('main.note_api_delete', officer_id=officer.id, obj_id=note.id) }}">
           <span class="sr-only">Delete</span>
-          <i class="fa fa-trash-o" aria-hidden="true"></i>
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
         </a>
       {% endif %}
     </li>

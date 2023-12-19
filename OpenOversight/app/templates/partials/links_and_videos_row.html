@@ -9,11 +9,11 @@
             {% if officer and (is_admin_or_coordinator or link.creator_id == current_user.id) %}
               <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
               </a>
               <a href="{{ url_for("main.link_api_delete", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Delete</span>
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
               </a>
             {% endif %}
             {% if link.description or link.author %}
@@ -46,11 +46,11 @@
                 or link.creator_id == current_user.id) %}
                 <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Edit</span>
-                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                  <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
                 </a>
                 <a href="{{ url_for("main.link_api_delete", officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Delete</span>
-                  <i class="fa fa-trash-o" aria-hidden="true"></i>
+                  <i class="fa-solid fa-trash" aria-hidden="true"></i>
                 </a>
               {% endif %}
               <div class="video-container">
@@ -85,11 +85,11 @@
               or link.creator_id == current_user.id) %}
               <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
               </a>
               <a href="{{ url_for("main.link_api_delete", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Delete</span>
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
               </a>
             {% endif %}
             {% if link.description or link.author %}
