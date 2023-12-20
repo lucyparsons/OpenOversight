@@ -35,7 +35,9 @@
                    src="{{ path }}"
                    alt="{{ face.officer.full_name() | title }}" />
             {% else %}
-              <img id="face-img" src="{{ path }}" alt="" />
+              <img id="face-img"
+                   src="{{ path }}"
+                   alt="{{ face.officer.full_name() | title }}'s profile image" />
             {% endif %}
             <div id="face-tag-frame"></div>
           </div>
