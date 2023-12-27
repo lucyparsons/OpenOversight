@@ -856,7 +856,7 @@ def redirect_list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: bool = None,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -896,7 +896,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: bool = None,
 ):
     form = BrowseForm()
     form.rank.query = (
