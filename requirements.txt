@@ -1,7 +1,7 @@
 Authlib==1.2.1
 boto3==1.28.39
 cachetools==5.3.1
-email-validator==2.0.0.post2
+email-validator==2.1.0.post1
 Flask==3.0.0
 Flask-Bootstrap==3.3.7.1
 Flask-Compress==1.14
