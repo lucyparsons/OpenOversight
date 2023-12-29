@@ -29,7 +29,7 @@ COPY yarn.lock /usr/src/app/
 RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
 
-COPY requirements.txt dev-requirements.txt /usr/src/app/
+COPY requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY package.json /usr/src/app/
