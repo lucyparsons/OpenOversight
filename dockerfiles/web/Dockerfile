@@ -36,7 +36,6 @@ COPY package.json /usr/src/app/
 RUN yarn
 
 COPY test_data.py /usr/src/app/
-COPY mypy.ini /usr/src/app/
 
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
