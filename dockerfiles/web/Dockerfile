@@ -10,7 +10,7 @@ ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 
 # install apt dependencies
-RUN apt-get update && apt-get install -y xvfb libpq-dev python3-dev \
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev \
     && apt-get clean
 
 # install node
@@ -21,6 +21,16 @@ RUN echo "${NODE_SETUP_SHA}  setup_12.x" | sha256sum --check -
 RUN bash setup_12.x
 RUN apt-get install -y nodejs
 
+# install geckodriver
+ENV GECKODRIVER_VERSION="v0.26.0"
+ENV GECKODRIVER_SHA=d59ca434d8e41ec1e30dd7707b0c95171dd6d16056fb6db9c978449ad8b93cc0
+ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
+RUN curl ${CURL_FLAGS} \
+      ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
+RUN echo "${GECKODRIVER_SHA}  geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" | sha256sum --check -
+RUN mkdir geckodriver
+RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
+
 # install yarn
 RUN npm install -g yarn
 RUN mkdir /var/www ./node_modules /.cache /.yarn /.mozilla
@@ -29,14 +39,19 @@ COPY yarn.lock /usr/src/app/
 RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
 
-COPY requirements.txt /usr/src/app/
+COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
+
+RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r dev-requirements.txt
 
 COPY package.json /usr/src/app/
 RUN yarn
 
 COPY test_data.py /usr/src/app/
+COPY mypy.ini /usr/src/app/
+EXPOSE 3000
 
+ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
