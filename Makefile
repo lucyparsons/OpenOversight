@@ -48,9 +48,9 @@ populate: create_db ## Build and run containers
 .PHONY: test
 test: start ## Run tests
 	if [ -z "$(name)" ]; then \
-		ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
+		ENV=testing docker-compose run --rm web-test pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-		ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
+		ENV=testing docker-compose run --rm web-test pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint
