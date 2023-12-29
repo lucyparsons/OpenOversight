@@ -1,6 +1,6 @@
 ARG MAKE_PYTHON_VERSION
 ARG DOCKER_BUILD_ENV
-FROM python:${MAKE_PYTHON_VERSION:-3.11}-slim-bullseye
+FROM python:${MAKE_PYTHON_VERSION:-3.11}-bullseye
 
 WORKDIR /usr/src/app
 
