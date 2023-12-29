@@ -19,7 +19,7 @@ jobs:
       FLASK_APP: OpenOversight.app
     strategy:
       matrix:
-        python-version: ["3.11", "3.12-rc"]
+        python-version: ["3.11", "3.12"]
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
