@@ -24,7 +24,6 @@ services:
  web:
    restart: always
    build:
-      context: .
       args:
       - DOCKER_BUILD_ENV
       - MAKE_PYTHON_VERSION
@@ -59,7 +58,6 @@ services:
  web-test:
    restart: always
    build:
-      context: .
       args:
       - MAKE_PYTHON_VERSION
       dockerfile: ./dockerfiles/web/Dockerfile-test
