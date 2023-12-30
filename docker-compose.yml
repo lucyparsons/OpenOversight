@@ -27,7 +27,7 @@ services:
       context: .
       args:
       - MAKE_PYTHON_VERSION
-      dockerfile: ./dockerfiles/web/Dockerfile
+      dockerfile: dockerfiles/web/Dockerfile-dev
    environment:
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
