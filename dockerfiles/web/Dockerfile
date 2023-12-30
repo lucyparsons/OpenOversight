@@ -49,7 +49,6 @@ RUN yarn
 
 COPY test_data.py /usr/src/app/
 COPY mypy.ini /usr/src/app/
-EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
