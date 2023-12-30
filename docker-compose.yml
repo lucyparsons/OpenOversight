@@ -61,7 +61,7 @@ services:
      context: .
      args:
        - MAKE_PYTHON_VERSION
-     dockerfile: ./dockerfiles/web/Dockerfile-test
+     dockerfile: dockerfiles/web/Dockerfile-test
    environment:
      ENV: "testing"
      FLASK_APP: OpenOversight.app
