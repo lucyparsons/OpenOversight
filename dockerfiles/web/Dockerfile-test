@@ -10,7 +10,7 @@ ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
 
 # install apt dependencies
-RUN apt-get update && apt-get install -y firefox-esr libpq-dev python3-dev && \
+RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
     apt-get install -y libsqlite3-0 && apt-get clean
 
 # install node
@@ -36,7 +36,7 @@ RUN npm install -g yarn
 RUN mkdir /var/www ./node_modules /.cache /.yarn /.mozilla
 RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
-RUN chmod -R 777 /usr/src/app/ /.cache /.yarn /.mozilla
+RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
