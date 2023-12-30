@@ -19,7 +19,7 @@ services:
    volumes:
      - postgres:/var/lib/postgresql/data
    ports:
-     - "5432:5432"
+     - "5432"
 
  web:
    restart: always
@@ -34,7 +34,7 @@ services:
      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
      ENV: "development"
-     FLASK_APP: OpenOversight.app.dev
+     FLASK_APP: OpenOversight.app
      FLASK_DEBUG: 1
      OO_HELP_EMAIL: "info@lucyparsonslabs.com"
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
@@ -64,7 +64,7 @@ services:
      dockerfile: ./dockerfiles/web/Dockerfile-test
    environment:
      ENV: "testing"
-     FLASK_APP: OpenOversight.app.test
+     FLASK_APP: OpenOversight.app
      OO_HELP_EMAIL: "info@lucyparsonslabs.com"
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      TIMEZONE: "America/Chicago"
