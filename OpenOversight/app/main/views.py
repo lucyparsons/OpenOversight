@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
+from typing import Optional
 
 from flask import (
     Response,
@@ -856,7 +857,7 @@ def redirect_list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -896,7 +897,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     form = BrowseForm()
     form.rank.query = (

@@ -114,16 +114,25 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     total = Officer.query.filter_by(department_id=AC_DEPT).count()
 
     # first page of results
-    browser.get(f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1")
+    browser.get(
+        f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1&gender=Not+Sure"
+    )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = f"Showing 1-{current_app.config[KEY_OFFICERS_PER_PAGE]} of {total}"
     assert expected in page_text
 
+    # check that "Next" pagination link does not automatically add require_photo parameter
+    next_link = browser.find_elements(By.XPATH, '//li[@class="next"]/a')[
+        0
+    ].get_attribute("href")
+    assert "gender" in next_link
+    assert "require_photo" not in next_link
+
     # last page of results
     last_page_index = (total // current_app.config[KEY_OFFICERS_PER_PAGE]) + 1
     browser.get(
-        f"http://localhost:{server_port}/departments/{AC_DEPT}?page={last_page_index}"
+        f"http://localhost:{server_port}/departments/{AC_DEPT}?page={last_page_index}&gender=Not+Sure"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
@@ -134,6 +143,13 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     )
     expected = f"Showing {start_of_page}-{total} of {total}"
     assert expected in page_text
+
+    # check that "Previous" pagination link does not automatically add require_photo parameter
+    previous_link = browser.find_elements(By.XPATH, '//li[@class="previous"]/a')[
+        0
+    ].get_attribute("href")
+    assert "gender" in previous_link
+    assert "require_photo" not in previous_link
 
 
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(
