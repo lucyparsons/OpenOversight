@@ -171,9 +171,9 @@ class SalaryForm(Form):
         "Salary", validators=[NumberRange(min=0, max=1000000), validate_money]
     )
     overtime_pay = DecimalField(
-        "Overtime Pay", 
+        "Overtime Pay",
         default=0,
-        validators=[NumberRange(min=0, max=1000000), validate_money]
+        validators=[NumberRange(min=0, max=1000000), validate_money],
     )
     year = IntegerField(
         "Year",
