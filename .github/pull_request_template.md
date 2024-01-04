@@ -9,7 +9,7 @@ https://github.com/lucyparsons/OpenOversight/blob/develop/CODE_OF_CONDUCT.md
 
 If this pull request is not ready for review yet, please submit it as a draft.
 
-Please write your PR name in the present imperative tense. Examples of that tense are: "Fix issue in the 
+Please write your PR name in the present imperative tense. Examples of that tense are: "Fix issue in the
 dispatcher where…", "Improve our handling of…", etc.
 -->
 ## Fixes issue
