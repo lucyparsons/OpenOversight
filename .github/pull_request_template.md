@@ -18,9 +18,6 @@ dispatcher where…", "Improve our handling of…", etc.
 ## Description of Changes
 
 
-## Notes for Deployment
-
-
 ## Screenshots (if appropriate)
 
 
