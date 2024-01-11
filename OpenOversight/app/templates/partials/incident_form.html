@@ -1,7 +1,7 @@
 {% import "bootstrap/wtf.html" as wtf %}
 <form class="form" method="post" role="form">
   {{ form.hidden_tag() }}
-  <div class="text-danger">{{ wtf.form_errors(form, hiddens="only") }}</div>
+  <div class="text-danger">{{ wtf.form_errors(form) }}</div>
   {{ wtf.form_field(form.date_field, autofocus="autofocus") }}
   {{ wtf.form_field(form.time_field) }}
   {{ wtf.form_field(form.report_number) }}
