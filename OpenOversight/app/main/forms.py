@@ -516,12 +516,19 @@ class IncidentForm(DateFieldForm):
     # In line validator for the officers field. Check to see if the officers are within the selected department
     def validate_officers(form, field):
         department = form.department.data
+
+        if not department:
+            return
+        
         department_id = department.id
         department_name = department.name
 
         for field_data in field.data:
             officer = Officer.query.get(field_data['oo_id'])
 
+            if not officer:
+                return
+            
             if officer.department.id is not department_id:
                 raise ValidationError(f"Officer {officer.full_name()} (OpenOversight ID: {field_data['oo_id']}) is not in {department_name}")
         
