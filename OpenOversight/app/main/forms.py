@@ -515,8 +515,8 @@ class OOIdForm(Form):
 
 class IncidentForm(DateFieldForm):
     # In line validator for the officers field. Check to see if the officers are within the selected department
-    def validate_officers(form, field):
-        department = form.department.data
+    def validate_officers(self, field: FieldList) -> None: 
+        department = self.department.data
 
         if not department:
             return
@@ -528,7 +528,7 @@ class IncidentForm(DateFieldForm):
             officer = Officer.query.get(field_data["oo_id"])
 
             if not officer:
-                return
+                return None
 
             if officer.department.id is not department_id:
                 raise ValidationError(
