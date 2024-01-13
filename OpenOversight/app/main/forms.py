@@ -515,7 +515,7 @@ class OOIdForm(Form):
 
 class IncidentForm(DateFieldForm):
     # In line validator for the officers field. Check to see if the officers are within the selected department
-    def validate_officers(self, field: FieldList) -> None: 
+    def validate_officers(self, field: FieldList) -> None:
         department = self.department.data
 
         if not department:

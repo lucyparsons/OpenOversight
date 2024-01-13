@@ -139,6 +139,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
             ENCODING_UTF_8
         )
 
+
 def test_cannot_create_incident_with_invalid_officer():
     with current_app.test_request_context():
         test_date = datetime(2000, 5, 25, 1, 45)
@@ -148,14 +149,14 @@ def test_cannot_create_incident_with_invalid_officer():
             cross_street1="BBBBB",
             city="FFFFF",
             state="IA",
-            zip_code="03435"
+            zip_code="03435",
         )
 
-        department = Department.query.filter_by(id = "1").first()
+        department = Department.query.filter_by(id="1").first()
 
         # These officers are from different departments
-        officer_1 = Officer.query.filter_by(department_id = "1").first()
-        officer_2 = Officer.query.filter_by(department_id = "2").first()
+        officer_1 = Officer.query.filter_by(department_id="1").first()
+        officer_2 = Officer.query.filter_by(department_id="2").first()
 
         form = IncidentForm(
             date_field=test_date.date(),
@@ -168,6 +169,7 @@ def test_cannot_create_incident_with_invalid_officer():
         )
 
         assert form.validate() is False
+
 
 def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
     with current_app.test_request_context():
