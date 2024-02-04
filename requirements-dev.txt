@@ -1,6 +1,6 @@
 -r requirements.txt
 
-Faker==19.3.1
+Faker==22.6.0
 flake8==7.0.0
 ipython
 mypy==1.4.1

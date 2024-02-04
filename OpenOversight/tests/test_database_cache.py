@@ -1,5 +1,5 @@
 import random
-from datetime import date
+from datetime import date, datetime
 from http import HTTPStatus
 
 from flask import current_app, url_for
@@ -123,7 +123,7 @@ def test_latest_incident_update(mockdata, client, faker):
         assert has_database_cache_entry(department, KEY_DEPT_INCIDENTS_LAST_UPDATED)
         assert has_database_cache_entry(department, KEY_DEPT_OFFICERS_LAST_UPDATED)
 
-        test_date = faker.date_time()
+        test_date = datetime(2000, 5, 25, 1, 45)
 
         address_form = LocationForm(
             street_name=faker.street_address(),
