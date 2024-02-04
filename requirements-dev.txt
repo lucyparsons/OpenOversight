@@ -1,7 +1,7 @@
 -r requirements.txt
 
 Faker==19.3.1
-flake8==6.0.0
+flake8==7.0.0
 ipython
 mypy==1.4.1
 myst-parser==2.0.0
