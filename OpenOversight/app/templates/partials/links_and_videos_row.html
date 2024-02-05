@@ -6,7 +6,7 @@
         {% for link in list %}
           <li class="list-group-item">
             <a href="{{ link.url }}" rel="noopener noreferrer" target="_blank">{{ link.title or link.url }}</a>
-            {% if officer and (is_admin_or_coordinator or link.creator_id == current_user.id) %}
+            {% if officer and (is_admin_or_coordinator or link.created_by == current_user.id) %}
               <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
@@ -45,7 +45,7 @@
               {% if link.title %}<h5>{{ link.title }}</h5>{% endif %}
               {% if officer and (current_user.is_administrator
                 or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
-                or link.creator_id == current_user.id) %}
+                or link.created_by == current_user.id) %}
                 <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Edit</span>
                   <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
@@ -85,7 +85,7 @@
             <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title or link.url }}</a>
             {% if officer and (current_user.is_administrator
               or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
-              or link.creator_id == current_user.id) %}
+              or link.created_by == current_user.id) %}
               <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
