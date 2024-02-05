@@ -770,6 +770,7 @@ def edit_department(department_id: int):
         department.state = form.state.data
         department.last_updated_by = current_user.id
         db.session.flush()
+
         if form.jobs.data:
             new_ranks = []
             order = 1
@@ -826,8 +827,8 @@ def edit_department(department_id: int):
                             department_id=department_id,
                         )
                     )
-            db.session.commit()
 
+        db.session.commit()
         flash(f"Department {department.name} in {department.state} edited")
         return redirect(url_for("main.list_officer", department_id=department.id))
     else:
