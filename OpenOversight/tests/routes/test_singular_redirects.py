@@ -97,7 +97,7 @@ def test_redirect_with_department_id(client, session, source_route, target_route
         ("main.redirect_edit_officer", "main.edit_officer"),
         ("main.redirect_submit_officer_images", "main.submit_officer_images"),
         ("main.redirect_new_note", "main.note_api"),
-        ("main.redirect_new_description", "main.description_api"),
+        ("main.redirect_new_description", "main.description_api_new"),
         ("main.redirect_new_link", "main.link_api_new"),
     ],
 )
@@ -507,14 +507,14 @@ def test_redirect_upload(client, session):
 
 
 @pytest.mark.parametrize(
-    "source_route, target_suffix",
+    "source_route, target_route",
     [
-        ("main.redirect_get_notes", ""),
-        ("main.redirect_edit_note", "/edit"),
-        ("main.redirect_delete_note", "/delete"),
+        ("main.redirect_get_notes", "main.note_api"),
+        ("main.redirect_edit_note", "main.note_api_edit"),
+        ("main.redirect_delete_note", "main.note_api_delete"),
     ],
 )
-def test_redirect_note(client, session, source_route, target_suffix):
+def test_redirect_note(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.filter_by(id=AC_DEPT).first()
@@ -534,22 +534,20 @@ def test_redirect_note(client, session, source_route, target_suffix):
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
-        assert (
-            resp_redirect.request.path
-            == url_for("main.note_api", officer_id=officer.id, obj_id=note.id)
-            + target_suffix
+        assert resp_redirect.request.path == url_for(
+            target_route, officer_id=officer.id, obj_id=note.id
         )
 
 
 @pytest.mark.parametrize(
-    "source_route, target_suffix",
+    "source_route, target_route",
     [
-        ("main.redirect_get_description", ""),
-        ("main.redirect_edit_description", "/edit"),
-        ("main.redirect_delete_description", "/delete"),
+        ("main.redirect_get_description", "main.description_api"),
+        ("main.redirect_edit_description", "main.description_api_edit"),
+        ("main.redirect_delete_description", "main.description_api_delete"),
     ],
 )
-def test_redirect_description(client, session, source_route, target_suffix):
+def test_redirect_description(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
         officer = Officer.query.filter_by(id=AC_DEPT).first()
@@ -577,23 +575,19 @@ def test_redirect_description(client, session, source_route, target_suffix):
             follow_redirects=True,
         )
         assert resp_redirect.status_code == HTTPStatus.OK
-        assert (
-            resp_redirect.request.path
-            == url_for(
-                "main.description_api", officer_id=officer.id, obj_id=description.id
-            )
-            + target_suffix
+        assert resp_redirect.request.path == url_for(
+            target_route, officer_id=officer.id, obj_id=description.id
         )
 
 
 @pytest.mark.parametrize(
-    "source_route, target_suffix",
+    "source_route, target_route",
     [
         ("main.redirect_edit_link", "main.link_api_edit"),
         ("main.redirect_delete_link", "main.link_api_delete"),
     ],
 )
-def test_redirect_link(client, session, source_route, target_suffix):
+def test_redirect_link(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
         officer = (
@@ -626,5 +620,5 @@ def test_redirect_link(client, session, source_route, target_suffix):
         )
         assert resp_redirect.status_code == HTTPStatus.OK
         assert resp_redirect.request.path == url_for(
-            target_suffix, officer_id=officer.id, obj_id=officer.links[0].id
+            target_route, officer_id=officer.id, obj_id=officer.links[0].id
         )

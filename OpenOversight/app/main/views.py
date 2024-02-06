@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
+from typing import Optional
 
 from flask import (
     Response,
@@ -327,13 +328,16 @@ def officer_profile(officer_id: int):
             .all()
         )
         assignments = Assignment.query.filter_by(officer_id=officer_id).all()
-        face_paths = []
-        for face in faces:
-            face_paths.append(serve_image(face.image.filepath))
+        face_paths = [(face, serve_image(face.image.filepath)) for face in faces]
         if not face_paths:
             # Add in the placeholder image if no faces are found
             face_paths = [
-                url_for("static", filename="images/placeholder.png", _external=True)
+                (
+                    None,
+                    url_for(
+                        "static", filename="images/placeholder.png", _external=True
+                    ),
+                )
             ]
     except Exception:
         current_app.logger.exception("Error loading officer profile")
@@ -351,8 +355,7 @@ def officer_profile(officer_id: int):
     return render_template(
         "officer.html",
         officer=officer,
-        paths=face_paths,
-        faces=faces,
+        face_paths=face_paths,
         assignments=assignments,
         form=form,
     )
@@ -856,7 +859,7 @@ def redirect_list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -896,7 +899,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     form = BrowseForm()
     form.rank.query = (
@@ -2088,24 +2091,31 @@ incident_view = IncidentApi.as_view("incident_api")
 main.add_url_rule(
     "/incidents/",
     defaults={"obj_id": None},
+    endpoint="incident_api",
     view_func=incident_view,
     methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
     "/incidents/new",
+    endpoint="incident_api_new",
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
-    "/incidents/<int:obj_id>", view_func=incident_view, methods=[HTTPMethod.GET]
+    "/incidents/<int:obj_id>",
+    endpoint="incident_api",
+    view_func=incident_view,
+    methods=[HTTPMethod.GET],
 )
 main.add_url_rule(
     "/incidents/<int:obj_id>/edit",
+    endpoint="incident_api_edit",
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 main.add_url_rule(
     "/incidents/<int:obj_id>/delete",
+    endpoint="incident_api_delete",
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2192,7 +2202,7 @@ def redirect_get_notes(officer_id: int, obj_id=None):
 def redirect_edit_note(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        f"{url_for('main.note_api', officer_id=officer_id, obj_id=obj_id)}/edit",
+        url_for("main.note_api_edit", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2202,7 +2212,7 @@ def redirect_edit_note(officer_id: int, obj_id=None):
 def redirect_delete_note(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        f"{url_for('main.note_api', officer_id=officer_id, obj_id=obj_id)}/delete",
+        url_for("main.note_api_delete", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2210,6 +2220,7 @@ def redirect_delete_note(officer_id: int, obj_id=None):
 note_view = NoteApi.as_view("note_api")
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/new",
+    endpoint="note_api",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2220,6 +2231,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>",
+    endpoint="note_api",
     view_func=note_view,
     methods=[HTTPMethod.GET],
 )
@@ -2230,6 +2242,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>/edit",
+    endpoint="note_api_edit",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2240,6 +2253,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>/delete",
+    endpoint="note_api_delete",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2255,7 +2269,7 @@ main.add_url_rule(
 def redirect_new_description(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.description_api", officer_id=officer_id),
+        url_for("main.description_api_new", officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2273,7 +2287,7 @@ def redirect_get_description(officer_id: int, obj_id=None):
 def redirect_edit_description(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        f"{url_for('main.description_api', officer_id=officer_id, obj_id=obj_id)}/edit",
+        url_for("main.description_api_edit", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2283,7 +2297,7 @@ def redirect_edit_description(officer_id: int, obj_id=None):
 def redirect_delete_description(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        f"{url_for('main.description_api', officer_id=officer_id, obj_id=obj_id)}/delete",
+        url_for("main.description_api_delete", officer_id=officer_id, obj_id=obj_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -2291,6 +2305,7 @@ def redirect_delete_description(officer_id: int, obj_id=None):
 description_view = DescriptionApi.as_view("description_api")
 main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/new",
+    endpoint="description_api_new",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2301,6 +2316,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>",
+    endpoint="description_api",
     view_func=description_view,
     methods=[HTTPMethod.GET],
 )
@@ -2311,6 +2327,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/edit",
+    endpoint="description_api_edit",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -2321,6 +2338,7 @@ main.add_url_rule(
 )
 main.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/delete",
+    endpoint="description_api_delete",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )

@@ -659,3 +659,28 @@ tr:hover .row-actions {
     visibility: hidden;
     width: auto
 }
+
+.red {
+  color: #a00;
+}
+
+.no-box-shadow {
+  box-shadow: none;
+}
+
+.no-border-top {
+  border-top: none;
+}
+
+.no-display {
+  display: none;
+}
+
+.slightly-above {
+  position: relative;
+  top: -0.8em;
+}
+
+.bottom-margin {
+  margin-bottom: 2rem;
+}

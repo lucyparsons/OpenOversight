@@ -13,13 +13,13 @@
         {% if current_user and not current_user.is_anonymous %}<em>{{ description.creator.username }}</em>{% endif %}
         {% if description.created_by == current_user.id or
           current_user.is_administrator %}
-          <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/edit' }}">
+          <a href="{{ url_for('main.description_api_edit', officer_id=officer.id, obj_id=description.id) }}">
             <span class="sr-only">Edit</span>
-            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
           </a>
-          <a href="{{ url_for('main.description_api', officer_id=officer.id, obj_id=description.id) + '/delete' }}">
+          <a href="{{ url_for('main.description_api_delete', officer_id=officer.id, obj_id=description.id) }}">
             <span class="sr-only">Delete</span>
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
           </a>
         {% endif %}
       </li>
@@ -27,6 +27,6 @@
   </ul>
 {% endif %}
 {% if is_admin_or_coordinator %}
-  <a href="{{ url_for('main.description_api', officer_id=officer.id) }}"
+  <a href="{{ url_for('main.description_api_new', officer_id=officer.id) }}"
      class="btn btn-primary">New description</a>
 {% endif %}

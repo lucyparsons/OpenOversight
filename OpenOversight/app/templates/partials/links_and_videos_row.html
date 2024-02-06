@@ -9,11 +9,11 @@
             {% if officer and (is_admin_or_coordinator or link.created_by == current_user.id) %}
               <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
               </a>
               <a href="{{ url_for('main.link_api_delete', officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Delete</span>
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
               </a>
             {% endif %}
             {% if link.description or link.author %}
@@ -30,9 +30,8 @@
       </ul>
     {% endif %}
   {% endfor %}
-  {% if officer and (current_user.is_administrator
-    or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)) %}
-    <a href="{{ url_for('main.link_api_new', officer_id=officer.id) }}"
+  {% if officer and (current_user.is_admin_or_coordinator(officer.department)) %}
+    <a href="{{ url_for("main.link_api_new", officer_id=officer.id) }}"
        class="btn btn-primary">New Link/Video</a>
   {% endif %}
   {% for type, list in obj.links | groupby("link_type") %}
@@ -43,16 +42,15 @@
           {% with link_url = link.url.split("v=")[1] %}
             <li class="list-group-item">
               {% if link.title %}<h5>{{ link.title }}</h5>{% endif %}
-              {% if officer and (current_user.is_administrator
-                or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
+              {% if officer and (current_user.is_admin_or_coordinator(officer.department)
                 or link.created_by == current_user.id) %}
                 <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Edit</span>
-                  <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                  <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                 </a>
                 <a href="{{ url_for('main.link_api_delete', officer_id=officer.id, obj_id=link.id) }}">
                   <span class="sr-only">Delete</span>
-                  <i class="fa fa-trash-o" aria-hidden="true"></i>
+                  <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                 </a>
               {% endif %}
               <div class="video-container">
@@ -83,16 +81,15 @@
         {% for link in list %}
           <li class="list-group-item">
             <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title or link.url }}</a>
-            {% if officer and (current_user.is_administrator
-              or (current_user.is_area_coordinator and current_user.ac_department_id == officer.department_id)
+            {% if officer and (current_user.is_admin_or_coordinator(officer.department)
               or link.created_by == current_user.id) %}
               <a href="{{ url_for('main.link_api_edit', officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
               </a>
               <a href="{{ url_for("main.link_api_delete", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Delete</span>
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
               </a>
             {% endif %}
             {% if link.description or link.author %}

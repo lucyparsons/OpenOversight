@@ -13,7 +13,7 @@
 {% endblock head %}
 {% block content %}
   <div class="container" role="main">
-    <h1>{{ department.display_name | title }} Officers</h1>
+    <h1>{{ department.display_name }} Officers</h1>
     <div class="row">
       <div class="filter-sidebar col-sm-3">
         <h3 class="sidebar-title">Filter officers</h3>
@@ -78,15 +78,15 @@
                  id="filter-race">
               <div class="panel-body">
                 <div class="form-group checkbox">
-                  {% for choice in choices['race'] %}
+                  {% for race_key, race in choices['race'] %}
                     <label class="form-check">
                       <input type="checkbox"
                              class="form-check-input"
-                             id="race-{{ choice[0] }}"
+                             id="race-{{ race_key }}"
                              name="race"
-                             value="{{ choice[0] }}"
-                             {% if choice[0] in form_data['race'] %}checked="checked"{% endif %} />
-                      {{ choice[1] }}
+                             value="{{ race_key }}"
+                             {% if race_key in form_data['race'] %}checked="checked"{% endif %} />
+                      {{ race }}
                     </label>
                   {% endfor %}
                 </div>
@@ -103,15 +103,15 @@
                  id="filter-gender">
               <div class="panel-body">
                 <div class="form-group radio">
-                  {% for choice in choices['gender'] %}
+                  {% for gender_key, gender in choices['gender'] %}
                     <label class="form-check">
                       <input type="radio"
                              class="form-check-input"
-                             id="gender-{{ choice[0] }}"
+                             id="gender-{{ gender_key }}"
                              name="gender"
-                             value="{{ choice[0] }}"
-                             {% if choice[0] in form_data['gender'] %}checked="checked"{% endif %} />
-                      {{ choice[1] }}
+                             value="{{ gender_key }}"
+                             {% if gender_key in form_data['gender'] %}checked="checked"{% endif %} />
+                      {{ gender }}
                     </label>
                   {% endfor %}
                 </div>
@@ -148,10 +148,10 @@
                             name="rank"
                             class="select2-multi-search"
                             multiple="multiple">
-                      {% for choice in choices['rank'] %}
-                        <option value="{{ choice[0] }}"
-                                {% if choice[0] in form_data['rank'] %}selected="selected"{% endif %}>
-                          {{ choice[1] }}
+                      {% for rank_key, rank in choices['rank'] %}
+                        <option value="{{ rank_key }}"
+                                {% if rank_key in form_data['rank'] %}selected="selected"{% endif %}>
+                          {{ rank }}
                         </option>
                       {% endfor %}
                     </select>
@@ -165,10 +165,10 @@
                             name="unit"
                             class="select2-multi-search"
                             multiple="multiple">
-                      {% for choice in choices['unit'] %}
-                        <option value="{{ choice[0] }}"
-                                {% if choice[0] in form_data['unit'] %}selected="selected"{% endif %}>
-                          {{ choice[1] }}
+                      {% for unit_key, unit in choices['unit'] %}
+                        <option value="{{ unit_key }}"
+                                {% if unit_key in form_data['unit'] %}selected="selected"{% endif %}>
+                          {{ unit }}
                         </option>
                       {% endfor %}
                     </select>

@@ -9,7 +9,7 @@
 {% block content %}
   <div class="container theme-showcase" role="main">
     {% if current_user and current_user.is_authenticated %}
-      {% if image and current_user.is_disabled == False %}
+      {% if image and not current_user.is_disabled %}
         <div class="row">
           <div class="text-center">
             <h1>
@@ -55,7 +55,7 @@
                 </div>
                 {% for error in form.dataX.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <div class="input-group input-group-sm">
@@ -67,7 +67,7 @@
                 </div>
                 {% for error in form.dataY.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <div class="input-group input-group-sm">
@@ -79,7 +79,7 @@
                 </div>
                 {% for error in form.dataWidth.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <div class="input-group input-group-sm">
@@ -91,7 +91,7 @@
                 </div>
                 {% for error in form.dataHeight.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <div class="input-group input-group-sm dept-input">
@@ -112,7 +112,7 @@
                 </div>
                 {% for error in form.department_id.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <div class="input-group input-group-sm id-input">
@@ -125,7 +125,7 @@
                 </div>
                 {% for error in form.star_no.errors %}
                   <p>
-                    <span style="color: red;">[{{ error }}]</span>
+                    <span class="red">[{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <input type="text"
@@ -136,7 +136,7 @@
                        value="{{ image.id }}">
                 {% for error in form.image_id.errors %}
                   <p>
-                    <span style="color: red;">Image: [{{ error }}]</span>
+                    <span class="red">Image: [{{ error }}]</span>
                   </p>
                 {% endfor %}
                 <p>
@@ -178,7 +178,7 @@
             {% endif %}
           </div>
           <div class="col-sm-2 text-center done-button">
-            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id, contains_cops=0) }}"
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
                class="btn btn-sm btn-success">
               <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
               All officers have been identified!
@@ -201,7 +201,7 @@
             </div>
           </div>
         </div>
-      {% elif current_user.is_disabled == True %}
+      {% elif current_user.is_disabled %}
         <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
         <p>
           <a href="mailto:techblocsea@protonmail.com"

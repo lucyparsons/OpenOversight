@@ -8,7 +8,7 @@
     <p class="lead">
       Are you sure you want to delete this description?
       This cannot be undone.
-      <form action="{{ '{}/delete'.format(url_for('main.description_api', obj_id=obj.id, officer_id=obj.officer_id) ) }}"
+      <form action="{{ url_for('main.description_api_delete', obj_id=obj.id, officer_id=obj.officer_id) }}"
             method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <button class="btn btn-danger" type="submit">Delete</button>

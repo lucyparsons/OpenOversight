@@ -11,10 +11,10 @@
         <h2>
           <small>Top Users by Number of Images Sorted</small>
         </h2>
-        {% for sorter in top_sorters %}
+        {% for sorter, count in top_sorters %}
           {{ loop.index }}.
-          <a href="{{ url_for('main.profile', username=sorter[0].username) }}">{{ sorter[0].username }}</a>
-          - {{ sorter[1] }}
+          <a href="{{ url_for('main.profile', username=sorter.username) }}">{{ sorter.username }}</a>
+          - {{ count }}
           <br />
         {% endfor %}
       </div>
@@ -24,10 +24,10 @@
         <h2>
           <small>Top Users by Number of Officers Found</small>
         </h2>
-        {% for tagger in top_taggers %}
+        {% for tagger, count in top_taggers %}
           {{ loop.index }}.
-          <a href="{{ url_for('main.profile', username=tagger[0].username) }}">{{ tagger[0].username }}</a>
-          - {{ tagger[1] }}
+          <a href="{{ url_for('main.profile', username=tagger.username) }}">{{ tagger.username }}</a>
+          - {{ count }}
           <br />
         {% endfor %}
       </div>

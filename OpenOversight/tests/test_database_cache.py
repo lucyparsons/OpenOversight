@@ -150,7 +150,7 @@ def test_latest_incident_update(mockdata, client, faker):
         data = process_form_data(form.data)
 
         rv = client.post(
-            url_for("main.incident_api") + "new", data=data, follow_redirects=True
+            url_for("main.incident_api_new"), data=data, follow_redirects=True
         )
 
         assert rv.status_code == HTTPStatus.OK

@@ -106,7 +106,7 @@ def test_admins_can_edit_notes(mockdata, client, session, faker):
         assert has_database_cache_entry(*cache_params) is True
 
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/edit",
+            url_for("main.note_api_edit", officer_id=officer.id, obj_id=note.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -138,7 +138,7 @@ def test_ac_can_edit_their_notes_in_their_department(mockdata, client, session, 
         )
 
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/edit",
+            url_for("main.note_api_edit", officer_id=officer.id, obj_id=note.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -172,7 +172,7 @@ def test_ac_can_edit_others_notes(mockdata, client, session):
         )
 
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/edit",
+            url_for("main.note_api_edit", officer_id=officer.id, obj_id=note.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -209,7 +209,7 @@ def test_ac_cannot_edit_notes_not_in_their_department(mockdata, client, session)
         )
 
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/edit",
+            url_for("main.note_api_edit", officer_id=officer.id, obj_id=note.id),
             data=form.data,
             follow_redirects=True,
         )
@@ -227,8 +227,7 @@ def test_admins_can_delete_notes(mockdata, client, session):
         assert has_database_cache_entry(*cache_params) is True
 
         rv = client.post(
-            url_for("main.note_api", officer_id=note.officer_id, obj_id=note.id)
-            + "/delete",
+            url_for("main.note_api_delete", officer_id=note.officer_id, obj_id=note.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -253,7 +252,7 @@ def test_acs_can_delete_their_notes_in_their_department(mockdata, client, sessio
         db.session.add(note)
         db.session.commit()
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/delete",
+            url_for("main.note_api_delete", officer_id=officer.id, obj_id=note.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -281,7 +280,7 @@ def test_acs_cannot_delete_notes_not_in_their_department(
         db.session.add(note)
         db.session.commit()
         rv = client.post(
-            url_for("main.note_api", officer_id=officer.id, obj_id=note.id) + "/delete",
+            url_for("main.note_api_delete", officer_id=officer.id, obj_id=note.id),
             follow_redirects=True,
         )
 
@@ -306,7 +305,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
         rv = client.get(
-            url_for("main.note_api", obj_id=note.id, officer_id=officer.id) + "/edit",
+            url_for("main.note_api_edit", obj_id=note.id, officer_id=officer.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -329,7 +328,7 @@ def test_acs_can_get_others_edit_form(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
         rv = client.get(
-            url_for("main.note_api", obj_id=note.id, officer_id=officer.id) + "/edit",
+            url_for("main.note_api_edit", obj_id=note.id, officer_id=officer.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
@@ -354,7 +353,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         db.session.add(note)
         db.session.commit()
         rv = client.get(
-            url_for("main.note_api", obj_id=note.id, officer_id=officer.id) + "/edit",
+            url_for("main.note_api_edit", obj_id=note.id, officer_id=officer.id),
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.FORBIDDEN

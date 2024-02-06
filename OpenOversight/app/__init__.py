@@ -17,6 +17,7 @@ from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
+from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
 
 
@@ -25,6 +26,7 @@ compress = Compress()
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
+login_manager.anonymous_user = AnonymousUser
 login_manager.login_view = "auth.login"
 
 limiter = Limiter(

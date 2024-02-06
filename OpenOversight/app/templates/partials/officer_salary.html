@@ -23,24 +23,23 @@
     <tbody>
       {% for salary in officer.salaries %}
         <tr>
-          <td>{{ '${:,.2f}'.format(salary.salary) }}</td>
+          <td>{{ salary.salary | display_currency }}</td>
           {% set total = salary.salary %}
           {% if salary.overtime_pay %}
             {% if salary.overtime_pay > 0 %}
               {% set total = total + salary.overtime_pay %}
-              <td>{{ '${:,.2f}'.format(salary.overtime_pay) }}</td>
-              <td>{{ '${:,.2f}'.format(total) }}</td>
+              <td>{{ salary.overtime_pay | display_currency }}</td>
+              <td>{{ total | display_currency }}</td>
             {% elif salary.overtime_pay < 0 %}
               <td>(data incomplete)</td>
               <td></td>
             {% else %}
               <td>$0</td>
-              <td>{{ '${:,.2f}'.format(total) }}</td>
+              <td>{{ total | display_currency }}</td>
             {% endif %}
-            <td>{{ '${:,.2f}'.format(salary.salary + salary.overtime_pay) }}</td>
           {% else %}
             <td></td>
-            <td>{{ '${:,.2f}'.format(total) }}</td>
+            <td>{{ total | display_currency }}</td>
           {% endif %}
           <td>
             {% if salary.is_fiscal_year %}FY{% endif %}
@@ -50,7 +49,7 @@
             <td>
               <a href="{{ url_for('main.edit_salary', officer_id=officer.id, salary_id=salary.id) }}">
                 <span class="sr-only">Edit</span>
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
               </a>
             </td>
           {% endif %}

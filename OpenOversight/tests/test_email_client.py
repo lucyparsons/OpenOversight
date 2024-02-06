@@ -1,3 +1,4 @@
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from unittest.mock import MagicMock, patch
@@ -145,5 +146,7 @@ def test_smtp_email_provider_send_email(app, mockdata):
         provider = SMTPEmailProvider()
         provider.mail = mail
         provider.send_email(msg)
+
+        time.sleep(0.5)  # wait for async "sending" of email
 
         mail.send.assert_called_once()

@@ -23,6 +23,14 @@ We use [pre-commit](https://pre-commit.com/) for automated linting and style che
 
 You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
 
+### Accessibility
+Keep in mind when adding images that `alt` tags are required for screen readers. If text outside of the image explains what the image is or is referring to, the tag can be an empty string (`alt=""`). The tag can also be empty if the image is decoration and does not add information or context. If the image has text or important information, use the present tense to describe what is happening in the image.
+
+For further reading:
+- https://www.a11yproject.com/
+- https://www.w3.org/WAI/tutorials/images/decision-tree/
+- https://accessibility.huit.harvard.edu/describe-content-images
+
 ## Development Environment
 You can use our Docker-compose environment to stand up a development OpenOversight.
 
