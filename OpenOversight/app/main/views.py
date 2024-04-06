@@ -1870,13 +1870,16 @@ def upload(department_id: int = 0, officer_id: int = 0):
         ):
             return (
                 Response(
-                    "You are not authorized to upload photos of this officer.", status=HTTPStatus.FORBIDDEN
+                    "You are not authorized to upload photos of this officer.",
+                    status=HTTPStatus.FORBIDDEN,
                 ),
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
         return (
-            Response("File type not allowed!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE),
+            Response(
+                "File type not allowed!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+            ),
         )
 
     try:
@@ -1906,7 +1909,10 @@ def upload(department_id: int = 0, officer_id: int = 0):
         return Response("Success!", status=HTTPStatus.OK)
     else:
         return (
-            Response("Server error encountered. Try again later.", status=HTTPStatus.INTERNAL_SERVER_ERROR),
+            Response(
+                "Server error encountered. Try again later.",
+                status=HTTPStatus.INTERNAL_SERVER_ERROR,
+            ),
         )
 
 
