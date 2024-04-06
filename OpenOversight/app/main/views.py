@@ -277,12 +277,12 @@ def sort_images(department_id: int):
 
 
 @sitemap_include
-@main.route("/tutorial")
+@main.route("/tutorial", methods=[HTTPMethod.GET])
 def get_tutorial():
     return render_template("tutorial.html")
 
 
-@main.route("/user/<username>")
+@main.route("/user/<username>", methods=[HTTPMethod.GET])
 @login_required
 def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
@@ -376,7 +376,10 @@ def redirect_add_assignment(officer_id: int):
     )
 
 
-@main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
+@main.route(
+    "/officers/<int:officer_id>/assignments/new",
+    methods=[HTTPMethod.GET, HTTPMethod.POST],
+)
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
@@ -578,7 +581,7 @@ def edit_salary(officer_id: int, salary_id: int):
     return render_template("add_edit_salary.html", form=form, update=True)
 
 
-@main.route("/image/<int:image_id>")
+@main.route("/image/<int:image_id>", methods=[HTTPMethod.GET])
 @login_required
 def redirect_display_submission(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -588,7 +591,7 @@ def redirect_display_submission(image_id: int):
     )
 
 
-@main.route("/images/<int:image_id>")
+@main.route("/images/<int:image_id>", methods=[HTTPMethod.GET])
 @login_required
 def display_submission(image_id: int):
     try:
@@ -599,7 +602,7 @@ def display_submission(image_id: int):
     return render_template("image.html", image=image, path=proper_path)
 
 
-@main.route("/tag/<int:tag_id>")
+@main.route("/tag/<int:tag_id>", methods=[HTTPMethod.GET])
 def redirect_display_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -608,7 +611,7 @@ def redirect_display_tag(tag_id: int):
     )
 
 
-@main.route("/tags/<int:tag_id>")
+@main.route("/tags/<int:tag_id>", methods=[HTTPMethod.GET])
 def display_tag(tag_id: int):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
@@ -840,7 +843,7 @@ def edit_department(department_id: int):
         )
 
 
-@main.route("/department/<int:department_id>")
+@main.route("/department/<int:department_id>", methods=[HTTPMethod.GET])
 def redirect_list_officer(
     department_id: int,
     page: int = 1,
@@ -880,7 +883,7 @@ def redirect_list_officer(
     )
 
 
-@main.route("/departments/<int:department_id>")
+@main.route("/departments/<int:department_id>", methods=[HTTPMethod.GET])
 def list_officer(
     department_id: int,
     page: int = 1,
@@ -1330,7 +1333,7 @@ def set_featured_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
-@main.route("/leaderboard")
+@main.route("/leaderboard", methods=[HTTPMethod.GET])
 @login_required
 def leaderboard():
     top_sorters, top_taggers = compute_leaderboard_stats()
@@ -1468,7 +1471,7 @@ def label_data(department_id: int = 0, image_id: int = 0):
     )
 
 
-@main.route("/image/tagged/<int:image_id>")
+@main.route("/image/tagged/<int:image_id>", methods=[HTTPMethod.GET])
 @login_required
 def redirect_complete_tagging(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1478,7 +1481,7 @@ def redirect_complete_tagging(image_id: int):
     )
 
 
-@main.route("/images/tagged/<int:image_id>")
+@main.route("/images/tagged/<int:image_id>", methods=[HTTPMethod.GET])
 @login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
@@ -1908,13 +1911,13 @@ def upload(department_id: int = 0, officer_id: int = 0):
 
 
 @sitemap_include
-@main.route("/about")
+@main.route("/about", methods=[HTTPMethod.GET])
 def about_oo():
     return render_template("about.html")
 
 
 @sitemap_include
-@main.route("/privacy")
+@main.route("/privacy", methods=[HTTPMethod.GET])
 def privacy_oo():
     return render_template("privacy.html")
 
