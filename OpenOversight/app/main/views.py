@@ -7,7 +7,6 @@ from traceback import format_exc
 from typing import Optional
 
 from flask import (
-    Response,
     abort,
     current_app,
     flash,
@@ -163,7 +162,7 @@ def set_session_timezone():
             session[KEY_TIMEZONE] = timezone
         else:
             session[KEY_TIMEZONE] = current_app.config.get(KEY_TIMEZONE)
-    return Response("User timezone saved", status=HTTPStatus.OK)
+    return "User timezone saved", HTTPStatus.OK
 
 
 @sitemap_include
@@ -1057,7 +1056,7 @@ def list_officer(
     )
 
 
-@main.route("/department/<int:department_id>/ranks")
+@main.route("/department/<int:department_id>/ranks", methods=[HTTPMethod.GET])
 def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1070,8 +1069,8 @@ def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = Fal
     )
 
 
-@main.route("/departments/<int:department_id>/ranks")
-@main.route("/ranks")
+@main.route("/departments/<int:department_id>/ranks", methods=[HTTPMethod.GET])
+@main.route("/ranks", methods=[HTTPMethod.GET])
 def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1093,10 +1092,10 @@ def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
             key=lambda x: x[1],
         )
 
-    return rank_list
+    return rank_list, HTTPStatus.OK
 
 
-@main.route("/department/<int:department_id>/units")
+@main.route("/department/<int:department_id>/units", methods=[HTTPMethod.GET])
 def redirect_get_dept_units(department_id: int = 0):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1105,8 +1104,8 @@ def redirect_get_dept_units(department_id: int = 0):
     )
 
 
-@main.route("/departments/<int:department_id>/units")
-@main.route("/units")
+@main.route("/departments/<int:department_id>/units", methods=[HTTPMethod.GET])
+@main.route("/units", methods=[HTTPMethod.GET])
 def get_dept_units(department_id: int = 0):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1123,7 +1122,7 @@ def get_dept_units(department_id: int = 0):
             key=lambda x: x[1],
         )
 
-    return unit_list
+    return unit_list, HTTPStatus.OK
 
 
 @main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1860,7 +1859,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
-            return Response("This officer does not exist.", status=HTTPStatus.NOT_FOUND)
+            return "This officer does not exist.", HTTPStatus.NOT_FOUND
         if not (
             current_user.is_administrator
             or (
@@ -1869,18 +1868,12 @@ def upload(department_id: int = 0, officer_id: int = 0):
             )
         ):
             return (
-                Response(
-                    "You are not authorized to upload photos of this officer.",
-                    status=HTTPStatus.FORBIDDEN,
-                ),
+                "You are not authorized to upload photos of this officer.",
+                HTTPStatus.FORBIDDEN,
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
-        return (
-            Response(
-                "File type not allowed!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE
-            ),
-        )
+        return ("File type not allowed!", HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
 
     try:
         image = save_image_to_s3_and_db(
@@ -1888,7 +1881,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
         )
     except ValueError:
         # Raised if MIME type not allowed
-        return Response("Invalid data type!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+        return "Invalid data type!", HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
     if image:
         db.session.add(image)
@@ -1906,13 +1899,11 @@ def upload(department_id: int = 0, officer_id: int = 0):
             )
             db.session.add(face)
             db.session.commit()
-        return Response("Success!", status=HTTPStatus.OK)
+        return "Success!", HTTPStatus.OK
     else:
         return (
-            Response(
-                "Server error encountered. Try again later.",
-                status=HTTPStatus.INTERNAL_SERVER_ERROR,
-            ),
+            "Server error encountered. Try again later.",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
         )
 
 
