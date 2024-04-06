@@ -1873,7 +1873,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
-        return ("File type not allowed!", HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+        return "File type not allowed!", HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
     try:
         image = save_image_to_s3_and_db(
