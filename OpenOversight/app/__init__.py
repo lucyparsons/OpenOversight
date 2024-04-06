@@ -3,7 +3,7 @@ import os
 from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_compress import Compress
 from flask_limiter import Limiter
@@ -92,7 +92,7 @@ def create_app(config_name="default"):
 
         def _handler_method(e):
             if request.accept_mimetypes.best == "application/json":
-                return jsonify(error=error), code
+                return Response(error, status=code)
             return render_template(template), code
 
         return _handler_method
