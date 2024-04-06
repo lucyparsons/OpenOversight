@@ -11,7 +11,6 @@ from flask import (
     abort,
     current_app,
     flash,
-    jsonify,
     redirect,
     render_template,
     request,
@@ -1094,7 +1093,7 @@ def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
             key=lambda x: x[1],
         )
 
-    return jsonify(rank_list)
+    return rank_list
 
 
 @main.route("/department/<int:department_id>/units")
@@ -1124,7 +1123,7 @@ def get_dept_units(department_id: int = 0):
             key=lambda x: x[1],
         )
 
-    return jsonify(unit_list)
+    return unit_list
 
 
 @main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1861,7 +1860,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
-            return jsonify(error="This officer does not exist."), HTTPStatus.NOT_FOUND
+            return Response("This officer does not exist.", status=HTTPStatus.NOT_FOUND)
         if not (
             current_user.is_administrator
             or (
@@ -1870,16 +1869,14 @@ def upload(department_id: int = 0, officer_id: int = 0):
             )
         ):
             return (
-                jsonify(
-                    error="You are not authorized to upload photos of this officer."
+                Response(
+                    "You are not authorized to upload photos of this officer.", status=HTTPStatus.FORBIDDEN
                 ),
-                HTTPStatus.FORBIDDEN,
             )
     file_to_upload = request.files["file"]
     if not allowed_file(file_to_upload.filename):
         return (
-            jsonify(error="File type not allowed!"),
-            HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+            Response("File type not allowed!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE),
         )
 
     try:
@@ -1888,7 +1885,7 @@ def upload(department_id: int = 0, officer_id: int = 0):
         )
     except ValueError:
         # Raised if MIME type not allowed
-        return jsonify(error="Invalid data type!"), HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+        return Response("Invalid data type!", status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
 
     if image:
         db.session.add(image)
@@ -1906,11 +1903,10 @@ def upload(department_id: int = 0, officer_id: int = 0):
             )
             db.session.add(face)
             db.session.commit()
-        return jsonify(success="Success!"), HTTPStatus.OK
+        return Response("Success!", status=HTTPStatus.OK)
     else:
         return (
-            jsonify(error="Server error encountered. Try again later."),
-            HTTPStatus.INTERNAL_SERVER_ERROR,
+            Response("Server error encountered. Try again later.", status=HTTPStatus.INTERNAL_SERVER_ERROR),
         )
 
 
