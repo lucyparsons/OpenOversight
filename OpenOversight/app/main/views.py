@@ -376,10 +376,7 @@ def redirect_add_assignment(officer_id: int):
     )
 
 
-@main.route(
-    "/officers/<int:officer_id>/assignments/new",
-    methods=[HTTPMethod.POST],
-)
+@main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
