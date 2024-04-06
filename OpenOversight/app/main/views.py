@@ -366,7 +366,7 @@ def sitemap_officers():
 
 @main.route(
     "/officer/<int:officer_id>/assignment/new",
-    methods=[HTTPMethod.GET, HTTPMethod.POST],
+    methods=[HTTPMethod.POST],
 )
 @ac_or_admin_required
 def redirect_add_assignment(officer_id: int):
@@ -378,7 +378,7 @@ def redirect_add_assignment(officer_id: int):
 
 @main.route(
     "/officers/<int:officer_id>/assignments/new",
-    methods=[HTTPMethod.GET, HTTPMethod.POST],
+    methods=[HTTPMethod.POST],
 )
 @ac_or_admin_required
 def add_assignment(officer_id: int):
