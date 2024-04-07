@@ -5,7 +5,7 @@
       <h1>Viewing Description {{ obj.id }} on Officer {{ obj.officer_id }}</h1>
     </div>
     <p class="lead">
-      <p>{{ obj.text_contents }}</p>
+      <p>{{ obj.text_contents | markdown }}</p>
     </p>
   </div>
 {% endblock content %}
