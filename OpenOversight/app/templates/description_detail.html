@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% block page_title %}
-  Description Details
-{% endblock page_title %}
-{% block form %}
-  <p>
-    For officer with OOID {{ form.officer_id.data }}.
-    <br>
-    {{ form.description }}
-  </p>
-  {{ super() }}
-{% endblock form %}
+{% block content %}
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+      <h1>Viewing Description {{ obj.id }} on Officer {{ obj.officer_id }}</h1>
+    </div>
+    <p class="lead">
+      <p>{{ obj.text_contents }}</p>
+    </p>
+  </div>
+{% endblock content %}

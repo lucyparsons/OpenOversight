@@ -40,6 +40,19 @@ def login_admin(browser, server_port):
             wait_for_element(browser, By.TAG_NAME, "body")
 
 
+def logout(browser, server_port):
+    browser.get(f"http://localhost:{server_port}/auth/logout")
+    wait_for_page_load(browser)
+
+
+def submit_image_to_dropzone(browser, img_path):
+    # Submit files in selenium: https://stackoverflow.com/a/61566075
+    wait_for_element(browser, By.CLASS_NAME, "dz-hidden-input")
+    upload = browser.find_element(By.CLASS_NAME, "dz-hidden-input")
+    upload.send_keys(img_path)
+    wait_for_element(browser, By.CLASS_NAME, "dz-success")
+
+
 def wait_for_element(browser, locator, text, timeout=10):
     try:
         element_present = expected_conditions.presence_of_element_located(
@@ -359,12 +372,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     wait_for_page_load(browser)
 
     Select(browser.find_element("id", "department")).select_by_value(dept_id)
-
-    # Submit files in selenium: https://stackoverflow.com/a/61566075
-    wait_for_element(browser, By.CLASS_NAME, "dz-hidden-input")
-    upload = browser.find_element(By.CLASS_NAME, "dz-hidden-input")
-    upload.send_keys(img_path)
-    wait_for_element(browser, By.CLASS_NAME, "dz-success")
+    submit_image_to_dropzone(browser, img_path)
 
     # 4. Classify the uploaded image
     browser.get(f"http://localhost:{server_port}/sort/departments/{dept_id}")
@@ -392,8 +400,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     assert "Tag added to database" in page_text
 
     # 6. Log out as admin
-    browser.get(f"http://localhost:{server_port}/auth/logout")
-    wait_for_page_load(browser)
+    logout(browser, server_port)
 
     # 7. Check that the tag appears on the officer page
     browser.get(f"http://localhost:{server_port}/officers/{officer_id}")
@@ -417,3 +424,50 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
         >= frame.location["y"] + frame.size["height"]
     )
     assert image.location["y"] <= frame.location["y"]
+
+
+@pytest.mark.xdist_group
+def test_anonymous_user_can_upload_image(mockdata, browser, server_port):
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    img_path = os.path.join(test_dir, "images/200Cat.jpeg")
+
+    login_admin(browser, server_port)
+
+    # 1. Create new department as admin (to avoid mockdata)
+    browser.get(f"http://localhost:{server_port}/departments/new")
+    wait_for_page_load(browser)
+    browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
+    browser.find_element(By.ID, "short_name").send_keys("APD")
+    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
+    browser.find_element(By.ID, "submit").click()
+    wait_for_page_load(browser)
+
+    # 2. Log out
+    logout(browser, server_port)
+
+    # 3. Upload image
+    browser.get(f"http://localhost:{server_port}/submit")
+    wait_for_page_load(browser)
+
+    dept_select = Select(browser.find_element("id", "department"))
+    dept_select.select_by_visible_text("[WA] Auburn Police Department")
+    dept_id = dept_select.first_selected_option.get_attribute("value")
+
+    submit_image_to_dropzone(browser, img_path)
+
+    # 4. Login as admin again
+    login_admin(browser, server_port)
+
+    # 5. Check that there is 1 image to classify
+    browser.get(f"http://localhost:{server_port}/sort/departments/{dept_id}")
+    wait_for_page_load(browser)
+
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "Do you see uniformed law enforcement officers in the photo?" in page_text
+
+    browser.find_element(By.ID, "answer-yes").click()
+    wait_for_page_load(browser)
+
+    # 6. All images tagged!
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "All images have been classified!" in page_text
