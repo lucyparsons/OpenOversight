@@ -426,7 +426,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     assert image.location["y"] <= frame.location["y"]
 
 
-@pytest.mark.xdist_group
+@pytest.mark.skip("Enable once real file upload in tests is supported.")
 def test_anonymous_user_can_upload_image(mockdata, browser, server_port):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
