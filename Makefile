@@ -36,7 +36,7 @@ assets:
 dev: create_empty_secret build start create_db populate
 
 .PHONY: populate
-populate: create_db ## Build and run containers
+populate: create_db # Build and run containers
 	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
@@ -46,7 +46,7 @@ populate: create_db ## Build and run containers
 	docker-compose run --rm web python ./test_data.py -p
 
 .PHONY: test
-test: start ## Run tests
+test: start # Run tests
 	if [ -z "$(name)" ]; then \
 		ENV=testing docker-compose run --rm web pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
@@ -62,7 +62,7 @@ clean_assets:
 	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
-stop: ## Stop containers
+stop: # Stop containers
 	docker-compose stop
 
 .PHONY: clean
