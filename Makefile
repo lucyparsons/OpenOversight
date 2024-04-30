@@ -3,7 +3,7 @@ export UID=$(shell id -u)
 default: build start create_db populate test stop clean
 
 .PHONY: build
-build: ## Build containers
+build: # Build containers
 	docker-compose build
 
 .PHONY: build_with_version
@@ -15,7 +15,7 @@ test_with_version: build_with_version assets
 	docker-compose run --rm web-test pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 .PHONY: start
-start: build ## Run containers
+start: build # Run containers
 	docker-compose up -d
 
 .PHONY: create_db
@@ -36,7 +36,7 @@ assets:
 dev: create_empty_secret build start create_db populate
 
 .PHONY: populate
-populate: create_db ## Build and run containers
+populate: create_db # Build and run containers
 	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
@@ -46,7 +46,7 @@ populate: create_db ## Build and run containers
 	docker-compose run --rm web python ./test_data.py -p
 
 .PHONY: test
-test: start ## Run tests
+test: start # Run tests
 	if [ -z "$(name)" ]; then \
 		docker-compose run --rm web-test pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
@@ -62,23 +62,23 @@ clean_assets:
 	rm -rf ./OpenOversight/app/static/dist/
 
 .PHONY: stop
-stop: ## Stop containers
+stop: # Stop containers
 	docker-compose stop
 
 .PHONY: clean
-clean: clean_assets stop ## Remove containers
+clean: clean_assets stop # Remove containers
 	docker-compose rm -f
 
 .PHONY: clean_all
-clean_all: clean stop ## Wipe database
+clean_all: clean stop # Wipe database
 	docker-compose down -v
 
 .PHONY: docs
-docs: ## Build project documentation in live reload for editing
+docs: # Build project documentation in live reload for editing
 	make -C docs/ clean && sphinx-autobuild docs/ docs/_build/html
 
 .PHONY: help
-help: ## Print this message and exit
+help: # Print this message and exit
 	@printf "OpenOversight: Makefile for development, documentation and testing.\n"
 	@printf "Subcommands:\n\n"
 	@awk 'BEGIN {FS = ":.*?## "} /^[0-9a-zA-Z_-]+:.*?## / {printf "\033[36m%s\033[0m : %s\n", $$1, $$2}' $(MAKEFILE_LIST) \
@@ -90,7 +90,7 @@ attach:
 	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
 
 .PHONY: create_empty_secret
-create_empty_secret: ## This is needed to make sure docker doesn't create an empty directory, or delete that directory first
+create_empty_secret: # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
 	touch service_account_key.json || \
 	(echo "Need to delete that empty directory first"; \
 	 sudo rm -d service_account_key.json/; \
