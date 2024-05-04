@@ -1,5 +1,4 @@
 ARG MAKE_PYTHON_VERSION
-ARG DOCKER_BUILD_ENV
 FROM python:${MAKE_PYTHON_VERSION:-3.11}-bullseye
 
 WORKDIR /usr/src/app
@@ -40,21 +39,14 @@ RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-RUN test "${DOCKER_BUILD_ENV}" = production || pip3 install --no-cache-dir -r dev-requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt && pip3 install --no-cache-dir -r dev-requirements.txt
 
 COPY package.json /usr/src/app/
 RUN yarn
 
 COPY test_data.py /usr/src/app/
-COPY mypy.ini /usr/src/app/
-EXPOSE 3000
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
-ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
 WORKDIR /usr/src/app/
-
-CMD ["OpenOversight/scripts/entrypoint_dev.sh"]
