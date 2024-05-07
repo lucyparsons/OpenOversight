@@ -75,7 +75,7 @@ class BaseConfig:
         self.S3_BUCKET_NAME = os.environ.get(KEY_S3_BUCKET_NAME)
 
         # Upload Settings
-        self.ALLOWED_EXTENSIONS = {"jpeg", "jpg", "jpe", "png", "gif", "webp"}
+        self.ALLOWED_EXTENSIONS = {"jpeg", "jpg", "jpe", "mpo", "png", "gif", "webp"}
         self.MAX_CONTENT_LENGTH = 50 * MEGABYTE
 
         # User settings
