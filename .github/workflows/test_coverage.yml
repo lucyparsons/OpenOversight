@@ -23,4 +23,4 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
-          path-to-lcov: ./OpenOversight/tests/coverage.xml
+          path-to-lcov: ${{ github.workspace }}/tests/coverage.xml
