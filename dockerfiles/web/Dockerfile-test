@@ -51,6 +51,4 @@ ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 
 WORKDIR /usr/src/app/
 
-RUN chmod -R 777 /usr/src/app/OpenOversight/tests
-
 CMD ["OpenOversight/scripts/entrypoint_dev.sh"]
