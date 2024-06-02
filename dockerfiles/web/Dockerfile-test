@@ -1,54 +1,52 @@
-ARG MAKE_PYTHON_VERSION
-FROM python:${MAKE_PYTHON_VERSION:-3.11}-bullseye
+ARG PYTHON_VERSION=3.11
+FROM python:${PYTHON_VERSION}-slim-bullseye as base
+ARG PYTHON_VERSION
+RUN echo "Building image based on python $PYTHON_VERSION"
 
 WORKDIR /usr/src/app
 
-ENV CURL_FLAGS="--proto =https --tlsv1.2 -sSf -L --max-redirs 1 -O"
+# Avoid writing .pyc files in the image.
+ARG PYTHONDONTWRITEBYTECODE=1
+# Prevent installer from attempting to show dialog boxes during image build.
+ARG DEBIAN_FRONTEND=noninteractive
+# Make sure stdout and stderr are immediately flushed.
+ENV PYTHONUNBUFFERED=1
+# Prevent pip from caching which would only serve to increase the image size.
+ARG PIP_NO_CACHE_DIR=1
+# Install node.js 16.x; gcc and libpq-dev are needed to install psycopg2 from source.
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget -O - https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get update && \
+    apt-get install -y \
+        gcc \
+        libpq-dev \
+        nodejs \
+        libjpeg62-turbo-dev \
+        zlib1g-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV DEBIAN-FRONTEND noninteractive
-ENV DISPLAY=:1
-
-# install apt dependencies
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
-    apt-get install -y libsqlite3-0 && apt-get clean
-
-# install node
-ENV NODE_SETUP_SHA=5d07994f59e3edc2904c547e772b818d10abb066f6ff36ab3db5d686b0fe9a73
-RUN curl ${CURL_FLAGS} \
-      https://raw.githubusercontent.com/nodesource/distributions/b8510857fb4ce4b023161be8490b00119884974c/deb/setup_12.x
-RUN echo "${NODE_SETUP_SHA}  setup_12.x" | sha256sum --check -
-RUN bash setup_12.x
-RUN apt-get install -y nodejs
-
-# install geckodriver
-ENV GECKODRIVER_VERSION="v0.26.0"
-ENV GECKODRIVER_SHA=d59ca434d8e41ec1e30dd7707b0c95171dd6d16056fb6db9c978449ad8b93cc0
-ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
-RUN curl ${CURL_FLAGS} \
-      ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-RUN echo "${GECKODRIVER_SHA}  geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" | sha256sum --check -
-RUN mkdir geckodriver
-RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
-
-# install yarn
-RUN npm install -g yarn
-RUN mkdir /var/www ./node_modules /.cache /.yarn /.mozilla
-RUN touch /usr/src/app/yarn-error.log
+# Install yarn and set up some needed folders and files
+# with wider permissions.
+RUN npm install -g yarn && \
+    mkdir /var/www ./node_modules /.cache /.yarn && \
+    touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
-RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
+RUN chmod -R 777 /usr/src/app/ /.cache /.yarn
 
+# Add prod requirements to base image.
+COPY requirements.txt /usr/src/app/
+# Install required python packages with pip.
+RUN pip3 install -r requirements.txt
 
-COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip3 install --no-cache-dir -r requirements.txt && pip3 install --no-cache-dir -r dev-requirements.txt
-
+# Packages to install with yarn.
 COPY package.json /usr/src/app/
 RUN yarn
 
-COPY test_data.py /usr/src/app/
-
-ENV PATH="/usr/src/app/geckodriver:${PATH}"
-ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
-
 WORKDIR /usr/src/app/
 
-CMD ["OpenOversight/scripts/entrypoint_dev.sh"]
+FROM base as production
+# Copy source files.
+COPY OpenOversight OpenOversight
+CMD ["OpenOversight/scripts/entrypoint_prod.sh"]
