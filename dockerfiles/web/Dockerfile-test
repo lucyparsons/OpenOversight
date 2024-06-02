@@ -51,4 +51,4 @@ ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 
 WORKDIR /usr/src/app/
 
-RUN touch OpenOversight/tests/coverage.xml & chmod 777 OpenOversight/tests/coverage.xml
+COPY OpenOversight OpenOversight
