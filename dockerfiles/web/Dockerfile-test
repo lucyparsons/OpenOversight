@@ -50,5 +50,3 @@ ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 
 WORKDIR /usr/src/app/
-
-CMD ["OpenOversight/scripts/entrypoint_dev.sh"]
