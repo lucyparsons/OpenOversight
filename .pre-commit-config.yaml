@@ -76,14 +76,16 @@ repos:
           args:
             - --quiet
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.7
     hooks:
-        - id: flake8
-          args:
-            - --ignore=E203,E402,E501,E800,W503,W391,E261,W504
-            - --select=B,C,E,F,W,T4,B9
-            - --exclude=./OpenOversight/app/db_repository/versions/
+      - id: ruff
+        types_or: [python, pyi, jupyter]
+        args:
+          - --fix
+          - --select=B,C,E,F,W
+          - --ignore=E203,E402,E501,W391,E261
+          - --exclude=./OpenOversight/app/db_repository/versions/
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
