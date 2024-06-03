@@ -1087,7 +1087,7 @@ def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool =
         ranks = Job.query.all()
         # Prevent duplicate ranks
         rank_list = sorted(
-            set((rank.id, rank.job_title) for rank in ranks),
+            {(rank.id, rank.job_title) for rank in ranks},
             key=lambda x: x[1],
         )
 
@@ -1117,7 +1117,7 @@ def get_dept_units(department_id: Optional[int] = None):
         units = Unit.query.all()
         # Prevent duplicate units
         unit_list = sorted(
-            set((unit.id, unit.description) for unit in units),
+            {(unit.id, unit.description) for unit in units},
             key=lambda x: x[1],
         )
 
