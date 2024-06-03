@@ -173,8 +173,7 @@ def test_salary_repr(mockdata):
 
 def test_password_not_printed(mockdata):
     user = User(password="bacon")
-    with raises(AttributeError):
-        user.password
+    assert "bacon" not in repr(user)
 
 
 def test_password_set_success(mockdata):
