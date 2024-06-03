@@ -208,9 +208,9 @@ def _handle_assignments_csv(
                 officer_id = row["officer_id"]
                 if officer_id != "" and officer_id[0] != "#":
                     all_rel_officers.add(int(officer_id))
-            wrong_department = all_rel_officers - set(
-                [int(oid) for oid in all_officers.keys() if oid[0] != "#"]
-            )
+            wrong_department = all_rel_officers - {
+                int(oid) for oid in all_officers.keys() if oid[0] != "#"
+            }
             if len(wrong_department) > 0:
                 raise Exception(
                     "Referenced {} officers in assignment csv that belong to different "
