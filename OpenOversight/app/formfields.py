@@ -36,6 +36,6 @@ class TimeField(StringField):
                 else:
                     raise ValueError
                 self.data = datetime.time(hour, minutes, seconds)
-            except ValueError:
+            except ValueError as err:
                 self.data = None
-                raise ValueError(self.gettext("Not a valid time"))
+                raise ValueError(self.gettext("Not a valid time")) from err
