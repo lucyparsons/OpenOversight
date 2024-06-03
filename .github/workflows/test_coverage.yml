@@ -1,8 +1,5 @@
 name: Test Coverage
 on:
-  pull_request:
-    branches:
-      - develop
   push:
     branches:
       - develop
