@@ -318,9 +318,9 @@ def test_filter_by_form_filter_unit(
     for officer in officers:
         found = False
         if has_officers_with_unit:
-            found = found or any([a.unit_id == unit_id for a in officer.assignments])
+            found = found or any(a.unit_id == unit_id for a in officer.assignments)
         if has_officers_with_no_unit:
-            found = found or any([a.unit_id is None for a in officer.assignments])
+            found = found or any(a.unit_id is None for a in officer.assignments)
         assert found
 
 

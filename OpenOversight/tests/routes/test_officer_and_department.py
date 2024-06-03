@@ -1772,8 +1772,7 @@ def test_assignments_csv(mockdata, client, session, department):
             follow_redirects=True,
         )
         csv_data = rv.data.decode(ENCODING_UTF_8)
-        csv_reader = csv.DictReader(csv_data.split("\n"))
-        all_rows = [row for row in csv_reader]
+        all_rows = csv.DictReader(csv_data.split("\n"))
         for row in all_rows:
             assert (
                 Officer.query.get(int(row["officer id"])).department_id == department.id
