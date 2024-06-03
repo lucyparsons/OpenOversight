@@ -456,7 +456,7 @@ def edit_assignment(officer_id: int, assignment_id: int):
     )
     form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
     form.unit.query = unit_choices(officer.department_id)
-    if form.unit.data and type(form.unit.data) == int:
+    if form.unit.data and isinstance(form.unit.data, int):
         form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
     if form.validate_on_submit():
         form.job_title.data = Job.query.filter_by(
