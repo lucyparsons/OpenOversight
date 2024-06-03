@@ -309,7 +309,7 @@ def test_crop_image_calls_save_image_to_s3_and_db_with_user_id(mockdata, client)
 def test_filter_by_form_filter_unit(
     mockdata, units, has_officers_with_unit, has_officers_with_no_unit
 ):
-    form_data = dict(unit=units)
+    form_data = {"unit": units}
     unit_id = Unit.query.filter_by(description="Donut Devourers").one().id
     department_id = Department.query.first().id
 
