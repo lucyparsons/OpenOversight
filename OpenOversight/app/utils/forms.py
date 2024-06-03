@@ -86,46 +86,46 @@ def add_officer_profile(form: AddOfficerForm, user: User) -> Officer:
     )
     db.session.add(assignment)
     if form.links.data:
-        for link in form.data["links"]:
-            if link["url"]:
-                li = get_or_create_link_from_form(link, user)
-                officer.links.append(li)
+        form_links = [link for link in form.data["links"] if link["url"]]
+        for link in form_links:
+            li = get_or_create_link_from_form(link, user)
+            officer.links.append(li)
     if form.notes.data:
-        for note in form.data["notes"]:
-            # don't try to create with a blank string
-            if note["text_contents"]:
-                new_note = Note(
-                    text_contents=note["text_contents"],
-                    officer=officer,
-                    created_by=user.id,
-                    last_updated_by=user.id,
-                )
-                db.session.add(new_note)
+        # don't try to create with a blank string
+        form_notes = [n for n in form.data["notes"] if n["text_contents"]]
+        for note in form_notes:
+            new_note = Note(
+                text_contents=note["text_contents"],
+                officer=officer,
+                created_by=user.id,
+                last_updated_by=user.id,
+            )
+            db.session.add(new_note)
     if form.descriptions.data:
-        for description in form.data["descriptions"]:
-            # don't try to create with a blank string
-            if description["text_contents"]:
-                new_description = Description(
-                    text_contents=description["text_contents"],
-                    officer=officer,
-                    created_by=user.id,
-                    last_updated_by=user.id,
-                )
-                db.session.add(new_description)
+        # don't try to create with a blank string
+        form_descriptions = [d for d in form.data["descriptions"] if d["text_contents"]]
+        for description in form_descriptions:
+            new_description = Description(
+                text_contents=description["text_contents"],
+                officer=officer,
+                created_by=user.id,
+                last_updated_by=user.id,
+            )
+            db.session.add(new_description)
     if form.salaries.data:
-        for salary in form.data["salaries"]:
-            # don't try to create with a blank string
-            if salary["salary"]:
-                new_salary = Salary(
-                    officer=officer,
-                    salary=salary["salary"],
-                    overtime_pay=salary["overtime_pay"],
-                    year=salary["year"],
-                    is_fiscal_year=salary["is_fiscal_year"],
-                    created_by=user.id,
-                    last_updated_by=user.id,
-                )
-                db.session.add(new_salary)
+        # don't try to create with a blank string
+        form_salaries = [s for s in form.data["salaries"] if s["salary"]]
+        for salary in form_salaries:
+            new_salary = Salary(
+                officer=officer,
+                salary=salary["salary"],
+                overtime_pay=salary["overtime_pay"],
+                year=salary["year"],
+                is_fiscal_year=salary["is_fiscal_year"],
+                created_by=user.id,
+                last_updated_by=user.id,
+            )
+            db.session.add(new_salary)
 
     db.session.commit()
     return officer
