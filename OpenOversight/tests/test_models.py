@@ -172,6 +172,7 @@ def test_salary_repr(mockdata):
 
 
 def test_password_not_printed(mockdata):
+    """Validate that password fields cannot be directly accessed."""
     user = User(password="bacon")
     try:
         print(user.password)
