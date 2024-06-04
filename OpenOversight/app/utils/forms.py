@@ -170,35 +170,32 @@ def create_incident(self, form: IncidentForm, user: User) -> Incident:
             db.session.add(location)
         address_model = location
 
-    if "officers" in form.data:
-        for officer in form.data["officers"]:
-            if officer["oo_id"]:
-                of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
-                if of:
-                    officers.append(of)
+    form_officers = [o for o in form.data["officers"] if o["oo_id"]]
+    for officer in form_officers:
+        of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
+        if of:
+            officers.append(of)
 
-    if "license_plates" in form.data:
-        for plate in form.data["license_plates"]:
-            if plate["number"]:
-                lp = LicensePlate.query.filter_by(
-                    number=if_exists_or_none(plate["number"]),
-                    state=if_exists_or_none(plate["state"]),
-                ).first()
-                if not lp:
-                    lp = LicensePlate(
-                        number=if_exists_or_none(plate["number"]),
-                        state=if_exists_or_none(plate["state"]),
-                        created_by=user.id,
-                        last_updated_by=user.id,
-                    )
-                    db.session.add(lp)
-                license_plates.append(lp)
+    form_plates = [p for p in form.data["license_plates"] if p["number"]]
+    for plate in form_plates:
+        lp = LicensePlate.query.filter_by(
+            number=if_exists_or_none(plate["number"]),
+            state=if_exists_or_none(plate["state"]),
+        ).first()
+        if not lp:
+            lp = LicensePlate(
+                number=if_exists_or_none(plate["number"]),
+                state=if_exists_or_none(plate["state"]),
+                created_by=user.id,
+                last_updated_by=user.id,
+            )
+            db.session.add(lp)
+        license_plates.append(lp)
 
-    if "links" in form.data:
-        for link in form.data["links"]:
-            if link["url"]:
-                li = get_or_create_link_from_form(link, user)
-                links.append(li)
+    form_links = [link for link in form.data["links"] if link["url"]]
+    for link in form_links:
+        li = get_or_create_link_from_form(link, user)
+        links.append(li)
 
     return Incident(
         address=address_model,
