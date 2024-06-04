@@ -75,21 +75,20 @@ def process_form_data(form_dict: dict) -> dict:
     """Mock the browser-flattening of a form containing embedded data."""
     new_dict = {}
     for key, value in form_dict.items():
-        if isinstance(value, list):
-            if value[0]:
-                if isinstance(value[0], dict):
-                    for idx, item in enumerate(value):
-                        for sub_key, sub_value in item.items():
-                            new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
-                elif isinstance(value[0], str) or isinstance(value[0], int):
-                    for idx, item in enumerate(value):
-                        new_dict[f"{key}-{idx}"] = item
-                else:
-                    raise ValueError(
-                        "Lists must contain dicts, strings or ints. {} submitted".format(
-                            type(value[0])
-                        )
+        if isinstance(value, list) and value[0]:
+            if isinstance(value[0], dict):
+                for idx, item in enumerate(value):
+                    for sub_key, sub_value in item.items():
+                        new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
+            elif isinstance(value[0], str) or isinstance(value[0], int):
+                for idx, item in enumerate(value):
+                    new_dict[f"{key}-{idx}"] = item
+            else:
+                raise ValueError(
+                    "Lists must contain dicts, strings or ints. {} submitted".format(
+                        type(value[0])
                     )
+                )
         elif isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 new_dict[f"{key}-{sub_key}"] = sub_value
