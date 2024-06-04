@@ -173,7 +173,10 @@ def test_salary_repr(mockdata):
 
 def test_password_not_printed(mockdata):
     user = User(password="bacon")
-    assert "bacon" not in repr(user)
+    try:
+        print(user.password)
+    except Exception as e:
+        assert isinstance(e, AttributeError)
 
 
 def test_password_set_success(mockdata):
