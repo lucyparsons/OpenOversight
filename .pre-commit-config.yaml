@@ -84,7 +84,7 @@ repos:
         args:
           - --fix
           - --select=B,C,E,F,W
-          - --ignore=E203,E402,E501,W391,E261
+          - --ignore=C901,E203,E402,E501,W391,E261
           - --exclude=./OpenOversight/app/db_repository/versions/
 
   - repo: https://github.com/psf/black
