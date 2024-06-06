@@ -257,6 +257,7 @@ def get_or_create_link_from_form(link_form, user: User) -> Union[Link, None]:
                 link_type=if_exists_or_none(link_form["link_type"]),
                 title=if_exists_or_none(link_form["title"]),
                 url=if_exists_or_none(link_form["url"]),
+                has_content_warning=link_form["has_content_warning"],
                 created_by=user.id,
                 last_updated_by=user.id,
             )

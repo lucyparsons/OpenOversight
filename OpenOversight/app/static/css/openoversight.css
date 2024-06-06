@@ -679,3 +679,15 @@ tr:hover .row-actions {
 .bottom-margin {
   margin-bottom: 2rem;
 }
+
+.video-container .overlay {
+    align-items: center;
+    background: black;
+    color: white;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}

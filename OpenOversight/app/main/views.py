@@ -2374,6 +2374,7 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
+                has_content_warning=form.has_content_warning.data,
                 created_by=current_user.id,
                 last_updated_by=current_user.id,
             )

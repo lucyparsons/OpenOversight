@@ -623,6 +623,7 @@ class Link(BaseModel, TrackUpdates):
     link_type = db.Column(db.String(100), index=True)
     description = db.Column(db.Text(), nullable=True)
     author = db.Column(db.String(255), nullable=True)
+    has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
 
     @validates("url")
     def validate_url(self, key, url):

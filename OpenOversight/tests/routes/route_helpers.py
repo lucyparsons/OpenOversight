@@ -80,20 +80,28 @@ def process_form_data(form_dict: dict) -> dict:
                 if type(value[0]) is dict:
                     for idx, item in enumerate(value):
                         for sub_key, sub_value in item.items():
-                            new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
+                            if type(sub_value) is not bool:
+                                new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
+                            elif sub_value:
+                                new_dict[f"{key}-{idx}-{sub_key}"] = "y"
                 elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
-                        new_dict[f"{key}-{idx}"] = item
+                        if type(item) is not bool:
+                            new_dict[f"{key}-{idx}"] = item
+                        elif item:
+                            new_dict[f"{key}-{idx}"] = "y"
                 else:
                     raise ValueError(
                         "Lists must contain dicts, strings or ints. {} submitted".format(
                             type(value[0])
                         )
                     )
-        elif type(value) == dict:
+        elif type(value) is dict:
             for sub_key, sub_value in value.items():
                 new_dict[f"{key}-{sub_key}"] = sub_value
-        else:
+        elif type(value) is not bool:
             new_dict[key] = value
+        elif value:
+            new_dict[key] = "y"
 
     return new_dict
