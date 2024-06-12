@@ -352,7 +352,9 @@ def process_assignment(row, officer, compare=False):
                         current
                         and field_name in row
                         and is_equal(row[field_name], current)
-                    ) or (not current and (field_name not in row or not row[field_name])):
+                    ) or (
+                        not current and (field_name not in row or not row[field_name])
+                    ):
                         i += 1
                 if i == len(assignment_field_names):
                     job_title = job.job_title
