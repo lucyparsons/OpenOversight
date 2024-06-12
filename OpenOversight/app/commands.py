@@ -373,7 +373,10 @@ def process_assignment(row, officer, compare=False):
                 num_existing_ranks = len(
                     Job.query.filter_by(department_id=officer.department_id).all()
                 )
-                auto_order = num_existing_ranks + 1 if num_existing_ranks > 0 else 0
+                if num_existing_ranks > 0:
+                    auto_order = num_existing_ranks + 1
+                else:
+                    auto_order = 0
                 # create new job
                 job = Job(
                     is_sworn_officer=False,
