@@ -338,23 +338,23 @@ def process_assignment(row, officer, compare=False):
                 .all()
             )
             for assignment, job in assignments:
-                assignment_fieldnames = [
+                assignment_field_names = [
                     "star_no",
                     "unit_id",
                     "start_date",
                     "resign_date",
                 ]
                 i = 0
-                for fieldname in assignment_fieldnames:
-                    current = getattr(assignment, fieldname)
+                for field_name in assignment_field_names:
+                    current = getattr(assignment, field_name)
                     # Test if fields match between row and existing assignment
                     if (
                         current
-                        and fieldname in row
-                        and is_equal(row[fieldname], current)
-                    ) or (not current and (fieldname not in row or not row[fieldname])):
+                        and field_name in row
+                        and is_equal(row[field_name], current)
+                    ) or (not current and (field_name not in row or not row[field_name])):
                         i += 1
-                if i == len(assignment_fieldnames):
+                if i == len(assignment_field_names):
                     job_title = job.job_title
                     if (
                         job_title and row.get("job_title", "Not Sure") == job_title
