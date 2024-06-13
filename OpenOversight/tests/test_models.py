@@ -178,6 +178,7 @@ def test_password_not_printed(mockdata):
         print(user.password)
     except Exception as e:
         assert isinstance(e, AttributeError)
+        assert str(e) == "password is not a readable attribute"
 
 
 def test_password_set_success(mockdata):
