@@ -214,7 +214,7 @@ def _handle_assignments_csv(
             if len(wrong_department) > 0:
                 raise Exception(
                     f"Referenced {len(wrong_department)} officers in assignment "
-                    "csv that belong to different department. Example ids"
+                    "csv that belong to different department. Example IDs"
                     f": {', '.join(map(str, list(wrong_department)[:3]))}"
                 )
             print(
