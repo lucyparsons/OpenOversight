@@ -230,7 +230,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                     new_value = parse(row[field_name])
                     if isinstance(old_value, date):
                         new_value = new_value.date()
-                except Exception as e:
+                except Exception as err:
                     msg = (
                         'Field {} is a date-type, but "{}" was specified for '
                         "Officer {} {} and cannot be parsed as a date-type.\nError "
@@ -239,10 +239,10 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                             row[field_name],
                             officer.first_name,
                             officer.last_name,
-                            e,
+                            err,
                         )
                     )
-                    raise Exception(msg) from e
+                    raise Exception(msg) from err
             else:
                 new_value = row[field_name]
             if old_value is None:
