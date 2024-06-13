@@ -194,11 +194,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
         ):
             ImportLog.log_change(
                 officer,
-                "Updated {}: {} --> {}".format(
-                    officer_field_name,
-                    getattr(officer, officer_field_name),
-                    row[officer_field_name],
-                ),
+                f"Updated {officer_field_name}: {getattr(officer, officer_field_name)} --> {row[officer_field_name]}",
             )
             setattr(officer, officer_field_name, row[officer_field_name])
 
@@ -232,15 +228,10 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                         new_value = new_value.date()
                 except Exception as err:
                     msg = (
-                        'Field {} is a date-type, but "{}" was specified for '
-                        "Officer {} {} and cannot be parsed as a date-type.\nError "
-                        "message from dateutil: {}".format(
-                            field_name,
-                            row[field_name],
-                            officer.first_name,
-                            officer.last_name,
-                            err,
-                        )
+                        f'Field {field_name} is a date-type, but "{row[field_name]}"'
+                        f" was specified for Officer {officer.first_name} "
+                        f"{officer.last_name} and cannot be parsed as a "
+                        f"date-type.\nError message from dateutil: {err}"
                     )
                     raise Exception(msg) from err
             else:
@@ -248,12 +239,10 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             if old_value is None:
                 update_officer_field(field_name)
             elif str(old_value) != str(new_value):
-                msg = "Officer {} {} has differing {} field. Old: {}, new: {}".format(
-                    officer.first_name,
-                    officer.last_name,
-                    field_name,
-                    old_value,
-                    new_value,
+                msg = (
+                    f"Officer {officer.first_name} {officer.last_name} has "
+                    f"differing {field_name} field. Old: {old_value}, "
+                    f"new: {new_value}"
                 )
                 if update_static_fields:
                     print(msg)
@@ -539,9 +528,8 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                     )
                 else:
                     raise Exception(
-                        "Officer {} {} missing badge number and unique identifier".format(
-                            row["first_name"], row["last_name"]
-                        )
+                        f"Officer {row['first_name']} {row['last_name']} "
+                        "missing badge number and unique identifier"
                     )
             else:
                 officer = Officer.query.filter_by(
