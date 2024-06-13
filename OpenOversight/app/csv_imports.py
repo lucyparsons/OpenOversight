@@ -213,16 +213,12 @@ def _handle_assignments_csv(
             }
             if len(wrong_department) > 0:
                 raise Exception(
-                    "Referenced {} officers in assignment csv that belong to different "
-                    "department. Example ids: {}".format(
-                        len(wrong_department),
-                        ", ".join(map(str, list(wrong_department)[:3])),
-                    )
+                    f"Referenced {len(wrong_department)} officers in assignment "
+                    "csv that belong to different department. Example ids"
+                    f": {', '.join(map(str, list(wrong_department)[:3]))}"
                 )
             print(
-                "Deleting assignments from {} officers to overwrite.".format(
-                    len(all_rel_officers)
-                )
+                f"Deleting assignments from {len(all_rel_officers)} officers to overwrite."
             )
             (
                 db.session.query(Assignment)
@@ -245,9 +241,7 @@ def _handle_assignments_csv(
             officer = all_officers.get(row["officer_id"])
             if not officer:
                 raise Exception(
-                    "Officer with id {} does not exist (in this department)".format(
-                        row["officer_id"]
-                    )
+                    f"Officer with id {row['officer_id']} does not exist (in this department)"
                 )
             if row.get("unit_id"):
                 assert (
@@ -331,9 +325,7 @@ def _handle_salaries(
             officer = all_officers.get(row["officer_id"])
             if not officer:
                 raise Exception(
-                    "Officer with id {} does not exist (in this department)".format(
-                        row["officer_id"]
-                    )
+                    f"Officer with id {row['officer_id']} does not exist (in this department)"
                 )
             row["officer_id"] = officer.id
             _create_or_update_model(
