@@ -208,21 +208,17 @@ def _handle_assignments_csv(
                 officer_id = row["officer_id"]
                 if officer_id != "" and officer_id[0] != "#":
                     all_rel_officers.add(int(officer_id))
-            wrong_department = all_rel_officers - set(
-                [int(oid) for oid in all_officers.keys() if oid[0] != "#"]
-            )
+            wrong_department = all_rel_officers - {
+                int(oid) for oid in all_officers.keys() if oid[0] != "#"
+            }
             if len(wrong_department) > 0:
                 raise Exception(
-                    "Referenced {} officers in assignment csv that belong to different "
-                    "department. Example ids: {}".format(
-                        len(wrong_department),
-                        ", ".join(map(str, list(wrong_department)[:3])),
-                    )
+                    f"Referenced {len(wrong_department)} officers in assignment "
+                    "csv that belong to different department. Example IDs"
+                    f": {', '.join(map(str, list(wrong_department)[:3]))}"
                 )
             print(
-                "Deleting assignments from {} officers to overwrite.".format(
-                    len(all_rel_officers)
-                )
+                f"Deleting assignments from {len(all_rel_officers)} officers to overwrite."
             )
             (
                 db.session.query(Assignment)
@@ -245,9 +241,7 @@ def _handle_assignments_csv(
             officer = all_officers.get(row["officer_id"])
             if not officer:
                 raise Exception(
-                    "Officer with id {} does not exist (in this department)".format(
-                        row["officer_id"]
-                    )
+                    f"Officer with id {row['officer_id']} does not exist (in this department)"
                 )
             if row.get("unit_id"):
                 assert (
@@ -331,9 +325,7 @@ def _handle_salaries(
             officer = all_officers.get(row["officer_id"])
             if not officer:
                 raise Exception(
-                    "Officer with id {} does not exist (in this department)".format(
-                        row["officer_id"]
-                    )
+                    f"Officer with id {row['officer_id']} does not exist (in this department)"
                 )
             row["officer_id"] = officer.id
             _create_or_update_model(

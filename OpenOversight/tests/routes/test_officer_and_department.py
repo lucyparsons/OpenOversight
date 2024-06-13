@@ -1772,8 +1772,7 @@ def test_assignments_csv(mockdata, client, session, department):
             follow_redirects=True,
         )
         csv_data = rv.data.decode(ENCODING_UTF_8)
-        csv_reader = csv.DictReader(csv_data.split("\n"))
-        all_rows = [row for row in csv_reader]
+        all_rows = list(csv.DictReader(csv_data.split("\n")))
         for row in all_rows:
             assert (
                 Officer.query.get(int(row["officer id"])).department_id == department.id
@@ -2035,9 +2034,7 @@ def test_admin_can_upload_photos_of_dept_officers(
     with current_app.test_request_context():
         login_admin(client)
 
-        data = dict(
-            file=(test_jpg_bytes_io, "204Cat.png"),
-        )
+        data = {"file": (test_jpg_bytes_io, "204Cat.png")}
 
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[3]
@@ -2077,9 +2074,7 @@ def test_upload_photo_sends_500_on_s3_error(
     with current_app.test_request_context():
         login_admin(client)
 
-        data = dict(
-            file=(test_png_bytes_io, "204Cat.png"),
-        )
+        data = {"file": (test_png_bytes_io, "204Cat.png")}
 
         department = Department.query.filter_by(id=AC_DEPT).first()
         mock = MagicMock(return_value=None)
@@ -2102,9 +2097,7 @@ def test_upload_photo_sends_500_on_s3_error(
 def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
-        data = dict(
-            file=(BytesIO(b"my file contents"), "test_cop1.png"),
-        )
+        data = {"file": (BytesIO(b"my file contents"), "test_cop1.png")}
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[0]
         mock = MagicMock(return_value=False)
@@ -2123,9 +2116,7 @@ def test_upload_photo_sends_415_for_bad_file_type(mockdata, client, session):
 def test_user_cannot_upload_officer_photo(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
-        data = dict(
-            file=(BytesIO(b"my file contents"), "test_cop1.png"),
-        )
+        data = {"file": (BytesIO(b"my file contents"), "test_cop1.png")}
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[0]
         rv = client.post(
@@ -2142,9 +2133,9 @@ def test_ac_can_upload_photos_of_dept_officers(
 ):
     with current_app.test_request_context():
         login_ac(client)
-        data = dict(
-            file=(test_png_bytes_io, "204Cat.png"),
-        )
+        data = {
+            "file": (test_png_bytes_io, "204Cat.png"),
+        }
         department = Department.query.filter_by(id=AC_DEPT).first()
         officer = department.officers[4]
         officer_face_count = len(officer.face)

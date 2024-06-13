@@ -194,11 +194,7 @@ def update_officer_from_row(row, officer, update_static_fields=False):
         ):
             ImportLog.log_change(
                 officer,
-                "Updated {}: {} --> {}".format(
-                    officer_field_name,
-                    getattr(officer, officer_field_name),
-                    row[officer_field_name],
-                ),
+                f"Updated {officer_field_name}: {getattr(officer, officer_field_name)} --> {row[officer_field_name]}",
             )
             setattr(officer, officer_field_name, row[officer_field_name])
 
@@ -230,30 +226,23 @@ def update_officer_from_row(row, officer, update_static_fields=False):
                     new_value = parse(row[field_name])
                     if isinstance(old_value, date):
                         new_value = new_value.date()
-                except Exception as e:
+                except Exception as err:
                     msg = (
-                        'Field {} is a date-type, but "{}" was specified for '
-                        "Officer {} {} and cannot be parsed as a date-type.\nError "
-                        "message from dateutil: {}".format(
-                            field_name,
-                            row[field_name],
-                            officer.first_name,
-                            officer.last_name,
-                            e,
-                        )
+                        f'Field {field_name} is a date-type, but "{row[field_name]}"'
+                        f" was specified for Officer {officer.first_name} "
+                        f"{officer.last_name} and cannot be parsed as a "
+                        f"date-type.\nError message from dateutil: {err}"
                     )
-                    raise Exception(msg)
+                    raise Exception(msg) from err
             else:
                 new_value = row[field_name]
             if old_value is None:
                 update_officer_field(field_name)
             elif str(old_value) != str(new_value):
-                msg = "Officer {} {} has differing {} field. Old: {}, new: {}".format(
-                    officer.first_name,
-                    officer.last_name,
-                    field_name,
-                    old_value,
-                    new_value,
+                msg = (
+                    f"Officer {officer.first_name} {officer.last_name} has "
+                    f"differing {field_name} field. Old: {old_value}, "
+                    f"new: {new_value}"
                 )
                 if update_static_fields:
                     print(msg)
@@ -338,23 +327,25 @@ def process_assignment(row, officer, compare=False):
                 .all()
             )
             for assignment, job in assignments:
-                assignment_fieldnames = [
+                assignment_field_names = [
                     "star_no",
                     "unit_id",
                     "start_date",
                     "resign_date",
                 ]
                 i = 0
-                for fieldname in assignment_fieldnames:
-                    current = getattr(assignment, fieldname)
+                for field_name in assignment_field_names:
+                    current = getattr(assignment, field_name)
                     # Test if fields match between row and existing assignment
                     if (
                         current
-                        and fieldname in row
-                        and is_equal(row[fieldname], current)
-                    ) or (not current and (fieldname not in row or not row[fieldname])):
+                        and field_name in row
+                        and is_equal(row[field_name], current)
+                    ) or (
+                        not current and (field_name not in row or not row[field_name])
+                    ):
                         i += 1
-                if i == len(assignment_fieldnames):
+                if i == len(assignment_field_names):
                     job_title = job.job_title
                     if (
                         job_title and row.get("job_title", "Not Sure") == job_title
@@ -537,9 +528,8 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
                     )
                 else:
                     raise Exception(
-                        "Officer {} {} missing badge number and unique identifier".format(
-                            row["first_name"], row["last_name"]
-                        )
+                        f"Officer {row['first_name']} {row['last_name']} "
+                        "missing badge number and unique identifier"
                     )
             else:
                 officer = Officer.query.filter_by(

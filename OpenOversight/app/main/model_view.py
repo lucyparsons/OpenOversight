@@ -217,7 +217,7 @@ class ModelView(MethodView):
         form.populate_obj(obj)
 
         # if the object doesn't have a creator id set it to current user
-        if hasattr(obj, "created_by") and not getattr(obj, "created_by"):
+        if hasattr(obj, "created_by") and not obj.created_by:
             obj.created_by = current_user.id
         # if the object keeps track of who updated it last, set to current user
         if hasattr(obj, "last_updated_by"):

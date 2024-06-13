@@ -111,8 +111,8 @@ def save_image_to_s3_and_db(image_buf, user_id, department_id=None):
     image_buf.seek(0)
     try:
         pimage = Pimage.open(image_buf)
-    except UnidentifiedImageError:
-        raise ValueError("Attempted to pass an invalid image.")
+    except UnidentifiedImageError as err:
+        raise ValueError("Attempted to pass an invalid image.") from err
     image_format = pimage.format.lower()
     if image_format not in current_app.config[KEY_ALLOWED_EXTENSIONS]:
         raise ValueError(f"Attempted to pass invalid data type: {image_format}")
