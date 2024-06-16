@@ -75,9 +75,9 @@ def process_form_data(form_dict: dict) -> dict:
     """Mock the browser-flattening of a form containing embedded data."""
     new_dict = {}
     for key, value in form_dict.items():
-        if type(value) == list:
+        if isinstance(value, list):
             if value[0]:
-                if type(value[0]) is dict:
+                if isinstance(value[0], dict):
                     for idx, item in enumerate(value):
                         for sub_key, sub_value in item.items():
                             if type(sub_value) is not bool:
@@ -92,11 +92,9 @@ def process_form_data(form_dict: dict) -> dict:
                             new_dict[f"{key}-{idx}"] = "y"
                 else:
                     raise ValueError(
-                        "Lists must contain dicts, strings or ints. {} submitted".format(
-                            type(value[0])
-                        )
+                        f"Lists must contain dicts, strings or ints. {type(value[0])} submitted"
                     )
-        elif type(value) is dict:
+        elif isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 new_dict[f"{key}-{sub_key}"] = sub_value
         elif type(value) is not bool:
