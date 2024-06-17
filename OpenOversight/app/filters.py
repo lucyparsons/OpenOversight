@@ -40,7 +40,7 @@ def field_in_query(form_data, field) -> str:
     Determine if a field is specified in the form data, and if so return a Bootstrap
     class which will render the field accordion open.
     """
-    return " in " if form_data.get(field) else ""
+    return " show " if form_data.get(field) else ""
 
 
 def markdown(text: str) -> Markup:

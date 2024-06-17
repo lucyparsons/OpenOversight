@@ -1,12 +1,12 @@
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 <form class="form" method="post" role="form">
   {{ form.hidden_tag() }}
-  <div class="text-danger">{{ wtf.form_errors(form, hiddens="only") }}</div>
-  {{ wtf.form_field(form.date_field, autofocus="autofocus") }}
-  {{ wtf.form_field(form.time_field) }}
-  {{ wtf.form_field(form.report_number) }}
-  {{ wtf.form_field(form.department) }}
-  {{ wtf.form_field(form.description) }}
+  <div class="text-danger">{{ wtf.render_hidden_errors(form) }}</div>
+  {{ wtf.render_field(form.date_field, autofocus="autofocus") }}
+  {{ wtf.render_field(form.time_field) }}
+  {{ wtf.render_field(form.report_number) }}
+  {{ wtf.render_field(form.department) }}
+  {{ wtf.render_field(form.description) }}
   {% with subform=form.address, no_remove=True %}
     {% include "partials/subform.html" %}
   {% endwith %}
@@ -34,5 +34,5 @@
     {% endfor %}
     <button class="btn btn-success js-add-another-button" disabled>Add another link</button>
   </div>
-  {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+  {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
 </form>

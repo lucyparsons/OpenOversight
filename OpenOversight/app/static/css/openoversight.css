@@ -4,20 +4,13 @@ html {
 }
 body {
   margin-bottom: 100px;
-  padding-top: 65px;
   padding-bottom: 100px;
 }
 
 .footer {
-  position: absolute;
-  bottom: 140px;
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 100px;
-}
-
-div[role=main] {
-    padding-bottom: 30px;
 }
 
 .social:hover {
@@ -72,7 +65,6 @@ div[role=main] {
  }
 
  .theme-showcase {
-     margin-bottom: 40px;
  }
 
  .theme-showcase > p > .btn {
@@ -298,7 +290,6 @@ a > .tutorial{
     color: black;
     border-color: green;
     font-weight: bold;
-    margin-bottom: 3rem;
 }
 
 .btn-success:hover {
@@ -490,15 +481,14 @@ tr:hover .row-actions {
 }
 
 .filter-sidebar .panel-heading .accordion-toggle:after {
-    font-family: 'Glyphicons Halflings';
-    content: "\e252";
+    content: "\25B4";
     float: right;
     font-size: 0.7em;
     padding-top: 0.3em;
 }
 
 .filter-sidebar .panel-heading.collapsed .accordion-toggle:after {
-    content: "\e253";
+    content: "\25BE";
 }
 
 @media all and (min-width: 768px) and (max-width: 991px) {
@@ -555,16 +545,15 @@ tr:hover .row-actions {
     display:none;
 }
 
-.console .done-button:hover ~ .button-explanation .done-button-explanation{
+.console:has(.done-button:hover) .button-explanation .done-button-explanation{
     display:block;
 }
 
-.console .skip-button:hover ~ .button-explanation .skip-button-explanation{
+.console:has(.skip-button:hover) .button-explanation .skip-button-explanation{
     display:block;
 }
 
-
-.console .launchroster-button:hover ~ .button-explanation .launchroster-button-explanation{
+.console:has(.launchroster-button:hover) .input-explanation .launchroster-button-explanation{
     display:block;
 }
 

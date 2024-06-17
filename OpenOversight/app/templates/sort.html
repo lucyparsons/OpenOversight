@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "bootstrap5/utils.html" import render_icon %}
 {% block head %}
   <script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>
 {% endblock head %}
@@ -18,7 +19,7 @@
   </script>
 {% endblock js_footer %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
+  <div class="container theme-showcase py-5" role="main">
     {% if current_user and current_user.is_authenticated %}
       {% if image and current_user.is_disabled == False %}
         <div class="row">
@@ -37,7 +38,7 @@
                       id="answer-no"
                       class="btn btn-lg btn-danger">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>
+                {{ render_icon("ban") }}
                 <u>N</u>o
               </button>
             </form>
@@ -47,7 +48,8 @@
                id="answer-skip"
                class="btn btn-lg btn-primary"
                role="button">
-              <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> <u>S</u>kip</a>
+              {{ render_icon("repeat") }}
+              <u>S</u>kip</a>
           </div>
           <div class="col-sm-4 text-center">
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
@@ -57,19 +59,15 @@
                       name="action"
                       id="answer-yes"
                       class="btn btn-lg btn-success">
-                <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>
+                {{ render_icon("check") }}
                 <u>Y</u>es!
               </button>
             </form>
           </div>
         </div>
-        <div class="row">
-          <div class="frontpage-leads">
-            <div>
-              <img class="center-block img-responsive"
-                   src="{{ path }}"
-                   alt="Picture to be sorted">
-            </div>
+        <div class="row py-5">
+          <div class="text-center">
+            <img class="img-responsive" src="{{ path }}" alt="Picture to be sorted">
           </div>
         </div>
       {% elif current_user.is_disabled == True %}
