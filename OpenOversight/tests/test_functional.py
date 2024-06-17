@@ -179,10 +179,11 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
         unique_internal_identifier_label=None
     ).first()
 
-    dept_selector = Select(browser.find_element_by_id("dept"))
-    uii_element = browser.find_element("id", "uii-question")
+    dept_selector = browser.find_element_by_id("dept")
+    scroll_to_element(browser, dept_selector)
+    Select(dept_selector).select_by_value(str(dept_without_uii.id))
 
-    dept_selector.select_by_value(str(dept_without_uii.id))
+    uii_element = browser.find_element("id", "uii-question")
     assert not uii_element.is_displayed()
 
 
