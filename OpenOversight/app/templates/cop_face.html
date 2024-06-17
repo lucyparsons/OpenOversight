@@ -137,8 +137,8 @@
             <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
                class="skip-button btn btn-lg btn-primary"
                role="button">
-               <div>{{ render_icon("arrow-repeat") }}</div>
-               Next Photo
+              <div>{{ render_icon("arrow-repeat") }}</div>
+              Next Photo
             </a>
             <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
                class="done-button btn btn-lg btn-success">

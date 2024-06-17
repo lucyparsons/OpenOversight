@@ -2,7 +2,8 @@
 {% set incident = obj %}
 {% block title %}
   {{ incident.department.name }} incident
-  {% if incident.report_number %}{{ incident.report_number }}{% endif %} - OpenOversight
+  {% if incident.report_number %}{{ incident.report_number }}{% endif %}
+  - OpenOversight
 {% endblock title %}
 {% block meta %}
   <meta name="description"

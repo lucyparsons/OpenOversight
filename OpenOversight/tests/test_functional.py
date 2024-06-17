@@ -388,7 +388,9 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/cop_faces/departments/{dept_id}")
     wait_for_page_load(browser)
     browser.find_element(By.ID, "officer_id").send_keys(officer_id)
-    add_face = browser.find_element(By.CSS_SELECTOR, "input[value='Add identified face']")
+    add_face = browser.find_element(
+        By.CSS_SELECTOR, "input[value='Add identified face']"
+    )
     scroll_to_element(browser, add_face)
     add_face.click()
 
