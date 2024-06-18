@@ -2529,6 +2529,53 @@ def test_ac_cannot_add_link_to_officer_profile_not_in_their_dept(
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
+@pytest.mark.parametrize(
+    "link_type, expected_text",
+    [
+        ("link", "The linked page may be disturbing for some viewers"),
+        ("video", 'data-has-content-warning="true"'),
+        ("other_video", "The linked video may be disturbing for some viewers"),
+    ],
+)
+def test_ac_can_add_link_with_content_warning(
+    mockdata, client, session, link_type, expected_text
+):
+    with current_app.test_request_context():
+        login_ac(client)
+        officer = Officer.query.filter_by(department_id=AC_DEPT).first()
+
+        # No content warning
+        form = OfficerLinkForm(
+            title="BPD Watch",
+            description="Baltimore instance of OpenOversight",
+            author="OJB",
+            url="https://bpdwatch.com",
+            link_type=link_type,
+            officer_id=officer.id,
+            has_content_warning=False,
+        )
+
+        rv = client.post(
+            url_for("main.link_api_new", officer_id=officer.id),
+            data=process_form_data(form.data),
+            follow_redirects=True,
+        )
+
+        assert "link created!" in rv.data.decode(ENCODING_UTF_8)
+        assert expected_text not in rv.data.decode(ENCODING_UTF_8)
+
+        # Has content warning
+        form.has_content_warning.data = True
+
+        rv = client.post(
+            url_for("main.link_api_new", officer_id=officer.id),
+            data=process_form_data(form.data),
+            follow_redirects=True,
+        )
+        assert "link created!" in rv.data.decode(ENCODING_UTF_8)
+        assert expected_text in rv.data.decode(ENCODING_UTF_8)
+
+
 def test_admin_can_edit_link_on_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)

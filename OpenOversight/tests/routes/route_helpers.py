@@ -80,10 +80,18 @@ def process_form_data(form_dict: dict) -> dict:
                 if isinstance(value[0], dict):
                     for idx, item in enumerate(value):
                         for sub_key, sub_value in item.items():
-                            new_dict[f"{key}-{idx}-{sub_key}"] = sub_value
+                            new_dict_key = f"{key}-{idx}-{sub_key}"
+                            if not isinstance(sub_value, bool):
+                                new_dict[new_dict_key] = sub_value
+                            elif sub_value:
+                                new_dict[new_dict_key] = "y"
                 elif isinstance(value[0], str) or isinstance(value[0], int):
                     for idx, item in enumerate(value):
-                        new_dict[f"{key}-{idx}"] = item
+                        new_dict_key = f"{key}-{idx}"
+                        if not isinstance(item, bool):
+                            new_dict[new_dict_key] = item
+                        elif item:
+                            new_dict[new_dict_key] = "y"
                 else:
                     raise ValueError(
                         f"Lists must contain dicts, strings or ints. {type(value[0])} submitted"
@@ -91,7 +99,9 @@ def process_form_data(form_dict: dict) -> dict:
         elif isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 new_dict[f"{key}-{sub_key}"] = sub_value
-        else:
+        elif not isinstance(value, bool):
             new_dict[key] = value
+        elif value:
+            new_dict[key] = "y"
 
     return new_dict

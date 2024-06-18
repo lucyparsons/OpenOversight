@@ -6,6 +6,10 @@
         {% for link in list %}
           <li class="list-group-item">
             <a href="{{ link.url }}" rel="noopener noreferrer" target="_blank">{{ link.title or link.url }}</a>
+            {% if link.has_content_warning %}
+              <span class="label label-danger"
+                    title="The linked page may be disturbing for some viewers">Content Warning</span>
+            {% endif %}
             {% if officer and (is_admin_or_coordinator or link.created_by == current_user.id) %}
               <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
                 <span class="sr-only">Edit</span>
@@ -30,10 +34,6 @@
       </ul>
     {% endif %}
   {% endfor %}
-  {% if officer and (current_user.is_admin_or_coordinator(officer.department)) %}
-    <a href="{{ url_for("main.link_api_new", officer_id=officer.id) }}"
-       class="btn btn-primary">New Link/Video</a>
-  {% endif %}
   {% for type, list in obj.links | groupby("link_type") %}
     {% if type == "video" %}
       <h3>Videos</h3>
@@ -53,7 +53,8 @@
                   <i class="fa-solid fa-trash" aria-hidden="true"></i>
                 </a>
               {% endif %}
-              <div class="video-container">
+              <div class="video-container"
+                   data-has-content-warning="{{ link.has_content_warning | lower }}">
                 <iframe width="560"
                         height="315"
                         src="https://www.youtube.com/embed/{{ link_url }}"
@@ -81,6 +82,10 @@
         {% for link in list %}
           <li class="list-group-item">
             <a href="{{ link.url }}">{{ link.title or link.url }}</a>
+            {% if link.has_content_warning %}
+              <span class="label label-danger"
+                    title="The linked video may be disturbing for some viewers">Content Warning</span>
+            {% endif %}
             {% if officer and (current_user.is_admin_or_coordinator(officer.department)
               or link.created_by == current_user.id) %}
               <a href="{{ url_for("main.link_api_edit", officer_id=officer.id, obj_id=link.id) }}">
@@ -106,4 +111,8 @@
       </ul>
     {% endif %}
   {% endfor %}
+  {% if officer and (current_user.is_admin_or_coordinator(officer.department)) %}
+    <a href="{{ url_for("main.link_api_new", officer_id=officer.id) }}"
+       class="btn btn-primary">New Link/Video</a>
+  {% endif %}
 {% endif %}

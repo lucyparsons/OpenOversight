@@ -240,6 +240,9 @@ class LinkForm(Form):
         default="",
         validators=[AnyOf(allowed_values(LINK_CHOICES))],
     )
+    has_content_warning = BooleanField(
+        "Include content warning?", default=True, validators=[Optional()]
+    )
 
     def validate(self, extra_validators=None):
         success = super(LinkForm, self).validate(extra_validators=extra_validators)
