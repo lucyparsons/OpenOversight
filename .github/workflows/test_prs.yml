@@ -6,7 +6,7 @@ on:
       - develop
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-20.04
     env:
       FLASK_APP: OpenOversight.app
