@@ -267,19 +267,19 @@
           {% for officer in officers.items %}
             <li class="list-group-item">
               <div class="row">
-                <div class="col-md-6 col-xs-12">
+                <div class="col-md-6 col-12">
                   <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
                     <img class="officer-face img-responsive thumbnail" src="{{ officer.image | default("/static/images/placeholder.png") }}" alt="{{ officer.full_name() }}">
                   </a>
                 </div>
-                <div class="col-md-6 col-xs-12">
+                <div class="col-md-6 col-12">
                   <h2>
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}"
                        id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
                     <small>{{ officer.badge_number() | default('') }}</small>
                   </h2>
                   <div class="row">
-                    <div class="col-md-6 col-xs-6">
+                    <div class="col-md-6 col-6">
                       <dl>
                         <dt>Rank</dt>
                         <dd>
@@ -299,7 +299,7 @@
                         </dd>
                       </dl>
                     </div>
-                    <div class="col-md-6 col-xs-6">
+                    <div class="col-md-6 col-6">
                       <dl>
                         <dt>Race</dt>
                         <dd>

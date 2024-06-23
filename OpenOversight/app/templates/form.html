@@ -10,7 +10,7 @@
     </div>
     {% block page_header %}
     {% endblock page_header %}
-    <div class="col-md-6 col-xs-12">
+    <div class="col-md-6 col-12">
       {% block form %}
         {{ wtf.render_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
         <br>
