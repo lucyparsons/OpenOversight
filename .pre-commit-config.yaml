@@ -77,16 +77,16 @@ repos:
             - --quiet
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.7
+    rev: v0.4.10
     hooks:
       - id: ruff
-        types_or: [python, pyi, jupyter]
+        types_or: [python,pyi]
         args:
           - --fix
           - --select=B,C,E,F,W
           - --ignore=C901,E203,E402,E501,W391,E261
       - id: ruff-format
-        types_or: [ python, pyi, jupyter ]
+        types_or: [python,pyi]
         args:
           - --target-version=py311
 
