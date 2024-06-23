@@ -21,7 +21,7 @@
         <h3 class="sidebar-title">Filter officers</h3>
         <form class="form" method="get" role="form">
           <div class="panel">
-            <div class="panel-heading"
+            <div class="panel-heading{% if not form_data['first_name'] and not form_data['last_name'] %} collapsed{% endif %}"
                  data-bs-toggle="collapse"
                  data-bs-target="#filter-name">
               <h3 class="panel-title accordion-toggle">Name</h3>
