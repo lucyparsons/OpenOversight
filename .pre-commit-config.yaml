@@ -88,7 +88,7 @@ repos:
       - id: ruff-format
         types_or: [ python, pyi, jupyter ]
         args:
-          - "--target-version=py311"
+          - --target-version=py311
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 'v1.4.1'
