@@ -151,9 +151,10 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
 
 
 def test_user_can_register_with_legit_credentials(mockdata, client, session, faker):
-    with current_app.test_request_context(), TestCase.assertLogs(
-        current_app.logger
-    ) as log:
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
         diceware_password = "operative hamster persevere verbalize curling"
         form = RegistrationForm(
             email=faker.ascii_email(),
@@ -189,9 +190,10 @@ def test_user_cannot_register_with_weak_password(mockdata, client, session):
 
 
 def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
-    with current_app.test_request_context(), TestCase.assertLogs(
-        current_app.logger
-    ) as log:
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
         login_user(client)
 
         rv = client.get(url_for("auth.resend_confirmation"), follow_redirects=True)
@@ -204,9 +206,10 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
 
 
 def test_user_can_get_password_reset_token_sent(mockdata, client, session):
-    with current_app.test_request_context(), TestCase.assertLogs(
-        current_app.logger
-    ) as log:
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
         user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetRequestForm(email=user.email)
 
@@ -226,9 +229,10 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
 def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
     mockdata, client, session
 ):
-    with current_app.test_request_context(), TestCase.assertLogs(
-        current_app.logger
-    ) as log:
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
         user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetRequestForm(email=user.email.upper())
 
@@ -429,9 +433,10 @@ def test_user_can_not_confirm_account_with_invalid_token(mockdata, client, sessi
 
 
 def test_user_can_change_password_if_they_match(mockdata, client, session):
-    with current_app.test_request_context(), TestCase.assertLogs(
-        current_app.logger
-    ) as log:
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
         login_user(client)
         form = ChangePasswordForm(
             old_password="dog", password="validpasswd", password2="validpasswd"
