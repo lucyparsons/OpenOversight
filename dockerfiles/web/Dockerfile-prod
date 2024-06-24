@@ -5,8 +5,8 @@ RUN echo "Building image based on python $PYTHON_VERSION"
 
 WORKDIR /usr/src/app
 
-# Avoid writing .pyc files in the image.
-ARG PYTHONDONTWRITEBYTECODE=1
+# Avoid writing .pyc and __pycache__ files in the image.
+ENV PYTHONDONTWRITEBYTECODE=1
 # Prevent installer from attempting to show dialog boxes during image build.
 ARG DEBIAN_FRONTEND=noninteractive
 # Make sure stdout and stderr are immediately flushed.
