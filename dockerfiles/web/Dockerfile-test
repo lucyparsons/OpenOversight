@@ -7,6 +7,7 @@ ENV CURL_FLAGS="--proto =https --tlsv1.2 -sSf -L --max-redirs 1 -O"
 
 ENV DEBIAN-FRONTEND noninteractive
 ENV DISPLAY=:1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
 RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
