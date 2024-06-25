@@ -1,17 +1,15 @@
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 <fieldset {% if id and number %}id="{{ id }}-{{ number }}"{% endif %}
-          class="well">
+          class="card bg-light mb-3 p-3">
   {{ subform.hidden_tag() }}
-  <div class="text-danger">{{ wtf.form_errors(subform, hiddens="only") }}</div>
+  <div class="text-danger">{{ wtf.render_hidden_errors(subform) }}</div>
   {% for subfield in subform %}
     {% if not bootstrap_is_hidden_field(subfield) %}
-      {{ wtf.form_field(subfield,
+      {{ wtf.render_field(subfield,
             form_type=form_type,
             horizontal_columns=horizontal_columns,
             button_map=button_map) }}
     {% endif %}
   {% endfor %}
-  {% if not no_remove %}
-    <button class="btn btn-danger js-remove-button bottom-margin" disabled>Remove</button>
-  {% endif %}
+  {% if not no_remove %}<button class="btn btn-danger js-remove-button" disabled>Remove</button>{% endif %}
 </fieldset>

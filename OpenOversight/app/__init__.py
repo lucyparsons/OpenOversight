@@ -4,7 +4,7 @@ from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify, render_template, request
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap5
 from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -21,7 +21,7 @@ from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
 
 
-bootstrap = Bootstrap()
+bootstrap = Bootstrap5()
 compress = Compress()
 
 login_manager = LoginManager()

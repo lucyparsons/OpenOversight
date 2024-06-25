@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="container" role="main">
+  <div class="container py-5" role="main">
     <div class="page-header">
       <h1>Image Submission Detail</h1>
     </div>
@@ -85,7 +85,7 @@
             </table>
             {% if current_user.is_admin_or_coordinator(image.department) %}
               <h3>
-                Classify <small>Admin only</small>
+                Classify <small class="text-body-tertiary">Admin only</small>
               </h3>
               <p>
                 <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
@@ -102,7 +102,7 @@
                 </form>
               </p>
               <h3>
-                Identify <small>Admin only</small>
+                Identify <small class="text-body-tertiary">Admin only</small>
               </h3>
               <p>
                 <a href="{{ url_for('main.label_data', image_id=image.id) }}">

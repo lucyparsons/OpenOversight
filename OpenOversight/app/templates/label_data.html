@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
+{% from "bootstrap5/utils.html" import render_icon %}
 {% block title %}
   Volunteer with OpenOversight
 {% endblock title %}
@@ -19,7 +20,7 @@
         <p>
           <a class="btn btn-lg btn-primary"
              href="{{ url_for("main.get_tutorial") }}">
-            <span class="glyphicon glyphicon-alert tutorial" aria-hidden="true"></span>
+            {{ render_icon("exclamation-triangle-fill") }}
             Tutorial
           </a>
         </p>
@@ -27,7 +28,7 @@
         <p>
           <a class="btn btn-lg btn-primary"
              href="{{ url_for("main.leaderboard") }}">
-            <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span>
+            {{ render_icon("hand-thumbs-up") }}
             Leaderboard
           </a>
         </p>
@@ -40,12 +41,12 @@
           <p>
             <a class="btn btn-lg btn-primary"
                href="{{ url_for('main.sort_images', department_id=department.id) }}">
-              <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+              {{ render_icon("copy") }}
               Image classification
             </a>
             <a class="btn btn-lg btn-primary"
                href="{{ url_for('main.label_data', department_id=department.id) }}">
-              <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+              {{ render_icon("tag") }}
               Officer identification
             </a>
           </p>
@@ -56,7 +57,7 @@
           <a href="{{ url_for("main.add_department") }}"
              class="btn btn-primary"
              role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            {{ render_icon("plus") }}
             Add New Department
           </a>
         {% endif %}
@@ -64,19 +65,19 @@
           <a href="{{ url_for("main.add_officer") }}"
              class="btn btn-primary"
              role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            {{ render_icon("plus") }}
             Add New Officer
           </a>
           <a href="{{ url_for("main.add_unit") }}"
              class="btn btn-primary"
              role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            {{ render_icon("plus") }}
             Add New Unit
           </a>
           <a href="{{ url_for("main.incident_api_new") }}"
              class="btn btn-primary"
              role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            {{ render_icon("plus") }}
             Add New Incident
           </a>
         {% endif %}
@@ -112,9 +113,9 @@
             </div>
           </div>
         </div>
-        <div class="container-fluid">
+        <div class="container-fluid bg-blue-gray">
           <div class="row display-flex vertical-padding">
-            <div class="col-lg-6 col-half-no-border bg-blue-gray bordered-box">
+            <div class="col-lg-6 col-half-no-border bordered-box">
               <div class="text-center">
                 <h1>
                   <small>Log In</small>
@@ -122,11 +123,11 @@
               </div>
               <form class="form" method="post" role="form">
                 {{ form.hidden_tag() }}
-                {{ wtf.form_errors(form, hiddens="only") }}
-                {{ wtf.form_field(form.email) }}
-                {{ wtf.form_field(form.password) }}
+                {{ wtf.render_hidden_errors(form) }}
+                {{ wtf.render_field(form.email) }}
+                {{ wtf.render_field(form.password) }}
                 <div class="text-center">
-                  {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
+                  {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
                   {% if error %}{{ error }}{% endif %}
                 </div>
               </form>

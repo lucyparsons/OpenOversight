@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% block title %}
   OpenOversight Admin -
   {% if update %}
@@ -10,7 +10,7 @@
   Officer Salary
 {% endblock title %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
+  <div class="container theme-showcase py-5" role="main">
     <div class="page-header">
       <h1>
         {% if update %}
@@ -24,11 +24,11 @@
     <div class="col-md-6">
       <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.salary) }}
-        {{ wtf.form_field(form.overtime_pay) }}
-        {{ wtf.form_field(form.year) }}
-        {{ wtf.form_field(form.is_fiscal_year) }}
+        {{ wtf.render_hidden_errors(form) }}
+        {{ wtf.render_field(form.salary) }}
+        {{ wtf.render_field(form.overtime_pay) }}
+        {{ wtf.render_field(form.year) }}
+        {{ wtf.render_field(form.is_fiscal_year) }}
         <input class="btn btn-primary btn-lg"
                type="submit"
                value="{% if update %} Edit {% else %} Add {% endif %}" />
