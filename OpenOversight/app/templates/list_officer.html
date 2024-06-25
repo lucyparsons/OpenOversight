@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% block title %}
   Browse {{ department.name | title }} officers - OpenOversight
 {% endblock title %}
@@ -12,16 +12,18 @@
         rel="stylesheet">
 {% endblock head %}
 {% block content %}
-  <div class="container" role="main">
-    <h1>{{ department.display_name }} Officers</h1>
+  <div class="container pb-5" role="main">
+    <div class="frontpage-leads">
+      <h1>{{ department.display_name }} Officers</h1>
+    </div>
     <div class="row">
       <div class="filter-sidebar col-sm-3">
         <h3 class="sidebar-title">Filter officers</h3>
         <form class="form" method="get" role="form">
           <div class="panel">
             <div class="panel-heading{% if not form_data['first_name'] and not form_data['last_name'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-name">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-name">
               <h3 class="panel-title accordion-toggle">Name</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("first_name") }} {{ form_data | field_in_query("last_name") }}"
@@ -53,8 +55,8 @@
           </div>
           <div class="panel">
             <div class="panel-heading{% if not form_data['badge'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-badge">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-badge">
               <h3 class="panel-title accordion-toggle">Badge</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("badge") }}"
@@ -72,8 +74,8 @@
           </div>
           <div class="panel">
             <div class="panel-heading{% if not form_data['race'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-race">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-race">
               <h3 class="panel-title accordion-toggle">Race</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("race") }}"
@@ -97,8 +99,8 @@
           </div>
           <div class="panel">
             <div class="panel-heading{% if not form_data['gender'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-gender">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-gender">
               <h3 class="panel-title accordion-toggle">Gender</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("gender") }}"
@@ -122,8 +124,8 @@
           </div>
           <div class="panel">
             <div class="panel-heading{% if not form_data['rank'] and not form_data['unit'] and not form_data['current_job'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-job">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-job">
               <h3 class="panel-title accordion-toggle">Job</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("rank") }} {{ form_data | field_in_query("unit") }} {{ form_data | field_in_query("current_job") }}"
@@ -136,7 +138,7 @@
                              name="current_job"
                              type="checkbox"
                              value="True"
-                             {% if form_data.get("current_job") %}checked{% endif %}>
+                             {% if form_data["current_job"] %}checked{% endif %}>
                       Currently employed
                     </label>
                     <span><i>(in this rank and/or unit, if specified)</i></span>
@@ -181,21 +183,21 @@
           </div>
           <div class="panel">
             <div class="panel-heading{% if not form_data['min_age'] and not form_data['max_age'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-age">
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-age">
               <h3 class="panel-title accordion-toggle">Age range</h3>
             </div>
             <div class="collapse  {{ form_data | field_in_query("min_age") }} {{ form_data | field_in_query("max_age") }}"
                  id="filter-age">
               <div class="panel-body">
-                <div class="form-row">
+                <div class="form-row row">
                   <div class="form-group col-md-6">
                     <label>Min</label>
                     <input type="number"
                            class="form-control"
                            id="min_age"
                            name="min_age"
-                           value="{{ form_data['min_age'] or 16 }}" />
+                           value="{{ form_data["min_age"] or 16 }}" />
                   </div>
                   <div class="form-group col-md-6 text-right">
                     <label>Max</label>
@@ -203,16 +205,16 @@
                            class="form-control"
                            id="max_age"
                            name="max_age"
-                           value="{{ form_data['max_age'] or 100 }}" />
+                           value="{{ form_data["max_age"] or 100 }}" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading{% if not form_data['unique_internal_identifier'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-unique_internal_identifier">
+            <div class="panel-heading{% if not form_data["unique_internal_identifier"] %} collapsed{% endif %}"
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-unique_internal_identifier">
               <h3 class="panel-title accordion-toggle">Unique ID</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("unique_internal_identifier") }}"
@@ -229,9 +231,9 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-heading{% if not form_data['require_photo'] %} collapsed{% endif %}"
-                 data-toggle="collapse"
-                 data-target="#filter-photo">
+            <div class="panel-heading{% if not form_data["require_photo"] %} collapsed{% endif %}"
+                 data-bs-toggle="collapse"
+                 data-bs-target="#filter-photo">
               <h3 class="panel-title accordion-toggle">Photo</h3>
             </div>
             <div class="collapse {{ form_data | field_in_query("require_photo") }}"
@@ -252,8 +254,8 @@
               </div>
             </div>
           </div>
-          {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
-          <a class="btn btn-primary"
+          {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+          <a class="btn btn-danger"
              href="{{ url_for(request.endpoint, department_id=department.id) }}">Clear Filters</a>
         </form>
       </div>
@@ -265,19 +267,19 @@
           {% for officer in officers.items %}
             <li class="list-group-item">
               <div class="row">
-                <div class="col-md-6 col-xs-12">
+                <div class="col-md-6 col-12">
                   <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}">
                     <img class="officer-face img-responsive thumbnail" src="{{ officer.image | default("/static/images/placeholder.png") }}" alt="{{ officer.full_name() }}">
                   </a>
                 </div>
-                <div class="col-md-6 col-xs-12">
+                <div class="col-md-6 col-12">
                   <h2>
                     <a href="{{ url_for('main.officer_profile', officer_id=officer.id) }}"
                        id="officer-profile-{{ loop.index }}">{{ officer.full_name() }}</a>
                     <small>{{ officer.badge_number() | default('') }}</small>
                   </h2>
                   <div class="row">
-                    <div class="col-md-6 col-xs-6">
+                    <div class="col-md-6 col-6">
                       <dl>
                         <dt>Rank</dt>
                         <dd>
@@ -297,7 +299,7 @@
                         </dd>
                       </dl>
                     </div>
-                    <div class="col-md-6 col-xs-6">
+                    <div class="col-md-6 col-6">
                       <dl>
                         <dt>Race</dt>
                         <dd>

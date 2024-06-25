@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}¬
+{% import "bootstrap5/form.html" as wtf %}¬
 {% block title %}
   Submit images to OpenOversight
 {% endblock title %}
@@ -14,8 +14,8 @@
         rel="stylesheet">
 {% endblock head %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
-    <div class="page-header">
+  <div class="container theme-showcase py-5" role="main">
+    <div class="page-header border-bottom border-secondary-subtle mb-4">
       <h1>
         Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. </small>
       </h1>
@@ -41,7 +41,7 @@
             method="post"
             role="form"
             label="dept-select">
-        {{ wtf.form_field(form.department) }}
+        {{ wtf.render_field(form.department) }}
       </form>
       <br>
     </div>
@@ -77,8 +77,6 @@
         const getURL = (file) => "/upload/department/" + dept_id;
         init_dropzone("#my-cop-dropzone", getURL, csrf_token);
     </script>
-  </div>
-  <div class="container">
     <h3>High Security Submissions</h3>
     <p>
       We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a>

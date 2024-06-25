@@ -6,6 +6,7 @@ Babel~=2.12.1
 bleach==6.0.0
 bleach-allowlist==1.0.3
 blinker~=1.6.2
+Bootstrap-Flask==2.4.0
 boto3==1.28.1
 botocore==1.31.1
 cachetools==5.3.1
@@ -20,7 +21,6 @@ dominate~=2.8.0
 email-validator==2.0.0.post2
 Faker==18.13.0
 Flask==2.3.2
-Flask-Bootstrap==3.3.7.1
 Flask-Compress==1.13
 Flask-Limiter==3.3.1
 Flask-Login==0.6.2

@@ -69,7 +69,7 @@ $(function () {
 
 
   // Download
-  if (typeof $download[0].download === 'undefined') {
+  if ($download.length && typeof $download[0].download === 'undefined') {
     $download.addClass('disabled');
   }
 

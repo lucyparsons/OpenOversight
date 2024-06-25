@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
+{% from "bootstrap5/utils.html" import render_icon %}
 {% block title %}
   OpenOversight Admin -
   {% if update %}
@@ -10,7 +11,7 @@
   Department
 {% endblock title %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
+  <div class="container theme-showcase py-5" role="main">
     <div class="page-header">
       <h1>
         {% if update %}
@@ -24,27 +25,23 @@
     <div class="col-md-6">
       <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.name, autofocus="autofocus") }}
-        {{ wtf.form_field(form.short_name) }}
-        {{ wtf.form_field(form.state) }}
+        {{ wtf.render_hidden_errors(form) }}
+        {{ wtf.render_field(form.name, autofocus="autofocus") }}
+        {{ wtf.render_field(form.short_name) }}
+        {{ wtf.render_field(form.state) }}
         <div class="sortable sortable-fields">
           <legend>{{ form.jobs.label }}</legend>
           <div>
             <h5>Enter ranks in hierarchical order, from lowest to highest rank:</h5>
           </div>
-          <div class="text-danger">{{ wtf.form_errors(form.jobs, hiddens="only") }}</div>
+          <div class="text-danger">{{ wtf.render_hidden_errors(form.jobs) }}</div>
           {% if form.jobs|length > 1 %}
             {% for subfield in (form.jobs|sort(attribute='data.order')|list) %}
               <fieldset>
                 <div class="input-group {% if subfield.errors %} has-error{% endif -%} {%- if subfield.flags.required %} required{% endif -%}">
-                  <div class="input-group-addon">
-                    <span class="glyphicon glyphicon-sort" aria-hidden="true"></span>
-                  </div>
+                  <div class="input-group-text">{{ render_icon("arrow-down-up") }}</div>
                   {{ subfield(class="form-control") |safe }}
-                  <span class="input-group-btn">
-                    <button class="btn btn-danger js-remove-button" disabled>Remove</button>
-                  </span>
+                  <button class="btn btn-danger js-remove-button" disabled>Remove</button>
                   {%- if subfield.errors %}
                     {%- for error in subfield.errors %}<p class="help-block">{{ error }}</p>{%- endfor %}
                   {%- endif %}
@@ -63,7 +60,7 @@
           {% endif %}
           <button class="btn btn-success js-add-another-button" disabled>Add another rank</button>
         </div>
-        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+        {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
       </form>
       <br>
     </div>

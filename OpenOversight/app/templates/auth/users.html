@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% from "bootstrap5/utils.html" import render_icon %}
 {% block title %}
   OpenOversight Admin - Users
 {% endblock title %}
 {% block content %}
-  <div class="text-center">
-    <h1 class="page-header">Users</h1>
-  </div>
-  <div class="container" role="main">
+  <div class="container py-5" role="main">
+    <div class="text-center">
+      <h1 class="page-header">Users</h1>
+    </div>
     <div class="horizontal-padding">
       {% with paginate=objects,
         next_url=url_for('auth.get_users', page=objects.next_num),
@@ -50,18 +51,18 @@
               </td>
               <td class="{% if user.is_area_coordinator %} success {% else %} danger {% endif %}">
                 {% if user.is_area_coordinator %}
-                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                  {{ render_icon("check-lg") }}
                 {% else %}
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  {{ render_icon("x-lg") }}
                 {% endif %}
                 <span class="sr-only">{{ user.is_area_coordinator }}</span>
               </td>
               <td>{{ user.ac_department.name }}</td>
               <td class="{% if user.is_administrator %} success {% else %} danger {% endif %}">
                 {% if user.is_administrator %}
-                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                  {{ render_icon("check-lg") }}
                 {% else %}
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                  {{ render_icon("x-lg") }}
                 {% endif %}
                 <span class="sr-only">{{ user.is_admin }}</span>
               </td>

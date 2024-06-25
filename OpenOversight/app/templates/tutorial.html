@@ -7,9 +7,9 @@
         content="Learn how to contribute to OpenOversight.">
 {% endblock meta %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
-    <div class="container">
-      <div class="mt-3">
+  <div class="container theme-showcase py-5" role="main">
+    <div class="col-md-9 mx-sm-auto">
+      <div class="mt-3 text-center">
         <h1>Volunteer Tutorial</h1>
       </div>
       <p class="lead">
@@ -18,19 +18,19 @@
         those that do not, and <em>identifying faces</em> in the images to associate them with an officer in our roster.
       </p>
     </div>
-    <div class="col-md-9">
+    <div class="col-md-9 mx-sm-auto">
       <p>
         In the <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a> page, you will see under each law enforcement agency links to the two volunteer tasks when logged in:
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/pick_task.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
         </div>
       </div>
     </div>
-    <div class="col-md-9">
+    <div class="col-md-9 mx-sm-auto">
       <h3>Task 1: Classify Images</h3>
       <p>
         When an image is displayed, look to see if any faces
@@ -38,19 +38,19 @@
         A message will display letting you know that your classification has been saved.
         If you prefer to skip an image, just click <b>Next Photo</b>.
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/sort.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
         </div>
       </div>
     </div>
-    <div class="col-md-9">
+    <div class="col-md-9 mx-sm-auto">
       <h3>Task 2: Identify Officers</h3>
       <p>In this task, you will map faces in each image to an entry in our roster.</p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/pick_face.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
@@ -62,8 +62,8 @@
         image, and a preview of the area to be selected will be shown on the left.
         Open the search tool by clicking <b>Launch roster search form</b>.
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/tag_search.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
@@ -74,8 +74,8 @@
         name (if available), or by seeing if you can match the officer's face to an existing face in the dataset.
         Once you find the officer, look at their <b>OpenOversight ID</b> number in green:
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/officer_found.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
@@ -84,8 +84,8 @@
       <p>
         Type this ID into the form next to their selected face, and and click <b>Add identified face</b>:
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/add_face.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
@@ -95,17 +95,19 @@
         Follow this process for each officer in the image. Once you've identified every
         officer from the image you are able to, click <b>All officers have been identified</b>:
       </p>
-      <div class="row">
-        <div class="col-sm-6">
+      <div class="row text-center">
+        <div class="col-sm-6 mx-sm-auto">
           <img src="{{ url_for('static', filename='images/done.png') }}"
                class="img-thumbnail img-responsive"
                alt="">
         </div>
       </div>
       <br>
-      <div class="alert alert-warning" role="alert">
-        Important! Only once you click this green button will your work be saved.
-        So be sure to click this button to save your identified faces on each image.
+      <div class="card bg-warning-subtle border-warning" role="alert">
+        <div class="card-body">
+          Important! Only once you click this green button will your work be saved.
+          So be sure to click this button to save your identified faces on each image.
+        </div>
       </div>
       <h2>Checking Your Progress</h2>
       <p>
@@ -117,9 +119,11 @@
         <a href="{{ url_for("main.leaderboard") }}">checking out the leaderboard</a>.
       </p>
       <h2>Ready to get started?</h2>
-      <a href="{{ url_for("main.get_started_labeling") }}">
-        <button type="button" class="btn btn-lg btn-primary">Proceed</button>
-      </a>
+      <div class="text-center">
+        <a href="{{ url_for("main.get_started_labeling") }}">
+          <button type="button" class="btn btn-lg btn-primary">Proceed</button>
+        </a>
+      </div>
     </div>
   </div>
 {% endblock content %}

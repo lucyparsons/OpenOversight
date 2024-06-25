@@ -60,7 +60,7 @@ def before_request():
         and not current_user.confirmed
         and request.endpoint
         and request.endpoint[:5] != "auth."
-        and request.endpoint != "static"
+        and request.endpoint not in ["static", "bootstrap.static"]
     ):
         return redirect(url_for("auth.unconfirmed"))
 
@@ -69,7 +69,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"]:
+    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved:
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")

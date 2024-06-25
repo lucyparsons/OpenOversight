@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% block title %}
   Volunteer Login - OpenOversight
 {% endblock title %}
@@ -7,18 +7,18 @@
   <meta name="description" content="Volunteer login for OpenOversight">
 {% endblock meta %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
+  <div class="container theme-showcase py-5" role="main">
     <div class="page-header">
       <h1>Login</h1>
     </div>
     <div class="col-md-6">
       <form class="form" method="post" role="form">
         {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.email, autofocus="autofocus") }}
-        {{ wtf.form_field(form.password) }}
-        {{ wtf.form_field(form.remember_me) }}
-        {{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+        {{ wtf.render_hidden_errors(form) }}
+        {{ wtf.render_field(form.email, autofocus="autofocus") }}
+        {{ wtf.render_field(form.password) }}
+        {{ wtf.render_field(form.remember_me) }}
+        {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
       </form>
       <br>
       <p>

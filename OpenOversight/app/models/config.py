@@ -28,6 +28,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class BaseConfig:
     def __init__(self):
         # App Settings
+        self.BOOTSTRAP_SERVE_LOCAL = True
         self.DEBUG = False
         self.ENV = os.environ.get(KEY_ENV, KEY_ENV_DEV)
         self.SEED = 666

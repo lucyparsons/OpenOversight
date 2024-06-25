@@ -1,5 +1,5 @@
 {% extends "form.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% block page_title %}
   Update Note
 {% endblock page_title %}
@@ -9,6 +9,6 @@
   {% else %}
     {% set post_url = url_for('main.note_api_edit', officer_id=obj.officer_id, obj_id=obj.id) %}
   {% endif %}
-  {{ wtf.quick_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
+  {{ wtf.render_form(form, action=post_url, method='post', button_map={'submit':'primary'}) }}
   <br>
 {% endblock form %}
