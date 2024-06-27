@@ -252,7 +252,7 @@ def update_link_from_dict(data: Dict[str, Any], link: Link) -> Link:
 
 
 def get_or_create_license_plate_from_dict(
-    data: Dict[str, Any]
+    data: Dict[str, Any],
 ) -> Tuple[LicensePlate, bool]:
     number = data["number"]
     state = parse_str(data.get("state"), None)
@@ -266,7 +266,7 @@ def get_or_create_license_plate_from_dict(
 
 
 def get_or_create_location_from_dict(
-    data: Dict[str, Any]
+    data: Dict[str, Any],
 ) -> Tuple[Optional[Location], bool]:
     street_name = parse_str(data.get("street_name"), None)
     cross_street1 = parse_str(data.get("cross_street1"), None)

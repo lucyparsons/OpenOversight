@@ -1,4 +1,5 @@
 """Contains all templates filters."""
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 

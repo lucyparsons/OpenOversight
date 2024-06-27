@@ -18,6 +18,7 @@ as the defined user.
     do cleanup tasks. At the moment this consists of removing unused docker
     to free up space.
 """
+
 import datetime
 import io
 import logging

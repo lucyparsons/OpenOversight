@@ -1,4 +1,5 @@
 """Contains choice lists of (value, label) tuples for form Select fields."""
+
 from us import states
 
 
