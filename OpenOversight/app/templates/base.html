@@ -58,7 +58,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div id="navbar" class="collapse navbar-collapse">
-          <ul class="navbar-nav">
+          <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for("main.browse") }}">Browse</a>
             </li>
@@ -80,7 +80,7 @@
               </li>
             {% endif %}
           </ul>
-          <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
+          <ul class="navbar-nav">
             {% if current_user and current_user.is_authenticated %}
               <li class="dropdown nav-item">
                 <button class="btn dropdown-toggle"
