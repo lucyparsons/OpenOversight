@@ -83,27 +83,28 @@
           <ul class="navbar-nav">
             {% if current_user and current_user.is_authenticated %}
               <li class="dropdown nav-item">
-                <button class="btn dropdown-toggle"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
+                <a class="nav-link dropdown-toggle"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
                   Account <b class="caret"></b>
-                </button>
+                </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <li class="nav-item">
-                    <a class="nav-link"
+                  <li>
+                    <a class="dropdown-item"
                        href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for("auth.change_password") }}">Change Password</a>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.change_password") }}">Change Password</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for("auth.change_email_request") }}">Change Email</a>
+                  <li>
+                    <a class="dropdown-item"
+                       href="{{ url_for("auth.change_email_request") }}">Change Email</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for("auth.logout") }}">Log Out</a>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.logout") }}">Log Out</a>
                   </li>
                 </ul>
               </li>
