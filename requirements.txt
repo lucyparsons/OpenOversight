@@ -71,4 +71,4 @@ wrapt~=1.15.0
 wtforms==3.0.1
 WTForms-SQLAlchemy==0.3.0
 xvfbwrapper~=0.2.9
-zipp==3.16.0
+zipp==3.19.1
