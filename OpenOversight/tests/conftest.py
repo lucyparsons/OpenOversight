@@ -322,7 +322,6 @@ def session(db):
 
     yield session
 
-    transaction.rollback()
     connection.close()
     session.remove()
 
