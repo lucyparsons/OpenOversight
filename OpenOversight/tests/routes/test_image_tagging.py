@@ -123,7 +123,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
         login_ac(client)
 
         tag = (
-            Face.query.join(Face.officer, aliased=True)
+            Face.query.join(Face.officer)
             .except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT)))
             .first()
         )
@@ -323,7 +323,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
         login_ac(client)
 
         tag = (
-            Face.query.join(Face.officer, aliased=True)
+            Face.query.join(Face.officer)
             .except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT)))
             .first()
         )
