@@ -187,7 +187,9 @@ class Job(BaseModel, TrackUpdates):
     department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="jobs_department_id_fkey")
     )
-    department = db.relationship("Department", backref="jobs")
+    department = db.relationship(
+        "Department", backref=db.backref("jobs", cascade_backrefs=False)
+    )
 
     __table_args__ = (
         UniqueConstraint(
@@ -232,27 +234,45 @@ class Officer(BaseModel, TrackUpdates):
     gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
     employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
-    assignments = db.relationship("Assignment", back_populates="base_officer")
-    face = db.relationship("Face", backref="officer")
+    assignments = db.relationship(
+        "Assignment", back_populates="base_officer", cascade_backrefs=False
+    )
+    face = db.relationship(
+        "Face", backref=db.backref("officer", cascade_backrefs=False)
+    )
     department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="officers_department_id_fkey")
     )
-    department = db.relationship("Department", backref="officers")
+    department = db.relationship(
+        "Department", backref=db.backref("officers", cascade_backrefs=False)
+    )
     unique_internal_identifier = db.Column(
         db.String(50), index=True, unique=True, nullable=True
     )
 
     links = db.relationship(
-        "Link", secondary=officer_links, backref=db.backref("officers", lazy=True)
+        "Link",
+        secondary=officer_links,
+        backref=db.backref("officers", lazy=True, cascade_backrefs=False),
+        lazy=True,
     )
     notes = db.relationship(
-        "Note", back_populates="officer", order_by="Note.created_at"
+        "Note",
+        back_populates="officer",
+        cascade_backrefs=False,
+        order_by="Note.created_at",
     )
     descriptions = db.relationship(
-        "Description", back_populates="officer", order_by="Description.created_at"
+        "Description",
+        back_populates="officer",
+        cascade_backrefs=False,
+        order_by="Description.created_at",
     )
     salaries = db.relationship(
-        "Salary", back_populates="officer", order_by="Salary.year.desc()"
+        "Salary",
+        back_populates="officer",
+        cascade_backrefs=False,
+        order_by="Salary.year.desc()",
     )
 
     __table_args__ = (
@@ -407,7 +427,9 @@ class Unit(BaseModel, TrackUpdates):
         db.ForeignKey("departments.id", name="unit_types_department_id_fkey"),
     )
     department = db.relationship(
-        "Department", backref="unit_types", order_by="Unit.description.asc()"
+        "Department",
+        backref=db.backref("unit_types", cascade_backrefs=False),
+        order_by="Unit.description.asc()",
     )
 
     def __repr__(self):
@@ -445,9 +467,16 @@ class Face(BaseModel, TrackUpdates):
     face_position_y = db.Column(db.Integer, unique=False)
     face_width = db.Column(db.Integer, unique=False)
     face_height = db.Column(db.Integer, unique=False)
-    image = db.relationship("Image", backref="faces", foreign_keys=[img_id])
+    image = db.relationship(
+        "Image",
+        backref=db.backref("faces", cascade_backrefs=False),
+        foreign_keys=[img_id],
+    )
     original_image = db.relationship(
-        "Image", backref="tags", foreign_keys=[original_image_id], lazy=True
+        "Image",
+        backref=db.backref("tags", cascade_backrefs=False),
+        foreign_keys=[original_image_id],
+        lazy=True,
     )
     featured = db.Column(
         db.Boolean, nullable=False, default=False, server_default="false"
@@ -478,7 +507,9 @@ class Image(BaseModel, TrackUpdates):
         db.Integer,
         db.ForeignKey("departments.id", name="raw_images_department_id_fkey"),
     )
-    department = db.relationship("Department", backref="raw_images")
+    department = db.relationship(
+        "Department", backref=db.backref("raw_images", cascade_backrefs=False)
+    )
 
     def __repr__(self):
         return f"<Image ID {self.id}: {self.filepath}>"
@@ -641,29 +672,33 @@ class Incident(BaseModel, TrackUpdates):
     address_id = db.Column(
         db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
     )
-    address = db.relationship("Location", backref="incidents")
+    address = db.relationship(
+        "Location", backref=db.backref("incidents", cascade_backrefs=False)
+    )
     license_plates = db.relationship(
         "LicensePlate",
         secondary=incident_license_plates,
         lazy="subquery",
-        backref=db.backref("incidents", lazy=True),
+        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
     )
     links = db.relationship(
         "Link",
         secondary=incident_links,
         lazy="subquery",
-        backref=db.backref("incidents", lazy=True),
+        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
     )
     officers = db.relationship(
         "Officer",
         secondary=officer_incidents,
         lazy="subquery",
-        backref=db.backref("incidents"),
+        backref=db.backref("incidents", cascade_backrefs=False),
     )
     department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
     )
-    department = db.relationship("Department", backref="incidents", lazy=True)
+    department = db.relationship(
+        "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
+    )
 
 
 class User(UserMixin, BaseModel):
@@ -690,7 +725,9 @@ class User(UserMixin, BaseModel):
         db.Integer, db.ForeignKey("departments.id", name="users_ac_department_id_fkey")
     )
     ac_department = db.relationship(
-        "Department", backref="coordinators", foreign_keys=[ac_department_id]
+        "Department",
+        backref=db.backref("coordinators", cascade_backrefs=False),
+        foreign_keys=[ac_department_id],
     )
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
