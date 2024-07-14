@@ -722,7 +722,7 @@ def add_mockdata(session):
     users_that_can_create_notes = [test_admin, test_area_coordinator]
 
     # for testing routes
-    first_officer = Officer.query.get(1)
+    first_officer = session.get(Officer, 1)
     note = build_note(
         first_officer, test_admin, "### A markdown note\nA **test** note!"
     )
@@ -737,7 +737,7 @@ def add_mockdata(session):
     users_that_can_create_descriptions = [test_admin, test_area_coordinator]
 
     # for testing routes
-    first_officer = Officer.query.get(1)
+    first_officer = session.get(Officer, 1)
     description = build_description(
         first_officer, test_admin, "### A markdown description\nA **test** description!"
     )
