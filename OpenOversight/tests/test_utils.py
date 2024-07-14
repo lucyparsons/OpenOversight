@@ -99,11 +99,13 @@ def test_filter_by_name(mockdata):
 
 def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = Department.query.first()
-    officer = Officer(
-        first_name="Rachel", last_name="S", department=department, birth_year=1992
-    )
     results = grab_officers({"name": "S", "dept": department})
-    assert officer in results.all()
+    no_assignments = False
+    for element in results.all():
+        if len(element.assignments) == 0:
+            no_assignments = True
+            break
+    assert no_assignments
 
 
 def test_filter_by_badge_no(mockdata):
