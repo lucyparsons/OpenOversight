@@ -1032,7 +1032,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert incident_link.title == "Another Link"
     assert incident_link.author == "Example Times"
 
-    updated_link = Link.query.get(55051)
+    updated_link = session.get(Link, 55051)
     assert updated_link.title == "Updated Link"
     assert updated_link.officers == []
     assert updated_link.incidents == [incident3]
