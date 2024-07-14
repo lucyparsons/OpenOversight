@@ -1009,7 +1009,7 @@ def test_advanced_csv_import__success(session, department, test_csv_dir):
     assert address.zip_code == "60603"
     assert incident2.officers == [cop1]
 
-    incident3 = Incident.query.get(123456)
+    incident3 = session.get(Incident, 123456)
     assert incident3.report_number == "CR-39283"
     assert incident3.description == "Don't know where it happened"
     assert incident3.officers == [cop1]
@@ -1157,23 +1157,23 @@ def test_advanced_csv_import__force_create(session, department, tmp_path):
     assert result.exit_code == 0
 
     # make sure all the data is imported as expected
-    cop1 = Officer.query.get(99001)
+    cop1 = session.get(Officer, 99001)
     assert cop1.first_name == "First"
 
-    cop2 = Officer.query.get(99002)
+    cop2 = session.get(Officer, 99002)
     assert cop2.assignments[0].star_no == "12345"
-    assert cop2.assignments[0] == Assignment.query.get(98001)
+    assert cop2.assignments[0] == session.get(Assignment, 98001)
 
-    cop3 = Officer.query.get(99003)
+    cop3 = session.get(Officer, 99003)
     assert cop3.salaries[0].salary == 98765
-    assert cop3.salaries[0] == Salary.query.get(77001)
+    assert cop3.salaries[0] == session.get(Salary, 77001)
 
-    incident = Incident.query.get(66001)
+    incident = session.get(Incident, 66001)
     assert incident.address.street_name == "Fake Street"
     assert cop1.incidents[0] == incident
     assert cop2.incidents[0] == incident
 
-    link = Link.query.get(55001)
+    link = session.get(Link, 55001)
     assert link.url == "https://www.example.org/3629"
     assert cop1.links[0] == link
 
@@ -1276,13 +1276,13 @@ def test_advanced_csv_import__overwrite_assignments(session, department, tmp_pat
     assert result.exit_code == 0
 
     # make sure all the data is imported as expected
-    cop1 = Officer.query.get(cop1_id)
+    cop1 = session.get(Officer, cop1_id)
     assert len(cop1.assignments) == 1
     assert cop1.assignments[0].star_no == b1
 
-    cop2 = Officer.query.get(cop2_id)
+    cop2 = session.get(Officer, cop2_id)
     assert len(cop2.assignments) == 1
-    assert cop2.assignments[0] == Assignment.query.get(a2_id)
+    assert cop2.assignments[0] == session.get(Assignment, a2_id)
 
     cop3 = Officer.query.filter_by(first_name="Second", last_name="Test").first()
     assert len(cop3.assignments) == 1
