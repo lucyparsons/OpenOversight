@@ -44,7 +44,7 @@ mdurl~=0.1.2
 mock~=5.0.2
 packaging~=23.1
 Pillow==10.3.0
-pip==23.1.2
+pip==23.3
 platformdirs==3.8.1
 psycopg2==2.9.6
 pycparser~=2.21
@@ -71,4 +71,4 @@ wrapt~=1.15.0
 wtforms==3.0.1
 WTForms-SQLAlchemy==0.3.0
 xvfbwrapper~=0.2.9
-zipp==3.16.0
+zipp==3.19.1
