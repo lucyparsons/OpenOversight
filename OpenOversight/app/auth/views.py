@@ -292,7 +292,7 @@ def get_users():
 @auth.route("/users/<int:user_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @admin_required
 def edit_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return render_template("404.html"), HTTPStatus.NOT_FOUND
 
@@ -339,7 +339,7 @@ def edit_user(user_id):
 @auth.route("/users/<int:user_id>/delete", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @admin_required
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user or user.is_administrator:
         return render_template("403.html"), HTTPStatus.FORBIDDEN
     if request.method == HTTPMethod.POST:

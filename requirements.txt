@@ -59,7 +59,7 @@ s3transfer~=0.6.1
 selenium~=4.10.0
 six~=1.16.0
 sphinx==7.1.2
-SQLAlchemy==1.4.47 # Updating this breaks the build for python 3.9
+SQLAlchemy==1.4.52
 tornado~=6.3.2
 trio==0.22.1
 urllib3~=1.26.16 # This version is required for other packages to run

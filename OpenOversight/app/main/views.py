@@ -743,7 +743,7 @@ def redirect_edit_department(department_id: int):
 @login_required
 @admin_required
 def edit_department(department_id: int):
-    department = Department.query.get_or_404(department_id)
+    department = db.get_or_404(Department, department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
@@ -1831,7 +1831,7 @@ def redirect_submit_officer_images(officer_id: int):
 @login_required
 @ac_or_admin_required
 def submit_officer_images(officer_id: int):
-    officer = Officer.query.get_or_404(officer_id)
+    officer = db.get_or_404(Officer, officer_id)
     return render_template("submit_officer_image.html", officer=officer)
 
 
@@ -1953,7 +1953,7 @@ class IncidentApi(ModelView):
 
         dept = None
         if department_id := request.args.get("department_id"):
-            dept = Department.query.get_or_404(department_id)
+            dept = db.get_or_404(Department, department_id)
             form.department_id.data = department_id
             incidents = incidents.filter_by(department_id=department_id)
 
@@ -2141,7 +2141,7 @@ class TextApi(ModelView):
 
     def dispatch_request(self, *args, **kwargs):
         if "officer_id" in kwargs:
-            officer = Officer.query.get_or_404(kwargs["officer_id"])
+            officer = db.get_or_404(Officer, kwargs["officer_id"])
             self.officer_id = kwargs.pop("officer_id")
             self.department_id = officer.department_id
         return super(TextApi, self).dispatch_request(*args, **kwargs)
@@ -2392,7 +2392,7 @@ class OfficerLinkApi(ModelView):
     @login_required
     @ac_or_admin_required
     def delete(self, obj_id: int):
-        obj = self.model.query.get_or_404(obj_id)
+        obj = db.get_or_404(self.model, obj_id)
         if (
             not current_user.is_administrator
             and current_user.ac_department_id != self.get_department_id(obj)
@@ -2435,7 +2435,7 @@ class OfficerLinkApi(ModelView):
 
     def dispatch_request(self, *args, **kwargs):
         if "officer_id" in kwargs:
-            officer = Officer.query.get_or_404(kwargs["officer_id"])
+            officer = db.get_or_404(Officer, kwargs["officer_id"])
             self.officer_id = kwargs.pop("officer_id")
             self.department_id = officer.department_id
         return super(OfficerLinkApi, self).dispatch_request(*args, **kwargs)
