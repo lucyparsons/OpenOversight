@@ -24,8 +24,6 @@
       </script>
     {% endif %}
     <!-- Bundled CSS -->
-    <link href="{{ url_for('static', filename='dist/index.css') }}"
-          rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='css/openoversight.css') }}"
           rel="stylesheet">
@@ -41,141 +39,143 @@
     <!-- jQuery -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <!-- Bootstrap -->
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {{ bootstrap.load_css() }}
+    {{ bootstrap.load_js() }}
     {% block head %}
     {% endblock head %}
   </head>
   <body role="document">
-    <nav class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
       <div class="container">
-        <div class="row">
-          <div class="navbar-header navbar-default">
-            <button type="button"
-                    class="navbar-default navbar-toggle collapsed"
-                    data-toggle="collapse"
-                    data-target="#navbar"
-                    aria-expanded="false"
-                    aria-controls="navbar">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-link navbar-brand" href="{{ url_for("main.index") }}">OpenOversight</a>
-          </div>
-          <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-              <li>
-                <a class="navbar-link" href="{{ url_for("main.browse") }}">Browse</a>
+        <a class="navbar-brand" href="{{ url_for("main.index") }}">OpenOversight</a>
+        <button type="button"
+                class="navbar-toggler"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbar"
+                aria-expanded="false"
+                aria-controls="navbar"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.browse") }}">Browse</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.submit_data") }}">Submit Images</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.about_oo") }}">About</a>
+            </li>
+            {% if current_user and current_user.is_administrator %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("auth.get_users") }}">Users</a>
               </li>
-              <li>
-                <a class="navbar-link" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+            {% endif %}
+          </ul>
+          <ul class="navbar-nav">
+            {% if current_user and current_user.is_authenticated %}
+              <li class="dropdown nav-item">
+                <a class="nav-link dropdown-toggle"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                  Account <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a class="dropdown-item"
+                       href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.change_password") }}">Change Password</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item"
+                       href="{{ url_for("auth.change_email_request") }}">Change Email</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{{ url_for("auth.logout") }}">Log Out</a>
+                  </li>
+                </ul>
               </li>
-              <li>
-                <a class="navbar-link" href="{{ url_for("main.submit_data") }}">Submit Images</a>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("auth.register") }}">Register</a>
               </li>
-              <li>
-                <a class="navbar-link" href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("auth.login") }}">Log In</a>
               </li>
-              <li>
-                <a class="navbar-link" href="{{ url_for("main.about_oo") }}">About</a>
-              </li>
-              {% if current_user and current_user.is_administrator %}
-                <li>
-                  <a class="navbar-link" href="{{ url_for("auth.get_users") }}">Users</a>
-                </li>
-              {% endif %}
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-              {% if current_user and current_user.is_authenticated %}
-                <li class="dropdown">
-                  <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="navbar-link"
-                         href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
-                    </li>
-                    <li>
-                      <a class="navbar-link" href="{{ url_for("auth.change_password") }}">Change Password</a>
-                    </li>
-                    <li>
-                      <a class="navbar-link" href="{{ url_for("auth.change_email_request") }}">Change Email</a>
-                    </li>
-                    <li>
-                      <a href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
-                    </li>
-                    <li>
-                      <a class="navbar-link" href="{{ url_for("auth.logout") }}">Log Out</a>
-                    </li>
-                  </ul>
-                </li>
-              {% else %}
-                <li>
-                  <a class="navbar-link" href="{{ url_for("auth.register") }}">Register</a>
-                </li>
-                <li>
-                  <a class="navbar-link" href="{{ url_for("auth.login") }}">Log In</a>
-                </li>
-              {% endif %}
-            </ul>
-          </div>
+            {% endif %}
+          </ul>
         </div>
       </div>
     </nav>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        {% for message in messages %}
-          <div class="container">
+        <div class="container position-absolute start-50 translate-middle mt-5">
+          {% for message in messages %}
             <div class="row">
               <div class="alert alert-info alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"></button>
                 {{ message }}
               </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       {% endif %}
     {% endwith %}
     {% block content %}
     {% endblock content %}
-    <footer class="footer container {% block footer_class %}{% endblock footer_class %}">
-      <hr>
-      <div class="row text-center horizontal-padding">
-        <div class="col-sm-4">
-          <h5>OpenOversight</h5>
-          <p class="font-weight-300">
-            A product of Lucy Parsons Labs in Chicago, IL.
-            <br>
-            <a href="https://lucyparsonslabs.com/" target="_blank">Lucy Parsons Labs</a>
-            <br>
-            <a href="{{ url_for("main.all_data") }}" target="_blank">Download department data</a>
-          </p>
-        </div>
-        <div class="col-sm-4">
-          <h5>Contact</h5>
-          <p>
-            <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa fa-facebook-square fa-3x social"></i></a>
-            <a href="https://twitter.com/lucyparsonslabs"><i class="fa fa-twitter-square fa-3x social"></i></a>
-            <a href="https://github.com/lucyparsons/openoversight"><i class="fa fa-github fa-3x social"></i></a>
+    <footer class="footer {% block footer_class %}{% endblock footer_class %}">
+      <hr class="py-0 my-0">
+      <div class="container">
+        <div class="row text-center horizontal-padding">
+          <div class="col-sm-4">
+            <h5>OpenOversight</h5>
+            <p class="font-weight-300">
+              A product of Lucy Parsons Labs in Chicago, IL.
+              <br>
+              <a href="https://lucyparsonslabs.com/" target="_blank">Lucy Parsons Labs</a>
+              <br>
+              <a href="{{ url_for("main.all_data") }}" target="_blank">Download department data</a>
+            </p>
+          </div>
+          <div class="col-sm-4">
+            <h5>Contact</h5>
+            <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa-brands fa-square-facebook fa-3x social"></i></a>
+            <a href="https://www.instagram.com/lucyparsonslabs/"><i class="fa-brands fa-square-instagram fa-3x social"></i></a>
+            <a href="https://twitter.com/lucyparsonslabs"><i class="fa-brands fa-square-x-twitter fa-3x social"></i></a>
+            <a href="https://github.com/lucyparsons/openoversight"><i class="fa-brands fa-github-square fa-3x social"></i></a>
             <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
             <br>
             <a href="{{ url_for("main.privacy_oo") }}" class="btn">Privacy Policy</a>
-          </p>
-        </div>
-        <div class="col-sm-4">
-          <h5>Navigation</h5>
-          <p class="font-weight-300">
-            <a href="{{ url_for("main.get_officer") }}">Find an Officer</a>
-            <br>
-            <a href="{{ url_for("main.submit_data") }}">Submit Images</a>
-            <br>
-            <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
-            <br>
-            <a href="{{ url_for("main.about_oo") }}">About</a>
-            <br>
-          </p>
+          </div>
+          <div class="col-sm-4">
+            <h5>Navigation</h5>
+            <p class="font-weight-300">
+              <a href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+              <br>
+              <a href="{{ url_for("main.submit_data") }}">Submit Images</a>
+              <br>
+              <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+              <br>
+              <a href="{{ url_for("main.about_oo") }}">About</a>
+              <br>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -60,7 +60,7 @@ def before_request():
         and not current_user.confirmed
         and request.endpoint
         and request.endpoint[:5] != "auth."
-        and request.endpoint != "static"
+        and request.endpoint not in ["static", "bootstrap.static"]
     ):
         return redirect(url_for("auth.unconfirmed"))
 
@@ -69,7 +69,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"]:
+    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved:
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -292,7 +292,7 @@ def get_users():
 @auth.route("/users/<int:user_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @admin_required
 def edit_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         return render_template("404.html"), HTTPStatus.NOT_FOUND
 
@@ -339,7 +339,7 @@ def edit_user(user_id):
 @auth.route("/users/<int:user_id>/delete", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @admin_required
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user or user.is_administrator:
         return render_template("403.html"), HTTPStatus.FORBIDDEN
     if request.method == HTTPMethod.POST:

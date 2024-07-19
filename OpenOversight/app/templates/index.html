@@ -6,30 +6,34 @@
         <div class="hero">Help Us Build Transparency</div>
         <div class="subhero">OpenOversight: A public, searchable database of law enforcement officers.</div>
       </div>
-      <div class="container-fluid">
-        <div class="row display-flex vertical-padding horizontal-padding sink-row text-left">
-          <div class="col-lg-6 col-half-border bg-white">
-            <h1>
-              <small>Browse or Find a Law Enforcement Officer</small>
-            </h1>
-            <div class="text-muted">Search the database</div>
-            <p>
-              Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
-            </p>
-            <a href="{{ url_for("main.browse") }}" class="btn btn-lg btn-primary">Browse officers</a>
-            <div class="small-horizontal-padding"></div>
-            <a href="{{ url_for("main.get_officer") }}"
-               id="cpd"
-               class="btn btn-lg btn-primary">Identify officers</a>
+      <div class="container-fluid sink-row">
+        <div class="row display-flex horizontal-padding text-start">
+          <div class="col-lg-6">
+            <div class="col-half-border bg-white">
+              <h1>
+                <small>Browse or Find a Law Enforcement Officer</small>
+              </h1>
+              <div class="text-muted">Search the database</div>
+              <p class="my-4">
+                Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
+              </p>
+              <a href="{{ url_for("main.browse") }}"
+                 class="btn btn-lg btn-primary mt-1">Browse officers</a>
+              <a href="{{ url_for("main.get_officer") }}"
+                 id="cpd"
+                 class="btn btn-lg btn-primary mt-1">Identify officers</a>
+            </div>
           </div>
-          <div class="col-lg-6 col-half-border bg-white">
-            <h1>
-              <small>Submit an Image</small>
-            </h1>
-            <div class="text-muted">Contribute to the database</div>
-            <p>Have a photo containing uniformed law enforcement officers? Drop them here.</p>
-            <a class="btn btn-lg btn-primary"
-               href="{{ url_for("main.submit_data") }}">Submit Image</a>
+          <div class="col-lg-6">
+            <div class="col-half-border bg-white">
+              <h1>
+                <small>Submit an Image</small>
+              </h1>
+              <div class="text-muted">Contribute to the database</div>
+              <p class="my-4">Have a photo containing uniformed law enforcement officers? Drop them here.</p>
+              <a class="btn btn-lg btn-primary"
+                 href="{{ url_for("main.submit_data") }}">Submit Image</a>
+            </div>
           </div>
         </div>
       </div>
@@ -37,31 +41,35 @@
     <div class="hr-banner">Want to help? Here are two ways...</div>
     <div class="container-fluid">
       <div class="row display-flex">
-        <div class="col-lg-6 bg-light-gray col-half-no-border text-left">
-          <h1>
-            <small>Volunteer</small>
-          </h1>
-          <p>
-            We're looking for volunteers to help us sort through images. If you're interested in helping out, please
-            sign up!
-          </p>
-          <a class="btn btn-lg btn-secondary"
-             href="{{ url_for("main.get_started_labeling") }}">Put me to work</a>
+        <div class="col-lg-6 bg-light-gray text-left">
+          <div class="col-half-no-border">
+            <h1>
+              <small>Volunteer</small>
+            </h1>
+            <p class="my-4">
+              We're looking for volunteers to help us sort through images. If you're interested in helping out, please
+              sign up!
+            </p>
+            <a class="btn btn-lg btn-secondary"
+               href="{{ url_for("main.get_started_labeling") }}">Put me to work</a>
+          </div>
         </div>
-        <div class="col-lg-6 bg-blue-gray col-half-no-border text-left">
-          <h1>
-            <small>Donate</small>
-          </h1>
-          <p>
-            <!--TODO check on link + copy-->
-            We are entirely volunteer funded and directed. Donations are greatly appreciated, and can be funded
-            through PayPal, YouCaring, or Bitcoin.
-            <br>
-            Note: We are an IRS 501(c)3 not-for-profit and all donations are tax deductible!
-          </p>
-          <a class="btn btn-lg btn-secondary"
-             href="https://lucyparsonslabs.com/support/"
-             target="_blank">Donate</a>
+        <div class="col-lg-6 bg-blue-gray text-left">
+          <div class="col-half-no-border">
+            <h1>
+              <small>Donate</small>
+            </h1>
+            <p class="my-4">
+              <!--TODO check on link + copy-->
+              We are entirely volunteer funded and directed. Donations are greatly appreciated, and can be funded
+              through PayPal, YouCaring, or Bitcoin.
+              <br>
+              Note: We are an IRS 501(c)3 not-for-profit and all donations are tax deductible!
+            </p>
+            <a class="btn btn-lg btn-secondary"
+               href="https://lucyparsonslabs.com/donate"
+               target="_blank">Donate</a>
+          </div>
         </div>
       </div>
     </div>

@@ -40,6 +40,19 @@ def login_admin(browser, server_port):
             wait_for_element(browser, By.TAG_NAME, "body")
 
 
+def logout(browser, server_port):
+    browser.get(f"http://localhost:{server_port}/auth/logout")
+    wait_for_page_load(browser)
+
+
+def submit_image_to_dropzone(browser, img_path):
+    # Submit files in selenium: https://stackoverflow.com/a/61566075
+    wait_for_element(browser, By.CLASS_NAME, "dz-hidden-input")
+    upload = browser.find_element(By.CLASS_NAME, "dz-hidden-input")
+    upload.send_keys(img_path)
+    wait_for_element(browser, By.CLASS_NAME, "dz-success")
+
+
 def wait_for_element(browser, locator, text, timeout=10):
     try:
         element_present = expected_conditions.presence_of_element_located(
@@ -60,39 +73,26 @@ def wait_for_element_to_be_visible(browser, locator, text, timeout=10):
         pytest.fail("Timed out while waiting for element to become visible")
 
 
+def scroll_to_element(browser, element):
+    browser.execute_script(
+        "arguments[0].scrollIntoView({ behavior: 'instant', block: 'center' });",
+        element,
+    )
+    return element
+
+
 def test_user_can_load_homepage_and_get_to_form(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}")
+    wait_for_element_to_be_visible(browser, By.ID, "cpd")
 
     # Complainant loads homepage
     assert "OpenOversight" in browser.title
-    with wait_for_page_load(browser):
-        browser.find_element_by_id("cpd").click()
+    element = browser.find_element(By.ID, "cpd")
+    scroll_to_element(browser, element)
+    element.click()
 
     page_text = browser.find_element_by_tag_name("body").text
     assert "Find an Officer" in page_text
-
-
-def test_user_can_use_form_to_get_to_browse(mockdata, browser, server_port):
-    browser.get(f"http://localhost:{server_port}/find")
-
-    # Complainant selects department and proceeds to next step
-    browser.find_element_by_id("activate-step-2").click()
-
-    # Complainant puts in what they remember about name/badge number and
-    # proceeds to next step
-    browser.find_element_by_id("activate-step-3").click()
-
-    # Complainant selects the officer rank and proceeds to next step
-    browser.find_element_by_id("activate-step-4").click()
-
-    # Complainant fills out demographic information on officer
-    # Complainant clicks generate list and gets list of officers
-    with wait_for_page_load(browser):
-        browser.find_element_by_name("submit-officer-search-form").click()
-
-    page_text = browser.find_element_by_tag_name("body").text
-    assert "Filter officers" in page_text
-    assert browser.find_element_by_id("officer-profile-1")
 
 
 def test_user_can_get_to_complaint(mockdata, browser, server_port):
@@ -114,16 +114,25 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     total = Officer.query.filter_by(department_id=AC_DEPT).count()
 
     # first page of results
-    browser.get(f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1")
+    browser.get(
+        f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1&gender=Not+Sure"
+    )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
     expected = f"Showing 1-{current_app.config[KEY_OFFICERS_PER_PAGE]} of {total}"
     assert expected in page_text
 
+    # check that "Next" pagination link does not automatically add require_photo parameter
+    next_link = browser.find_elements(By.XPATH, '//li[@class="next"]/a')[
+        0
+    ].get_attribute("href")
+    assert "gender" in next_link
+    assert "require_photo" not in next_link
+
     # last page of results
     last_page_index = (total // current_app.config[KEY_OFFICERS_PER_PAGE]) + 1
     browser.get(
-        f"http://localhost:{server_port}/departments/{AC_DEPT}?page={last_page_index}"
+        f"http://localhost:{server_port}/departments/{AC_DEPT}?page={last_page_index}&gender=Not+Sure"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
     page_text = browser.find_element_by_tag_name("body").text
@@ -135,41 +144,47 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
     expected = f"Showing {start_of_page}-{total} of {total}"
     assert expected in page_text
 
+    # check that "Previous" pagination link does not automatically add require_photo parameter
+    previous_link = browser.find_elements(By.CSS_SELECTOR, "li.previous a")[
+        0
+    ].get_attribute("href")
+    assert "gender" in previous_link
+    assert "require_photo" not in previous_link
+
 
 def test_find_officer_can_see_uii_question_for_depts_with_uiis(
     mockdata, browser, server_port
 ):
     browser.get(f"http://localhost:{server_port}/find")
+    wait_for_element(browser, By.TAG_NAME, "body")
 
     dept_with_uii = Department.query.filter(
-        Department.unique_internal_identifier_label.isnot(None)
+        Department.unique_internal_identifier_label.is_not(None)
     ).first()
-    dept_id = str(dept_with_uii.id)
 
     dept_selector = Select(browser.find_element_by_id("dept"))
-    dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
+    uii_element = browser.find_element_by_id("uii-question")
 
-    page_text = browser.find_element_by_tag_name("body").text
-    assert "Do you know any part of the Officer's" in page_text
+    dept_selector.select_by_value(str(dept_with_uii.id))
+    assert uii_element.is_displayed()
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
     mockdata, browser, server_port
 ):
     browser.get(f"http://localhost:{server_port}/find")
+    wait_for_element(browser, By.TAG_NAME, "body")
 
     dept_without_uii = Department.query.filter_by(
         unique_internal_identifier_label=None
     ).first()
-    dept_id = str(dept_without_uii.id)
 
-    dept_selector = Select(browser.find_element_by_id("dept"))
-    dept_selector.select_by_value(dept_id)
-    browser.find_element_by_id("activate-step-2").click()
+    dept_selector = browser.find_element_by_id("dept")
+    scroll_to_element(browser, dept_selector)
+    Select(dept_selector).select_by_value(str(dept_without_uii.id))
 
-    uii_elements = browser.find_elements_by_id("#uii-question")
-    assert len(uii_elements) == 0
+    uii_element = browser.find_element("id", "uii-question")
+    assert not uii_element.is_displayed()
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
@@ -184,6 +199,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     incident_id = str(incident_long_description.id)
 
     result = browser.find_element_by_id("description-overflow-row_" + incident_id)
+    scroll_to_element(browser, result)
     assert result.is_displayed()
 
 
@@ -215,6 +231,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
 
     # Select incident for officer that has description under cutoff chars
     result = browser.find_element_by_id("description-overflow-row_1")
+    scroll_to_element(browser, result)
     assert not result.is_displayed()
 
 
@@ -229,6 +246,7 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    scroll_to_element(browser, button)
     button.click()
 
     description_text = browser.find_element_by_id(
@@ -248,6 +266,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server
     incident_id = str(incident_long_description.id)
 
     button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    scroll_to_element(browser, button)
     button.click()
 
     buttonRow = browser.find_element_by_id("description-overflow-row_" + incident_id)
@@ -258,25 +277,23 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
     login_admin(browser, server_port)
 
     # get the units from the DB in the sort we expect
-    db_units_sorted = list(
-        map(
-            lambda x: x.description,
-            db.session.query(Unit).order_by(Unit.description.asc()).all(),
-        )
-    )
+    db_units_sorted = [
+        x.description
+        for x in db.session.query(Unit).order_by(Unit.description.asc()).all()
+    ]
     # the Select tag in the interface has a 'None' value at the start
     db_units_sorted.insert(0, "None")
 
     # Check for the Unit sort on the 'add officer' form
     browser.get(f"http://localhost:{server_port}/officers/new")
     unit_select = Select(browser.find_element_by_id("unit"))
-    select_units_sorted = list(map(lambda x: x.text, unit_select.options))
+    select_units_sorted = [x.text for x in unit_select.options]
     assert db_units_sorted == select_units_sorted
 
     # Check for the Unit sort on the 'add assignment' form
     browser.get(f"http://localhost:{server_port}/officers/1")
     unit_select = Select(browser.find_element_by_id("unit"))
-    select_units_sorted = list(map(lambda x: x.text, unit_select.options))
+    select_units_sorted = [x.text for x in unit_select.options]
     assert db_units_sorted == select_units_sorted
 
 
@@ -311,6 +328,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
 def test_image_classification_and_tagging(mockdata, browser, server_port):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
+    star_no = 1312
 
     login_admin(browser, server_port)
 
@@ -332,7 +350,11 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")
     browser.find_element(By.ID, "last_name").send_keys("Friendly")
-    browser.find_element(By.ID, "submit").click()
+    browser.find_element(By.ID, "star_no").send_keys(star_no)
+
+    submit = browser.find_element(By.ID, "submit")
+    scroll_to_element(browser, submit)
+    submit.click()
 
     wait_for_page_load(browser)
     # expected url: http://localhost:{server_port}/submit_officer_images/officer/<id>
@@ -342,13 +364,10 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/submit")
     wait_for_page_load(browser)
 
-    Select(browser.find_element("id", "department")).select_by_value(dept_id)
-
-    # Submit files in selenium: https://stackoverflow.com/a/61566075
-    wait_for_element(browser, By.CLASS_NAME, "dz-hidden-input")
-    upload = browser.find_element(By.CLASS_NAME, "dz-hidden-input")
-    upload.send_keys(img_path)
-    wait_for_element(browser, By.CLASS_NAME, "dz-success")
+    select = browser.find_element("id", "department")
+    scroll_to_element(browser, select)
+    Select(select).select_by_value(dept_id)
+    submit_image_to_dropzone(browser, img_path)
 
     # 4. Classify the uploaded image
     browser.get(f"http://localhost:{server_port}/sort/departments/{dept_id}")
@@ -369,15 +388,18 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}/cop_faces/departments/{dept_id}")
     wait_for_page_load(browser)
     browser.find_element(By.ID, "officer_id").send_keys(officer_id)
-    browser.find_element(By.CSS_SELECTOR, "input[value='Add identified face']").click()
+    add_face = browser.find_element(
+        By.CSS_SELECTOR, "input[value='Add identified face']"
+    )
+    scroll_to_element(browser, add_face)
+    add_face.click()
 
     wait_for_page_load(browser)
     page_text = browser.find_element(By.TAG_NAME, "body").text
     assert "Tag added to database" in page_text
 
     # 6. Log out as admin
-    browser.get(f"http://localhost:{server_port}/auth/logout")
-    wait_for_page_load(browser)
+    logout(browser, server_port)
 
     # 7. Check that the tag appears on the officer page
     browser.get(f"http://localhost:{server_port}/officers/{officer_id}")
@@ -401,3 +423,52 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
         >= frame.location["y"] + frame.size["height"]
     )
     assert image.location["y"] <= frame.location["y"]
+
+
+@pytest.mark.skip("Enable once real file upload in tests is supported.")
+def test_anonymous_user_can_upload_image(mockdata, browser, server_port):
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    img_path = os.path.join(test_dir, "images/200Cat.jpeg")
+
+    login_admin(browser, server_port)
+
+    # 1. Create new department as admin (to avoid mockdata)
+    browser.get(f"http://localhost:{server_port}/departments/new")
+    wait_for_page_load(browser)
+    browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
+    browser.find_element(By.ID, "short_name").send_keys("APD")
+    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
+    browser.find_element(By.ID, "submit").click()
+    wait_for_page_load(browser)
+
+    # 2. Log out
+    logout(browser, server_port)
+
+    # 3. Upload image
+    browser.get(f"http://localhost:{server_port}/submit")
+    wait_for_page_load(browser)
+
+    select = browser.find_element(By.ID, "department")
+    dept_select = Select(select)
+    scroll_to_element(browser, select)
+    dept_select.select_by_visible_text("[WA] Auburn Police Department")
+    dept_id = dept_select.first_selected_option.get_attribute("value")
+
+    submit_image_to_dropzone(browser, img_path)
+
+    # 4. Login as admin again
+    login_admin(browser, server_port)
+
+    # 5. Check that there is 1 image to classify
+    browser.get(f"http://localhost:{server_port}/sort/departments/{dept_id}")
+    wait_for_page_load(browser)
+
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "Do you see uniformed law enforcement officers in the photo?" in page_text
+
+    browser.find_element(By.ID, "answer-yes").click()
+    wait_for_page_load(browser)
+
+    # 6. All images tagged!
+    page_text = browser.find_element(By.TAG_NAME, "body").text
+    assert "All images have been classified!" in page_text

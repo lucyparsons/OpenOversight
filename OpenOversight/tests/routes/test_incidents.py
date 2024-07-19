@@ -98,6 +98,68 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
         assert inc is not None
 
 
+@pytest.mark.parametrize(
+    "link_type, expected_text",
+    [
+        ("link", "The linked page may be disturbing for some viewers"),
+        ("video", 'data-has-content-warning="true"'),
+        ("other_video", "The linked video may be disturbing for some viewers"),
+    ],
+)
+def test_admins_can_create_incidents_with_links(
+    mockdata, client, session, link_type, expected_text
+):
+    with current_app.test_request_context():
+        login_admin(client)
+        test_date = datetime(2000, 5, 25, 1, 45)
+
+        # No content warning
+        address_form = LocationForm(city="FFFFF", state="IA")
+        link_form = LinkForm(
+            url="https://website.example",
+            link_type=link_type,
+            has_content_warning=False,
+        )
+        license_plates_form = LicensePlateForm(state="AZ")
+        form = IncidentForm(
+            date_field=str(test_date.date()),
+            time_field=str(test_date.time()),
+            report_number="report1",
+            description="Something happened",
+            department="1",
+            address=address_form.data,
+            links=[link_form.data],
+            license_plates=[license_plates_form.data],
+            officers=[],
+        )
+
+        rv = client.post(
+            url_for("main.incident_api_new"),
+            data=process_form_data(form.data),
+            follow_redirects=True,
+        )
+        assert rv.status_code == HTTPStatus.OK
+        assert "created" in rv.data.decode(ENCODING_UTF_8)
+        assert expected_text not in rv.data.decode(ENCODING_UTF_8)
+
+        # Has content warning
+        link_form = LinkForm(
+            url="https://website2.example",
+            link_type=link_type,
+            has_content_warning=True,
+        )
+        form.links.append_entry(link_form.data)
+
+        rv = client.post(
+            url_for("main.incident_api_new"),
+            data=process_form_data(form.data),
+            follow_redirects=True,
+        )
+        assert rv.status_code == HTTPStatus.OK
+        assert "created" in rv.data.decode(ENCODING_UTF_8)
+        assert expected_text in rv.data.decode(ENCODING_UTF_8)
+
+
 def test_admins_cannot_create_incident_with_invalid_report_number(
     mockdata, client, session
 ):
@@ -188,7 +250,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         )
         assert rv.status_code == HTTPStatus.OK
         assert "successfully updated" in rv.data.decode(ENCODING_UTF_8)
-        updated = Incident.query.get(inc_id)
+        updated = session.get(Incident, inc_id)
         assert updated.date == test_date
         assert updated.time == test_time
         assert updated.address.street_name == street_name
@@ -213,7 +275,12 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         )
         old_links = inc.links
         old_links_forms = [
-            LinkForm(url=link.url, link_type=link.link_type).data for link in inc.links
+            LinkForm(
+                url=link.url,
+                link_type=link.link_type,
+                has_content_warning=link.has_content_warning,
+            ).data
+            for link in inc.links
         ]
         new_url = faker.url()
         link_form = LinkForm(url=new_url, link_type="video")
@@ -613,7 +680,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Incident.query.get(inc_id)
+        deleted = session.get(Incident, inc_id)
         assert deleted is None
 
 
@@ -627,7 +694,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Incident.query.get(inc_id)
+        deleted = session.get(Incident, inc_id)
         assert deleted is None
 
 
@@ -643,7 +710,7 @@ def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, s
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.FORBIDDEN
-        not_deleted = Incident.query.get(inc_id)
+        not_deleted = session.get(Incident, inc_id)
         assert not_deleted.id is inc_id
 
 

@@ -30,7 +30,7 @@ from wtforms.validators import (
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from OpenOversight.app.formfields import TimeField
-from OpenOversight.app.models.database import Officer
+from OpenOversight.app.models.database import Officer, db
 from OpenOversight.app.utils.choices import (
     AGE_CHOICES,
     DEPARTMENT_STATE_CHOICES,
@@ -171,7 +171,9 @@ class SalaryForm(Form):
         "Salary", validators=[NumberRange(min=0, max=1000000), validate_money]
     )
     overtime_pay = DecimalField(
-        "Overtime Pay", validators=[NumberRange(min=0, max=1000000), validate_money]
+        "Overtime Pay",
+        default=0,
+        validators=[NumberRange(min=0, max=1000000), validate_money],
     )
     year = IntegerField(
         "Year",
@@ -237,6 +239,9 @@ class LinkForm(Form):
         choices=LINK_CHOICES,
         default="",
         validators=[AnyOf(allowed_values(LINK_CHOICES))],
+    )
+    has_content_warning = BooleanField(
+        "Include content warning?", default=True, validators=[Optional()]
     )
 
     def validate(self, extra_validators=None):
@@ -493,11 +498,11 @@ class OfficerIdField(StringField):
 def validate_oo_id(self, oo_id):
     if oo_id.data and isinstance(oo_id.data, str):
         if oo_id.data.isnumeric():
-            officer = Officer.query.get(oo_id.data)
+            officer = db.session.get(Officer, oo_id.data)
         else:
             try:
                 officer_id = oo_id.data.split('value="')[1][:-2]
-                officer = Officer.query.get(officer_id)
+                officer = db.session.get(Officer, officer_id)
 
             # Sometimes we get a string in field.data with py.test, this parses it
             except IndexError:

@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
+from typing import Optional
 
 from flask import (
     Response,
@@ -365,10 +366,7 @@ def sitemap_officers():
         yield "main.officer_profile", {"officer_id": officer.id}
 
 
-@main.route(
-    "/officer/<int:officer_id>/assignment/new",
-    methods=[HTTPMethod.GET, HTTPMethod.POST],
-)
+@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
 @ac_or_admin_required
 def redirect_add_assignment(officer_id: int):
     return redirect(
@@ -458,7 +456,7 @@ def edit_assignment(officer_id: int, assignment_id: int):
     )
     form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
     form.unit.query = unit_choices(officer.department_id)
-    if form.unit.data and type(form.unit.data) == int:
+    if form.unit.data and isinstance(form.unit.data, int):
         form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
     if form.validate_on_submit():
         form.job_title.data = Job.query.filter_by(
@@ -745,7 +743,7 @@ def redirect_edit_department(department_id: int):
 @login_required
 @admin_required
 def edit_department(department_id: int):
-    department = Department.query.get_or_404(department_id)
+    department = db.get_or_404(Department, department_id)
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
@@ -856,7 +854,7 @@ def redirect_list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -896,7 +894,7 @@ def list_officer(
     unique_internal_identifier=None,
     unit=None,
     current_job=None,
-    require_photo: bool = False,
+    require_photo: Optional[bool] = None,
 ):
     form = BrowseForm()
     form.rank.query = (
@@ -1058,7 +1056,7 @@ def list_officer(
 
 
 @main.route("/department/<int:department_id>/ranks")
-def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
+def redirect_get_dept_ranks(department_id: int, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for(
@@ -1072,7 +1070,7 @@ def redirect_get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = Fal
 
 @main.route("/departments/<int:department_id>/ranks")
 @main.route("/ranks")
-def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
+def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
     if request.args.get("is_sworn_officer"):
@@ -1089,7 +1087,7 @@ def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
         ranks = Job.query.all()
         # Prevent duplicate ranks
         rank_list = sorted(
-            set((rank.id, rank.job_title) for rank in ranks),
+            {(rank.id, rank.job_title) for rank in ranks},
             key=lambda x: x[1],
         )
 
@@ -1097,17 +1095,17 @@ def get_dept_ranks(department_id: int = 0, is_sworn_officer: bool = False):
 
 
 @main.route("/department/<int:department_id>/units")
-def redirect_get_dept_units(department_id: int = 0):
+def redirect_get_dept_units(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.get_dept_ranks", department_id=department_id),
+        url_for("main.get_dept_units", department_id=department_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
 @main.route("/departments/<int:department_id>/units")
 @main.route("/units")
-def get_dept_units(department_id: int = 0):
+def get_dept_units(department_id: Optional[int] = None):
     if not department_id:
         department_id = request.args.get("department_id")
 
@@ -1119,7 +1117,7 @@ def get_dept_units(department_id: int = 0):
         units = Unit.query.all()
         # Prevent duplicate units
         unit_list = sorted(
-            set((unit.id, unit.description) for unit in units),
+            {(unit.id, unit.description) for unit in units},
             key=lambda x: x[1],
         )
 
@@ -1291,7 +1289,6 @@ def delete_tag(tag_id: int):
 
 @main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
-@ac_or_admin_required
 def redirect_set_featured_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1341,7 +1338,7 @@ def leaderboard():
 
 
 @main.route(
-    "/cop_face/department/<int:department_id>/images/<int:image_id>",
+    "/cop_face/department/<int:department_id>/image/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
 @main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
@@ -1351,7 +1348,9 @@ def leaderboard():
 )
 @main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
-def redirect_label_data(department_id: int = 0, image_id: int = 0):
+def redirect_label_data(
+    department_id: Optional[int] = None, image_id: Optional[int] = None
+):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for("main.label_data", department_id=department_id, image_id=image_id),
@@ -1372,7 +1371,7 @@ def redirect_label_data(department_id: int = 0, image_id: int = 0):
 )
 @main.route("/cop_faces/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
-def label_data(department_id: int = 0, image_id: int = 0):
+def label_data(department_id: Optional[int] = None, image_id: Optional[int] = None):
     if department_id:
         department = Department.query.filter_by(id=department_id).one()
         if image_id:
@@ -1832,7 +1831,7 @@ def redirect_submit_officer_images(officer_id: int):
 @login_required
 @ac_or_admin_required
 def submit_officer_images(officer_id: int):
-    officer = Officer.query.get_or_404(officer_id)
+    officer = db.get_or_404(Officer, officer_id)
     return render_template("submit_officer_image.html", officer=officer)
 
 
@@ -1841,8 +1840,7 @@ def submit_officer_images(officer_id: int):
     "/upload/department/<int:department_id>/officer/<int:officer_id>",
     methods=[HTTPMethod.POST],
 )
-@login_required
-def redirect_upload(department_id: int = 0, officer_id: int = 0):
+def redirect_upload(department_id: int, officer_id: Optional[int] = None):
     return redirect(
         url_for("main.upload", department_id=department_id, officer_id=officer_id),
         code=HTTPStatus.PERMANENT_REDIRECT,
@@ -1854,9 +1852,8 @@ def redirect_upload(department_id: int = 0, officer_id: int = 0):
     "/upload/departments/<int:department_id>/officers/<int:officer_id>",
     methods=[HTTPMethod.POST],
 )
-@login_required
 @limiter.limit("250/minute")
-def upload(department_id: int = 0, officer_id: int = 0):
+def upload(department_id: int, officer_id: Optional[int] = None):
     if officer_id:
         officer = Officer.query.filter_by(id=officer_id).first()
         if not officer:
@@ -1956,7 +1953,7 @@ class IncidentApi(ModelView):
 
         dept = None
         if department_id := request.args.get("department_id"):
-            dept = Department.query.get_or_404(department_id)
+            dept = db.get_or_404(Department, department_id)
             form.department_id.data = department_id
             incidents = incidents.filter_by(department_id=department_id)
 
@@ -2144,7 +2141,7 @@ class TextApi(ModelView):
 
     def dispatch_request(self, *args, **kwargs):
         if "officer_id" in kwargs:
-            officer = Officer.query.get_or_404(kwargs["officer_id"])
+            officer = db.get_or_404(Officer, kwargs["officer_id"])
             self.officer_id = kwargs.pop("officer_id")
             self.department_id = officer.department_id
         return super(TextApi, self).dispatch_request(*args, **kwargs)
@@ -2377,6 +2374,7 @@ class OfficerLinkApi(ModelView):
                 link_type=form.link_type.data,
                 description=form.description.data,
                 author=form.author.data,
+                has_content_warning=form.has_content_warning.data,
                 created_by=current_user.id,
                 last_updated_by=current_user.id,
             )
@@ -2394,7 +2392,7 @@ class OfficerLinkApi(ModelView):
     @login_required
     @ac_or_admin_required
     def delete(self, obj_id: int):
-        obj = self.model.query.get_or_404(obj_id)
+        obj = db.get_or_404(self.model, obj_id)
         if (
             not current_user.is_administrator
             and current_user.ac_department_id != self.get_department_id(obj)
@@ -2437,7 +2435,7 @@ class OfficerLinkApi(ModelView):
 
     def dispatch_request(self, *args, **kwargs):
         if "officer_id" in kwargs:
-            officer = Officer.query.get_or_404(kwargs["officer_id"])
+            officer = db.get_or_404(Officer, kwargs["officer_id"])
             self.officer_id = kwargs.pop("officer_id")
             self.department_id = officer.department_id
         return super(OfficerLinkApi, self).dispatch_request(*args, **kwargs)

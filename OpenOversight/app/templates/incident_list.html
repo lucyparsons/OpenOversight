@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
+{% from "bootstrap5/utils.html" import render_icon %}
 {% block title %}
   View incidents - OpenOversight
 {% endblock title %}
@@ -12,7 +13,7 @@
   {% endif %}
 {% endblock meta %}
 {% block content %}
-  <div class="container" role="main">
+  <div class="container py-5" role="main">
     <h1>Incidents</h1>
     {% if department %}
       <h2>
@@ -23,11 +24,11 @@
       <div class="filter-sidebar col-sm-3">
         <h3 class="sidebar-title">Filter incidents</h3>
         <form class="form" method="get" role="form">
-          {% if department %}<div class="hidden">{{ wtf.form_field(form.department_id) }}</div>{% endif %}
-          <div class="panel">{{ wtf.form_field(form.report_number) }}</div>
-          <div class="panel">{{ wtf.form_field(form.occurred_before) }}</div>
-          <div class="panel">{{ wtf.form_field(form.occurred_after) }}</div>
-          <div class="panel">{{ wtf.form_field(form.submit, id="submit", button_map={'submit':'primary'}) }}</div>
+          {% if department %}<div class="hidden">{{ wtf.render_field(form.department_id) }}</div>{% endif %}
+          <div class="panel">{{ wtf.render_field(form.report_number) }}</div>
+          <div class="panel">{{ wtf.render_field(form.occurred_before) }}</div>
+          <div class="panel">{{ wtf.render_field(form.occurred_after) }}</div>
+          <div class="panel">{{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}</div>
         </form>
       </div>
       <div class="search-results col-sm-9">
@@ -45,7 +46,7 @@
                     </tr>
                   {% endif %}
                   <tr>
-                    <td colspan="2" style="border-top: 0; ">
+                    <td colspan="2" class="no-border-top">
                       <h3>
                         <a href="{{ url_for('main.incident_api', obj_id=incident.id) }}">
                           Incident
@@ -70,7 +71,7 @@
           <a href="{{ url_for("main.incident_api_new") }}"
              class="btn btn-primary"
              role="button">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            {{ render_icon("plus") }}
             Add New Incident
           </a>
         {% endif %}

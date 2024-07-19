@@ -260,7 +260,7 @@ def test_admins_can_delete_notes(mockdata, client, session):
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Note.query.get(note.id)
+        deleted = session.get(Note, note.id)
         assert deleted is None
         assert has_database_cache_entry(*cache_params) is False
 
@@ -285,7 +285,7 @@ def test_acs_can_delete_their_notes_in_their_department(mockdata, client, sessio
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Note.query.get(note.id)
+        deleted = session.get(Note, note.id)
         assert deleted is None
 
 
@@ -314,7 +314,7 @@ def test_acs_cannot_delete_notes_not_in_their_department(
         )
 
         assert rv.status_code == HTTPStatus.FORBIDDEN
-        not_deleted = Note.query.get(note.id)
+        not_deleted = session.get(Note, note.id)
         assert not_deleted is not None
 
 

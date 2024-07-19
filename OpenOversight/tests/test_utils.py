@@ -99,11 +99,13 @@ def test_filter_by_name(mockdata):
 
 def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = Department.query.first()
-    officer = Officer(
-        first_name="Rachel", last_name="S", department=department, birth_year=1992
-    )
     results = grab_officers({"name": "S", "dept": department})
-    assert officer in results.all()
+    no_assignments = False
+    for element in results.all():
+        if len(element.assignments) == 0:
+            no_assignments = True
+            break
+    assert no_assignments
 
 
 def test_filter_by_badge_no(mockdata):
@@ -309,7 +311,7 @@ def test_crop_image_calls_save_image_to_s3_and_db_with_user_id(mockdata, client)
 def test_filter_by_form_filter_unit(
     mockdata, units, has_officers_with_unit, has_officers_with_no_unit
 ):
-    form_data = dict(unit=units)
+    form_data = {"unit": units}
     unit_id = Unit.query.filter_by(description="Donut Devourers").one().id
     department_id = Department.query.first().id
 
@@ -318,9 +320,9 @@ def test_filter_by_form_filter_unit(
     for officer in officers:
         found = False
         if has_officers_with_unit:
-            found = found or any([a.unit_id == unit_id for a in officer.assignments])
+            found = found or any(a.unit_id == unit_id for a in officer.assignments)
         if has_officers_with_no_unit:
-            found = found or any([a.unit_id is None for a in officer.assignments])
+            found = found or any(a.unit_id is None for a in officer.assignments)
         assert found
 
 

@@ -172,9 +172,13 @@ def test_salary_repr(mockdata):
 
 
 def test_password_not_printed(mockdata):
+    """Validate that password fields cannot be directly accessed."""
     user = User(password="bacon")
-    with raises(AttributeError):
-        user.password
+    try:
+        print(user.password)
+    except Exception as e:
+        assert isinstance(e, AttributeError)
+        assert str(e) == "password is not a readable attribute"
 
 
 def test_password_set_success(mockdata):

@@ -65,8 +65,8 @@
         data-incident='{{ incident.id | tojson }}'>{{ incident.description | markdown }}</td>
   </tr>
   <tr id="description-overflow-row_{{ incident.id }}">
-    <td style="border-top: none"></td>
-    <td style="border-top: none"
+    <td class="no-border-top"></td>
+    <td class="no-border-top"
         id="description-overflow-cell_{{ incident.id }}">
       <button id="description-overflow-button_{{ incident.id }}">Click to read more</button>
     </td>

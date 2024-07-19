@@ -86,18 +86,18 @@
 {% endblock meta %}
 {% block content %}
   {% set is_admin_or_coordinator = current_user.is_admin_or_coordinator(officer.department) %}
-  <div class="container theme-showcase" role="main">
-    <div class="page-header">
+  <div class="container theme-showcase py-5" role="main">
+    <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li>
+        <li class="breadcrumb-item">
           <a href="{{ url_for('main.list_officer',department_id=officer.department.id) }}">{{ officer.department.name|title }}</a>
         </li>
-        <li class="active">{{ officer.full_name() }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ officer.full_name() }}</li>
       </ol>
-      <h1>
-        Officer Detail: <b>{{ officer.full_name() }}</b>
-      </h1>
-    </div>
+    </nav>
+    <h1>
+      Officer Detail: <b>{{ officer.full_name() }}</b>
+    </h1>
     <div class="row">
       <div class="col-sm-6">{% include "partials/officer_faces.html" %}</div>
       <div class="col-sm-6">{% include "partials/officer_general_information.html" %}</div>
@@ -136,4 +136,5 @@
     </div>
     {# end row #}
   </div>
+  <script src="{{ url_for('static', filename='js/contentWarning.js') }}"></script>
 {% endblock content %}

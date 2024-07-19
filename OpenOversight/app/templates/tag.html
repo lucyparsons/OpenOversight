@@ -1,145 +1,149 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="container" role="main">
+  <div class="container py-5" role="main">
     <div class="page-header">
-      <ol class="breadcrumb">
-        <li>
-          <a href="{{ url_for('main.list_officer',department_id=face.officer.department.id) }}">{{ face.officer.department.name|title }}</a>
-        </li>
-        <li>
-          <a href="{{ url_for('main.officer_profile',officer_id=face.officer.id) }}">{{ face.officer.full_name() |title }}</a>
-        </li>
-        <li class="active">Tag {{ face.id }}</li>
-      </ol>
+      <nav class="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('main.list_officer',department_id=face.officer.department.id) }}">{{ face.officer.department.name|title }}</a>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('main.officer_profile',officer_id=face.officer.id) }}">{{ face.officer.full_name() |title }}</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Tag {{ face.id }}</li>
+        </ol>
+      </nav>
       <h1>Tag {{ face.id }} Detail</h1>
     </div>
-  </div>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-12 text-center">You can download the full officer photo by clicking the image below.</div>
-    </div>
-    <br>
-    <div class="row">
-      <div class="col-sm-12 col-md-12">
-        <a href="{{ path }}" rel="noopener noreferrer">
-          <div class="face-wrap">
-            {% if face.face_position_x is defined
-              and face.face_position_y is defined
-              and face.face_width is defined
-              and face.face_height is defined %}
-              <img id="face-img"
-                   data-left="{{ face.face_position_x }}"
-                   data-top="{{ face.face_position_y }}"
-                   data-width="{{ face.face_width }}"
-                   data-height="{{ face.face_height }}"
-                   src="{{ path }}" />
-            {% else %}
-              <img id="face-img" src="{{ path }}" />
-            {% endif %}
-            <div id="face-tag-frame"></div>
-          </div>
-        </a>
-      </div>
-    </div>
-  </div>
-  <br>
-  {% if current_user and current_user.is_authenticated %}
     <div class="container">
       <div class="row">
-        <div class="col-sm-6 col-md-4">
-          <div class="thumbnail">
-            <div class="caption">
-              <h3>Image Cutout</h3>
-              <table class="table table-hover">
-                <tbody>
-                  <tr>
-                    <td>
-                      <b>Cropped Image ID</b>
-                    </td>
-                    <td>
-                      <a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">{{ face.image.id }}</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Original Image ID</b>
-                    </td>
-                    <td>
-                      <a href="{{ url_for('main.display_submission', image_id=face.original_image.id) }}">{{ face.original_image.id }}</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Department</b>
-                    </td>
-                    <td>{{ face.image.department.name }}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Featured</b>
-                    </td>
-                    <td>{{ face.featured }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <h3>Officer</h3>
-              <table class="table table-hover">
-                <tbody>
-                  <tr>
-                    <td>
-                      <b>OpenOversight ID</b>
-                    </td>
-                    <td>
-                      <a href="{{ url_for('main.officer_profile', officer_id=face.officer_id) }}">{{ face.officer_id }}</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Tagged by user</b>
-                    </td>
-                    <td>
-                      <a href="{{ url_for('main.profile', username=face.creator.username) }}">{{ face.creator.username }}</a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {% if current_user.is_admin_or_coordinator(face.image.department) %}
-                <h3>
-                  Remove tag <small>Admin only</small>
-                </h3>
-                <p>
-                  <form action="{{ url_for('main.delete_tag', tag_id=face.id) }}"
-                        method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                    <button type="submit" name="action" class="btn btn-primary">Delete tag</button>
-                  </form>
-                </p>
-                <h3>
-                  Add additional tags <small>Admin only</small>
-                </h3>
-                <p>
-                  <a href="{{ url_for('main.label_data', image_id=face.image.id) }}">
-                    <button class="btn btn-primary">Tag this image</button>
-                  </a>
-                </p>
-                <h3>
-                  Set as featured tag <small>Admin only</small>
-                </h3>
-                <p>
-                  <form action="{{ url_for('main.set_featured_tag', tag_id=face.id) }}"
-                        method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                    <button type="submit"
-                            name="action"
-                            class="btn btn-primary"
-                            {% if face.featured %}disabled{% endif %}>Set as featured tag</button>
-                  </form>
-                </p>
+        <div class="col-sm-12 text-center">You can download the full officer photo by clicking the image below.</div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-sm-12 col-md-12">
+          <a href="{{ path }}" rel="noopener noreferrer">
+            <div class="face-wrap">
+              {% if face.face_position_x is defined
+                and face.face_position_y is defined
+                and face.face_width is defined
+                and face.face_height is defined %}
+                <img id="face-img"
+                     data-left="{{ face.face_position_x }}"
+                     data-top="{{ face.face_position_y }}"
+                     data-width="{{ face.face_width }}"
+                     data-height="{{ face.face_height }}"
+                     src="{{ path }}"
+                     alt="{{ face.officer.full_name() | title }}" />
+              {% else %}
+                <img id="face-img"
+                     src="{{ path }}"
+                     alt="{{ face.officer.full_name() | title }}'s profile image" />
               {% endif %}
+              <div id="face-tag-frame"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+      {% if current_user and current_user.is_authenticated %}
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-6 col-md-4">
+              <div class="thumbnail">
+                <div class="caption">
+                  <h3>Image Cutout</h3>
+                  <table class="table table-hover">
+                    <tbody>
+                      <tr>
+                        <td>
+                          <b>Cropped Image ID</b>
+                        </td>
+                        <td>
+                          <a href="{{ url_for('main.display_submission', image_id=face.image.id) }}">{{ face.image.id }}</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <b>Original Image ID</b>
+                        </td>
+                        <td>
+                          <a href="{{ url_for('main.display_submission', image_id=face.original_image.id) }}">{{ face.original_image.id }}</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <b>Department</b>
+                        </td>
+                        <td>{{ face.image.department.name }}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <b>Featured</b>
+                        </td>
+                        <td>{{ face.featured }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <h3>Officer</h3>
+                  <table class="table table-hover">
+                    <tbody>
+                      <tr>
+                        <td>
+                          <b>OpenOversight ID</b>
+                        </td>
+                        <td>
+                          <a href="{{ url_for('main.officer_profile', officer_id=face.officer_id) }}">{{ face.officer_id }}</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <b>Tagged by user</b>
+                        </td>
+                        <td>
+                          <a href="{{ url_for('main.profile', username=face.creator.username) }}">{{ face.creator.username }}</a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {% if current_user.is_admin_or_coordinator(face.image.department) %}
+                    <h3>
+                      Remove tag <small class="text-body-tertiary">Admin only</small>
+                    </h3>
+                    <p>
+                      <form action="{{ url_for('main.delete_tag', tag_id=face.id) }}"
+                            method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" name="action" class="btn btn-danger">Delete tag</button>
+                      </form>
+                    </p>
+                    <h3>
+                      Add additional tags <small class="text-body-tertiary">Admin only</small>
+                    </h3>
+                    <p>
+                      <a href="{{ url_for('main.label_data', image_id=face.image.id) }}">
+                        <button class="btn btn-primary">Tag this image</button>
+                      </a>
+                    </p>
+                    <h3>
+                      Set as featured tag <small class="text-body-tertiary">Admin only</small>
+                    </h3>
+                    <p>
+                      <form action="{{ url_for('main.set_featured_tag', tag_id=face.id) }}"
+                            method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button type="submit"
+                                name="action"
+                                class="btn btn-warning"
+                                {% if face.featured %}disabled{% endif %}>Set as featured tag</button>
+                      </form>
+                    </p>
+                  {% endif %}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>
 {% endblock content %}

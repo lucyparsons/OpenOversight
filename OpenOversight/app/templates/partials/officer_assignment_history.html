@@ -44,7 +44,7 @@
           {% if is_admin_or_coordinator %}
             <a href="{{ url_for('main.edit_assignment', officer_id=officer.id, assignment_id=assignment.id) }}">
               <span class="sr-only">Edit</span>
-              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+              <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
             </a>
           {% endif %}
         </td>
@@ -54,7 +54,7 @@
 </table>
 {% if is_admin_or_coordinator %}
   <h3>
-    Add Assignment <small>Admin only</small>
+    Add Assignment <small class="text-body-tertiary">Admin only</small>
   </h3>
   <table class="table">
     <tbody>
@@ -69,7 +69,7 @@
             {{ form.star_no }}
             {% for error in form.star_no.errors %}
               <p>
-                <span style="color: red">[{{ error }}]</span>
+                <span class="red">[{{ error }}]</span>
               </p>
             {% endfor %}
           </td>
@@ -82,7 +82,7 @@
             {{ form.job_title }}
             {% for error in form.job_title.errors %}
               <p>
-                <span style="color: red">[{{ error }}]</span>
+                <span class="red">[{{ error }}]</span>
               </p>
             {% endfor %}
           </td>
@@ -95,7 +95,7 @@
             {{ form.unit }}
             {% for error in form.unit.errors %}
               <p>
-                <span style="color: red">[{{ error }}]</span>
+                <span class="red">[{{ error }}]</span>
               </p>
             {% endfor %}
           </td>
@@ -108,7 +108,7 @@
             {{ form.start_date }}
             {% for error in form.start_date.errors %}
               <p>
-                <span style="color: red">[{{ error }}]</span>
+                <span class="red">[{{ error }}]</span>
               </p>
             {% endfor %}
           </td>
@@ -121,17 +121,18 @@
             {{ form.resign_date }}
             {% for error in form.resign_date.errors %}
               <p>
-                <span style="color: red">[{{ error }}]</span>
+                <span class="red">[{{ error }}]</span>
               </p>
             {% endfor %}
           </td>
         </tr>
         <tr>
+          <td></td>
           <td>
             <input type="submit"
                    value="Add Assignment"
                    name="add-assignment"
-                   class="btn-sm btn-primary" />
+                   class="btn btn-sm btn-primary" />
           </td>
         </tr>
       </form>

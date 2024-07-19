@@ -44,7 +44,7 @@ def test_get_age_from_birth_year(app):
     ],
 )
 def test_field_in_query(data, is_in):
-    expected = " in " if is_in else ""
+    expected = " show " if is_in else ""
     assert expected == filters.field_in_query(data, "name")
 
 

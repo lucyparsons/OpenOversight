@@ -123,7 +123,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
         login_ac(client)
 
         tag = (
-            Face.query.join(Face.officer, aliased=True)
+            Face.query.join(Face.officer)
             .except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT)))
             .first()
         )
@@ -282,7 +282,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(
             ),
             follow_redirects=True,
         )
-        department = Department.query.get(department_id)
+        department = session.get(Department, department_id)
 
         assert rv.status_code == HTTPStatus.OK
         assert department.name in rv.data.decode(ENCODING_UTF_8)
@@ -323,7 +323,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
         login_ac(client)
 
         tag = (
-            Face.query.join(Face.officer, aliased=True)
+            Face.query.join(Face.officer)
             .except_(Face.query.filter(Face.officer.has(department_id=AC_DEPT)))
             .first()
         )

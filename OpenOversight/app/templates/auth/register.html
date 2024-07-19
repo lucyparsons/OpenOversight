@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% block title %}
   Volunteer Registration - OpenOversight
 {% endblock title %}
@@ -8,16 +8,16 @@
         content="Register here as an OpenOversight volunteer.">
 {% endblock meta %}
 {% block content %}
-  <div class="container theme-showcase" role="main">
+  <div class="container theme-showcase py-5" role="main">
     <div class="page-header">
       <h1>Register as an OpenOversight Volunteer</h1>
     </div>
     <div class="col-md-4">
       <form class="form form-horizontal" method="post" role="form">
         {{ form.hidden_tag() }}
-        {{ wtf.form_errors(form, hiddens="only") }}
-        {{ wtf.form_field(form.email, autofocus="autofocus") }}
-        {{ wtf.form_field(form.username) }}
+        {{ wtf.render_hidden_errors(form) }}
+        {{ wtf.render_field(form.email, autofocus="autofocus") }}
+        {{ wtf.render_field(form.username) }}
         <div class="form-group {% if form.password.errors %}has-error{% endif %} required">
           <label class="control-label" for="password">Password</label>
           <input class="form-control"
@@ -49,7 +49,7 @@
             </p>
           {% endif %}
         </div>
-        {{ wtf.form_field(form.submit, id="password-button", button_map={'submit':'primary'}, disabled=True) }}
+        {{ wtf.render_field(form.submit, id="password-button", button_map={'submit':'primary'}, disabled=True) }}
       </form>
     </div>
   </div>

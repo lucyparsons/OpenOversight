@@ -19,9 +19,9 @@ class TimeField(StringField):
         else:
             return self.data and self.data.strftime(self.format) or ""
 
-    def process_formdata(self, valuelist):
-        if valuelist and valuelist != [""]:
-            time_str = " ".join(valuelist)
+    def process_formdata(self, values):
+        if values and values != [""]:
+            time_str = " ".join(values)
             try:
                 components = time_str.split(":")
                 hour = 0
@@ -36,6 +36,6 @@ class TimeField(StringField):
                 else:
                     raise ValueError
                 self.data = datetime.time(hour, minutes, seconds)
-            except ValueError:
+            except ValueError as err:
                 self.data = None
-                raise ValueError(self.gettext("Not a valid time"))
+                raise ValueError(self.gettext("Not a valid time")) from err
