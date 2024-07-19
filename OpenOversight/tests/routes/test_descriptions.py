@@ -290,7 +290,7 @@ def test_admins_can_delete_descriptions(mockdata, client, session):
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Description.query.get(description_id)
+        deleted = session.get(Description, description_id)
         assert deleted is None
 
 
@@ -319,7 +319,7 @@ def test_acs_can_delete_their_descriptions_in_their_department(
             follow_redirects=True,
         )
         assert rv.status_code == HTTPStatus.OK
-        deleted = Description.query.get(description_id)
+        deleted = session.get(Description, description_id)
         assert deleted is None
 
 
@@ -351,7 +351,7 @@ def test_acs_cannot_delete_descriptions_not_in_their_department(
         )
 
         assert rv.status_code == HTTPStatus.FORBIDDEN
-        not_deleted = Description.query.get(description_id)
+        not_deleted = session.get(Description, description_id)
         assert not_deleted is not None
 
 

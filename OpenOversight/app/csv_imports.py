@@ -2,6 +2,7 @@ import csv
 from contextlib import contextmanager
 from typing import Dict, Optional
 
+from sqlalchemy import sql
 from sqlalchemy.exc import SQLAlchemyError
 
 from OpenOversight.app.models.database import (
@@ -557,7 +558,7 @@ def import_csv_files(
         select setval('incidents_id_seq', (select max(id) from incidents));
         """
         try:
-            db.session.execute(raw_sql)
+            db.session.execute(sql.text(raw_sql))
             print("Updated sequences.")
         except SQLAlchemyError:
             print("Failed to update sequences")

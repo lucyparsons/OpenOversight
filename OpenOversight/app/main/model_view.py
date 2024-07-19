@@ -60,7 +60,7 @@ class ModelView(MethodView):
                 url=f"main.{self.model_name}_api",
             )
         else:
-            obj = self.model.query.get_or_404(obj_id)
+            obj = db.get_or_404(self.model, obj_id)
             return render_template(
                 f"{self.model_name}_detail.html",
                 obj=obj,
@@ -111,7 +111,7 @@ class ModelView(MethodView):
     @login_required
     @ac_or_admin_required
     def edit(self, obj_id, form=None):
-        obj = self.model.query.get_or_404(obj_id)
+        obj = db.get_or_404(self.model, obj_id)
         if self.department_check:
             if (
                 not current_user.is_administrator
@@ -158,7 +158,7 @@ class ModelView(MethodView):
     @login_required
     @ac_or_admin_required
     def delete(self, obj_id):
-        obj = self.model.query.get_or_404(obj_id)
+        obj = db.get_or_404(self.model, obj_id)
         if self.department_check:
             if (
                 not current_user.is_administrator

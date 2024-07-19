@@ -134,7 +134,7 @@ def test_admin_can_delete_user(mockdata, client, session):
         assert f"User {user.username} has been deleted!" in rv.data.decode(
             ENCODING_UTF_8
         )
-        assert not User.query.get(user.id)
+        assert not session.get(User, user.id)
 
 
 def test_admin_cannot_delete_other_admin(mockdata, client, session):
@@ -150,7 +150,7 @@ def test_admin_cannot_delete_other_admin(mockdata, client, session):
         )
 
         assert rv.status_code == HTTPStatus.FORBIDDEN
-        assert User.query.get(user.id) is not None
+        assert session.get(User, user.id) is not None
 
 
 def test_admin_can_disable_user(mockdata, client, session):
@@ -175,7 +175,7 @@ def test_admin_can_disable_user(mockdata, client, session):
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert user.is_disabled
 
 
@@ -198,7 +198,7 @@ def test_admin_cannot_disable_self(mockdata, client, session):
 
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert not user.is_disabled
 
 
@@ -210,7 +210,7 @@ def test_admin_can_enable_user(mockdata, client, session):
         user.is_disabled = True
         db.session.commit()
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert user.is_disabled
 
         form = EditUserForm(
@@ -226,7 +226,7 @@ def test_admin_can_enable_user(mockdata, client, session):
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert not user.is_disabled
 
 
@@ -293,7 +293,7 @@ def test_admin_can_approve_user(mockdata, client, session):
         user.approved = False
         db.session.commit()
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert not user.approved
 
         form = EditUserForm(
@@ -309,7 +309,7 @@ def test_admin_can_approve_user(mockdata, client, session):
 
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert user.approved
 
 
@@ -346,7 +346,7 @@ def test_admin_approval_sends_confirmation_email(
         user.confirmed = currently_confirmed
         db.session.commit()
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert user.approved == currently_approved
         assert user.confirmed == currently_confirmed
 
@@ -363,5 +363,5 @@ def test_admin_approval_sends_confirmation_email(
         ) == should_send_email
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = User.query.get(user.id)
+        user = session.get(User, user.id)
         assert user.approved
