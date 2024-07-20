@@ -459,7 +459,7 @@ def test_csv_new_salary(csvfile, monkeypatch):
 
     assert Officer.query.count() == 0
 
-    df = pd.read_csv(csvfile)
+    df = pd.read_csv(csvfile, dtype={"salary": "str"})
     df.loc[0, "salary"] = "123456.78"
     df.to_csv(csvfile)
 
