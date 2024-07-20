@@ -501,7 +501,6 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
         for row in csvfile:
             department_id = row["department_id"]
-            department = departments.get(department_id)
             if row["department_id"] not in departments:
                 department = Department.query.filter_by(id=department_id).one_or_none()
                 if department:
