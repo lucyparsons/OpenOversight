@@ -14,7 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
 from sqlalchemy.sql import func as sql_func
-from sqlalchemy.types import TypeDecorator
+from sqlalchemy.types import String, TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import (
@@ -351,29 +351,18 @@ class Officer(BaseModel, TrackUpdates):
 
 
 class Currency(TypeDecorator):
-    """
-    Store currency as an integer in sqlite to avoid float conversion
-    https://stackoverflow.com/questions/10355767/
-    """
-
     cache_ok = True
-    impl = db.Numeric
-
-    def load_dialect_impl(self, dialect):
-        typ = db.Numeric()
-        if dialect.name == "sqlite":
-            typ = db.Integer()
-        return dialect.type_descriptor(typ)
+    impl = String
 
     def process_bind_param(self, value, dialect):
-        if dialect.name == "sqlite" and value is not None:
-            value = int(Decimal(value) * 100)
-        return value
+        if value is not None:
+            return str(value)
+        return None
 
     def process_result_value(self, value, dialect):
-        if dialect.name == "sqlite" and value is not None:
-            value = Decimal(value) / 100
-        return value
+        if value is not None:
+            return Decimal(value)
+        return None
 
 
 class Salary(BaseModel, TrackUpdates):
