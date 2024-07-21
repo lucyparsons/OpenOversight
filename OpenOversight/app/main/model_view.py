@@ -143,7 +143,7 @@ class ModelView(MethodView):
                             [KEY_DEPT_ALL_NOTES],
                         )
                 case Link.__name__:
-                    officer = Officer.query.filter_by(id=obj.officer_id).first()
+                    officer = db.session.get(Officer, obj.officer_id)
                     if officer:
                         Department(
                             id=officer.department_id

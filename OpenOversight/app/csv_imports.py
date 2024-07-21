@@ -246,7 +246,7 @@ def _handle_assignments_csv(
                 )
             if row.get("unit_id"):
                 assert (
-                    Unit.query.filter_by(id=int(row.get("unit_id"))).one().department.id
+                    db.session.get(Unit, int(row.get("unit_id"))).department.id
                     == department_id
                 )
             elif row.get("unit_name"):
