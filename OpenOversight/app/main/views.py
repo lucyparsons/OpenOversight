@@ -312,7 +312,7 @@ def redirect_officer_profile(officer_id: int):
 def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
-        officer = Officer.query.filter_by(id=officer_id).one()
+        officer = db.session.get(Officer, officer_id)
         officer.incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
@@ -379,7 +379,7 @@ def redirect_add_assignment(officer_id: int):
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
-    officer = Officer.query.filter_by(id=officer_id).first()
+    officer = db.session.get(Officer, officer_id)
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -441,20 +441,20 @@ def redirect_edit_assignment(officer_id: int, assignment_id: int):
 @login_required
 @ac_or_admin_required
 def edit_assignment(officer_id: int, assignment_id: int):
-    officer = Officer.query.filter_by(id=officer_id).one()
+    officer = db.session.get(Officer, officer_id)
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
 
-    assignment = Assignment.query.filter_by(id=assignment_id).one()
+    assignment = db.session.get(Assignment, assignment_id)
     form = AssignmentForm(obj=assignment)
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
         .all()
     )
-    form.job_title.data = Job.query.filter_by(id=assignment.job_id).one()
+    form.job_title.data = db.session.get(Job, assignment.job_id)
     form.unit.query = unit_choices(officer.department_id)
     if form.unit.data and isinstance(form.unit.data, int):
         form.unit.data = Unit.query.filter_by(id=form.unit.data).one()
@@ -491,7 +491,7 @@ def redirect_add_salary(officer_id: int):
 @ac_or_admin_required
 def add_salary(officer_id: int):
     form = SalaryForm()
-    officer = Officer.query.filter_by(id=officer_id).first()
+    officer = db.session.get(Officer, officer_id)
     if not officer:
         flash("Officer not found")
         abort(HTTPStatus.NOT_FOUND)
@@ -556,7 +556,7 @@ def redirect_edit_salary(officer_id: int, salary_id: int):
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id: int, salary_id: int):
-    officer = Officer.query.filter_by(id=officer_id).one()
+    officer = db.session.get(Officer, officer_id)
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
@@ -591,7 +591,7 @@ def redirect_display_submission(image_id: int):
 @login_required
 def display_submission(image_id: int):
     try:
-        image = Image.query.filter_by(id=image_id).one()
+        image = db.session.get(Image, image_id)
         proper_path = serve_image(image.filepath)
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
@@ -610,7 +610,7 @@ def redirect_display_tag(tag_id: int):
 @main.route("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
     try:
-        tag = Face.query.filter_by(id=tag_id).one()
+        tag = db.session.get(Face, tag_id)
         proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
@@ -638,7 +638,7 @@ def redirect_classify_submission(image_id: int, contains_cops: int):
 @login_required
 def classify_submission(image_id: int, contains_cops: int):
     try:
-        image = Image.query.filter_by(id=image_id).one()
+        image = db.session.get(Image, image_id)
         if image.contains_cops is not None and not current_user.is_administrator:
             flash("Only administrator can re-classify image")
             return redirect(redirect_url())
@@ -1189,7 +1189,7 @@ def redirect_edit_officer(officer_id: int):
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id: int):
-    officer = Officer.query.filter_by(id=officer_id).one()
+    officer = db.session.get(Officer, officer_id)
     form = EditOfficerForm(obj=officer)
 
     if request.method == HTTPMethod.GET:
