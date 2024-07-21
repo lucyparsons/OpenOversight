@@ -344,7 +344,7 @@ def test_csv_changed_static_field(csvfile):
     assert "has differing birth_year field" in str(exc.value)
 
 
-def test_csv_new_assignment(csvfile, monkeypatch):
+def test_csv_new_assignment(csvfile, monkeypatch, session):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers and assignments
     Assignment.query.delete()
@@ -375,9 +375,9 @@ def test_csv_new_assignment(csvfile, monkeypatch):
     assert n_created == 0
     assert n_updated == 1
 
-    officer = Officer.query.filter_by(id=officer.id).one()
-    assert len(list(officer.assignments)) == 2
-    for assignment in officer.assignments:
+    new_officer = session.get(Officer, officer.id)
+    assert len(list(new_officer.assignments)) == 2
+    for assignment in new_officer.assignments:
         assert (
             assignment.job.job_title == "Commander"
             or assignment.job.job_title == "CAPTAIN"
@@ -451,7 +451,7 @@ def test_csv_new_officer(csvfile, monkeypatch):
     assert Officer.query.count() == n_officers + 1
 
 
-def test_csv_new_salary(csvfile, monkeypatch):
+def test_csv_new_salary(csvfile, monkeypatch, session):
     monkeypatch.setattr("builtins.input", lambda: "y")
     # Delete all current officers and salaries
     Salary.query.delete()
@@ -485,9 +485,9 @@ def test_csv_new_salary(csvfile, monkeypatch):
     assert n_updated == 1
     assert Officer.query.count() == officer_count
 
-    officer = Officer.query.filter_by(id=officer.id).one()
-    assert len(list(officer.salaries)) == 2
-    for salary in officer.salaries:
+    new_officer = session.get(Officer, officer.id)
+    assert len(list(new_officer.salaries)) == 2
+    for salary in new_officer.salaries:
         assert float(salary.salary) == 123456.78 or float(salary.salary) == 150000.00
 
 
