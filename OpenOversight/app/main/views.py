@@ -1521,8 +1521,8 @@ def submit_data():
     preferred_dept_id = Department.query.first().id
     # try to use preferred department if available
     try:
-        if db.session.get(User, current_user.id).dept_pref:
-            preferred_dept_id = db.session.get(User, current_user.id).dept_pref
+        if current_user.dept_pref:
+            preferred_dept_id = current_user.dept_pref
             form = AddImageForm()
         else:
             form = AddImageForm()
