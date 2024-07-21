@@ -48,7 +48,7 @@ def _create_or_update_model(
             return update_method(row, existing_model_lookup[int(row["id"])])
         else:
             if model is not None:
-                existing = model.query.filter_by(id=int(row["id"])).first()
+                existing = db.session.get(model, int(row["id"]))
                 if existing:
                     db.session.delete(existing)
                     db.session.flush()
