@@ -104,7 +104,7 @@ def test_redirect_with_department_id(client, session, source_route, target_route
 def test_redirect_with_officer_id(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         resp_no_redirect = client.get(
             url_for(source_route, officer_id=officer.id),
             follow_redirects=False,
@@ -128,7 +128,7 @@ def test_redirect_with_officer_id(client, session, source_route, target_route):
 def test_redirect_add_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         resp_no_redirect = client.post(
             url_for("main.redirect_add_assignment", officer_id=officer.id),
             follow_redirects=False,
@@ -149,7 +149,7 @@ def test_redirect_add_assignment(client, session):
 def test_redirect_edit_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         job = Job.query.filter_by(
             department_id=officer.department_id, job_title="Police Officer"
         ).one()
