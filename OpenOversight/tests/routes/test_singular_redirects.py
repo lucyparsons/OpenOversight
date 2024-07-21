@@ -211,7 +211,7 @@ def test_redirect_edit_assignment(client, session):
 def test_redirect_add_salary(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         resp_no_redirect = client.post(
             url_for("main.redirect_add_salary", officer_id=officer.id),
             follow_redirects=False,
@@ -235,7 +235,7 @@ def test_redirect_add_salary(client, session):
 def test_redirect_edit_salary(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         salary = Salary.query.filter_by(officer_id=officer.id).one()
         resp_no_redirect = client.post(
             url_for(
@@ -448,7 +448,7 @@ def test_redirect_complete_tagging(client, session):
 def test_redirect_submit_complaint(client, session):
     with current_app.test_request_context():
         login_user(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         query_string = {
             "officer_first_name": officer.first_name,
             "officer_last_name": officer.last_name,
@@ -476,7 +476,7 @@ def test_redirect_submit_complaint(client, session):
 def test_redirect_upload(client, session):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).one()
+        officer = session.get(Officer, AC_DEPT)
         resp_no_redirect = client.post(
             url_for(
                 "main.redirect_upload",
@@ -517,7 +517,7 @@ def test_redirect_upload(client, session):
 def test_redirect_note(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        officer = session.get(Officer, AC_DEPT)
         note = Note.query.filter_by(officer_id=officer.id).first()
         resp_no_redirect = client.get(
             url_for(source_route, officer_id=officer.id, obj_id=note.id),
@@ -550,7 +550,7 @@ def test_redirect_note(client, session, source_route, target_route):
 def test_redirect_description(client, session, source_route, target_route):
     with current_app.test_request_context():
         login_admin(client)
-        officer = Officer.query.filter_by(id=AC_DEPT).first()
+        officer = session.get(Officer, AC_DEPT)
         description = Description.query.filter_by(officer_id=officer.id).first()
         resp_no_redirect = client.get(
             url_for(
