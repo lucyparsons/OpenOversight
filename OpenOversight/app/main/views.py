@@ -311,7 +311,9 @@ def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
         officer = db.session.get(Officer, officer_id)
-        officer.incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
+        officer.incidents = sorted(
+            officer.incidents, key=lambda i: (i.date, i.time), reverse=True
+        )
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722
