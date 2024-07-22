@@ -120,6 +120,33 @@ def test_user_can_access_officer_profile(mockdata, client, session):
         assert "Officer Detail" in rv.data.decode(ENCODING_UTF_8)
 
 
+def test_user_can_access_officer_profile_incident_sort(mockdata, client, session):
+    with current_app.test_request_context():
+        # Officer with multiple incidents
+        officer_id = 1
+
+        officer = session.get(Officer, officer_id)
+        asc_sorted_incidents = sorted(
+            officer.incidents, key=lambda i: (i.date, i.time), reverse=True
+        )
+
+        # Assert incidents are in the correct order
+        assert asc_sorted_incidents[0].id == 3
+
+        rv = client.get(
+            url_for("main.officer_profile", officer_id=officer_id),
+            follow_redirects=True,
+        )
+
+        assert rv.status_code == HTTPStatus.OK
+
+        incident_report_nums = re.findall(
+            r"Incident\s+(\d+)", rv.data.decode(ENCODING_UTF_8)
+        )
+
+        assert incident_report_nums == [i.report_number for i in asc_sorted_incidents]
+
+
 def test_user_can_access_officer_list(mockdata, client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.list_officer", department_id=2))
