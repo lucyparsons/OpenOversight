@@ -575,7 +575,7 @@ def test_images_added_with_user_id(mockdata, faker):
 
 def test_salary_rounding_and_sorting(mockdata, session):
     officer = Officer.query.first()
-    large_number = 123456789.01
+    large_number = 123123456789.01
     small_number = 0.01
     session.add(
         Salary(
