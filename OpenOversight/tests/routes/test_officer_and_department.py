@@ -127,7 +127,7 @@ def test_user_can_access_officer_profile_incident_sort(mockdata, client, session
 
         officer = session.get(Officer, officer_id)
         asc_sorted_incidents = sorted(
-            officer.incidents, key=lambda i: (i.date, i.time), reverse=True
+            officer.incidents, key=lambda i: (i.date, i.time), reverse=True,
         )
 
         # Assert incidents are in the correct order
@@ -1247,8 +1247,8 @@ def test_admin_can_add_new_officer(mockdata, client, session, department, faker)
         assert officer.descriptions[0].last_updated_by == admin.id
 
         assert len(officer.salaries) == 1
-        assert officer.salaries[0].salary == Decimal("123.45")
-        assert officer.salaries[0].overtime_pay == Decimal("543.21")
+        assert officer.salaries[0].salary == 123.45
+        assert officer.salaries[0].overtime_pay == 543.21
         assert officer.salaries[0].created_by == admin.id
         assert officer.descriptions[0].last_updated_by == admin.id
 

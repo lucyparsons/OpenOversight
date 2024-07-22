@@ -310,11 +310,8 @@ def redirect_officer_profile(officer_id: int):
 def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
-        officer = (
-            Officer.query.filter_by(id=officer_id)
-            .one()
-            .incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
-        )
+        officer = Officer.query.filter_by(id=officer_id).one()
+        officer.incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
     except:  # noqa: E722

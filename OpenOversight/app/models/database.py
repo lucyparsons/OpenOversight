@@ -14,7 +14,6 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy.types import Numeric
 
 from OpenOversight.app.models.database_cache import (
     DB_CACHE,
@@ -360,8 +359,8 @@ class Salary(BaseModel, TrackUpdates):
         ),
     )
     officer = db.relationship("Officer", back_populates="salaries")
-    salary = db.Column(Numeric, index=True, unique=False, nullable=False)
-    overtime_pay = db.Column(Numeric, index=True, unique=False, nullable=True)
+    salary = db.Column(db.Float, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Float, index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
