@@ -691,7 +691,11 @@ class Incident(BaseModel, TrackUpdates):
         "Officer",
         secondary=officer_incidents,
         lazy="subquery",
-        backref=db.backref("incidents", cascade_backrefs=False),
+        backref=db.backref(
+            "incidents",
+            cascade_backrefs=False,
+            order_by="Incident.date.desc(), Incident.time.desc()",
+        ),
     )
     department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
