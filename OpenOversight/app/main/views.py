@@ -310,9 +310,10 @@ def redirect_officer_profile(officer_id: int):
 def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
-        officer = db.session.get(Officer, officer_id)
-        officer.incidents = sorted(
-            officer.incidents, key=lambda i: (i.date, i.time), reverse=True
+        officer = (
+            Officer.query.filter_by(id=officer_id)
+            .one()
+            .incidents.query.order_by(Incident.date.desc(), Incident.time.desc())
         )
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)

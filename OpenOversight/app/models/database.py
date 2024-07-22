@@ -3,7 +3,6 @@ import re
 import time
 import uuid
 from datetime import date, datetime
-from decimal import Decimal
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -14,7 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
 from sqlalchemy.sql import func as sql_func
-from sqlalchemy.types import String, TypeDecorator
+from sqlalchemy.types import Numeric
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import (
@@ -350,21 +349,6 @@ class Officer(BaseModel, TrackUpdates):
         return f"<Officer ID {self.id}: {self.full_name()}>"
 
 
-class Currency(TypeDecorator):
-    cache_ok = True
-    impl = String
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            return str(value)
-        return None
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return Decimal(value)
-        return None
-
-
 class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
 
@@ -376,8 +360,8 @@ class Salary(BaseModel, TrackUpdates):
         ),
     )
     officer = db.relationship("Officer", back_populates="salaries")
-    salary = db.Column(Currency(), index=True, unique=False, nullable=False)
-    overtime_pay = db.Column(Currency(), index=True, unique=False, nullable=True)
+    salary = db.Column(db.Numeric(14, 2), index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(Numeric(14, 2), index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
