@@ -4,7 +4,6 @@ import json
 import random
 import re
 from datetime import date, datetime
-from decimal import Decimal
 from http import HTTPStatus
 from io import BytesIO
 
@@ -127,7 +126,9 @@ def test_user_can_access_officer_profile_incident_sort(mockdata, client, session
 
         officer = session.get(Officer, officer_id)
         asc_sorted_incidents = sorted(
-            officer.incidents, key=lambda i: (i.date, i.time), reverse=True,
+            officer.incidents,
+            key=lambda i: (i.date, i.time),
+            reverse=True,
         )
 
         # Assert incidents are in the correct order
