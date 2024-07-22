@@ -609,3 +609,15 @@ def test_salary_rounding_and_sorting(mockdata, session):
     assert salaries[0].overtime_pay == large_number
     assert salaries[-1].salary == small_number
     assert salaries[-1].overtime_pay == small_number
+
+
+def test_officer_incident_sort_order(mockdata, session):
+    officer = session.get(Officer, 1)
+
+    sorted_incidents = sorted(
+        officer.incidents,
+        key=lambda i: (i.date, i.time),
+        reverse=True,
+    )
+
+    assert officer.incidents == sorted_incidents
