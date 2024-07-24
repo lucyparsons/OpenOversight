@@ -501,9 +501,8 @@ def bulk_add_officers(filename, no_create, update_by_name, update_static_fields)
 
         for row in csvfile:
             department_id = row["department_id"]
-            department = departments.get(department_id)
             if row["department_id"] not in departments:
-                department = Department.query.filter_by(id=department_id).one_or_none()
+                department = db.session.get(Department, department_id)
                 if department:
                     departments[department_id] = department
                 else:
@@ -640,7 +639,7 @@ def add_department(name, short_name, state, unique_internal_identifier):
 @with_appcontext
 def add_job_title(department_id, job_title, is_sworn_officer, order):
     """Add a rank to a department."""
-    department = Department.query.filter_by(id=department_id).one_or_none()
+    department = db.session.get(Department, department_id)
     is_sworn = is_sworn_officer == "true"
     job = Job(
         job_title=job_title,

@@ -173,7 +173,7 @@ def create_incident(self, form: IncidentForm, user: User) -> Incident:
     if "officers" in form.data:
         form_officers = [o for o in form.data["officers"] if o["oo_id"]]
         for officer in form_officers:
-            of = Officer.query.filter_by(id=int(officer["oo_id"])).one()
+            of = db.session.get(Officer, int(officer["oo_id"]))
             if of:
                 officers.append(of)
 

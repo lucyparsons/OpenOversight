@@ -676,7 +676,7 @@ def add_mockdata(session):
 
     test_incidents = [
         Incident(
-            date=date(2016, 3, 16),
+            date=date(2017, 12, 11),
             time=time(4, 20),
             report_number="42",
             description="### A thing happened\n **Markup** description",
@@ -690,7 +690,7 @@ def add_mockdata(session):
         ),
         Incident(
             date=date(2017, 12, 11),
-            time=time(2, 40),
+            time=time(4, 40),
             report_number="38",
             description="A thing happened",
             department_id=2,

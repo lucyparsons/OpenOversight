@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import date
+from http import HTTPStatus
 from typing import Any, Callable, Dict, List, TypeVar
 
 from flask import Response, abort
@@ -14,6 +15,7 @@ from OpenOversight.app.models.database import (
     Link,
     Officer,
     Salary,
+    db,
 )
 
 
@@ -44,9 +46,9 @@ def make_downloadable_csv(
     field_names: List[str],
     record_maker: Callable[[T], _Record],
 ) -> Response:
-    department = Department.query.filter_by(id=department_id).first()
+    department = db.session.get(Department, department_id)
     if not department:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     csv_output = io.StringIO()
     csv_writer = csv.DictWriter(csv_output, fieldnames=field_names)

@@ -48,7 +48,7 @@ def _create_or_update_model(
             return update_method(row, existing_model_lookup[int(row["id"])])
         else:
             if model is not None:
-                existing = model.query.filter_by(id=int(row["id"])).first()
+                existing = db.session.get(model, int(row["id"]))
                 if existing:
                     db.session.delete(existing)
                     db.session.flush()
@@ -246,7 +246,7 @@ def _handle_assignments_csv(
                 )
             if row.get("unit_id"):
                 assert (
-                    Unit.query.filter_by(id=int(row.get("unit_id"))).one().department.id
+                    db.session.get(Unit, int(row.get("unit_id"))).department.id
                     == department_id
                 )
             elif row.get("unit_name"):
