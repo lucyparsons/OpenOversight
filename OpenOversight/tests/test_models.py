@@ -20,7 +20,6 @@ from OpenOversight.app.models.database import (
     Salary,
     Unit,
     User,
-    db,
 )
 from OpenOversight.app.utils.choices import STATE_CHOICES
 from OpenOversight.tests.conftest import SPRINGFIELD_PD
@@ -186,10 +185,10 @@ def test_password_set_success(mockdata):
     assert user.password_hash is not None
 
 
-def test_password_setter_regenerates_uuid(mockdata):
+def test_password_setter_regenerates_uuid(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     initial_uuid = user.uuid
     user.password = "pork belly"
     assert user.uuid is not None
@@ -212,21 +211,21 @@ def test_password_salting(mockdata):
     assert user1.password_hash != user2.password_hash
 
 
-def test__uuid_default(mockdata):
+def test__uuid_default(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     assert user._uuid is not None
 
 
-def test__uuid_uniqueness_constraint(mockdata):
+def test__uuid_uniqueness_constraint(mockdata, session):
     user1 = User(password="bacon")
     user2 = User(password="vegan bacon")
     user2._uuid = user1._uuid
-    db.session.add(user1)
-    db.session.add(user2)
+    session.add(user1)
+    session.add(user2)
     with raises(IntegrityError):
-        db.session.commit()
+        session.commit()
 
 
 def test_uuid(mockdata):
@@ -240,37 +239,37 @@ def test_uuid_setter(mockdata):
         User(uuid="8e9f1393-99b8-466c-80ce-8a56a7d9849d")
 
 
-def test_valid_confirmation_token(mockdata):
+def test_valid_confirmation_token(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_confirmation_token()
     assert user.confirm(token) is True
 
 
-def test_invalid_confirmation_token(mockdata):
+def test_invalid_confirmation_token(mockdata, session):
     user1 = User(password="bacon")
     user2 = User(password="bacon")
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.commit()
+    session.add(user1)
+    session.add(user2)
+    session.commit()
     token = user1.generate_confirmation_token()
     assert user2.confirm(token) is False
 
 
-def test_expired_confirmation_token(mockdata):
+def test_expired_confirmation_token(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_confirmation_token(1)
     time.sleep(2)
     assert user.confirm(token) is False
 
 
-def test_valid_reset_token(mockdata):
+def test_valid_reset_token(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_reset_token()
     pre_reset_uuid = user.uuid
     assert user.reset_password(token, "vegan bacon") is True
@@ -278,30 +277,30 @@ def test_valid_reset_token(mockdata):
     assert user.uuid != pre_reset_uuid
 
 
-def test_invalid_reset_token(mockdata):
+def test_invalid_reset_token(mockdata, session):
     user1 = User(password="bacon")
     user2 = User(password="vegan bacon")
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.commit()
+    session.add(user1)
+    session.add(user2)
+    session.commit()
     token = user1.generate_reset_token()
     assert user2.reset_password(token, "tempeh") is False
     assert user2.verify_password("vegan bacon") is True
 
 
-def test_expired_reset_token(mockdata):
+def test_expired_reset_token(mockdata, session):
     user = User(password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_reset_token(expiration=-1)
     assert user.reset_password(token, "tempeh") is False
     assert user.verify_password("bacon") is True
 
 
-def test_valid_email_change_token(mockdata):
+def test_valid_email_change_token(mockdata, session):
     user = User(email="brian@example.com", password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     pre_reset_uuid = user.uuid
     token = user.generate_email_change_token("lucy@example.org")
     assert user.change_email(token) is True
@@ -309,47 +308,47 @@ def test_valid_email_change_token(mockdata):
     assert user.uuid != pre_reset_uuid
 
 
-def test_email_change_token_no_email(mockdata):
+def test_email_change_token_no_email(mockdata, session):
     user = User(email="brian@example.com", password="bacon")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_email_change_token(None)
     assert user.change_email(token) is False
     assert user.email == "brian@example.com"
 
 
-def test_invalid_email_change_token(mockdata):
+def test_invalid_email_change_token(mockdata, session):
     user1 = User(email="jen@example.com", password="cat")
     user2 = User(email="freddy@example.com", password="dog")
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.commit()
+    session.add(user1)
+    session.add(user2)
+    session.commit()
     token = user1.generate_email_change_token("mason@example.net")
     assert user2.change_email(token) is False
     assert user2.email == "freddy@example.com"
 
 
-def test_expired_email_change_token(mockdata):
+def test_expired_email_change_token(mockdata, session):
     user = User(email="jen@example.com", password="cat")
-    db.session.add(user)
-    db.session.commit()
+    session.add(user)
+    session.commit()
     token = user.generate_email_change_token("mason@example.net", expiration=-1)
     assert user.change_email(token) is False
     assert user.email == "jen@example.com"
 
 
-def test_duplicate_email_change_token(mockdata):
+def test_duplicate_email_change_token(mockdata, session):
     user1 = User(email="alice@example.com", password="cat")
     user2 = User(email="bob@example.org", password="dog")
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.commit()
+    session.add(user1)
+    session.add(user2)
+    session.commit()
     token = user2.generate_email_change_token("alice@example.com")
     assert user2.change_email(token) is False
     assert user2.email == "bob@example.org"
 
 
-def test_area_coordinator_with_dept_is_valid(mockdata):
+def test_area_coordinator_with_dept_is_valid(mockdata, session):
     user1 = User(
         email="alice@example.com",
         username="me",
@@ -357,8 +356,8 @@ def test_area_coordinator_with_dept_is_valid(mockdata):
         is_area_coordinator=True,
         ac_department_id=1,
     )
-    db.session.add(user1)
-    db.session.commit()
+    session.add(user1)
+    session.commit()
     assert user1.is_area_coordinator is True
     assert user1.ac_department_id == 1
 
@@ -433,7 +432,7 @@ def test_location_repr(faker):
     )
 
 
-def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
+def test_locations_can_be_saved_with_valid_zip_codes(mockdata, session):
     zip_code = "03456"
     city = "Cambridge"
     lo = Location(
@@ -444,8 +443,8 @@ def test_locations_can_be_saved_with_valid_zip_codes(mockdata):
         state="MA",
         zip_code=zip_code,
     )
-    db.session.add(lo)
-    db.session.commit()
+    session.add(lo)
+    session.commit()
     saved = Location.query.filter_by(zip_code=zip_code, city=city)
     assert saved is not None
 
@@ -462,7 +461,7 @@ def test_locations_must_have_valid_states(mockdata):
         )
 
 
-def test_locations_can_be_saved_with_valid_states(mockdata):
+def test_locations_can_be_saved_with_valid_states(mockdata, session):
     state = "AZ"
     city = "Cambridge"
     lo = Location(
@@ -474,8 +473,8 @@ def test_locations_can_be_saved_with_valid_states(mockdata):
         zip_code="54340",
     )
 
-    db.session.add(lo)
-    db.session.commit()
+    session.add(lo)
+    session.commit()
     saved = Location.query.filter_by(city=city, state=state).first()
     assert saved is not None
 
@@ -485,7 +484,7 @@ def test_license_plates_must_have_valid_states(mockdata):
         LicensePlate(number="603EEE", state="JK")
 
 
-def test_license_plates_can_be_saved_with_valid_states(mockdata):
+def test_license_plates_can_be_saved_with_valid_states(mockdata, session):
     state = "AZ"
     number = "603RRR"
     lp = LicensePlate(
@@ -493,8 +492,8 @@ def test_license_plates_can_be_saved_with_valid_states(mockdata):
         state=state,
     )
 
-    db.session.add(lp)
-    db.session.commit()
+    session.add(lp)
+    session.commit()
     saved = LicensePlate.query.filter_by(number=number, state=state).first()
     assert saved is not None
 
@@ -505,16 +504,16 @@ def test_links_must_have_valid_urls(mockdata, faker):
         Link(link_type="video", url=bad_url)
 
 
-def test_links_can_be_saved_with_valid_urls(mockdata, faker):
+def test_links_can_be_saved_with_valid_urls(faker, mockdata, session):
     good_url = faker.url()
     li = Link(link_type="video", url=good_url)
-    db.session.add(li)
-    db.session.commit()
+    session.add(li)
+    session.commit()
     saved = Link.query.filter_by(url=good_url).first()
     assert saved is not None
 
 
-def test_incident_m2m_officers(mockdata):
+def test_incident_m2m_officers(mockdata, session):
     incident = Incident.query.first()
     officer = Officer(
         first_name="Test",
@@ -525,39 +524,39 @@ def test_incident_m2m_officers(mockdata):
         birth_year=1990,
     )
     incident.officers.append(officer)
-    db.session.add(incident)
-    db.session.add(officer)
-    db.session.commit()
+    session.add(incident)
+    session.add(officer)
+    session.commit()
     assert officer in incident.officers
     assert incident in officer.incidents
 
 
-def test_incident_m2m_links(mockdata, faker):
+def test_incident_m2m_links(faker, mockdata, session):
     incident = Incident.query.first()
     link = Link(link_type="video", url=faker.url())
     incident.links.append(link)
-    db.session.add(incident)
-    db.session.add(link)
-    db.session.commit()
+    session.add(incident)
+    session.add(link)
+    session.commit()
     assert link in incident.links
     assert incident in link.incidents
 
 
-def test_incident_m2m_license_plates(mockdata):
+def test_incident_m2m_license_plates(mockdata, session):
     incident = Incident.query.first()
     license_plate = LicensePlate(
         number="W23F43",
         state="DC",
     )
     incident.license_plates.append(license_plate)
-    db.session.add(incident)
-    db.session.add(license_plate)
-    db.session.commit()
+    session.add(incident)
+    session.add(license_plate)
+    session.commit()
     assert license_plate in incident.license_plates
     assert incident in license_plate.incidents
 
 
-def test_images_added_with_user_id(mockdata, faker):
+def test_images_added_with_user_id(faker, mockdata, session):
     user_id = 1
     new_image = Image(
         filepath=faker.url(),
@@ -567,8 +566,8 @@ def test_images_added_with_user_id(mockdata, faker):
         taken_at=datetime.datetime.now(),
         created_by=user_id,
     )
-    db.session.add(new_image)
-    db.session.commit()
+    session.add(new_image)
+    session.commit()
     saved = Image.query.filter_by(created_by=user_id).first()
     assert saved is not None
 
