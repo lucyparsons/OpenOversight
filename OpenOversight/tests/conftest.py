@@ -315,7 +315,7 @@ def db(app):
 def session(db):
     """Creates a new database session for a test."""
     connection = db.engine.connect()
-    transaction = connection.begin()
+    connection.begin()
 
     session = scoped_session(session_factory=sessionmaker(bind=connection))
     db.session = session
