@@ -169,12 +169,12 @@ class AssignmentForm(Form):
 class SalaryForm(Form):
     salary = DecimalField(
         "Salary",
-        default=0.00,
+        default=0,
         validators=[NumberRange(min=0, max=1000000), validate_money],
     )
     overtime_pay = DecimalField(
         "Overtime Pay",
-        default=0.00,
+        default=0,
         validators=[NumberRange(min=0, max=1000000), validate_money],
     )
     year = IntegerField(
