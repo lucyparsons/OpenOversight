@@ -320,11 +320,12 @@ def session(db):
     session = scoped_session(session_factory=sessionmaker(bind=connection))
     db.session = session
 
-    yield session
-
-    transaction.rollback()
-    connection.close()
-    session.remove()
+    try:
+        yield session
+    finally:
+        session.remove()
+        transaction.rollback()
+        connection.close()
 
 
 @pytest.fixture
