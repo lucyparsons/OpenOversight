@@ -571,3 +571,53 @@ def test_images_added_with_user_id(mockdata, faker):
     db.session.commit()
     saved = Image.query.filter_by(created_by=user_id).first()
     assert saved is not None
+
+
+def test_salary_rounding_and_sorting(mockdata, session):
+    officer = Officer.query.first()
+    large_number = 123123456789.01
+    small_number = 0.01
+    session.add(
+        Salary(
+            officer_id=officer.id,
+            salary=large_number,
+            overtime_pay=large_number,
+            year=2000,
+            is_fiscal_year=False,
+        )
+    )
+
+    session.add(
+        Salary(
+            officer_id=officer.id,
+            salary=small_number,
+            overtime_pay=small_number,
+            year=2001,
+            is_fiscal_year=False,
+        )
+    )
+
+    session.commit()
+
+    salaries = (
+        Salary.query.filter_by(officer_id=officer.id)
+        .order_by(Salary.salary.desc())
+        .all()
+    )
+
+    assert salaries[0].salary == large_number
+    assert salaries[0].overtime_pay == large_number
+    assert salaries[-1].salary == small_number
+    assert salaries[-1].overtime_pay == small_number
+
+
+def test_officer_incident_sort_order(mockdata, session):
+    officer = session.get(Officer, 1)
+
+    sorted_incidents = sorted(
+        officer.incidents,
+        key=lambda i: (i.date, i.time),
+        reverse=True,
+    )
+
+    assert officer.incidents == sorted_incidents

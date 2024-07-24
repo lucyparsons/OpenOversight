@@ -359,8 +359,8 @@ class Salary(BaseModel, TrackUpdates):
         ),
     )
     officer = db.relationship("Officer", back_populates="salaries")
-    salary = db.Column(db.Numeric, index=True, unique=False, nullable=False)
-    overtime_pay = db.Column(db.Numeric, index=True, unique=False, nullable=True)
+    salary = db.Column(db.Float, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Float, index=True, unique=False, nullable=True)
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
@@ -691,7 +691,11 @@ class Incident(BaseModel, TrackUpdates):
         "Officer",
         secondary=officer_incidents,
         lazy="subquery",
-        backref=db.backref("incidents", cascade_backrefs=False),
+        backref=db.backref(
+            "incidents",
+            cascade_backrefs=False,
+            order_by="Incident.date.desc(), Incident.time.desc()",
+        ),
     )
     department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")

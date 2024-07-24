@@ -168,7 +168,9 @@ class AssignmentForm(Form):
 
 class SalaryForm(Form):
     salary = DecimalField(
-        "Salary", validators=[NumberRange(min=0, max=1000000), validate_money]
+        "Salary",
+        default=0,
+        validators=[NumberRange(min=0, max=1000000), validate_money],
     )
     overtime_pay = DecimalField(
         "Overtime Pay",

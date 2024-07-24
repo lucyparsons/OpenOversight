@@ -114,7 +114,7 @@ def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
         assert b"Deleted this tag" in rv.data
 
         # test tag was deleted from database
-        deleted_tag = Face.query.filter_by(id=tag_id).first()
+        deleted_tag = session.get(Face, tag_id)
         assert deleted_tag is None
 
 
@@ -136,7 +136,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
         # test tag was not deleted from database
-        deleted_tag = Face.query.filter_by(id=tag_id).first()
+        deleted_tag = session.get(Face, tag_id)
         assert deleted_tag is not None
 
 
@@ -241,7 +241,7 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
             follow_redirects=True,
         )
 
-        department = Department.query.filter_by(id=2).one_or_none()
+        department = session.get(Department, 2)
         assert (f"The officer is not in {department.name}, {department.state}.").encode(
             ENCODING_UTF_8
         ) in rv.data
@@ -255,7 +255,7 @@ def test_user_can_finish_tagging(mockdata, client, session):
         rv = client.get(
             url_for("main.complete_tagging", image_id=image_id), follow_redirects=True
         )
-        image = Image.query.filter_by(id=image_id).one()
+        image = session.get(Image, image_id)
 
         assert b"Marked image as completed." in rv.data
         assert image.last_updated_by == user.id
@@ -352,7 +352,7 @@ def test_featured_tag_replaces_others(mockdata, client, session):
         _, user = login_admin(client)
 
         tag1 = Face.query.first()
-        officer = Officer.query.filter_by(id=tag1.officer_id).one()
+        officer = session.get(Officer, tag1.officer_id)
 
         # Add second tag for officer
         second_image = (

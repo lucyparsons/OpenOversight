@@ -249,8 +249,11 @@ def test_admins_can_delete_notes(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         note = Note.query.first()
-        officer = Officer.query.filter_by(id=note.officer_id).first()
-        cache_params = (Department(id=officer.department_id), KEY_DEPT_ALL_NOTES)
+        officer = session.get(Officer, note.officer_id)
+        cache_params = (
+            session.get(Department, officer.department_id),
+            KEY_DEPT_ALL_NOTES,
+        )
         put_database_cache_entry(*cache_params, 1)
 
         assert has_database_cache_entry(*cache_params) is True
