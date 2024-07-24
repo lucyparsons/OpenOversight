@@ -10,7 +10,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from sqlalchemy.sql.expression import func
 
-from OpenOversight.app.models.database import Department, Incident, Officer, Unit, db
+from OpenOversight.app.models.database import Department, Incident, Officer, Unit
 from OpenOversight.app.utils.constants import FILE_TYPE_HTML, KEY_OFFICERS_PER_PAGE
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import ADMIN_USER_EMAIL
@@ -273,13 +273,13 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server
     assert not buttonRow.is_displayed()
 
 
-def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
+def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port, session):
     login_admin(browser, server_port)
 
     # get the units from the DB in the sort we expect
     db_units_sorted = [
         x.description
-        for x in db.session.query(Unit).order_by(Unit.description.asc()).all()
+        for x in session.query(Unit).order_by(Unit.description.asc()).all()
     ]
     # the Select tag in the interface has a 'None' value at the start
     db_units_sorted.insert(0, "None")
@@ -298,13 +298,13 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port):
 
 
 def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
-    mockdata, browser, server_port
+    mockdata, browser, server_port, session
 ):
     # Set NULL race and gender for officer 1
-    db.session.execute(
+    session.execute(
         Officer.__table__.update().where(Officer.id == 1).values(race=None, gender=None)
     )
-    db.session.commit()
+    session.commit()
 
     login_admin(browser, server_port)
 
