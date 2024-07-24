@@ -4,7 +4,7 @@ import pytest
 from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
-from OpenOversight.app.models.database import User, db
+from OpenOversight.app.models.database import User
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import (
@@ -208,7 +208,7 @@ def test_admin_can_enable_user(mockdata, client, session):
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
         user.is_disabled = True
-        db.session.commit()
+        session.commit()
 
         user = session.get(User, user.id)
         assert user.is_disabled
@@ -291,7 +291,7 @@ def test_admin_can_approve_user(mockdata, client, session):
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         user.approved = False
-        db.session.commit()
+        session.commit()
 
         user = session.get(User, user.id)
         assert not user.approved
@@ -344,7 +344,7 @@ def test_admin_approval_sends_confirmation_email(
         user = User.query.filter_by(is_administrator=False).first()
         user.approved = currently_approved
         user.confirmed = currently_confirmed
-        db.session.commit()
+        session.commit()
 
         user = session.get(User, user.id)
         assert user.approved == currently_approved
