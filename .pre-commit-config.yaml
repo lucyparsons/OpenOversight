@@ -63,7 +63,7 @@ repos:
             - --quiet
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
+    rev: v0.5.5
     hooks:
       - id: ruff
         types_or: [python,pyi]

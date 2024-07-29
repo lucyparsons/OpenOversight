@@ -14,7 +14,7 @@ class BootstrapListWidget(ListWidget):
         kwargs.setdefault("id", field.id)
         html = [f"<{self.html_tag} {html_params(**kwargs)}>"]
         for subfield in field:
-            if type(subfield) == FormField:
+            if isinstance(subfield, FormField):
                 html.append(f"<li><h6>{subfield.label.text}</h6> {subfield()}</li>")
             if self.prefix_label:
                 html.append(
