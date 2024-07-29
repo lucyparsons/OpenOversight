@@ -82,7 +82,7 @@ repos:
       - id: mypy
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.32.1
+    rev: v1.34.1
     hooks:
       - id: djlint-reformat
         pass_filenames: false
