@@ -42,20 +42,6 @@ repos:
           - --lines-after-imports=2
           - --profile=black
 
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        name: Run pydocstyle
-        args:
-          - --convention=pep257
-          # Do not require docstrings, only check existing ones. (D1)
-          # Allow for a newline after a docstring. (D202)
-          # Don't require a summary line. (D205)
-          # Don't require a period on the first line. (D400)
-          - --add-ignore=D1,D202,D205,D400
-        exclude: tests/
-
   - repo: local
     hooks:
       - id: no-shebang
