@@ -35,6 +35,15 @@ def test_user_profile_for_invalid_username(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
+def test_user_profile_does_not_use_id(mockdata, client, session):
+    with current_app.test_request_context():
+        _, user = login_user(client)
+        rv = client.get(f"/user/{user.id}")
+
+        # Assert page returns error
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_user_can_see_own_profile(mockdata, client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
