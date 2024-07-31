@@ -288,7 +288,10 @@ def get_tutorial():
 @login_required
 def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
-        user = User.by_username(username).one()
+        try:
+            user = User.by_username(username).one()
+        except NoResultFound:
+            abort(HTTPStatus.NOT_FOUND)
     else:
         abort(HTTPStatus.NOT_FOUND)
 
