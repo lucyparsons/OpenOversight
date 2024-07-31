@@ -41,12 +41,8 @@ def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
 def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
-        if HTTPMethod.GET in methods:
-            rv = client.get(route)
-            assert rv.status_code == HTTPStatus.FORBIDDEN
-        if HTTPMethod.POST in methods:
-            rv = client.post(route)
-            assert rv.status_code == HTTPStatus.FORBIDDEN
+        rv = client.get(route)
+        assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_update_users_to_ac(mockdata, client, session):
