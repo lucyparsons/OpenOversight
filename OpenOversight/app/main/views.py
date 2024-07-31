@@ -295,6 +295,9 @@ def profile(username: str):
     else:
         abort(HTTPStatus.NOT_FOUND)
 
+    if current_user.username != user.username and not current_user.is_administrator:
+        abort(HTTPStatus.FORBIDDEN)
+
     pref = db.session.get(User, current_user.id).dept_pref
     department = db.session.get(Department, pref).name if pref else None
     return render_template("profile.html", user=user, department=department)
