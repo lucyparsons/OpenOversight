@@ -5,7 +5,7 @@ from flask import current_app
 from OpenOversight.app.models.database import User
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.constants import AC_USER_EMAIL, GENERAL_USER_EMAIL
-from OpenOversight.tests.routes.route_helpers import login_user
+from OpenOversight.tests.routes.route_helpers import login_ac, login_user
 
 
 def test_user_cannot_see_profile_if_not_logged_in(mockdata, client, session):
@@ -48,6 +48,16 @@ def test_user_cannot_see_other_users_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         other_user = User.query.filter_by(email=AC_USER_EMAIL).first()
+        rv = client.get(f"/user/{other_user.username}")
+
+        # Assert page returns error
+        assert rv.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_ac_user_cannot_see_other_users_profile(mockdata, client, session):
+    with current_app.test_request_context():
+        login_ac(client)
+        other_user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         rv = client.get(f"/user/{other_user.username}")
 
         # Assert page returns error
