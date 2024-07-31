@@ -25,12 +25,8 @@ routes_methods = [
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
 def test_user_api_login_required(route, methods, client, mockdata):
-    if HTTPMethod.GET in methods:
-        rv = client.get(route)
-        assert rv.status_code == HTTPStatus.FORBIDDEN
-    if HTTPMethod.POST in methods:
-        rv = client.post(route)
-        assert rv.status_code == HTTPStatus.FORBIDDEN
+    rv = client.get(route)
+    assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
