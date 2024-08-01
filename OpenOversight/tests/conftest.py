@@ -311,15 +311,14 @@ def db(app):
 @pytest.fixture(scope="function")
 def session(db):
     """Creates a new database session for a test."""
-    with db.engine.connect() as connection:
-        with connection.begin() as tx:
-            db.session = scoped_session(sessionmaker(bind=connection))
+    with db.engine.connect() as connection, connection.begin() as tx:
+        db.session = scoped_session(sessionmaker(bind=connection))
 
-            try:
-                yield db.session
-            finally:
-                db.session.remove()
-                tx.rollback()
+        try:
+            yield db.session
+        finally:
+            db.session.remove()
+            tx.rollback()
 
 
 @pytest.fixture
