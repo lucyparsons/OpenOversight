@@ -300,13 +300,10 @@ def db(app):
     with app.app_context():
         _db.app = app
         _db.create_all()
-        connection = _db.engine.connect()
-        session = scoped_session(session_factory=sessionmaker(bind=connection))
-        _db.session = session
-        add_mockdata(session)
-        session.commit()
-        connection.close()
-        session.remove()
+        with _db.engine.begin() as connection:
+            _db.session = scoped_session(sessionmaker(bind=connection))
+            add_mockdata(_db.session)
+            _db.session.remove()
 
         yield _db
 
@@ -315,15 +312,14 @@ def db(app):
 def session(db):
     """Creates a new database session for a test."""
     with db.engine.connect() as connection:
-        with connection.begin():
-            session = scoped_session(session_factory=sessionmaker(bind=connection))
-            db.session = session
+        with connection.begin() as tx:
+            db.session = scoped_session(sessionmaker(bind=connection))
 
             try:
-                yield session
+                yield db.session
             finally:
-                session.remove()
-                connection.close()
+                db.session.remove()
+                tx.rollback()
 
 
 @pytest.fixture
