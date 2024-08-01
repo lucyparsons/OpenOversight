@@ -318,7 +318,9 @@ def session(db):
             yield db.session
         finally:
             db.session.remove()
-            tx.rollback()
+            # If an error was raised during test, tx is already rolled back
+            if tx.is_active:
+                tx.rollback()
 
 
 @pytest.fixture
