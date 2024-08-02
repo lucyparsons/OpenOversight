@@ -5,35 +5,35 @@ default: build start create_db populate test stop clean
 # Build containers
 .PHONY: build
 build:
-	docker-compose build
+	docker compose build
 
 .PHONY: build_with_version
 build_with_version: create_empty_secret
-	docker-compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
+	docker compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
 test_with_version: build_with_version assets
 	touch OpenOversight/tests/coverage.xml
-	docker-compose run --rm web-test pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+	docker compose run --rm web-test pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 # Run containers
 .PHONY: start
 start: build
-	docker-compose up -d
+	docker compose up -d
 
 .PHONY: create_db
 create_db: start
-	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
+	@until docker compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker-compose run --rm web alembic --config=./OpenOversight/migrations/alembic.ini stamp head
+	docker compose run --rm web alembic --config=./OpenOversight/migrations/alembic.ini stamp head
 
 .PHONY: assets
 assets:
-	docker-compose run --rm web yarn build
+	docker compose run --rm web yarn build
 
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
@@ -41,21 +41,21 @@ dev: create_empty_secret build start create_db populate
 # Build and run containers
 .PHONY: populate
 populate: create_db
-	@until docker-compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
+	@until docker compose exec postgres psql -h localhost -U openoversight -c '\l' postgres &>/dev/null; do \
 		echo "Postgres is unavailable - sleeping..."; \
 		sleep 1; \
 	done
 	@echo "Postgres is up"
 	## Populate database with test data
-	docker-compose run --rm web python ./test_data.py -p
+	docker compose run --rm web python ./test_data.py -p
 
 # Run tests
 .PHONY: test
 test: start
 	if [ -z "$(name)" ]; then \
-		docker-compose run --rm web-test pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
+		docker compose run --rm web-test pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-		docker-compose run --rm web-test pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
+		docker compose run --rm web-test pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint
@@ -69,17 +69,17 @@ clean_assets:
 # Stop containers
 .PHONY: stop
 stop:
-	docker-compose stop
+	docker compose stop
 
 # Remove containers
 .PHONY: clean
 clean: clean_assets stop
-	docker-compose rm -f
+	docker compose rm -f
 
 # Wipe database
 .PHONY: clean_all
 clean_all: clean stop
-	docker-compose down -v
+	docker compose down -v
 
 # Build project documentation in live reload for editing
 .PHONY: docs
@@ -97,7 +97,7 @@ help:
 
 .PHONY: attach
 attach:
-	docker-compose exec postgres psql -h localhost -U openoversight openoversight-dev
+	docker compose exec postgres psql -h localhost -U openoversight openoversight-dev
 
 # This is needed to make sure docker doesn't create an empty directory, or delete that directory first
 .PHONY: create_empty_secret

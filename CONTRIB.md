@@ -138,9 +138,9 @@ You'll first have to start the Docker instance for the OpenOversight app using t
 
 ```shell
 $ make start
-docker-compose build
+docker compose build
 ...
-docker-compose up -d
+docker compose up -d
 [+] Running 2/0
  ✔ Container openoversight-postgres-1  Running                                                                                                                                                             0.0s
  ✔ Container openoversight-web-1       Running
@@ -273,7 +273,7 @@ Next, in your terminal run `docker ps` to find the container id of the `openover
 ## Debugging OpenOversight - Use pdb with a test
 If you want to run an individual test in debug mode, use the below command.
 ```shell
-docker-compose run --rm web pytest --pdb -v tests/ -k <test_name_here>
+docker compose run --rm web pytest --pdb -v tests/ -k <test_name_here>
 ```
 
 where `<test_name_here>` is the name of a single test function, such as `test_ac_cannot_add_new_officer_not_in_their_dept`
@@ -281,7 +281,7 @@ where `<test_name_here>` is the name of a single test function, such as `test_ac
 Similarly, you can run all the tests in a file by specifying the file path:
 
 ```shell
-docker-compose run --rm web pytest --pdb -v path/to/test/file
+docker compose run --rm web pytest --pdb -v path/to/test/file
 ```
 
 where `path/to/test/file` is the relative file path, minus the initial `OpenOversight`, such as

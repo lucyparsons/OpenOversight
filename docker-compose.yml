@@ -45,7 +45,7 @@ services:
    secrets:
      - source: service-account-key
        target: /usr/src/app/service_account_key.json
-   user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker-compose again}"
+   user: "${UID:?Docker-compose needs UID set to the current user id number. Try 'export UID' and run docker compose again}"
    links:
      - postgres:postgres
    expose:
