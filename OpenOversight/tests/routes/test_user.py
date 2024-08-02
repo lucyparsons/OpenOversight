@@ -53,31 +53,31 @@ def test_user_can_see_own_profile(mockdata, client, session):
         assert bytes(f"Profile: {user.username}", ENCODING_UTF_8) in rv.data
 
 
-def test_user_cannot_see_other_users_profile(mockdata, client, session):
+def test_user_can_see_other_users_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
         other_user = User.query.filter_by(email=AC_USER_EMAIL).first()
         rv = client.get(f"/user/{other_user.username}")
 
-        # Assert page returns error
-        assert rv.status_code == HTTPStatus.FORBIDDEN
+        assert rv.status_code == HTTPStatus.OK
+        assert bytes(f"Profile: {other_user.username}", ENCODING_UTF_8) in rv.data
 
 
-def test_ac_user_cannot_see_other_users_profile(mockdata, client, session):
+def test_ac_user_can_see_other_users_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_ac(client)
         other_user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         rv = client.get(f"/user/{other_user.username}")
 
-        # Assert page returns error
-        assert rv.status_code == HTTPStatus.FORBIDDEN
+        assert rv.status_code == HTTPStatus.OK
+        assert bytes(f"Profile: {other_user.username}", ENCODING_UTF_8) in rv.data
 
 
-def test_admin_user_cannot_see_other_users_profile(mockdata, client, session):
+def test_admin_user_can_see_other_users_profile(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
         other_user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
         rv = client.get(f"/user/{other_user.username}")
 
-        # Assert page returns error
-        assert rv.status_code == HTTPStatus.FORBIDDEN
+        assert rv.status_code == HTTPStatus.OK
+        assert bytes(f"Profile: {other_user.username}", ENCODING_UTF_8) in rv.data
