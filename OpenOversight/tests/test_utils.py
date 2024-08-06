@@ -233,7 +233,7 @@ def test_save_image_to_s3_and_db_returns_existing_image(
     test_png_bytes_io.close = lambda: None
     firstUpload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
     secondUpload = save_image_to_s3_and_db(test_png_bytes_io, 1, 1)
-    assert secondUpload is Image
+    assert type(secondUpload) is Image
     assert firstUpload.id == secondUpload.id
 
 
