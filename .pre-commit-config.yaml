@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: check-docstring-first
@@ -31,7 +31,7 @@ repos:
       - id: python-no-log-warn
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         name: Run isort to sort imports
@@ -41,20 +41,6 @@ repos:
         args:
           - --lines-after-imports=2
           - --profile=black
-
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        name: Run pydocstyle
-        args:
-          - --convention=pep257
-          # Do not require docstrings, only check existing ones. (D1)
-          # Allow for a newline after a docstring. (D202)
-          # Don't require a summary line. (D205)
-          # Don't require a period on the first line. (D400)
-          - --add-ignore=D1,D202,D205,D400
-        exclude: tests/
 
   - repo: local
     hooks:
@@ -68,7 +54,7 @@ repos:
         files: \.py$
 
   - repo: https://github.com/ikamensh/flynt/
-    rev: '1.0.0'
+    rev: 1.0.1
     hooks:
         - id: flynt
           exclude: ^build/.*$|^.tox/.*$|^venv/.*$
@@ -77,7 +63,7 @@ repos:
             - --quiet
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
+    rev: v0.5.5
     hooks:
       - id: ruff
         types_or: [python,pyi]
@@ -91,12 +77,12 @@ repos:
           - --target-version=py311
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.4.1'
+    rev: v1.11.0
     hooks:
       - id: mypy
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.32.1
+    rev: v1.34.1
     hooks:
       - id: djlint-reformat
         pass_filenames: false
