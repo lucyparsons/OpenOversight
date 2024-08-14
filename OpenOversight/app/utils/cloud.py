@@ -68,7 +68,7 @@ EXIF_KEY_DATE_TIME_ORIGINAL = 36867
 
 
 def get_date_taken(pimage):
-    if isinstance(pimage, PngImageFile):
+    if type(pimage) is PngImageFile:
         return None
 
     exif = hasattr(pimage, "_getexif") and pimage._getexif()
