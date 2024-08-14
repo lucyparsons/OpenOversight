@@ -54,13 +54,13 @@ def test_email_create_message(faker):
 def test_email_client_auto_detect_debug_mode(app):
     with app.app_context():
         app.debug = True
-        assert isinstance(EmailClient.auto_detect(), SimulatedEmailProvider)
+        assert type(EmailClient.auto_detect()) is SimulatedEmailProvider
 
 
 def test_email_client_auto_detect_testing_mode(app):
     with app.app_context():
         app.testing = True
-        assert isinstance(EmailClient.auto_detect(), SimulatedEmailProvider)
+        assert type(EmailClient.auto_detect()) is SimulatedEmailProvider
 
 
 def test_email_client_auto_detect_follows_precedence(app):
