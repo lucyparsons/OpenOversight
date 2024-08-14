@@ -441,7 +441,7 @@ class DateFieldForm(Form):
     time_field = TimeField("Time", validators=[Optional()])
 
     def validate_time_field(self, field):
-        if not type(field.data) == time:
+        if type(field.data) is not time:
             raise ValidationError("Not a valid time.")
 
     def validate_date_field(self, field):
@@ -491,7 +491,7 @@ class LicensePlateForm(Form):
 
 class OfficerIdField(StringField):
     def process_data(self, value):
-        if type(value) == Officer:
+        if type(value) is Officer:
             self.data = value.id
         else:
             self.data = value
