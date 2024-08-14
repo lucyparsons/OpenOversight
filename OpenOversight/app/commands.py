@@ -221,10 +221,10 @@ def update_officer_from_row(row, officer, update_static_fields=False):
             # If we're expecting a date type, attempt to parse row[field_name] as a
             # datetime. This normalizes all date formats, ensuring the following
             # comparison works properly
-            if type(old_value) is (date, datetime):
+            if isinstance(old_value, (date, datetime)):
                 try:
                     new_value = parse(row[field_name])
-                    if type(old_value) is date:
+                    if isinstance(old_value, date):
                         new_value = new_value.date()
                 except Exception as err:
                     msg = (
