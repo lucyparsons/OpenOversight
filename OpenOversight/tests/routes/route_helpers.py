@@ -75,20 +75,20 @@ def process_form_data(form_dict: dict) -> dict:
     """Mock the browser-flattening of a form containing embedded data."""
     new_dict = {}
     for key, value in form_dict.items():
-        if isinstance(value, list):
+        if type(value) is list:
             if value[0]:
-                if isinstance(value[0], dict):
+                if type(value[0]) is dict:
                     for idx, item in enumerate(value):
                         for sub_key, sub_value in item.items():
                             new_dict_key = f"{key}-{idx}-{sub_key}"
-                            if not isinstance(sub_value, bool):
+                            if type(sub_value) is not bool:
                                 new_dict[new_dict_key] = sub_value
                             elif sub_value:
                                 new_dict[new_dict_key] = "y"
-                elif isinstance(value[0], str) or isinstance(value[0], int):
+                elif type(value[0]) is str or type(value[0]) is int:
                     for idx, item in enumerate(value):
                         new_dict_key = f"{key}-{idx}"
-                        if not isinstance(item, bool):
+                        if type(item) is not bool:
                             new_dict[new_dict_key] = item
                         elif item:
                             new_dict[new_dict_key] = "y"
@@ -96,10 +96,10 @@ def process_form_data(form_dict: dict) -> dict:
                     raise ValueError(
                         f"Lists must contain dicts, strings or ints. {type(value[0])} submitted"
                     )
-        elif isinstance(value, dict):
+        elif type(value) is dict:
             for sub_key, sub_value in value.items():
                 new_dict[f"{key}-{sub_key}"] = sub_value
-        elif not isinstance(value, bool):
+        elif type(value) is not bool:
             new_dict[key] = value
         elif value:
             new_dict[key] = "y"
