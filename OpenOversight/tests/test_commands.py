@@ -627,7 +627,7 @@ def test_bulk_add_officers__duplicate_name(session, department, csv_path):
     # command does not execute successfully since the name is not unique
     assert result.exit_code != 0
     # command throws MultipleResultsFound error
-    assert isinstance(result.exception, MultipleResultsFound)
+    assert type(result.exception) is MultipleResultsFound
 
 
 def test_bulk_add_officers__write_static_null_field(
