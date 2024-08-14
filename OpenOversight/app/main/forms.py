@@ -498,7 +498,7 @@ class OfficerIdField(StringField):
 
 
 def validate_oo_id(self, oo_id):
-    if oo_id.data and isinstance(oo_id.data, str):
+    if oo_id.data and type(oo_id.data) is str:
         if oo_id.data.isnumeric():
             officer = db.session.get(Officer, oo_id.data)
         else:
