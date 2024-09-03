@@ -38,6 +38,10 @@ RUN touch /usr/src/app/yarn-error.log
 COPY yarn.lock /usr/src/app/
 RUN chmod -R 777 /usr/src/app/ /var/lib/xkb /.cache /.yarn /.mozilla
 
+# Get Rust; NOTE: using sh for better compatibility with other base images
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt && pip3 install --no-cache-dir -r dev-requirements.txt
