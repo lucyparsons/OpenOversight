@@ -12,7 +12,7 @@ build_with_version: create_empty_secret
 	docker compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
-test_with_version: build_with_version assets
+test_with_version: build_with_version
 	touch OpenOversight/tests/coverage.xml
 	docker compose run --rm web-test pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
@@ -30,10 +30,6 @@ create_db: start
 	@echo "Postgres is up"
 	## Creating database
 	docker compose run --rm web alembic --config=./OpenOversight/migrations/alembic.ini stamp head
-
-.PHONY: assets
-assets:
-	docker compose run --rm web yarn build
 
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
@@ -62,10 +58,6 @@ test: start
 lint:
 	pre-commit run --all-files
 
-.PHONY: clean_assets
-clean_assets:
-	rm -rf ./OpenOversight/app/static/dist/
-
 # Stop containers
 .PHONY: stop
 stop:
@@ -73,7 +65,7 @@ stop:
 
 # Remove containers
 .PHONY: clean
-clean: clean_assets stop
+clean: stop
 	docker compose rm -f
 
 # Wipe database
