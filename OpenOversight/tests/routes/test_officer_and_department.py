@@ -58,6 +58,7 @@ from OpenOversight.tests.conftest import (
     SPRINGFIELD_PD,
     PoliceDepartment,
 )
+from OpenOversight.tests.constants import INVALID_ID
 from OpenOversight.tests.routes.route_helpers import (
     login_ac,
     login_admin,
@@ -189,7 +190,7 @@ def test_invalid_officer_id_add_assignment(mockdata, client, session):
         login_admin(client)
 
         rv = client.post(
-            url_for("main.add_assignment", officer_id=4000000),
+            url_for("main.add_assignment", officer_id=INVALID_ID),
         )
         assert rv.status_code == HTTPStatus.NOT_FOUND
 

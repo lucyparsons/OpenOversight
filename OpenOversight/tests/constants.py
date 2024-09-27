@@ -1,6 +1,9 @@
 # File Mode Constants
 FILE_MODE_WRITE = "w"
 
+# Miscellaneous Constants
+INVALID_ID = 4000000
+
 # User Constants
 AC_USER_EMAIL = "raq929@example.org"
 AC_USER_PASSWORD = "horse"

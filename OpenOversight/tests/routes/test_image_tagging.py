@@ -11,6 +11,7 @@ from OpenOversight.app.main.forms import FaceTag
 from OpenOversight.app.models.database import Department, Face, Image, Officer, User
 from OpenOversight.app.utils.constants import ENCODING_UTF_8
 from OpenOversight.tests.conftest import AC_DEPT
+from OpenOversight.tests.constants import INVALID_ID
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
 
@@ -50,7 +51,7 @@ def test_invalid_department_image_sorting(client, session):
     with current_app.test_request_context():
         login_user(client)
 
-        rv = client.get(url_for("main.sort_images", department_id=44000))
+        rv = client.get(url_for("main.sort_images", department_id=INVALID_ID))
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
