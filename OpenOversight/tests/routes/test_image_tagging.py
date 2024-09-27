@@ -90,6 +90,14 @@ def test_user_can_view_submission(mockdata, client, session):
         assert b"Image ID" in rv.data
 
 
+def test_invalid_tag_id_view_tag(client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(url_for("main.display_tag", tag_id=INVALID_ID))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_user_can_view_tag(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
