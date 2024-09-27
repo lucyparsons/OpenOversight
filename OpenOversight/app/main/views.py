@@ -618,9 +618,10 @@ def redirect_display_tag(tag_id: int):
 def display_tag(tag_id: int):
     try:
         tag = db.session.get(Face, tag_id)
-        proper_path = serve_image(tag.original_image.filepath)
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
+    proper_path = serve_image(tag.original_image.filepath)
     return render_template(
         "tag.html", face=tag, path=proper_path, jsloads=["js/tag.js"]
     )
@@ -903,6 +904,10 @@ def list_officer(
     current_job=None,
     require_photo: Optional[bool] = None,
 ):
+    department = db.session.get(Department, department_id)
+    if not department:
+        abort(HTTPStatus.NOT_FOUND)
+
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -922,10 +927,6 @@ def list_officer(
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
     form_data["require_photo"] = require_photo
-
-    department = db.session.get(Department, department_id)
-    if not department:
-        abort(HTTPStatus.NOT_FOUND)
 
     age_range = {ac[0] for ac in AGE_CHOICES}
 
