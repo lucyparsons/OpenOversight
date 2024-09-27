@@ -184,6 +184,16 @@ def test_ac_cannot_access_admin_on_non_dept_officer_profile(mockdata, client, se
         assert "Admin only" not in rv.data.decode(ENCODING_UTF_8)
 
 
+def test_invalid_officer_id_add_assignment(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for("main.add_assignment", officer_id=4000000),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_admin_can_add_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)

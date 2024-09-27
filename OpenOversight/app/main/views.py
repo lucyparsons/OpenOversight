@@ -386,14 +386,15 @@ def redirect_add_assignment(officer_id: int):
 def add_assignment(officer_id: int):
     form = AssignmentForm()
     officer = db.session.get(Officer, officer_id)
+    if not officer:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
+
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
         .all()
     )
-    if not officer:
-        flash("Officer not found")
-        abort(HTTPStatus.NOT_FOUND)
 
     if form.validate_on_submit():
         if current_user.is_administrator or (
