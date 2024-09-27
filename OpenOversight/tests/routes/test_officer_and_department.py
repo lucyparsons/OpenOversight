@@ -2223,6 +2223,16 @@ def test_edit_officers_with_blank_uids(mockdata, client, session):
         assert officer2.unique_internal_identifier is None
 
 
+def test_invalid_officer_id_add_salary(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for("main.add_salary", officer_id=INVALID_ID),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_admin_can_add_salary(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
