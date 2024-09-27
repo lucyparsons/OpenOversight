@@ -46,6 +46,14 @@ def test_route_login_required(route, client, mockdata):
     assert rv.status_code == HTTPStatus.FOUND
 
 
+def test_invalid_department_image_sorting(client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(url_for("main.sort_images", department_id=44000))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 # POST-only routes
 @pytest.mark.parametrize(
     "route",

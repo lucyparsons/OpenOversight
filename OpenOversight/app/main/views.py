@@ -263,9 +263,14 @@ def redirect_sort_images(department_id: int):
 )
 @login_required
 def sort_images(department_id: int):
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
+
     # Select a random unsorted image from the database
     image_query = Image.query.filter_by(contains_cops=None).filter_by(
-        department_id=department_id
+        department_id=department.id
     )
     image = get_random_image(image_query)
 
