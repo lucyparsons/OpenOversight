@@ -114,7 +114,6 @@ def test_route_post_only(route, client, mockdata):
 def test_invalid_id_officer_profile(mockdata, client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.officer_profile", officer_id=400000))
-
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
