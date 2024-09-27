@@ -126,6 +126,12 @@ def test_user_can_access_officer_profile(mockdata, client, session):
         assert "Officer Detail" in rv.data.decode(ENCODING_UTF_8)
 
 
+def test_invalid_officer_id_officer_list(client, session):
+    with current_app.test_request_context():
+        rv = client.get(url_for("main.list_officer", department_id=INVALID_ID))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_user_can_access_officer_list(mockdata, client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.list_officer", department_id=2))
