@@ -321,11 +321,6 @@ def officer_profile(officer_id: int):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
-    except:  # noqa: E722
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error finding officer: {error_str}")
-        abort(HTTPStatus.NOT_FOUND)
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
