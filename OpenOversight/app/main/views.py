@@ -380,8 +380,9 @@ def redirect_add_assignment(officer_id: int):
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
-    officer = db.session.get(Officer, officer_id)
-    if not officer:
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
         flash("Officer not found")
         abort(HTTPStatus.NOT_FOUND)
 
