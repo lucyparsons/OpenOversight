@@ -1709,6 +1709,15 @@ def test_admin_can_add_new_officer_with_suffix(
         assert officer.suffix == "Jr"
 
 
+def test_invalid_officer_id_upload_photos(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(url_for("main.upload", department_id=1, officer_id=INVALID_ID))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+        assert "This officer does not exist." in rv.data.decode(ENCODING_UTF_8)
+
+
 def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(
     mockdata, client, session
 ):
