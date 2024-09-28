@@ -444,7 +444,11 @@ def redirect_edit_assignment(officer_id: int, assignment_id: int):
 @login_required
 @ac_or_admin_required
 def edit_assignment(officer_id: int, assignment_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -494,8 +498,9 @@ def redirect_add_salary(officer_id: int):
 @ac_or_admin_required
 def add_salary(officer_id: int):
     form = SalaryForm()
-    officer = db.session.get(Officer, officer_id)
-    if not officer:
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
         flash("Officer not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -559,7 +564,12 @@ def redirect_edit_salary(officer_id: int, salary_id: int):
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id: int, salary_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
+
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
@@ -594,10 +604,11 @@ def redirect_display_submission(image_id: int):
 @login_required
 def display_submission(image_id: int):
     try:
-        image = db.session.get(Image, image_id)
-        proper_path = serve_image(image.filepath)
+        image = Image.query.filter_by(id=image_id).one()
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
+    proper_path = serve_image(image.filepath)
     return render_template("image.html", image=image, path=proper_path)
 
 
@@ -612,8 +623,9 @@ def redirect_display_tag(tag_id: int):
 
 @main.route("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
-    tag = db.session.get(Face, tag_id)
-    if not tag:
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+    except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
 
     proper_path = serve_image(tag.original_image.filepath)
@@ -746,7 +758,11 @@ def redirect_edit_department(department_id: int):
 @login_required
 @admin_required
 def edit_department(department_id: int):
-    department = db.get_or_404(Department, department_id)
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
+
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
@@ -899,8 +915,9 @@ def list_officer(
     current_job=None,
     require_photo: Optional[bool] = None,
 ):
-    department = db.session.get(Department, department_id)
-    if not department:
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
 
     form = BrowseForm()
@@ -1192,7 +1209,10 @@ def redirect_edit_officer(officer_id: int):
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
     form = EditOfficerForm(obj=officer)
 
     if request.method == HTTPMethod.GET:
@@ -1268,9 +1288,9 @@ def redirect_delete_tag(tag_id: int):
 @login_required
 @ac_or_admin_required
 def delete_tag(tag_id: int):
-    tag = db.session.get(Face, tag_id)
-
-    if not tag:
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+    except NoResultFound:
         flash("Tag not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -1304,9 +1324,9 @@ def redirect_set_featured_tag(tag_id: int):
 @login_required
 @ac_or_admin_required
 def set_featured_tag(tag_id: int):
-    tag = db.session.get(Face, tag_id)
-
-    if not tag:
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+    except NoResultFound:
         flash("Tag not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -1485,9 +1505,11 @@ def redirect_complete_tagging(image_id: int):
 @login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
-    image = db.session.get(Image, image_id)
-    if not image:
+    try:
+        image = Image.query.filter_by(id=image_id).one()
+    except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
     image.is_tagged = True
     image.last_updated_by = current_user.id
     db.session.commit()
@@ -1858,8 +1880,9 @@ def redirect_upload(department_id: int, officer_id: Optional[int] = None):
 @limiter.limit("250/minute")
 def upload(department_id: int, officer_id: Optional[int] = None):
     if officer_id:
-        officer = db.session.get(Officer, officer_id)
-        if not officer:
+        try:
+            officer = Officer.query.filter_by(id=officer_id).one()
+        except NoResultFound:
             return jsonify(error="This officer does not exist."), HTTPStatus.NOT_FOUND
         if not (
             current_user.is_administrator
