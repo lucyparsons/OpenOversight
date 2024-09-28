@@ -272,7 +272,15 @@ def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, se
         ) in rv.data
 
 
-def test_user_can_finish_tagging(mockdata, client, session):
+def test_invalid_id_complete_tagging(mockdata, client, session):
+    with current_app.test_request_context():
+        login_user(client)
+
+        rv = client.get(url_for("main.complete_tagging", image_id=INVALID_ID))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_complete_tagging(mockdata, client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
         image_id = 4
