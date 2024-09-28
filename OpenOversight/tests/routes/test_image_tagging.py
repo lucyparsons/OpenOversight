@@ -313,6 +313,16 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
+def test_invalid_id_set_featured_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(
+            url_for("main.set_featured_tag", tag_id=INVALID_ID), follow_redirects=True
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_admin_can_set_featured_tag(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
