@@ -616,9 +616,8 @@ def redirect_display_tag(tag_id: int):
 
 @main.route("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
-    try:
-        tag = db.session.get(Face, tag_id)
-    except NoResultFound:
+    tag = db.session.get(Face, tag_id)
+    if not tag:
         abort(HTTPStatus.NOT_FOUND)
 
     proper_path = serve_image(tag.original_image.filepath)
