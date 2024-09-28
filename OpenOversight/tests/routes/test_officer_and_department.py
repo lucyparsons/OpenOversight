@@ -2210,6 +2210,16 @@ def test_ac_can_upload_photos_of_dept_officers(
                 assert len(officer.face) == officer_face_count + 1
 
 
+def test_invalid_officer_id_edit_officer(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for("main.edit_officer", officer_id=INVALID_ID),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_edit_officers_with_blank_uids(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
