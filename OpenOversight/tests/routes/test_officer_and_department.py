@@ -310,6 +310,16 @@ def test_ac_cannot_add_non_dept_assignment(mockdata, client, session):
         assert assignments is None
 
 
+def test_invalid_officer_id_edit_assignment(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for("main.edit_assignment", officer_id=INVALID_ID, assignment_id=1),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_admin_can_edit_assignment(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
@@ -2321,6 +2331,16 @@ def test_ac_cannot_add_non_dept_salary(mockdata, client, session):
         )
 
         assert rv.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_invalid_officer_id_edit_salary(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for("main.edit_salary", officer_id=INVALID_ID, salary_id=1),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_admin_can_edit_salary(mockdata, client, session):
