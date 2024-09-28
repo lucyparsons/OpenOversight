@@ -110,6 +110,14 @@ def test_user_can_view_tag(mockdata, client, session):
             assert attribute in rv.data
 
 
+def test_invalid_id_delete_tag(mockdata, client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.post(url_for("main.delete_tag", tag_id=INVALID_ID))
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_admin_can_delete_tag(mockdata, client, session):
     with current_app.test_request_context():
         login_admin(client)
