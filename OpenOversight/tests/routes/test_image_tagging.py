@@ -80,6 +80,16 @@ def test_logged_in_user_can_access_sort_form(mockdata, client, session):
         assert b"Do you see uniformed law enforcement officers in the photo" in rv.data
 
 
+def test_invalid_officer_id_display_submission(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(
+            url_for("main.display_submission", image_id=INVALID_ID),
+        )
+        assert rv.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_user_can_view_submission(mockdata, client, session):
     with current_app.test_request_context():
         login_user(client)
@@ -90,7 +100,7 @@ def test_user_can_view_submission(mockdata, client, session):
         assert b"Image ID" in rv.data
 
 
-def test_invalid_tag_id_view_tag(client, session):
+def test_invalid_tag_id_display_tag(client, session):
     with current_app.test_request_context():
         login_user(client)
 
