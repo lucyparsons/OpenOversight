@@ -35,7 +35,7 @@ def test_routes_ok(route, client, mockdata):
 @pytest.mark.parametrize(
     "route", ["incidents/1/edit", "incidents/new", "incidents/1/delete"]
 )
-def test_route_login_required(route, client, mockdata):
+def test_route_login_required(route, client):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.FOUND
 
@@ -59,7 +59,7 @@ def test_route_admin_or_required(route, client, mockdata):
         "PPP Case 92",
     ],
 )
-def test_admins_can_create_basic_incidents(report_number, mockdata, client, session):
+def test_admins_can_create_basic_incidents(report_number, client, session):
     with current_app.test_request_context():
         login_admin(client)
         test_date = datetime(2000, 5, 25, 1, 45)
@@ -107,7 +107,7 @@ def test_admins_can_create_basic_incidents(report_number, mockdata, client, sess
     ],
 )
 def test_admins_can_create_incidents_with_links(
-    mockdata, client, session, link_type, expected_text
+    client, session, link_type, expected_text
 ):
     with current_app.test_request_context():
         login_admin(client)
@@ -160,9 +160,7 @@ def test_admins_can_create_incidents_with_links(
         assert expected_text in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_admins_cannot_create_incident_with_invalid_report_number(
-    mockdata, client, session
-):
+def test_admins_cannot_create_incident_with_invalid_report_number(client, session):
     with current_app.test_request_context():
         login_admin(client)
         test_date = datetime(2000, 5, 25, 1, 45)
@@ -202,7 +200,7 @@ def test_admins_cannot_create_incident_with_invalid_report_number(
         )
 
 
-def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
+def test_admins_can_edit_incident_date_and_address(client, session):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.options(
@@ -256,7 +254,7 @@ def test_admins_can_edit_incident_date_and_address(mockdata, client, session):
         assert updated.address.street_name == street_name
 
 
-def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, faker):
+def test_admins_can_edit_incident_links_and_licenses(client, session, faker):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.options(
@@ -319,7 +317,7 @@ def test_admins_can_edit_incident_links_and_licenses(mockdata, client, session, 
         assert new_number in [lp.number for lp in inc.license_plates]
 
 
-def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
+def test_admins_cannot_make_ancient_incidents(client, session):
     with current_app.test_request_context():
         login_admin(client)
         inc = Incident.query.options(
@@ -359,7 +357,7 @@ def test_admins_cannot_make_ancient_incidents(mockdata, client, session):
         assert "Incidents prior to 1900 not allowed." in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
+def test_admins_cannot_make_incidents_without_state(client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -396,9 +394,7 @@ def test_admins_cannot_make_incidents_without_state(mockdata, client, session):
         assert incident_count_before == Incident.query.count()
 
 
-def test_admins_cannot_make_incidents_with_multiple_validation_errors(
-    mockdata, client, session
-):
+def test_admins_cannot_make_incidents_with_multiple_validation_errors(client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -446,7 +442,7 @@ def test_admins_cannot_make_incidents_with_multiple_validation_errors(
         assert incident_count_before == Incident.query.count()
 
 
-def test_admins_can_edit_incident_officers(mockdata, client, session):
+def test_admins_can_edit_incident_officers(client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -509,7 +505,7 @@ def test_admins_can_edit_incident_officers(mockdata, client, session):
         assert new_officer.id in [off.id for off in inc.officers]
 
 
-def test_admins_cannot_edit_non_existing_officers(mockdata, client, session):
+def test_admins_cannot_edit_non_existing_officers(client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -568,7 +564,7 @@ def test_admins_cannot_edit_non_existing_officers(mockdata, client, session):
             assert officer in inc.officers
 
 
-def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
+def test_ac_can_edit_incidents_in_their_department(client, session):
     with current_app.test_request_context():
         login_ac(client)
         user = User.query.filter_by(ac_department_id=AC_DEPT).first()
@@ -619,7 +615,7 @@ def test_ac_can_edit_incidents_in_their_department(mockdata, client, session):
         assert inc.address.street_name == street_name
 
 
-def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, session):
+def test_ac_cannot_edit_incidents_not_in_their_department(client, session):
     with current_app.test_request_context():
         login_ac(client)
         user = User.query.filter_by(
@@ -670,7 +666,7 @@ def test_ac_cannot_edit_incidents_not_in_their_department(mockdata, client, sess
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_admins_can_delete_incidents(mockdata, client, session):
+def test_admins_can_delete_incidents(client, session):
     with current_app.test_request_context():
         login_admin(client)
         incident = Incident.query.first()
@@ -684,7 +680,7 @@ def test_admins_can_delete_incidents(mockdata, client, session):
         assert deleted is None
 
 
-def test_acs_can_delete_incidents_in_their_department(mockdata, client, session):
+def test_acs_can_delete_incidents_in_their_department(client, session):
     with current_app.test_request_context():
         login_ac(client)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
@@ -698,7 +694,7 @@ def test_acs_can_delete_incidents_in_their_department(mockdata, client, session)
         assert deleted is None
 
 
-def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, session):
+def test_acs_cannot_delete_incidents_not_in_their_department(client, session):
     with current_app.test_request_context():
         login_ac(client)
         incident = Incident.query.except_(
@@ -714,7 +710,7 @@ def test_acs_cannot_delete_incidents_not_in_their_department(mockdata, client, s
         assert not_deleted.id is inc_id
 
 
-def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
+def test_acs_can_get_edit_form_for_their_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
         incident = Incident.query.filter_by(department_id=AC_DEPT).first()
@@ -726,7 +722,7 @@ def test_acs_can_get_edit_form_for_their_dept(mockdata, client, session):
         assert "Update" in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
+def test_acs_cannot_get_edit_form_for_their_non_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
         incident = Incident.query.except_(
@@ -739,7 +735,7 @@ def test_acs_cannot_get_edit_form_for_their_non_dept(mockdata, client, session):
         assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_users_can_view_incidents_by_department(mockdata, client, session):
+def test_users_can_view_incidents_by_department(client, session):
     with current_app.test_request_context():
         department = Department.query.first()
         department_incidents = Incident.query.filter_by(department_id=department.id)
@@ -761,28 +757,28 @@ def test_users_can_view_incidents_by_department(mockdata, client, session):
             )
 
 
-def test_admins_can_see_who_created_incidents(mockdata, client, session):
+def test_admins_can_see_who_created_incidents(client, session):
     with current_app.test_request_context():
         login_admin(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
         assert "Creator" in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_acs_cannot_see_who_created_incidents(mockdata, client, session):
+def test_acs_cannot_see_who_created_incidents(client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
         assert "Creator" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_users_cannot_see_who_created_incidents(mockdata, client, session):
+def test_users_cannot_see_who_created_incidents(client, session):
     with current_app.test_request_context():
         login_ac(client)
         rv = client.get(url_for("main.incident_api", obj_id=1))
         assert "Creator" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_form_with_officer_id_prepopulates(mockdata, client, session):
+def test_form_with_officer_id_prepopulates(client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer_id = "1234"
@@ -790,7 +786,7 @@ def test_form_with_officer_id_prepopulates(mockdata, client, session):
         assert officer_id in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_incident_markdown(mockdata, client, session):
+def test_incident_markdown(client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.incident_api"))
         html = rv.data.decode()
@@ -798,7 +794,7 @@ def test_incident_markdown(mockdata, client, session):
         assert "<p><strong>Markup</strong> description</p>" in html
 
 
-def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
+def test_admins_cannot_inject_unsafe_html(client, session):
     with current_app.test_request_context():
         login_admin(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -869,7 +865,7 @@ def test_admins_cannot_inject_unsafe_html(mockdata, client, session):
     ],
 )
 def test_users_can_search_incidents(
-    params, included_report_nums, excluded_report_nums, mockdata, client, session
+    params, included_report_nums, excluded_report_nums, client, session
 ):
     with current_app.test_request_context():
         rv = client.get(url_for("main.incident_api", **params))
