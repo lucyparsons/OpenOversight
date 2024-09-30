@@ -81,7 +81,7 @@ def scroll_to_element(browser, element):
     return element
 
 
-def test_user_can_load_homepage_and_get_to_form(browser, server_port):
+def test_user_can_load_homepage_and_get_to_form(mockdata, browser, server_port):
     browser.get(f"http://localhost:{server_port}")
     wait_for_element_to_be_visible(browser, By.ID, "cpd")
 
@@ -110,7 +110,7 @@ def test_user_can_get_to_complaint(browser, server_port):
     assert "File a Complaint" in title_text
 
 
-def test_officer_browse_pagination(browser, server_port):
+def test_officer_browse_pagination(mockdata, browser, server_port):
     total = Officer.query.filter_by(department_id=AC_DEPT).count()
 
     # first page of results
@@ -152,7 +152,9 @@ def test_officer_browse_pagination(browser, server_port):
     assert "require_photo" not in previous_link
 
 
-def test_find_officer_can_see_uii_question_for_depts_with_uiis(browser, server_port):
+def test_find_officer_can_see_uii_question_for_depts_with_uiis(
+    mockdata, browser, server_port
+):
     browser.get(f"http://localhost:{server_port}/find")
     wait_for_element(browser, By.TAG_NAME, "body")
 
@@ -168,7 +170,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(browser, server_p
 
 
 def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
-    browser, server_port
+    mockdata, browser, server_port
 ):
     browser.get(f"http://localhost:{server_port}/find")
     wait_for_element(browser, By.TAG_NAME, "body")
@@ -186,7 +188,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
 
 
 def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
-    browser, server_port
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officers/1")
@@ -202,7 +204,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
 
 
 def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
-    browser, server_port
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officers/1")
@@ -222,7 +224,7 @@ def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
 
 
 def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_cutoff(
-    browser, server_port
+    mockdata, browser, server_port
 ):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officers/1")
@@ -233,7 +235,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     assert not result.is_displayed()
 
 
-def test_click_to_read_more_displays_full_description(browser, server_port):
+def test_click_to_read_more_displays_full_description(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officers/1")
 
@@ -254,7 +256,7 @@ def test_click_to_read_more_displays_full_description(browser, server_port):
     assert description_text == original_description
 
 
-def test_click_to_read_more_hides_the_read_more_button(browser, server_port):
+def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server_port):
     # Navigate to profile page for officer with short and long incident descriptions
     browser.get(f"http://localhost:{server_port}/officers/1")
 
