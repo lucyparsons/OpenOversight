@@ -106,12 +106,12 @@ def test_route_login_required(route, client, mockdata):
         "/officers/3/assignments/new",
     ],
 )
-def test_route_post_only(route, client, mockdata):
+def test_route_post_only(route, client):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_user_can_access_officer_profile(mockdata, client, session):
+def test_user_can_access_officer_profile(client, session):
     with current_app.test_request_context():
         rv = client.get(
             url_for("main.officer_profile", officer_id=3), follow_redirects=True
@@ -119,7 +119,7 @@ def test_user_can_access_officer_profile(mockdata, client, session):
         assert "Officer Detail" in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_user_can_access_officer_list(mockdata, client, session):
+def test_user_can_access_officer_list(client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.list_officer", department_id=2))
 
@@ -136,7 +136,7 @@ def test_user_can_access_officer_list(mockdata, client, session):
     ],
 )
 def test_officer_appropriately_shows_placeholder(
-    filter_func, has_placeholder, mockdata, client, session
+    filter_func, has_placeholder, client, session
 ):
     with current_app.test_request_context():
         officer = Officer.query.filter(filter_func(Officer.face.any())).first()
@@ -152,7 +152,7 @@ def test_officer_appropriately_shows_placeholder(
         assert (placeholder in rv.data.decode(ENCODING_UTF_8)) == has_placeholder
 
 
-def test_ac_can_access_admin_on_dept_officer_profile(mockdata, client, session):
+def test_ac_can_access_admin_on_dept_officer_profile(client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.filter_by(department_id=AC_DEPT).first()
@@ -164,7 +164,7 @@ def test_ac_can_access_admin_on_dept_officer_profile(mockdata, client, session):
         assert "Admin only" in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_ac_cannot_access_admin_on_non_dept_officer_profile(mockdata, client, session):
+def test_ac_cannot_access_admin_on_non_dept_officer_profile(client, session):
     with current_app.test_request_context():
         login_ac(client)
         officer = Officer.query.except_(
@@ -178,7 +178,7 @@ def test_ac_cannot_access_admin_on_non_dept_officer_profile(mockdata, client, se
         assert "Admin only" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_admin_can_add_assignment(mockdata, client, session):
+def test_admin_can_add_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -207,7 +207,7 @@ def test_admin_can_add_assignment(mockdata, client, session):
         assert assignment.resign_date == date(2019, 12, 31)
 
 
-def test_admin_add_assignment_validation_error(mockdata, client, session):
+def test_admin_add_assignment_validation_error(client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = session.get(Officer, 3)
