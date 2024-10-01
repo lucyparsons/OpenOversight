@@ -279,7 +279,7 @@ def sort_images(department_id: int):
     else:
         proper_path = None
     return render_template(
-        "sort.html", image=image, path=proper_path, department_id=department_id
+        "sort.html", image=image, path=proper_path, department_id=department.id
     )
 
 
