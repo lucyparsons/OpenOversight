@@ -90,7 +90,7 @@ def test_invalid_officer_id_display_submission(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_view_submission(mockdata, client, session):
+def test_user_can_view_submission(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -108,7 +108,7 @@ def test_invalid_tag_id_display_tag(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_view_tag(mockdata, client, session):
+def test_user_can_view_tag(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -120,7 +120,7 @@ def test_user_can_view_tag(mockdata, client, session):
             assert attribute in rv.data
 
 
-def test_invalid_id_delete_tag(mockdata, client, session):
+def test_invalid_id_delete_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -128,7 +128,7 @@ def test_invalid_id_delete_tag(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_delete_tag(mockdata, client, session):
+def test_admin_can_delete_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -290,7 +290,7 @@ def test_invalid_id_complete_tagging(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_complete_tagging(mockdata, client, session):
+def test_complete_tagging(client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
         image_id = 4
@@ -329,7 +329,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(client, session)
         assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_invalid_id_set_featured_tag(mockdata, client, session):
+def test_invalid_id_set_featured_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -339,7 +339,7 @@ def test_invalid_id_set_featured_tag(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_set_featured_tag(mockdata, client, session):
+def test_admin_can_set_featured_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
