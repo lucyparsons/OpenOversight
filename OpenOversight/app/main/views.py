@@ -263,9 +263,14 @@ def redirect_sort_images(department_id: int):
 )
 @login_required
 def sort_images(department_id: int):
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
+
     # Select a random unsorted image from the database
     image_query = Image.query.filter_by(contains_cops=None).filter_by(
-        department_id=department_id
+        department_id=department.id
     )
     image = get_random_image(image_query)
 
@@ -274,7 +279,7 @@ def sort_images(department_id: int):
     else:
         proper_path = None
     return render_template(
-        "sort.html", image=image, path=proper_path, department_id=department_id
+        "sort.html", image=image, path=proper_path, department_id=department.id
     )
 
 
@@ -316,10 +321,6 @@ def officer_profile(officer_id: int):
         officer = Officer.query.filter_by(id=officer_id).one()
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
-    except:  # noqa: E722
-        exception_type, value, full_traceback = sys.exc_info()
-        error_str = " ".join([str(exception_type), str(value), format_exc()])
-        current_app.logger.error(f"Error finding officer: {error_str}")
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
@@ -379,15 +380,17 @@ def redirect_add_assignment(officer_id: int):
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
+
     form.job_title.query = (
         Job.query.filter_by(department_id=officer.department_id)
         .order_by(Job.order.asc())
         .all()
     )
-    if not officer:
-        flash("Officer not found")
-        abort(HTTPStatus.NOT_FOUND)
 
     if form.validate_on_submit():
         if current_user.is_administrator or (
@@ -441,7 +444,11 @@ def redirect_edit_assignment(officer_id: int, assignment_id: int):
 @login_required
 @ac_or_admin_required
 def edit_assignment(officer_id: int, assignment_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
 
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
@@ -491,8 +498,9 @@ def redirect_add_salary(officer_id: int):
 @ac_or_admin_required
 def add_salary(officer_id: int):
     form = SalaryForm()
-    officer = db.session.get(Officer, officer_id)
-    if not officer:
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
         flash("Officer not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -556,7 +564,12 @@ def redirect_edit_salary(officer_id: int, salary_id: int):
 @login_required
 @ac_or_admin_required
 def edit_salary(officer_id: int, salary_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        flash("Officer not found")
+        abort(HTTPStatus.NOT_FOUND)
+
     if current_user.is_area_coordinator and not current_user.is_administrator:
         if not ac_can_edit_officer(officer, current_user):
             abort(HTTPStatus.FORBIDDEN)
@@ -591,10 +604,11 @@ def redirect_display_submission(image_id: int):
 @login_required
 def display_submission(image_id: int):
     try:
-        image = db.session.get(Image, image_id)
-        proper_path = serve_image(image.filepath)
+        image = Image.query.filter_by(id=image_id).one()
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
+    proper_path = serve_image(image.filepath)
     return render_template("image.html", image=image, path=proper_path)
 
 
@@ -610,10 +624,11 @@ def redirect_display_tag(tag_id: int):
 @main.route("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
     try:
-        tag = db.session.get(Face, tag_id)
-        proper_path = serve_image(tag.original_image.filepath)
+        tag = Face.query.filter_by(id=tag_id).one()
     except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
+    proper_path = serve_image(tag.original_image.filepath)
     return render_template(
         "tag.html", face=tag, path=proper_path, jsloads=["js/tag.js"]
     )
@@ -743,7 +758,11 @@ def redirect_edit_department(department_id: int):
 @login_required
 @admin_required
 def edit_department(department_id: int):
-    department = db.get_or_404(Department, department_id)
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
+
     previous_name = department.name
     form = EditDepartmentForm(obj=department)
     original_ranks = department.jobs
@@ -896,6 +915,11 @@ def list_officer(
     current_job=None,
     require_photo: Optional[bool] = None,
 ):
+    try:
+        department = Department.query.filter_by(id=department_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
+
     form = BrowseForm()
     form.rank.query = (
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
@@ -915,10 +939,6 @@ def list_officer(
     form_data["current_job"] = current_job
     form_data["unique_internal_identifier"] = unique_internal_identifier
     form_data["require_photo"] = require_photo
-
-    department = db.session.get(Department, department_id)
-    if not department:
-        abort(HTTPStatus.NOT_FOUND)
 
     age_range = {ac[0] for ac in AGE_CHOICES}
 
@@ -1189,7 +1209,10 @@ def redirect_edit_officer(officer_id: int):
 @login_required
 @ac_or_admin_required
 def edit_officer(officer_id: int):
-    officer = db.session.get(Officer, officer_id)
+    try:
+        officer = Officer.query.filter_by(id=officer_id).one()
+    except NoResultFound:
+        abort(HTTPStatus.NOT_FOUND)
     form = EditOfficerForm(obj=officer)
 
     if request.method == HTTPMethod.GET:
@@ -1265,9 +1288,9 @@ def redirect_delete_tag(tag_id: int):
 @login_required
 @ac_or_admin_required
 def delete_tag(tag_id: int):
-    tag = db.session.get(Face, tag_id)
-
-    if not tag:
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+    except NoResultFound:
         flash("Tag not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -1301,9 +1324,9 @@ def redirect_set_featured_tag(tag_id: int):
 @login_required
 @ac_or_admin_required
 def set_featured_tag(tag_id: int):
-    tag = db.session.get(Face, tag_id)
-
-    if not tag:
+    try:
+        tag = Face.query.filter_by(id=tag_id).one()
+    except NoResultFound:
         flash("Tag not found")
         abort(HTTPStatus.NOT_FOUND)
 
@@ -1482,9 +1505,11 @@ def redirect_complete_tagging(image_id: int):
 @login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
-    image = db.session.get(Image, image_id)
-    if not image:
+    try:
+        image = Image.query.filter_by(id=image_id).one()
+    except NoResultFound:
         abort(HTTPStatus.NOT_FOUND)
+
     image.is_tagged = True
     image.last_updated_by = current_user.id
     db.session.commit()
@@ -1855,8 +1880,9 @@ def redirect_upload(department_id: int, officer_id: Optional[int] = None):
 @limiter.limit("250/minute")
 def upload(department_id: int, officer_id: Optional[int] = None):
     if officer_id:
-        officer = db.session.get(Officer, officer_id)
-        if not officer:
+        try:
+            officer = Officer.query.filter_by(id=officer_id).one()
+        except NoResultFound:
             return jsonify(error="This officer does not exist."), HTTPStatus.NOT_FOUND
         if not (
             current_user.is_administrator
