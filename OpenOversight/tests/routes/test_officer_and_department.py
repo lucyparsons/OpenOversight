@@ -112,13 +112,13 @@ def test_route_post_only(route, client):
     assert rv.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_invalid_id_officer_profile(mockdata, client, session):
+def test_invalid_id_officer_profile(client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.officer_profile", officer_id=400000))
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_access_officer_profile(mockdata, client, session):
+def test_user_can_access_officer_profile(client, session):
     with current_app.test_request_context():
         rv = client.get(
             url_for("main.officer_profile", officer_id=3), follow_redirects=True
@@ -132,7 +132,7 @@ def test_invalid_officer_id_officer_list(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_access_officer_list(mockdata, client, session):
+def test_user_can_access_officer_list(client, session):
     with current_app.test_request_context():
         rv = client.get(url_for("main.list_officer", department_id=2))
 
@@ -191,7 +191,7 @@ def test_ac_cannot_access_admin_on_non_dept_officer_profile(client, session):
         assert "Admin only" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_invalid_officer_id_add_assignment(mockdata, client, session):
+def test_invalid_officer_id_add_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -201,7 +201,7 @@ def test_invalid_officer_id_add_assignment(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_add_assignment(mockdata, client, session):
+def test_admin_can_add_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -320,7 +320,7 @@ def test_invalid_officer_id_edit_assignment(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_edit_assignment(mockdata, client, session):
+def test_admin_can_edit_assignment(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -1714,9 +1714,7 @@ def test_invalid_officer_id_upload_photos(client, session):
         assert "This officer does not exist." in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(
-    mockdata, client, session
-):
+def test_ac_cannot_directly_upload_photos_of_of_non_dept_officers(client, session):
     with current_app.test_request_context():
         login_ac(client)
         department = Department.query.except_(
@@ -2200,7 +2198,7 @@ def test_invalid_officer_id_edit_officer(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_edit_officers_with_blank_uids(mockdata, client, session):
+def test_edit_officers_with_blank_uids(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -2248,7 +2246,7 @@ def test_invalid_officer_id_add_salary(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_add_salary(mockdata, client, session):
+def test_admin_can_add_salary(client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = session.get(Officer, AC_DEPT)
@@ -2333,7 +2331,7 @@ def test_invalid_officer_id_edit_salary(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_edit_salary(mockdata, client, session):
+def test_admin_can_edit_salary(client, session):
     with current_app.test_request_context():
         login_admin(client)
         officer = session.get(Officer, 1)
