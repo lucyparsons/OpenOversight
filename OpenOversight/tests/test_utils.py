@@ -165,7 +165,7 @@ def test_compute_hash(mockdata):
     assert hash_result == expected_hash
 
 
-def test_s3_upload_png(mockdata, test_png_bytes_io):
+def test_s3_upload_png(test_png_bytes_io):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
@@ -177,7 +177,7 @@ def test_s3_upload_png(mockdata, test_png_bytes_io):
     )
 
 
-def test_s3_upload_jpeg(mockdata, test_jpg_bytes_io):
+def test_s3_upload_jpeg(test_jpg_bytes_io):
     mocked_connection = Mock()
     mocked_resource = Mock()
     with patch("boto3.client", Mock(return_value=mocked_connection)):
@@ -263,14 +263,12 @@ def test_save_image_to_s3_and_db_saves_filename_in_correct_format(
             assert len(filename_parts) == 2
 
 
-def test_save_image_to_s3_and_db_invalid_image(mockdata, client):
+def test_save_image_to_s3_and_db_invalid_image(client):
     with pytest.raises(ValueError):
         save_image_to_s3_and_db(BytesIO(b"invalid-image"), 1, 1)
 
 
-def test_save_image_to_s3_and_db_unrecognized_format(
-    mockdata, test_tiff_bytes_io, client
-):
+def test_save_image_to_s3_and_db_unrecognized_format(test_tiff_bytes_io, client):
     with pytest.raises(ValueError):
         save_image_to_s3_and_db(test_tiff_bytes_io, 1, 1)
 

@@ -39,7 +39,7 @@ from OpenOversight.tests.routes.route_helpers import (
         "/auth/reset",
     ],
 )
-def test_routes_ok(route, client, mockdata):
+def test_routes_ok(route, client):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.OK
 
@@ -57,19 +57,19 @@ def test_routes_ok(route, client, mockdata):
         "/auth/change-email/abcd1234",
     ],
 )
-def test_route_login_required(route, client, mockdata):
+def test_route_login_required(route, client):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.FOUND
 
 
-def test_valid_user_can_login(mockdata, client, session):
+def test_valid_user_can_login(client, session):
     with current_app.test_request_context():
         rv, _ = login_user(client)
         assert rv.status_code == HTTPStatus.FOUND
         assert urlparse(rv.location).path == "/index"
 
 
-def test_valid_user_can_login_with_email_differently_cased(mockdata, client, session):
+def test_valid_user_can_login_with_email_differently_cased(client, session):
     with current_app.test_request_context():
         form = LoginForm(email="JEN@EXAMPLE.ORG", password="dog", remember_me=True)
         rv = client.post(url_for("auth.login"), data=form.data, follow_redirects=False)
@@ -77,7 +77,7 @@ def test_valid_user_can_login_with_email_differently_cased(mockdata, client, ses
         assert urlparse(rv.location).path == "/index"
 
 
-def test_invalid_user_cannot_login(mockdata, client, session):
+def test_invalid_user_cannot_login(client, session):
     with current_app.test_request_context():
         form = LoginForm(
             email=UNCONFIRMED_USER_EMAIL, password="bruteforce", remember_me=True
@@ -86,7 +86,7 @@ def test_invalid_user_cannot_login(mockdata, client, session):
         assert b"Invalid username or password." in rv.data
 
 
-def test_user_can_logout(mockdata, client, session):
+def test_user_can_logout(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -94,7 +94,7 @@ def test_user_can_logout(mockdata, client, session):
         assert b"You have been logged out." in rv.data
 
 
-def test_user_cannot_register_with_existing_email(mockdata, client, session):
+def test_user_cannot_register_with_existing_email(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
@@ -112,9 +112,7 @@ def test_user_cannot_register_with_existing_email(mockdata, client, session):
         assert b"Email already registered" in rv.data
 
 
-def test_user_cannot_register_with_existing_email_differently_cased(
-    mockdata, client, session
-):
+def test_user_cannot_register_with_existing_email_differently_cased(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
@@ -132,7 +130,7 @@ def test_user_cannot_register_with_existing_email_differently_cased(
         assert b"Email already registered" in rv.data
 
 
-def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session):
+def test_user_cannot_register_if_passwords_dont_match(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
@@ -150,7 +148,7 @@ def test_user_cannot_register_if_passwords_dont_match(mockdata, client, session)
         assert b"Passwords must match" in rv.data
 
 
-def test_user_can_register_with_legit_credentials(mockdata, client, session, faker):
+def test_user_can_register_with_legit_credentials(client, session, faker):
     with (
         current_app.test_request_context(),
         TestCase.assertLogs(current_app.logger) as log,
@@ -173,7 +171,7 @@ def test_user_can_register_with_legit_credentials(mockdata, client, session, fak
         )
 
 
-def test_user_cannot_register_with_weak_password(mockdata, client, session):
+def test_user_cannot_register_with_weak_password(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = RegistrationForm(
@@ -189,7 +187,7 @@ def test_user_cannot_register_with_weak_password(mockdata, client, session):
         assert b"A confirmation email has been sent to you." not in rv.data
 
 
-def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
+def test_user_can_get_a_confirmation_token_resent(client, session):
     with (
         current_app.test_request_context(),
         TestCase.assertLogs(current_app.logger) as log,
@@ -205,7 +203,7 @@ def test_user_can_get_a_confirmation_token_resent(mockdata, client, session):
         )
 
 
-def test_user_can_get_password_reset_token_sent(mockdata, client, session):
+def test_user_can_get_password_reset_token_sent(client, session):
     with (
         current_app.test_request_context(),
         TestCase.assertLogs(current_app.logger) as log,
@@ -227,7 +225,7 @@ def test_user_can_get_password_reset_token_sent(mockdata, client, session):
 
 
 def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
-    mockdata, client, session
+    client, session
 ):
     with (
         current_app.test_request_context(),
@@ -249,7 +247,7 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
         )
 
 
-def test_user_can_get_reset_password_with_valid_token(mockdata, client, session):
+def test_user_can_get_reset_password_with_valid_token(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetForm(
@@ -267,7 +265,7 @@ def test_user_can_get_reset_password_with_valid_token(mockdata, client, session)
 
 
 def test_user_can_get_reset_password_with_valid_token_differently_cased(
-    mockdata, client, session
+    client, session
 ):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
@@ -285,7 +283,7 @@ def test_user_can_get_reset_password_with_valid_token_differently_cased(
         assert b"Your password has been updated." in rv.data
 
 
-def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session):
+def test_user_cannot_reset_password_with_invalid_token(client, session):
     with current_app.test_request_context():
         user = User.query.filter_by(is_administrator=True).first()
         form = PasswordResetForm(
@@ -302,9 +300,7 @@ def test_user_cannot_reset_password_with_invalid_token(mockdata, client, session
         assert b"Your password has been updated." not in rv.data
 
 
-def test_user_cannot_reset_password_multiple_times_with_same_token(
-    mockdata, client, session
-):
+def test_user_cannot_reset_password_multiple_times_with_same_token(client, session):
     with current_app.test_request_context():
         form = PasswordResetForm(
             email="jen@example.org", password="catdog", password2="catdog"
@@ -327,9 +323,7 @@ def test_user_cannot_reset_password_multiple_times_with_same_token(
         assert b"Your password has been updated." not in rv.data
 
 
-def test_user_cannot_get_email_reset_token_sent_without_valid_password(
-    mockdata, client, session
-):
+def test_user_cannot_get_email_reset_token_sent_without_valid_password(client, session):
     with current_app.test_request_context():
         login_user(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -342,9 +336,7 @@ def test_user_cannot_get_email_reset_token_sent_without_valid_password(
         assert b"An email with instructions to confirm your new email" not in rv.data
 
 
-def test_user_cannot_get_email_reset_token_sent_to_existing_email(
-    mockdata, client, session
-):
+def test_user_cannot_get_email_reset_token_sent_to_existing_email(client, session):
     with current_app.test_request_context():
         login_user(client)
         user = User.query.filter_by(is_administrator=True).first()
@@ -358,7 +350,7 @@ def test_user_cannot_get_email_reset_token_sent_to_existing_email(
 
 
 def test_user_cannot_get_email_reset_token_sent_to_existing_email_differently_cased(
-    mockdata, client, session
+    client, session
 ):
     with current_app.test_request_context():
         login_user(client)
@@ -372,9 +364,7 @@ def test_user_cannot_get_email_reset_token_sent_to_existing_email_differently_ca
         assert b"An email with instructions to confirm your new email" not in rv.data
 
 
-def test_user_can_get_email_reset_token_sent_with_password(
-    mockdata, client, session, faker
-):
+def test_user_can_get_email_reset_token_sent_with_password(client, session, faker):
     with current_app.test_request_context():
         login_user(client)
         form = ChangeEmailForm(email=faker.ascii_email(), password="dog")
@@ -386,7 +376,7 @@ def test_user_can_get_email_reset_token_sent_with_password(
         assert b"An email with instructions to confirm your new email" in rv.data
 
 
-def test_user_can_change_email_with_valid_reset_token(mockdata, client, session):
+def test_user_can_change_email_with_valid_reset_token(client, session):
     with current_app.test_request_context():
         login_user(client)
         user = User.query.filter_by(is_administrator=False, is_disabled=False).first()
@@ -399,7 +389,7 @@ def test_user_can_change_email_with_valid_reset_token(mockdata, client, session)
         assert b"Your email address has been updated." in rv.data
 
 
-def test_user_cannot_change_email_with_invalid_reset_token(mockdata, client, session):
+def test_user_cannot_change_email_with_invalid_reset_token(client, session):
     with current_app.test_request_context():
         login_user(client)
         token = "beepboopbeep"
@@ -411,7 +401,7 @@ def test_user_cannot_change_email_with_invalid_reset_token(mockdata, client, ses
         assert b"Your email address has been updated." not in rv.data
 
 
-def test_user_can_confirm_account_with_valid_token(mockdata, client, session):
+def test_user_can_confirm_account_with_valid_token(client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
         user = User.query.filter_by(confirmed=False).first()
@@ -422,7 +412,7 @@ def test_user_can_confirm_account_with_valid_token(mockdata, client, session):
         assert b"You have confirmed your account." in rv.data
 
 
-def test_user_can_not_confirm_account_with_invalid_token(mockdata, client, session):
+def test_user_can_not_confirm_account_with_invalid_token(client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
         token = "beepboopbeep"
@@ -432,7 +422,7 @@ def test_user_can_not_confirm_account_with_invalid_token(mockdata, client, sessi
         assert b"The confirmation link is invalid or has expired." in rv.data
 
 
-def test_user_can_change_password_if_they_match(mockdata, client, session):
+def test_user_can_change_password_if_they_match(client, session):
     with (
         current_app.test_request_context(),
         TestCase.assertLogs(current_app.logger) as log,
@@ -453,7 +443,7 @@ def test_user_can_change_password_if_they_match(mockdata, client, session):
         )
 
 
-def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, session):
+def test_unconfirmed_user_redirected_to_confirm_account(client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
 
@@ -462,13 +452,13 @@ def test_unconfirmed_user_redirected_to_confirm_account(mockdata, client, sessio
         assert b"Please Confirm Your Account" in rv.data
 
 
-def test_disabled_user_cannot_login(mockdata, client, session):
+def test_disabled_user_cannot_login(client, session):
     with current_app.test_request_context():
         rv, _ = login_disabled_user(client)
         assert b"User has been disabled" in rv.data
 
 
-def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, session):
+def test_disabled_user_cannot_visit_pages_requiring_auth(client, session):
     # Don't use modified_disabled_user for anything else! Since we run tests
     # concurrently and this test modifies the user, there's a chance that
     # you'll get unexpected results if both tests run simultaneously.
@@ -490,7 +480,7 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(mockdata, client, sessi
         assert rv.status_code == HTTPStatus.FOUND
 
 
-def test_user_cannot_change_password_if_they_dont_match(mockdata, client, session):
+def test_user_cannot_change_password_if_they_dont_match(client, session):
     with current_app.test_request_context():
         login_user(client)
         form = ChangePasswordForm(old_password="dog", password="cat", password2="butts")
@@ -502,7 +492,7 @@ def test_user_cannot_change_password_if_they_dont_match(mockdata, client, sessio
         assert b"Passwords must match" in rv.data
 
 
-def test_user_can_change_dept_pref(mockdata, client, session):
+def test_user_can_change_dept_pref(client, session):
     with current_app.test_request_context():
         login_user(client)
         form = ChangeDefaultDepartmentForm(dept_pref=AC_DEPT)
@@ -517,7 +507,7 @@ def test_user_can_change_dept_pref(mockdata, client, session):
         assert user.dept_pref == AC_DEPT
 
 
-def test_user_email_update_resets_session_token(mockdata, app, session, faker):
+def test_user_email_update_resets_session_token(app, session, faker):
     client = current_app.test_client()
 
     with current_app.app_context(), current_app.test_request_context():
@@ -541,7 +531,7 @@ def test_user_email_update_resets_session_token(mockdata, app, session, faker):
         assert rv.status_code == HTTPStatus.FOUND
 
 
-def test_user_password_update_resets_session_token(mockdata, app, session):
+def test_user_password_update_resets_session_token(app, session):
     client = current_app.test_client()
 
     with current_app.app_context(), current_app.test_request_context():

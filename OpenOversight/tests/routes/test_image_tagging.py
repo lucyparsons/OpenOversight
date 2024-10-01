@@ -65,12 +65,12 @@ def test_invalid_department_image_sorting(client, session):
         "/images/classify/1/1",
     ],
 )
-def test_route_post_only(route, client, mockdata):
+def test_route_post_only(route, client):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
 
-def test_logged_in_user_can_access_sort_form(mockdata, client, session):
+def test_logged_in_user_can_access_sort_form(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -90,7 +90,7 @@ def test_invalid_officer_id_display_submission(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_view_submission(mockdata, client, session):
+def test_user_can_view_submission(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -108,7 +108,7 @@ def test_invalid_tag_id_display_tag(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_user_can_view_tag(mockdata, client, session):
+def test_user_can_view_tag(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -120,7 +120,7 @@ def test_user_can_view_tag(mockdata, client, session):
             assert attribute in rv.data
 
 
-def test_invalid_id_delete_tag(mockdata, client, session):
+def test_invalid_id_delete_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -128,7 +128,7 @@ def test_invalid_id_delete_tag(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_delete_tag(mockdata, client, session):
+def test_admin_can_delete_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -136,7 +136,7 @@ def test_admin_can_delete_tag(mockdata, client, session):
         assert b"Deleted this tag" in rv.data
 
 
-def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
+def test_ac_can_delete_tag_in_their_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -153,7 +153,7 @@ def test_ac_can_delete_tag_in_their_dept(mockdata, client, session):
         assert deleted_tag is None
 
 
-def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
+def test_ac_cannot_delete_tag_not_in_their_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -179,7 +179,7 @@ def test_ac_cannot_delete_tag_not_in_their_dept(mockdata, client, session):
     "OpenOversight.app.utils.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
-def test_user_can_add_tag(mockdata, client, session):
+def test_user_can_add_tag(client, session):
     with current_app.test_request_context():
         mock = MagicMock(return_value=Image.query.first())
         with patch("OpenOversight.app.main.views.crop_image", mock):
@@ -206,7 +206,7 @@ def test_user_can_add_tag(mockdata, client, session):
             assert b"Tag added to database" in rv.data
 
 
-def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
+def test_user_cannot_add_tag_if_it_exists(client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
 
@@ -232,7 +232,7 @@ def test_user_cannot_add_tag_if_it_exists(mockdata, client, session):
         )
 
 
-def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
+def test_user_cannot_tag_nonexistent_officer(client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
 
@@ -255,7 +255,7 @@ def test_user_cannot_tag_nonexistent_officer(mockdata, client, session):
         assert b"Invalid officer ID" in rv.data
 
 
-def test_user_cannot_tag_officer_mismatched_with_department(mockdata, client, session):
+def test_user_cannot_tag_officer_mismatched_with_department(client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
         tag = Face.query.first()
@@ -290,7 +290,7 @@ def test_invalid_id_complete_tagging(client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_complete_tagging(mockdata, client, session):
+def test_complete_tagging(client, session):
     with current_app.test_request_context():
         _, user = login_user(client)
         image_id = 4
@@ -304,7 +304,7 @@ def test_complete_tagging(mockdata, client, session):
         assert image.last_updated_by == user.id
 
 
-def test_user_can_view_leaderboard(mockdata, client, session):
+def test_user_can_view_leaderboard(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -312,9 +312,7 @@ def test_user_can_view_leaderboard(mockdata, client, session):
         assert b"Top Users by Number of Images Sorted" in rv.data
 
 
-def test_user_is_redirected_to_correct_department_after_tagging(
-    mockdata, client, session
-):
+def test_user_is_redirected_to_correct_department_after_tagging(client, session):
     with current_app.test_request_context():
         login_user(client)
         department_id = 2
@@ -331,7 +329,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(
         assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_invalid_id_set_featured_tag(mockdata, client, session):
+def test_invalid_id_set_featured_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -341,7 +339,7 @@ def test_invalid_id_set_featured_tag(mockdata, client, session):
         assert rv.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_admin_can_set_featured_tag(mockdata, client, session):
+def test_admin_can_set_featured_tag(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -351,7 +349,7 @@ def test_admin_can_set_featured_tag(mockdata, client, session):
         assert b"Successfully set this tag as featured" in rv.data
 
 
-def test_ac_can_set_featured_tag_in_their_dept(mockdata, client, session):
+def test_ac_can_set_featured_tag_in_their_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -371,7 +369,7 @@ def test_ac_can_set_featured_tag_in_their_dept(mockdata, client, session):
         assert featured_tag is not None
 
 
-def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session):
+def test_ac_cannot_set_featured_tag_not_in_their_dept(client, session):
     with current_app.test_request_context():
         login_ac(client)
 
@@ -400,7 +398,7 @@ def test_ac_cannot_set_featured_tag_not_in_their_dept(mockdata, client, session)
     "OpenOversight.app.utils.general.serve_image",
     MagicMock(return_value=PROJECT_ROOT + "/app/static/images/test_cop1.png"),
 )
-def test_featured_tag_replaces_others(mockdata, client, session):
+def test_featured_tag_replaces_others(client, session):
     with current_app.test_request_context():
         _, user = login_admin(client)
 
