@@ -19,7 +19,7 @@ from OpenOversight.app.models.database import Image, db
 from OpenOversight.app.utils.constants import KEY_ALLOWED_EXTENSIONS, KEY_S3_BUCKET_NAME
 
 
-def compute_hash(data_to_hash):
+def compute_hash(data_to_hash) -> str:
     return hashlib.sha256(data_to_hash).hexdigest()
 
 
