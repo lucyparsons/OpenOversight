@@ -379,7 +379,9 @@ def test_user_can_get_email_reset_token_sent_with_password(client, session, fake
 def test_user_can_change_email_with_valid_reset_token(client, session):
     with current_app.test_request_context():
         login_user(client)
-        user = User.query.filter_by(is_administrator=False, is_disabled=False).first()
+        user = User.query.filter_by(
+            is_administrator=False, disabled_at=None, disabled_by=None
+        ).first()
         token = user.generate_email_change_token("alice@example.org")
 
         rv = client.get(
