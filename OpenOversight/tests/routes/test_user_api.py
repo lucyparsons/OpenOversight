@@ -161,7 +161,8 @@ def test_admin_can_disable_user(client, session):
         # just need to make sure to not select the admin user
         user = User.query.filter_by(is_administrator=False).first()
 
-        assert not user.is_disabled
+        assert not user.disabled_at
+        assert not user.disabled_by
 
         form = EditUserForm(
             is_disabled=True,
@@ -177,14 +178,16 @@ def test_admin_can_disable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.is_disabled
+        assert user.disabled_at
+        assert user.disabled_by
 
 
 def test_admin_cannot_disable_self(client, session):
     with current_app.test_request_context():
         _, user = login_admin(client)
 
-        assert not user.is_disabled
+        assert not user.disabled_at
+        assert not user.disabled_by
 
         form = EditUserForm(
             is_disabled=True,
@@ -200,19 +203,20 @@ def test_admin_cannot_disable_self(client, session):
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert not user.is_disabled
+        assert user.disabled_at
+        assert user.disabled_by
 
 
 def test_admin_can_enable_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
-        user.is_disabled = True
-        session.commit()
+        user.disable_user(current_user.id)
 
         user = session.get(User, user.id)
-        assert user.is_disabled
+        assert user.disabled_at
+        assert user.disabled_by
 
         form = EditUserForm(
             is_disabled=False,
@@ -228,7 +232,8 @@ def test_admin_can_enable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert not user.is_disabled
+        assert not user.disabled_at
+        assert not user.disabled_by
 
 
 def test_admin_can_resend_user_confirmation_email(client, session):
