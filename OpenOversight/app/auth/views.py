@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 from flask import (
@@ -113,7 +114,12 @@ def register():
             email=form.email.data,
             username=form.username.data,
             password=form.password.data,
-            approved=False if current_app.config["APPROVE_REGISTRATIONS"] else True,
+            approved_at=None
+            if current_app.config["APPROVE_REGISTRATIONS"]
+            else datetime.now(timezone.utc),
+            approved_by=None
+            if current_app.config["APPROVE_REGISTRATIONS"]
+            else current_user.id,
         )
         db.session.add(user)
         db.session.commit()
@@ -316,7 +322,9 @@ def edit_user(user_id):
                     flash("You cannot edit your own account!")
                     form = EditUserForm(obj=user)
                     return render_template("auth/user.html", user=user, form=form)
-                already_approved = user.approved_at is not None
+                already_approved = (
+                    user.approved_at is not None and user.approved_by is not None
+                )
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
