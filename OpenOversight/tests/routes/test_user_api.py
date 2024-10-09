@@ -159,7 +159,9 @@ def test_admin_can_disable_user(client, session):
         _, current_user = login_admin(client)
 
         # just need to make sure to not select the admin user
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(
+            is_administrator=False, disabled_at=None, disabled_by=None
+        ).first()
 
         assert user.disabled_at is None
         assert user.disabled_by is None
