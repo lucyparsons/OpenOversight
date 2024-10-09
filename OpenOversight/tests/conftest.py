@@ -5,7 +5,7 @@ import random
 import sys
 import threading
 import uuid
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
 from time import sleep
@@ -368,28 +368,29 @@ def test_csv_dir():
 def add_mockdata(session):
     assert current_app.config[KEY_NUM_OFFICERS] >= 5
 
-    test_user = User(
-        email=GENERAL_USER_EMAIL,
-        username=GENERAL_USER_USERNAME,
-        password=GENERAL_USER_PASSWORD,
-        confirmed=True,
-    )
-    session.add(test_user)
-
     test_admin = User(
         email=ADMIN_USER_EMAIL,
         username=ADMIN_USER_USER_NAME,
         password=ADMIN_USER_PASSWORD,
-        confirmed=True,
+        confirmed_at=datetime.now(timezone.utc),
+        confirmed_by=1,
         is_administrator=True,
     )
     session.add(test_admin)
+
+    test_user = User(
+        email=GENERAL_USER_EMAIL,
+        username=GENERAL_USER_USERNAME,
+        password=GENERAL_USER_PASSWORD,
+        confirmed_at=datetime.now(timezone.utc),
+        confirmed_by=1,
+    )
+    session.add(test_user)
 
     test_unconfirmed_user = User(
         email=UNCONFIRMED_USER_EMAIL,
         username=UNCONFIRMED_USER_USERNAME,
         password=UNCONFIRMED_USER_PASSWORD,
-        confirmed=False,
     )
     session.add(test_unconfirmed_user)
     session.commit()
@@ -398,8 +399,10 @@ def add_mockdata(session):
         email=DISABLED_USER_EMAIL,
         username=DISABLED_USER_USERNAME,
         password=DISABLED_USER_PASSWORD,
-        confirmed=True,
-        is_disabled=True,
+        confirmed_at=datetime.now(timezone.utc),
+        confirmed_by=1,
+        disabled_at=datetime.now(timezone.utc),
+        disabled_by=1,
     )
     session.add(test_disabled_user)
     session.commit()
@@ -408,8 +411,10 @@ def add_mockdata(session):
         email=MOD_DISABLED_USER_EMAIL,
         username=MOD_DISABLED_USER_USERNAME,
         password=MOD_DISABLED_USER_PASSWORD,
-        confirmed=True,
-        is_disabled=True,
+        confirmed_at=datetime.now(timezone.utc),
+        confirmed_by=1,
+        disabled_at=datetime.now(timezone.utc),
+        disabled_by=1,
     )
     session.add(test_modified_disabled_user)
     session.commit()
@@ -445,7 +450,8 @@ def add_mockdata(session):
         email=AC_USER_EMAIL,
         username=AC_USER_USERNAME,
         password=AC_USER_PASSWORD,
-        confirmed=True,
+        confirmed_at=datetime.now(timezone.utc),
+        confirmed_by=1,
         is_area_coordinator=True,
         ac_department_id=AC_DEPT,
     )
