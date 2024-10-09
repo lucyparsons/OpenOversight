@@ -287,14 +287,16 @@ def test_register_user_approval_required(client, session):
 
 def test_admin_can_approve_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
-        user.approved = False
+        user.approved_by = None
+        user.approved_at = None
         session.commit()
 
         user = session.get(User, user.id)
-        assert not user.approved
+        assert not user.approved_by
+        assert not user.approved_at
 
         form = EditUserForm(
             approved=True,
@@ -310,7 +312,8 @@ def test_admin_can_approve_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.approved
+        assert user.approved_at
+        assert user.approved_by
 
 
 @pytest.mark.parametrize(
@@ -338,16 +341,37 @@ def test_admin_approval_sends_confirmation_email(
 ):
     current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
-        user.approved = currently_approved
-        user.confirmed = currently_confirmed
-        session.commit()
+        if currently_approved:
+            user.approve_user(current_user.id)
+        else:
+            user.approved_by = None
+            user.approved_at = None
+            session.commit()
+
+        if currently_confirmed:
+            user.confirm_user(current_user.id)
+        else:
+            user.confirmed_by = None
+            user.confirmed = None
+            session.commit()
 
         user = session.get(User, user.id)
-        assert user.approved == currently_approved
-        assert user.confirmed == currently_confirmed
+        if currently_approved:
+            assert user.approved_at is not None
+            assert user.approved_by == current_user.id
+        else:
+            assert user.approved_at is None
+            assert user.approved_by is None
+
+        if currently_confirmed:
+            assert user.confirmed_at is not None
+            assert user.confirmed_by == current_user.id
+        else:
+            assert user.confirmed_at is None
+            assert user.confirmed_by is None
 
         form = EditUserForm(approved=True, submit=True, confirmed=currently_confirmed)
 
@@ -363,4 +387,5 @@ def test_admin_approval_sends_confirmation_email(
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.approved
+        assert user.approved_at is not None
+        assert user.approved_by == current_user.id
