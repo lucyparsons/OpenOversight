@@ -34,7 +34,7 @@ from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.tests.routes.route_helpers import login_admin, process_form_data
 
 
-def test_get_database_cache_entry(mockdata, faker):
+def test_get_database_cache_entry(faker):
     """Test getting a cache entry."""
     test_key = faker.uuid4()
     test_officer = Officer(id=faker.random_number(digits=3))
@@ -47,7 +47,7 @@ def test_get_database_cache_entry(mockdata, faker):
     )
 
 
-def test_model_key(mockdata, faker):
+def test_model_key(faker):
     """Test the model key generation with multiple Model inheriting classes."""
     test_key = faker.uuid4()
 

@@ -27,8 +27,14 @@ def test_routes_ok(route, client, mockdata):
     rv = client.get(route)
     assert rv.status_code == HTTPStatus.OK
 
+    # Assert donate link is in all base pages
+    assert (
+        '<a href="https://lucyparsonslabs.com/donate" target="_blank">Donate</a>'
+        in rv.data.decode()
+    )
 
-def test_user_can_access_profile(mockdata, client, session):
+
+def test_user_can_access_profile(client, session):
     with current_app.test_request_context():
         login_user(client)
 
@@ -43,7 +49,7 @@ def test_user_can_access_profile(mockdata, client, session):
         assert "Edit User" not in rv.data.decode(ENCODING_UTF_8)
 
 
-def test_user_can_access_profile_differently_cased(mockdata, client, session):
+def test_user_can_access_profile_differently_cased(client, session):
     with current_app.test_request_context():
         login_user(client)
 

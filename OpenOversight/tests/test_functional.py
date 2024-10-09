@@ -95,7 +95,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser, server_port):
     assert "Find an Officer" in page_text
 
 
-def test_user_can_get_to_complaint(mockdata, browser, server_port):
+def test_user_can_get_to_complaint(browser, server_port):
     browser.get(
         f"http://localhost:{server_port}/complaints?officer_star=6265&"
         "officer_first_name=IVANA&officer_last_name=SNOTBALL&officer_middle_initial="
@@ -273,7 +273,7 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server
     assert not buttonRow.is_displayed()
 
 
-def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port, session):
+def test_officer_form_has_units_alpha_sorted(browser, server_port, session):
     login_admin(browser, server_port)
 
     # get the units from the DB in the sort we expect
@@ -298,7 +298,7 @@ def test_officer_form_has_units_alpha_sorted(mockdata, browser, server_port, ses
 
 
 def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
-    mockdata, browser, server_port, session
+    browser, server_port, session
 ):
     # Set NULL race and gender for officer 1
     session.execute(
@@ -325,7 +325,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
 
 
 @pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_image_classification_and_tagging(mockdata, browser, server_port):
+def test_image_classification_and_tagging(browser, server_port):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
     star_no = 1312
@@ -426,7 +426,7 @@ def test_image_classification_and_tagging(mockdata, browser, server_port):
 
 
 @pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_anonymous_user_can_upload_image(mockdata, browser, server_port):
+def test_anonymous_user_can_upload_image(browser, server_port):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
 

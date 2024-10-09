@@ -24,7 +24,7 @@ routes_methods = [
 
 # All login_required views should redirect if there is no user logged in
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_user_api_login_required(route, methods, client, mockdata):
+def test_user_api_login_required(route, methods, client):
     if HTTPMethod.GET in methods:
         rv = client.get(route)
         assert rv.status_code == HTTPStatus.FORBIDDEN
@@ -34,7 +34,7 @@ def test_user_api_login_required(route, methods, client, mockdata):
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
+def test_user_cannot_access_user_api(route, methods, client, session):
     with current_app.test_request_context():
         login_user(client)
         if HTTPMethod.GET in methods:
@@ -46,7 +46,7 @@ def test_user_cannot_access_user_api(route, methods, mockdata, client, session):
 
 
 @pytest.mark.parametrize("route,methods", routes_methods)
-def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
+def test_ac_cannot_access_user_api(route, methods, client, session):
     with current_app.test_request_context():
         login_ac(client)
         if HTTPMethod.GET in methods:
@@ -57,7 +57,7 @@ def test_ac_cannot_access_user_api(route, methods, mockdata, client, session):
             assert rv.status_code == HTTPStatus.FORBIDDEN
 
 
-def test_admin_can_update_users_to_ac(mockdata, client, session):
+def test_admin_can_update_users_to_ac(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -77,7 +77,7 @@ def test_admin_can_update_users_to_ac(mockdata, client, session):
         assert user.is_area_coordinator is True
 
 
-def test_admin_cannot_update_to_ac_without_department(mockdata, client, session):
+def test_admin_cannot_update_to_ac_without_department(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -95,7 +95,7 @@ def test_admin_cannot_update_to_ac_without_department(mockdata, client, session)
         assert user.is_area_coordinator is False
 
 
-def test_admin_can_update_users_to_admin(mockdata, client, session):
+def test_admin_can_update_users_to_admin(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -115,7 +115,7 @@ def test_admin_can_update_users_to_admin(mockdata, client, session):
         assert user.is_administrator is True
 
 
-def test_admin_can_delete_user(mockdata, client, session):
+def test_admin_can_delete_user(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -137,7 +137,7 @@ def test_admin_can_delete_user(mockdata, client, session):
         assert not session.get(User, user.id)
 
 
-def test_admin_cannot_delete_other_admin(mockdata, client, session):
+def test_admin_cannot_delete_other_admin(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -153,7 +153,7 @@ def test_admin_cannot_delete_other_admin(mockdata, client, session):
         assert session.get(User, user.id) is not None
 
 
-def test_admin_can_disable_user(mockdata, client, session):
+def test_admin_can_disable_user(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -179,7 +179,7 @@ def test_admin_can_disable_user(mockdata, client, session):
         assert user.is_disabled
 
 
-def test_admin_cannot_disable_self(mockdata, client, session):
+def test_admin_cannot_disable_self(client, session):
     with current_app.test_request_context():
         _, user = login_admin(client)
 
@@ -202,7 +202,7 @@ def test_admin_cannot_disable_self(mockdata, client, session):
         assert not user.is_disabled
 
 
-def test_admin_can_enable_user(mockdata, client, session):
+def test_admin_can_enable_user(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -230,7 +230,7 @@ def test_admin_can_enable_user(mockdata, client, session):
         assert not user.is_disabled
 
 
-def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
+def test_admin_can_resend_user_confirmation_email(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -252,7 +252,7 @@ def test_admin_can_resend_user_confirmation_email(mockdata, client, session):
         )
 
 
-def test_register_user_approval_required(mockdata, client, session):
+def test_register_user_approval_required(client, session):
     current_app.config["APPROVE_REGISTRATIONS"] = True
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
@@ -285,7 +285,7 @@ def test_register_user_approval_required(mockdata, client, session):
         assert b"administrator has not approved your account yet" in rv.data
 
 
-def test_admin_can_approve_user(mockdata, client, session):
+def test_admin_can_approve_user(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
@@ -333,7 +333,6 @@ def test_admin_approval_sends_confirmation_email(
     currently_confirmed,
     should_send_email,
     approve_registration_config,
-    mockdata,
     client,
     session,
 ):
