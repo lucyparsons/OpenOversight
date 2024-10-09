@@ -325,6 +325,9 @@ def edit_user(user_id):
                 already_approved = (
                     user.approved_at is not None and user.approved_by is not None
                 )
+                if form.is_disabled:
+                    user.disable_user(current_user.id)
+
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
