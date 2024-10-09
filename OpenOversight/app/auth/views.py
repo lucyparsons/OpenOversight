@@ -119,7 +119,7 @@ def register():
             else datetime.now(timezone.utc),
             approved_by=None
             if current_app.config["APPROVE_REGISTRATIONS"]
-            else current_user.id,
+            else User.query.filter_by(is_administrator=True).first().id,
         )
         db.session.add(user)
         db.session.commit()
