@@ -725,12 +725,12 @@ class User(UserMixin, BaseModel):
     confirmed = db.Column(db.Boolean, default=False)
     confirmed_at = db.Column(db.DateTime(timezone=True))
     confirmed_by = db.Column(
-        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL", name="users_confirmed_by_fkey"), unique=False
     )
     approved = db.Column(db.Boolean, default=False)
     approved_at = db.Column(db.DateTime(timezone=True))
     approved_by = db.Column(
-        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL", name="users_approved_by_fkey"), unique=False
     )
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(
@@ -745,7 +745,7 @@ class User(UserMixin, BaseModel):
     is_disabled = db.Column(db.Boolean, default=False)
     disabled_at = db.Column(db.DateTime(timezone=True))
     disabled_by = db.Column(
-        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL", name="users_disabled_by_fkey"), unique=False
     )
 
     dept_pref = db.Column(
