@@ -722,14 +722,12 @@ class User(UserMixin, BaseModel):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)
     confirmed_at = db.Column(db.DateTime(timezone=True))
     confirmed_by = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="SET NULL", name="users_confirmed_by_fkey"),
         unique=False,
     )
-    approved = db.Column(db.Boolean, default=False)
     approved_at = db.Column(db.DateTime(timezone=True))
     approved_by = db.Column(
         db.Integer,
@@ -746,7 +744,6 @@ class User(UserMixin, BaseModel):
         foreign_keys=[ac_department_id],
     )
     is_administrator = db.Column(db.Boolean, default=False)
-    is_disabled = db.Column(db.Boolean, default=False)
     disabled_at = db.Column(db.DateTime(timezone=True))
     disabled_by = db.Column(
         db.Integer,
@@ -786,6 +783,21 @@ class User(UserMixin, BaseModel):
         nullable=False,
         server_default=sql_func.now(),
         unique=False,
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(disabled_at IS NULL and disabled_by IS NULL) or (disabled_at IS NOT NULL and disabled_by IS NOT NULL)",
+            name="users_disabled_constraint",
+        ),
+        CheckConstraint(
+            "(confirmed_at IS NULL and confirmed_by IS NULL) or (confirmed_at IS NOT NULL and confirmed_by IS NOT NULL)",
+            name="users_confirmed_constraint",
+        ),
+        CheckConstraint(
+            "(approved_at IS NULL and approved_by IS NULL) or (approved_at IS NOT NULL and approved_by IS NOT NULL)",
+            name="users_approved_constraint",
+        ),
     )
 
     def is_admin_or_coordinator(self, department: Optional[Department]) -> bool:
