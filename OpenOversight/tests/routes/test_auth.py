@@ -406,7 +406,7 @@ def test_user_cannot_change_email_with_invalid_reset_token(client, session):
 def test_user_can_confirm_account_with_valid_token(client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
-        user = User.query.filter_by(confirmed=False).first()
+        user = User.query.filter_by(confirmed_at=None, confirmed_by=None).first()
         token = user.generate_confirmation_token()
 
         rv = client.get(url_for("auth.confirm", token=token), follow_redirects=True)
