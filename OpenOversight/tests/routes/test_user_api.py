@@ -347,15 +347,15 @@ def test_admin_approval_sends_confirmation_email(
         if currently_approved:
             user.approve_user(current_user.id)
         else:
-            user.approved_by = None
             user.approved_at = None
+            user.approved_by = None
             session.commit()
 
         if currently_confirmed:
             user.confirm_user(current_user.id)
         else:
+            user.confirmed_at = None
             user.confirmed_by = None
-            user.confirmed = None
             session.commit()
 
         user = session.get(User, user.id)
