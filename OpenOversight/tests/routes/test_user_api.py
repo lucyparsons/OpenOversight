@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 import pytest
@@ -349,14 +350,15 @@ def test_admin_approval_sends_confirmation_email(
         else:
             user.approved_at = None
             user.approved_by = None
-            session.commit()
 
         if currently_confirmed:
-            user.confirm_user(current_user.id)
+            user.confirmed_at = datetime.now(timezone.utc)
+            user.confirmed_by = current_user.id
         else:
             user.confirmed_at = None
             user.confirmed_by = None
-            session.commit()
+
+        session.commit()
 
         user = session.get(User, user.id)
         if currently_approved:

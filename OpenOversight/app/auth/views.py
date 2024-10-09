@@ -57,7 +57,8 @@ def static_routes():
 def before_request():
     if (
         current_user.is_authenticated
-        and not current_user.confirmed
+        and not current_user.confirmed_at
+        and not current_user.confirmed_by
         and request.endpoint
         and request.endpoint[:5] != "auth."
         and request.endpoint not in ["static", "bootstrap.static"]
@@ -67,7 +68,7 @@ def before_request():
 
 @auth.route("/unconfirmed")
 def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
+    if current_user.is_anonymous or current_user.confirmed_at:
         return redirect(url_for("main.index"))
     if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved_at:
         return render_template("auth/unapproved.html")
@@ -141,9 +142,11 @@ def register():
 @auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
 @login_required
 def confirm(token):
-    if current_user.confirmed:
+    if current_user.confirmed_at and current_user.confirmed_by:
         return redirect(url_for("main.index"))
-    if current_user.confirm(token):
+    if current_user.confirm(
+        token, User.query.filter_by(is_administrator=True).first().id
+    ):
         admins = User.query.filter_by(is_administrator=True).all()
         for admin in admins:
             EmailClient.send_email(
@@ -325,6 +328,7 @@ def edit_user(user_id):
                     and not already_approved
                     and user.approved_at
                     and not user.confirmed_at
+                    and not current_user.confirmed_by
                 ):
                     admin_resend_confirmation(user)
 
@@ -353,7 +357,7 @@ def delete_user(user_id):
 
 
 def admin_resend_confirmation(user):
-    if user.confirmed:
+    if user.confirmed_at and current_user.confirmed_by:
         flash(f"User {user.username} is already confirmed.")
     else:
         token = user.generate_confirmation_token()
