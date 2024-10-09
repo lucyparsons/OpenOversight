@@ -186,10 +186,10 @@ def test_admin_can_disable_user(client, session):
 
 def test_admin_cannot_disable_self(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        _, current_user = login_admin(client)
 
-        assert user.disabled_at is None
-        assert user.disabled_by is None
+        assert current_user.disabled_at is None
+        assert current_user.disabled_by is None
 
         form = EditUserForm(
             is_disabled=True,
@@ -197,16 +197,16 @@ def test_admin_cannot_disable_self(client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user.id),
+            url_for("auth.edit_user", user_id=current_user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = session.get(User, user.id)
-        assert user.disabled_at is not None
-        assert user.disabled_by == user.id
+        user = session.get(User, current_user.id)
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
 
 def test_admin_can_enable_user(client, session):
