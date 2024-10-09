@@ -2,7 +2,7 @@ import operator
 import re
 import time
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -922,7 +922,40 @@ class User(UserMixin, BaseModel):
     @property
     def is_active(self):
         """Override UserMixin.is_active to prevent disabled users from logging in."""
-        return not self.is_disabled
+        return not self.disabled_at
+
+    def disable_user(self, disabling_user: int):
+        """Handle disabling logic."""
+        if self.disabled_at or self.disabled_by:
+            return False
+
+        self.disabled_at = datetime.now(timezone.utc)
+        self.disabled_by = disabling_user
+        db.session.add(self)
+        db.session.commit()
+        return True
+
+    def approve_user(self, approving_user: int):
+        """Handle approving logic."""
+        if self.approved_at or self.approved_by:
+            return False
+
+        self.approved_at = datetime.now(timezone.utc)
+        self.approved_by = approving_user
+        db.session.add(self)
+        db.session.commit()
+        return True
+
+    def confirm_user(self, confirming_user: int):
+        """Handle confirming logic."""
+        if self.confirmed_at or self.confirmed_by:
+            return False
+
+        self.confirmed_at = datetime.now(timezone.utc)
+        self.confirmed_by = confirming_user
+        db.session.add(self)
+        db.session.commit()
+        return True
 
     def __repr__(self):
         return f"<User {self.username!r}>"
