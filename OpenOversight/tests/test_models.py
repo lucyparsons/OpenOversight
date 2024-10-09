@@ -240,8 +240,11 @@ def test_valid_confirmation_token(mockdata, session):
     user = User(password="bacon")
     session.add(user)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user.generate_confirmation_token()
-    assert user.confirm(token) is True
+
+    assert user.confirm(token, admin_user.id) is True
 
 
 def test_invalid_confirmation_token(mockdata, session):
@@ -250,17 +253,23 @@ def test_invalid_confirmation_token(mockdata, session):
     session.add(user1)
     session.add(user2)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user1.generate_confirmation_token()
-    assert user2.confirm(token) is False
+
+    assert user2.confirm(token, admin_user.id) is False
 
 
 def test_expired_confirmation_token(mockdata, session):
     user = User(password="bacon")
     session.add(user)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user.generate_confirmation_token(1)
     time.sleep(2)
-    assert user.confirm(token) is False
+
+    assert user.confirm(token, admin_user.id) is False
 
 
 def test_valid_reset_token(mockdata, session):
