@@ -723,7 +723,15 @@ class User(UserMixin, BaseModel):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    confirmed_at = db.Column(db.DateTime(timezone=True))
+    confirmed_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
     approved = db.Column(db.Boolean, default=False)
+    approved_at = db.Column(db.DateTime(timezone=True))
+    approved_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_ac_department_id_fkey")
@@ -735,6 +743,11 @@ class User(UserMixin, BaseModel):
     )
     is_administrator = db.Column(db.Boolean, default=False)
     is_disabled = db.Column(db.Boolean, default=False)
+    disabled_at = db.Column(db.DateTime(timezone=True))
+    disabled_by = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+    )
+
     dept_pref = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")
     )
