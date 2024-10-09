@@ -21,7 +21,7 @@
 {% block content %}
   <div class="container theme-showcase py-5" role="main">
     {% if current_user and current_user.is_authenticated %}
-      {% if image and not user.disabled_at and not user.disabled_by %}
+      {% if image and not current_user.disabled_at and not current_user.disabled_by %}
         <div class="row">
           <div class="text-center">
             <h1>
@@ -70,7 +70,7 @@
             <img class="img-responsive" src="{{ path }}" alt="Picture to be sorted">
           </div>
         </div>
-      {% elif user.disabled_at and user.disabled_by %}
+      {% elif current_user.disabled_at and current_user.disabled_by %}
         <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
         <p>
           <a href="mailto:info@lucyparsonslabs.com"
