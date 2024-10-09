@@ -69,7 +69,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved:
+    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved_at:
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -313,7 +313,7 @@ def edit_user(user_id):
                     flash("You cannot edit your own account!")
                     form = EditUserForm(obj=user)
                     return render_template("auth/user.html", user=user, form=form)
-                already_approved = user.approved
+                already_approved = user.approved_at is not None
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
@@ -323,8 +323,8 @@ def edit_user(user_id):
                 if (
                     current_app.config["APPROVE_REGISTRATIONS"]
                     and not already_approved
-                    and user.approved
-                    and not user.confirmed
+                    and user.approved_at
+                    and not user.confirmed_at
                 ):
                     admin_resend_confirmation(user)
 
