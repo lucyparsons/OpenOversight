@@ -156,13 +156,13 @@ def test_admin_cannot_delete_other_admin(client, session):
 
 def test_admin_can_disable_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         # just need to make sure to not select the admin user
         user = User.query.filter_by(is_administrator=False).first()
 
-        assert not user.disabled_at
-        assert not user.disabled_by
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
         form = EditUserForm(
             is_disabled=True,
@@ -178,16 +178,16 @@ def test_admin_can_disable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.disabled_at
-        assert user.disabled_by
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
 
 def test_admin_cannot_disable_self(client, session):
     with current_app.test_request_context():
         _, user = login_admin(client)
 
-        assert not user.disabled_at
-        assert not user.disabled_by
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
         form = EditUserForm(
             is_disabled=True,
@@ -203,8 +203,8 @@ def test_admin_cannot_disable_self(client, session):
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.disabled_at
-        assert user.disabled_by
+        assert user.disabled_at is not None
+        assert user.disabled_by == user.id
 
 
 def test_admin_can_enable_user(client, session):
@@ -215,8 +215,8 @@ def test_admin_can_enable_user(client, session):
         user.disable_user(current_user.id)
 
         user = session.get(User, user.id)
-        assert user.disabled_at
-        assert user.disabled_by
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
         form = EditUserForm(
             is_disabled=False,
@@ -232,8 +232,8 @@ def test_admin_can_enable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert not user.disabled_at
-        assert not user.disabled_by
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
 
 def test_admin_can_resend_user_confirmation_email(client, session):
