@@ -325,6 +325,12 @@ def edit_user(user_id):
                 already_approved = (
                     user.approved_at is not None and user.approved_by is not None
                 )
+                if form.approved.data:
+                    user.approve_user(current_user.id)
+
+                if form.confirmed.data:
+                    user.confirm_user(current_user.id)
+
                 if form.is_disabled.data:
                     user.disable_user(current_user.id)
 
