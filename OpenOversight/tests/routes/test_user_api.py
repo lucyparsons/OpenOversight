@@ -234,8 +234,8 @@ def test_admin_can_enable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.disabled_at is None
-        assert user.disabled_by is None
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
 
 def test_admin_can_resend_user_confirmation_email(client, session):
