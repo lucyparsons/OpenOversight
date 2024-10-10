@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 import pytest
@@ -303,8 +302,8 @@ def test_admin_can_approve_user(client, session):
         session.commit()
 
         user = session.get(User, user.id)
-        assert not user.approved_by
-        assert not user.approved_at
+        assert user.approved_by is None
+        assert user.approved_at is None
 
         form = EditUserForm(
             approved=True,
@@ -320,8 +319,8 @@ def test_admin_can_approve_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.approved_at
-        assert user.approved_by
+        assert user.approved_at is not None
+        assert user.approved_by == current_user.id
 
 
 @pytest.mark.parametrize(
@@ -357,15 +356,14 @@ def test_admin_approval_sends_confirmation_email(
         else:
             user.approved_at = None
             user.approved_by = None
+            session.commit()
 
         if currently_confirmed:
-            user.confirmed_at = datetime.now(timezone.utc)
-            user.confirmed_by = current_user.id
+            user.confirm_user(current_user.id)
         else:
             user.confirmed_at = None
             user.confirmed_by = None
-
-        session.commit()
+            session.commit()
 
         user = session.get(User, user.id)
         if currently_approved:
