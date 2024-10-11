@@ -5,7 +5,7 @@ from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_APPROVE_REGISTRATIONS
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import (
     ADMIN_USER_EMAIL,
@@ -260,7 +260,7 @@ def test_admin_can_resend_user_confirmation_email(client, session):
 
 
 def test_register_user_approval_required(client, session):
-    current_app.config["APPROVE_REGISTRATIONS"] = True
+    current_app.config[KEY_APPROVE_REGISTRATIONS] = True
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
         new_user_email = "jen@example.com"
@@ -346,7 +346,7 @@ def test_admin_approval_sends_confirmation_email(
     client,
     session,
 ):
-    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    current_app.config[KEY_APPROVE_REGISTRATIONS] = approve_registration_config
     with current_app.test_request_context():
         _, current_user = login_admin(client)
 

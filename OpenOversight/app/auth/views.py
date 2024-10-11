@@ -35,6 +35,7 @@ from OpenOversight.app.models.emails import (
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.auth import admin_required
+from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
@@ -71,7 +72,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed_at:
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved_at:
+    if current_app.config[KEY_APPROVE_REGISTRATIONS] and not current_user.approved_at:
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -115,15 +116,15 @@ def register():
             username=form.username.data,
             password=form.password.data,
             approved_at=None
-            if current_app.config["APPROVE_REGISTRATIONS"]
+            if current_app.config[KEY_APPROVE_REGISTRATIONS]
             else datetime.now(timezone.utc),
             approved_by=None
-            if current_app.config["APPROVE_REGISTRATIONS"]
+            if current_app.config[KEY_APPROVE_REGISTRATIONS]
             else User.query.filter_by(is_administrator=True).first().id,
         )
         db.session.add(user)
         db.session.commit()
-        if current_app.config["APPROVE_REGISTRATIONS"]:
+        if current_app.config[KEY_APPROVE_REGISTRATIONS]:
             admins = User.query.filter_by(is_administrator=True).all()
             for admin in admins:
                 EmailClient.send_email(
@@ -341,7 +342,7 @@ def edit_user(user_id):
                 # automatically send a confirmation email when approving an
                 # unconfirmed user
                 if (
-                    current_app.config["APPROVE_REGISTRATIONS"]
+                    current_app.config[KEY_APPROVE_REGISTRATIONS]
                     and not already_approved
                     and user.approved_at
                     and not user.confirmed_at
