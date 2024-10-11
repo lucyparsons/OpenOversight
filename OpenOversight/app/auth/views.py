@@ -155,7 +155,7 @@ def register():
 @auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
 @login_required
 def confirm(token):
-    if current_user.confirmed_at is not None and current_user.confirmed_by is not None:
+    if current_user.confirmed_at and current_user.confirmed_by:
         return redirect(url_for("main.index"))
     if current_user.confirm(
         token, User.query.filter_by(is_administrator=True).first().id
@@ -350,8 +350,8 @@ def edit_user(user_id):
                 if (
                     current_app.config[KEY_APPROVE_REGISTRATIONS]
                     and not already_approved
-                    and user.confirmed_at is None
-                    and user.confirmed_by is None
+                    and not user.confirmed_at
+                    and not user.confirmed_by
                 ):
                     admin_resend_confirmation(user)
 
