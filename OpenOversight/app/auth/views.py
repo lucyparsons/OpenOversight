@@ -76,7 +76,8 @@ def unconfirmed():
         return redirect(url_for("main.index"))
     if (
         current_app.config[KEY_APPROVE_REGISTRATIONS]
-        and current_user.approved_at is None
+        and not current_user.approved_at
+        and not current_user.approved_by
     ):
         return render_template("auth/unapproved.html")
     else:
