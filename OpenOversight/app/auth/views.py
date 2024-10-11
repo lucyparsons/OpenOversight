@@ -59,8 +59,8 @@ def static_routes():
 def before_request():
     if (
         current_user.is_authenticated
-        and current_user.confirmed_at is not None
-        and current_user.confirmed_by is not None
+        and current_user.confirmed_at is None
+        and current_user.confirmed_by is None
         and request.endpoint
         and request.endpoint[:5] != "auth."
         and request.endpoint not in ["static", "bootstrap.static"]
@@ -72,7 +72,10 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed_at:
         return redirect(url_for("main.index"))
-    if current_app.config[KEY_APPROVE_REGISTRATIONS] and not current_user.approved_at:
+    if (
+        current_app.config[KEY_APPROVE_REGISTRATIONS]
+        and current_user.approved_at is None
+    ):
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -149,7 +152,7 @@ def register():
 @auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
 @login_required
 def confirm(token):
-    if current_user.confirmed_at and current_user.confirmed_by:
+    if current_user.confirmed_at is not None and current_user.confirmed_by is not None:
         return redirect(url_for("main.index"))
     if current_user.confirm(
         token, User.query.filter_by(is_administrator=True).first().id
