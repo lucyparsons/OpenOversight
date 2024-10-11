@@ -70,7 +70,9 @@ def before_request():
 
 @auth.route("/unconfirmed")
 def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed_at:
+    if current_user.is_anonymous or (
+        current_user.confirmed_at and current_user.confirmed_by
+    ):
         return redirect(url_for("main.index"))
     if (
         current_app.config[KEY_APPROVE_REGISTRATIONS]
