@@ -59,8 +59,8 @@ def static_routes():
 def before_request():
     if (
         current_user.is_authenticated
-        and not current_user.confirmed_at
-        and not current_user.confirmed_by
+        and current_user.confirmed_at is not None
+        and current_user.confirmed_by is not None
         and request.endpoint
         and request.endpoint[:5] != "auth."
         and request.endpoint not in ["static", "bootstrap.static"]
@@ -344,9 +344,8 @@ def edit_user(user_id):
                 if (
                     current_app.config[KEY_APPROVE_REGISTRATIONS]
                     and not already_approved
-                    and user.approved_at
-                    and not user.confirmed_at
-                    and not current_user.confirmed_by
+                    and user.confirmed_at is None
+                    and current_user.confirmed_by is None
                 ):
                     admin_resend_confirmation(user)
 
@@ -375,7 +374,7 @@ def delete_user(user_id):
 
 
 def admin_resend_confirmation(user):
-    if user.confirmed_at and current_user.confirmed_by:
+    if user.confirmed_at is not None and current_user.confirmed_by is not None:
         flash(f"User {user.username} is already confirmed.")
     else:
         token = user.generate_confirmation_token()
