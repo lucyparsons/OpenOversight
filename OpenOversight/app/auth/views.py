@@ -59,8 +59,8 @@ def static_routes():
 def before_request():
     if (
         current_user.is_authenticated
-        and current_user.confirmed_at is None
-        and current_user.confirmed_by is None
+        and not current_user.confirmed_at
+        and not current_user.confirmed_by
         and request.endpoint
         and request.endpoint[:5] != "auth."
         and request.endpoint not in ["static", "bootstrap.static"]
