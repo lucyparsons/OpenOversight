@@ -350,6 +350,8 @@ def edit_user(user_id):
                 if (
                     current_app.config[KEY_APPROVE_REGISTRATIONS]
                     and not already_approved
+                    and not user.approved_at
+                    and not user.approved_by
                     and not user.confirmed_at
                     and not user.confirmed_by
                 ):
