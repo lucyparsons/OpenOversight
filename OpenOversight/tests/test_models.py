@@ -2,6 +2,7 @@ import datetime
 import random
 import time
 
+import pytest
 from pytest import raises
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
@@ -240,8 +241,11 @@ def test_valid_confirmation_token(mockdata, session):
     user = User(password="bacon")
     session.add(user)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user.generate_confirmation_token()
-    assert user.confirm(token) is True
+
+    assert user.confirm(token, admin_user.id) is True
 
 
 def test_invalid_confirmation_token(mockdata, session):
@@ -250,17 +254,23 @@ def test_invalid_confirmation_token(mockdata, session):
     session.add(user1)
     session.add(user2)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user1.generate_confirmation_token()
-    assert user2.confirm(token) is False
+
+    assert user2.confirm(token, admin_user.id) is False
 
 
 def test_expired_confirmation_token(mockdata, session):
     user = User(password="bacon")
     session.add(user)
     session.commit()
+
+    admin_user = User.query.filter_by(is_administrator=False).first()
     token = user.generate_confirmation_token(1)
     time.sleep(2)
-    assert user.confirm(token) is False
+
+    assert user.confirm(token, admin_user.id) is False
 
 
 def test_valid_reset_token(mockdata, session):
@@ -617,3 +627,96 @@ def test_officer_incident_sort_order(mockdata, session):
     )
 
     assert officer.incidents == sorted_incidents
+
+
+def test_user_confirmed_constraint(mockdata, session, faker):
+    email = faker.company_email()
+
+    session.add(
+        User(
+            email=email,
+            username=faker.word(),
+            password=faker.word(),
+        )
+    )
+    session.commit()
+
+    user_one = User.query.filter_by(email=email).one()
+
+    assert user_one.confirm_user(1) is True
+    assert user_one.confirmed_at is not None
+    assert user_one.confirmed_by is not None
+    session.add(user_one)
+    session.commit()
+
+    user_two = User.query.filter_by(email=email).one()
+    assert user_two.confirm_user(1) is False
+
+    user_two.confirmed_by = None
+    session.add(user_two)
+
+    # Confirm that both _at and _by fields must be not None
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
+def test_user_approved_constraint(mockdata, session, faker):
+    email = faker.company_email()
+
+    session.add(
+        User(
+            email=email,
+            username=faker.word(),
+            password=faker.word(),
+        )
+    )
+    session.commit()
+
+    user_one = User.query.filter_by(email=email).one()
+
+    assert user_one.approve_user(1) is True
+    assert user_one.approved_at is not None
+    assert user_one.approved_by is not None
+    session.add(user_one)
+    session.commit()
+
+    user_two = User.query.filter_by(email=email).one()
+    assert user_two.approve_user(1) is False
+
+    user_two.approved_by = None
+    session.add(user_two)
+
+    # Confirm that both _at and _by fields must be not None
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
+def test_user_disabled_constraint(mockdata, session, faker):
+    email = faker.company_email()
+
+    session.add(
+        User(
+            email=email,
+            username=faker.word(),
+            password=faker.word(),
+        )
+    )
+    session.commit()
+
+    user_one = User.query.filter_by(email=email).one()
+
+    assert user_one.disable_user(1) is True
+    assert user_one.disabled_at is not None
+    assert user_one.disabled_by is not None
+    session.add(user_one)
+    session.commit()
+
+    user_two = User.query.filter_by(email=email).one()
+    assert user_two.disable_user(1) is False
+
+    user_two.disabled_by = None
+    session.add(user_two)
+
+    # Confirm that both _at and _by fields must be not None
+    with pytest.raises(IntegrityError):
+        session.commit()

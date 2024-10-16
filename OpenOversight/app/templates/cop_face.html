@@ -10,7 +10,7 @@
 {% block content %}
   <div class="container theme-showcase py-5" role="main">
     {% if current_user and current_user.is_authenticated %}
-      {% if image and not current_user.is_disabled %}
+      {% if image and not current_user.disabled_at and not current_user_disabled_by %}
         <div class="row">
           <div class="text-center">
             <h1>
@@ -160,7 +160,7 @@
             </div>
           </div>
         </div>
-      {% elif current_user.is_disabled %}
+      {% elif current_user.disabled_at and current_user.disabled_by %}
         <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
         <p>
           <a href="mailto:info@lucyparsonslabs.com"

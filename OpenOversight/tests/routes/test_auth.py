@@ -379,7 +379,9 @@ def test_user_can_get_email_reset_token_sent_with_password(client, session, fake
 def test_user_can_change_email_with_valid_reset_token(client, session):
     with current_app.test_request_context():
         login_user(client)
-        user = User.query.filter_by(is_administrator=False, is_disabled=False).first()
+        user = User.query.filter_by(
+            is_administrator=False, disabled_at=None, disabled_by=None
+        ).first()
         token = user.generate_email_change_token("alice@example.org")
 
         rv = client.get(
@@ -404,7 +406,7 @@ def test_user_cannot_change_email_with_invalid_reset_token(client, session):
 def test_user_can_confirm_account_with_valid_token(client, session):
     with current_app.test_request_context():
         login_unconfirmed_user(client)
-        user = User.query.filter_by(confirmed=False).first()
+        user = User.query.filter_by(confirmed_at=None, confirmed_by=None).first()
         token = user.generate_confirmation_token()
 
         rv = client.get(url_for("auth.confirm", token=token), follow_redirects=True)
@@ -465,15 +467,15 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(client, session):
     with current_app.test_request_context():
         # Temporarily enable account for login
         user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).one()
-        user.is_disabled = False
+        user.disabled_at = None
+        user.disabled_by = None
         session.add(user)
 
         rv, _ = login_modified_disabled_user(client)
         assert b"/user/sam" in rv.data
 
         # Disable account again and check that login_required redirects user correctly
-        user.is_disabled = True
-        session.add(user)
+        user.disable_user(User.query.filter_by(is_administrator=True).first().id)
 
         # Logged in disabled user cannot access pages requiring auth
         rv = client.get("/auth/logout")
