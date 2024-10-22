@@ -13,7 +13,7 @@ cachetools==5.3.1
 certifi~=2023.5.7
 cffi~=1.15.1
 click==8.1.4
-cryptography~=41.0.1
+cryptography~=43.0.1
 Deprecated~=1.2.14
 dnspython~=2.3.0
 docutils~=0.20.1
