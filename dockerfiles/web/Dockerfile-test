@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y curl xvfb firefox-esr libpq-dev python3
 
 # install rust and cargo so we can use jellyfish
 # Note: when we move to 3.13 for prod, we will likely need to add this line
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && source $HOME/.cargo/env
 
 # install geckodriver
 ENV GECKODRIVER_VERSION="v0.26.0"
