@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev 
 
 # install rust and cargo so we can use jellyfish
 RUN apt-get update && apt-get install -y curl && \
-    curl https://sh.rustup.rs -sSf | sh -s -- -y && source $HOME/.cargo/env
+    curl https://sh.rustup.rs -sSf | sh -s -- -y && source . $HOME/.cargo/env
 
 # install geckodriver
 ENV GECKODRIVER_VERSION="v0.26.0"
