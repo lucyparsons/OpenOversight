@@ -274,12 +274,6 @@ class Officer(BaseModel, TrackUpdates):
         cascade_backrefs=False,
         order_by="Salary.year.desc()",
     )
-    allegations = db.relationship(
-        "Allegation",
-        back_populates = "officer",
-        cascade_backrefs=False,
-        order_by="Allegation.created_at"
-    )
 
     __table_args__ = (
         CheckConstraint("gender in ('M', 'F', 'Other')", name="gender_options"),
@@ -725,9 +719,10 @@ class Allegation(BaseModel, TrackUpdates):
     type = db.Column(db.Text(), nullable=True)
     finding = db.Column(db.Text(), nullable=True)
     officer = db.relationship(
-        "Officer",
-        back_populates = "allegations",
-        cascade_backrefs=False,
+        "Officer", backref=db.backref("allegations", cascade_backrefs=False), lazy=True
+    )
+    incident = db.relationship(
+        "Incident", backref=db.backref("allegations", cascade_backrefs=False), lazy=True
     )
 
 
