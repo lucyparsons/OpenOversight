@@ -714,9 +714,9 @@ class Allegation(BaseModel, TrackUpdates):
     officer_id = db.Column(
         db.Integer, db.ForeignKey("officers.id", name="allegations_officer_id_fkey")
     )
-    disposition = db.Column(db.Text(), nullable=True)
+    disposition = db.Column(db.Text(), nullable=False)
     discipline = db.Column(db.Text(), nullable=True)
-    type = db.Column(db.Text(), nullable=True)
+    type = db.Column(db.Text(), nullable=False)
     finding = db.Column(db.Text(), nullable=True)
     officer = db.relationship(
         "Officer", backref=db.backref("allegations", cascade_backrefs=False), lazy=True
