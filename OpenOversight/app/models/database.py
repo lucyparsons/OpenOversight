@@ -704,6 +704,7 @@ class Incident(BaseModel, TrackUpdates):
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
 
+
 class Allegation(BaseModel, TrackUpdates):
     __tablename__ = "allegations"
 
