@@ -705,6 +705,28 @@ class Incident(BaseModel, TrackUpdates):
     )
 
 
+class Allegation(BaseModel, TrackUpdates):
+    __tablename__ = "allegations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    incident_id = db.Column(
+        db.Integer, db.ForeignKey("incidents.id", name="allegations_incident_id_fkey")
+    )
+    officer_id = db.Column(
+        db.Integer, db.ForeignKey("officers.id", name="allegations_officer_id_fkey")
+    )
+    disposition = db.Column(db.Text(), nullable=False)
+    discipline = db.Column(db.Text(), nullable=True)
+    type = db.Column(db.Text(), nullable=False)
+    finding = db.Column(db.Text(), nullable=True)
+    officer = db.relationship(
+        "Officer", backref=db.backref("allegations", cascade_backrefs=False), lazy=True
+    )
+    incident = db.relationship(
+        "Incident", backref=db.backref("allegations", cascade_backrefs=False), lazy=True
+    )
+
+
 class User(UserMixin, BaseModel):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
