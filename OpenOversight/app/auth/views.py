@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 from flask import (
@@ -34,6 +35,7 @@ from OpenOversight.app.models.emails import (
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.auth import admin_required
+from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
@@ -57,7 +59,8 @@ def static_routes():
 def before_request():
     if (
         current_user.is_authenticated
-        and not current_user.confirmed
+        and not current_user.confirmed_at
+        and not current_user.confirmed_by
         and request.endpoint
         and request.endpoint[:5] != "auth."
         and request.endpoint not in ["static", "bootstrap.static"]
@@ -67,9 +70,15 @@ def before_request():
 
 @auth.route("/unconfirmed")
 def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
+    if current_user.is_anonymous or (
+        current_user.confirmed_at and current_user.confirmed_by
+    ):
         return redirect(url_for("main.index"))
-    if current_app.config["APPROVE_REGISTRATIONS"] and not current_user.approved:
+    if (
+        current_app.config[KEY_APPROVE_REGISTRATIONS]
+        and not current_user.approved_at
+        and not current_user.approved_by
+    ):
         return render_template("auth/unapproved.html")
     else:
         return render_template("auth/unconfirmed.html")
@@ -112,11 +121,16 @@ def register():
             email=form.email.data,
             username=form.username.data,
             password=form.password.data,
-            approved=False if current_app.config["APPROVE_REGISTRATIONS"] else True,
+            approved_at=None
+            if current_app.config[KEY_APPROVE_REGISTRATIONS]
+            else datetime.now(timezone.utc),
+            approved_by=None
+            if current_app.config[KEY_APPROVE_REGISTRATIONS]
+            else User.query.filter_by(is_administrator=True).first().id,
         )
         db.session.add(user)
         db.session.commit()
-        if current_app.config["APPROVE_REGISTRATIONS"]:
+        if current_app.config[KEY_APPROVE_REGISTRATIONS]:
             admins = User.query.filter_by(is_administrator=True).all()
             for admin in admins:
                 EmailClient.send_email(
@@ -141,9 +155,11 @@ def register():
 @auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
 @login_required
 def confirm(token):
-    if current_user.confirmed:
+    if current_user.confirmed_at and current_user.confirmed_by:
         return redirect(url_for("main.index"))
-    if current_user.confirm(token):
+    if current_user.confirm(
+        token, User.query.filter_by(is_administrator=True).first().id
+    ):
         admins = User.query.filter_by(is_administrator=True).all()
         for admin in admins:
             EmailClient.send_email(
@@ -313,7 +329,18 @@ def edit_user(user_id):
                     flash("You cannot edit your own account!")
                     form = EditUserForm(obj=user)
                     return render_template("auth/user.html", user=user, form=form)
-                already_approved = user.approved
+                already_approved = (
+                    user.approved_at is not None and user.approved_by is not None
+                )
+                if form.approved.data:
+                    user.approve_user(current_user.id)
+
+                if form.confirmed.data:
+                    user.confirm_user(current_user.id)
+
+                if form.is_disabled.data:
+                    user.disable_user(current_user.id)
+
                 form.populate_obj(user)
                 db.session.add(user)
                 db.session.commit()
@@ -321,10 +348,12 @@ def edit_user(user_id):
                 # automatically send a confirmation email when approving an
                 # unconfirmed user
                 if (
-                    current_app.config["APPROVE_REGISTRATIONS"]
+                    current_app.config[KEY_APPROVE_REGISTRATIONS]
                     and not already_approved
-                    and user.approved
-                    and not user.confirmed
+                    and user.approved_at
+                    and user.approved_by
+                    and not user.confirmed_at
+                    and not user.confirmed_by
                 ):
                     admin_resend_confirmation(user)
 
@@ -353,7 +382,7 @@ def delete_user(user_id):
 
 
 def admin_resend_confirmation(user):
-    if user.confirmed:
+    if user.confirmed_at and current_user.confirmed_by:
         flash(f"User {user.username} is already confirmed.")
     else:
         token = user.generate_confirmation_token()

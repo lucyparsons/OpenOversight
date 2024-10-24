@@ -39,11 +39,11 @@
                 <a href="mailto:{{ user.email }}">{{ user.email }}</a>
               </td>
               <td>
-                {% if user.is_disabled %}
+                {% if user.disabled_at and user.disabled_by %}
                   Disabled
-                {% elif user.confirmed %}
+                {% elif user.confirmed_at and user.confirmed_by %}
                   Active
-                {% elif user.approved %}
+                {% elif user.approved_at and user.approved_by %}
                   Pending Confirmation
                 {% else %}
                   Pending Approval
