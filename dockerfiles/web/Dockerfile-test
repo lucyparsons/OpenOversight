@@ -10,7 +10,7 @@ ENV DISPLAY=:1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
-RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev && \
+RUN apt-get update && apt-get install -y curl xvfb firefox-esr libpq-dev python3-dev && \
     apt-get install -y libsqlite3-0 && apt-get clean
 
 # install geckodriver
@@ -24,7 +24,11 @@ RUN mkdir geckodriver
 RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
-RUN pip3 install --no-cache-dir -r requirements.txt && pip3 install --no-cache-dir -r dev-requirements.txt
+# install rust and cargo so we can use jellyfish
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
+    . "$HOME/.cargo/env" && \
+    pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install --no-cache-dir -r dev-requirements.txt
 
 COPY test_data.py /usr/src/app/
 
