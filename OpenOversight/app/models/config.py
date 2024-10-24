@@ -1,6 +1,7 @@
 import os
 
 from OpenOversight.app.utils.constants import (
+    KEY_APPROVE_REGISTRATIONS,
     KEY_DATABASE_URI,
     KEY_ENV,
     KEY_ENV_DEV,
@@ -80,7 +81,7 @@ class BaseConfig:
         self.MAX_CONTENT_LENGTH = 50 * MEGABYTE
 
         # User settings
-        self.APPROVE_REGISTRATIONS = os.environ.get("APPROVE_REGISTRATIONS", False)
+        self.APPROVE_REGISTRATIONS = os.environ.get(KEY_APPROVE_REGISTRATIONS, False)
 
 
 class DevelopmentConfig(BaseConfig):

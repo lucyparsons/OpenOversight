@@ -29,9 +29,9 @@
                  role="button">Show leaderboard</a>
             </p>
             <h3>Account Status</h3>
-            {% if user.is_disabled %}
+            {% if user.disabled_at and user.disabled_by %}
               <p>Disabled</p>
-            {% elif user.is_disabled == False %}
+            {% elif not user.disabled_at and not user.disabled_by %}
               <p>Enabled</p>
             {% endif %}
             {% if current_user.is_administrator and not user.is_administrators %}

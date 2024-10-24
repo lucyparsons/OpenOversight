@@ -2,7 +2,7 @@ import operator
 import re
 import time
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -722,8 +722,18 @@ class User(UserMixin, BaseModel):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)
-    approved = db.Column(db.Boolean, default=False)
+    confirmed_at = db.Column(db.DateTime(timezone=True))
+    confirmed_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL", name="users_confirmed_by_fkey"),
+        unique=False,
+    )
+    approved_at = db.Column(db.DateTime(timezone=True))
+    approved_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL", name="users_approved_by_fkey"),
+        unique=False,
+    )
     is_area_coordinator = db.Column(db.Boolean, default=False)
     ac_department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_ac_department_id_fkey")
@@ -734,7 +744,13 @@ class User(UserMixin, BaseModel):
         foreign_keys=[ac_department_id],
     )
     is_administrator = db.Column(db.Boolean, default=False)
-    is_disabled = db.Column(db.Boolean, default=False)
+    disabled_at = db.Column(db.DateTime(timezone=True))
+    disabled_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="SET NULL", name="users_disabled_by_fkey"),
+        unique=False,
+    )
+
     dept_pref = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")
     )
@@ -767,6 +783,21 @@ class User(UserMixin, BaseModel):
         nullable=False,
         server_default=sql_func.now(),
         unique=False,
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(disabled_at IS NULL and disabled_by IS NULL) or (disabled_at IS NOT NULL and disabled_by IS NOT NULL)",
+            name="users_disabled_constraint",
+        ),
+        CheckConstraint(
+            "(confirmed_at IS NULL and confirmed_by IS NULL) or (confirmed_at IS NOT NULL and confirmed_by IS NOT NULL)",
+            name="users_confirmed_constraint",
+        ),
+        CheckConstraint(
+            "(approved_at IS NULL and approved_by IS NULL) or (approved_at IS NOT NULL and approved_by IS NOT NULL)",
+            name="users_approved_constraint",
+        ),
     )
 
     def is_admin_or_coordinator(self, department: Optional[Department]) -> bool:
@@ -825,7 +856,7 @@ class User(UserMixin, BaseModel):
         payload = {"confirm": self.uuid}
         return self._jwt_encode(payload, expiration).decode(ENCODING_UTF_8)
 
-    def confirm(self, token):
+    def confirm(self, token, confirming_user_id: int):
         try:
             data = self._jwt_decode(token)
         except JoseError as e:
@@ -838,7 +869,8 @@ class User(UserMixin, BaseModel):
                 self.uuid,
             )
             return False
-        self.confirmed = True
+        self.confirmed_at = datetime.now(timezone.utc)
+        self.confirmed_by = confirming_user_id
         db.session.add(self)
         db.session.commit()
         return True
@@ -891,7 +923,40 @@ class User(UserMixin, BaseModel):
     @property
     def is_active(self):
         """Override UserMixin.is_active to prevent disabled users from logging in."""
-        return not self.is_disabled
+        return not self.disabled_at
+
+    def approve_user(self, approving_user_id: int):
+        """Handle approving logic."""
+        if self.approved_at or self.approved_by:
+            return False
+
+        self.approved_at = datetime.now(timezone.utc)
+        self.approved_by = approving_user_id
+        db.session.add(self)
+        db.session.commit()
+        return True
+
+    def confirm_user(self, confirming_user_id: int):
+        """Handle confirming logic."""
+        if self.confirmed_at or self.confirmed_by:
+            return False
+
+        self.confirmed_at = datetime.now(timezone.utc)
+        self.confirmed_by = confirming_user_id
+        db.session.add(self)
+        db.session.commit()
+        return True
+
+    def disable_user(self, disabling_user_id: int):
+        """Handle disabling logic."""
+        if self.disabled_at or self.disabled_by:
+            return False
+
+        self.disabled_at = datetime.now(timezone.utc)
+        self.disabled_by = disabling_user_id
+        db.session.add(self)
+        db.session.commit()
+        return True
 
     def __repr__(self):
         return f"<User {self.username!r}>"

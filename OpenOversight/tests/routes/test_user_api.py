@@ -5,7 +5,7 @@ from flask import current_app, url_for
 
 from OpenOversight.app.auth.forms import EditUserForm, LoginForm, RegistrationForm
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.constants import ENCODING_UTF_8
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_APPROVE_REGISTRATIONS
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import (
     ADMIN_USER_EMAIL,
@@ -155,12 +155,15 @@ def test_admin_cannot_delete_other_admin(client, session):
 
 def test_admin_can_disable_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         # just need to make sure to not select the admin user
-        user = User.query.filter_by(is_administrator=False).first()
+        user = User.query.filter_by(
+            is_administrator=False, disabled_at=None, disabled_by=None
+        ).first()
 
-        assert not user.is_disabled
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
         form = EditUserForm(
             is_disabled=True,
@@ -176,14 +179,16 @@ def test_admin_can_disable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.is_disabled
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
 
 def test_admin_cannot_disable_self(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        _, current_user = login_admin(client)
 
-        assert not user.is_disabled
+        assert current_user.disabled_at is None
+        assert current_user.disabled_by is None
 
         form = EditUserForm(
             is_disabled=True,
@@ -191,27 +196,28 @@ def test_admin_cannot_disable_self(client, session):
         )
 
         rv = client.post(
-            url_for("auth.edit_user", user_id=user.id),
+            url_for("auth.edit_user", user_id=current_user.id),
             data=form.data,
             follow_redirects=True,
         )
 
         assert "You cannot edit your own account!" in rv.data.decode(ENCODING_UTF_8)
 
-        user = session.get(User, user.id)
-        assert not user.is_disabled
+        user = session.get(User, current_user.id)
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
 
 def test_admin_can_enable_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
-        user.is_disabled = True
-        session.commit()
+        user.disable_user(current_user.id)
 
         user = session.get(User, user.id)
-        assert user.is_disabled
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
         form = EditUserForm(
             is_disabled=False,
@@ -227,7 +233,8 @@ def test_admin_can_enable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert not user.is_disabled
+        assert user.disabled_at is not None
+        assert user.disabled_by == current_user.id
 
 
 def test_admin_can_resend_user_confirmation_email(client, session):
@@ -253,7 +260,7 @@ def test_admin_can_resend_user_confirmation_email(client, session):
 
 
 def test_register_user_approval_required(client, session):
-    current_app.config["APPROVE_REGISTRATIONS"] = True
+    current_app.config[KEY_APPROVE_REGISTRATIONS] = True
     with current_app.test_request_context():
         diceware_password = "operative hamster persevere verbalize curling"
         new_user_email = "jen@example.com"
@@ -287,14 +294,16 @@ def test_register_user_approval_required(client, session):
 
 def test_admin_can_approve_user(client, session):
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).first()
-        user.approved = False
+        user.approved_by = None
+        user.approved_at = None
         session.commit()
 
         user = session.get(User, user.id)
-        assert not user.approved
+        assert user.approved_by is None
+        assert user.approved_at is None
 
         form = EditUserForm(
             approved=True,
@@ -310,7 +319,8 @@ def test_admin_can_approve_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.approved
+        assert user.approved_at is not None
+        assert user.approved_by == current_user.id
 
 
 @pytest.mark.parametrize(
@@ -336,18 +346,39 @@ def test_admin_approval_sends_confirmation_email(
     client,
     session,
 ):
-    current_app.config["APPROVE_REGISTRATIONS"] = approve_registration_config
+    current_app.config[KEY_APPROVE_REGISTRATIONS] = approve_registration_config
     with current_app.test_request_context():
-        login_admin(client)
+        _, current_user = login_admin(client)
 
         user = User.query.filter_by(is_administrator=False).first()
-        user.approved = currently_approved
-        user.confirmed = currently_confirmed
-        session.commit()
+        if currently_approved:
+            user.approve_user(current_user.id)
+        else:
+            user.approved_at = None
+            user.approved_by = None
+            session.commit()
+
+        if currently_confirmed:
+            user.confirm_user(current_user.id)
+        else:
+            user.confirmed_at = None
+            user.confirmed_by = None
+            session.commit()
 
         user = session.get(User, user.id)
-        assert user.approved == currently_approved
-        assert user.confirmed == currently_confirmed
+        if currently_approved:
+            assert user.approved_at is not None
+            assert user.approved_by == current_user.id
+        else:
+            assert user.approved_at is None
+            assert user.approved_by is None
+
+        if currently_confirmed:
+            assert user.confirmed_at is not None
+            assert user.confirmed_by == current_user.id
+        else:
+            assert user.confirmed_at is None
+            assert user.confirmed_by is None
 
         form = EditUserForm(approved=True, submit=True, confirmed=currently_confirmed)
 
@@ -363,4 +394,5 @@ def test_admin_approval_sends_confirmation_email(
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.approved
+        assert user.approved_at is not None
+        assert user.approved_by == current_user.id
