@@ -29,7 +29,7 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker compose run --rm web alembic --config=./OpenOversight/migrations/alembic.ini stamp head
+	docker compose run --rm web flask db stamp head
 
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
