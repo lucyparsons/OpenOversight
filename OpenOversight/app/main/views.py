@@ -181,8 +181,6 @@ def browse():
 def get_officer():
     form = FindOfficerForm()
 
-    departments_dict = [dept_choice.to_custom_dict() for dept_choice in dept_choices()]
-
     if getattr(current_user, "dept_pref_rel", None):
         set_dynamic_default(form.dept, current_user.dept_pref_rel)
 
@@ -213,7 +211,7 @@ def get_officer():
     return render_template(
         "input_find_officer.html",
         form=form,
-        depts_dict=departments_dict,
+        depts_dict=[dept_choice.to_custom_dict() for dept_choice in dept_choices()],
         jsloads=["js/find_officer.js"],
     )
 
