@@ -61,10 +61,6 @@ def dept_choices():
     )
 
 
-def unsorted_dept_choices():
-    return db.session.query(Department).all()
-
-
 def get_officer(department_id, star_no, first_name, last_name):
     """
     Return the first officer with the given name and badge combo in the department, if one exists.
