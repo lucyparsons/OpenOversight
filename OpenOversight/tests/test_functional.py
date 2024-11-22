@@ -21,7 +21,7 @@ DESCRIPTION_CUTOFF = 700
 
 @contextmanager
 def wait_for_page_load(browser, timeout=10):
-    old_page = browser.find_element_by_tag_name(FILE_TYPE_HTML)
+    old_page = browser.find_element(By.TAG_NAME, FILE_TYPE_HTML)
     yield
     WebDriverWait(browser, timeout).until(expected_conditions.staleness_of(old_page))
 
@@ -29,14 +29,14 @@ def wait_for_page_load(browser, timeout=10):
 def login_admin(browser, server_port):
     browser.get(f"http://localhost:{server_port}/auth/login")
     with wait_for_page_load(browser):
-        elem = browser.find_element_by_id("email")
+        elem = browser.find_element(By.ID, "email")
         elem.clear()
         elem.send_keys(ADMIN_USER_EMAIL)
-        elem = browser.find_element_by_id("password")
+        elem = browser.find_element(By.ID, "password")
         elem.clear()
         elem.send_keys("testtest")
         with wait_for_page_load(browser):
-            browser.find_element_by_id("submit").click()
+            browser.find_element(By.ID, "submit").click()
             wait_for_element(browser, By.TAG_NAME, "body")
 
 
@@ -91,7 +91,7 @@ def test_user_can_load_homepage_and_get_to_form(mockdata, browser, server_port):
     scroll_to_element(browser, element)
     element.click()
 
-    page_text = browser.find_element_by_tag_name("body").text
+    page_text = browser.find_element(By.TAG_NAME, "body").text
     assert "Find an Officer" in page_text
 
 
@@ -106,7 +106,7 @@ def test_user_can_get_to_complaint(browser, server_port):
     # Complainant arrives at page with the badge number, name, and link
     # to complaint form
 
-    title_text = browser.find_element_by_tag_name("h1").text
+    title_text = browser.find_element(By.TAG_NAME, "h1").text
     assert "File a Complaint" in title_text
 
 
@@ -118,7 +118,7 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
         f"http://localhost:{server_port}/departments/{AC_DEPT}?page=1&gender=Not+Sure"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
-    page_text = browser.find_element_by_tag_name("body").text
+    page_text = browser.find_element(By.TAG_NAME, "body").text
     expected = f"Showing 1-{current_app.config[KEY_OFFICERS_PER_PAGE]} of {total}"
     assert expected in page_text
 
@@ -135,7 +135,7 @@ def test_officer_browse_pagination(mockdata, browser, server_port):
         f"http://localhost:{server_port}/departments/{AC_DEPT}?page={last_page_index}&gender=Not+Sure"
     )
     wait_for_element(browser, By.TAG_NAME, "body")
-    page_text = browser.find_element_by_tag_name("body").text
+    page_text = browser.find_element(By.TAG_NAME, "body").text
     start_of_page = (
         current_app.config[KEY_OFFICERS_PER_PAGE]
         * (total // current_app.config[KEY_OFFICERS_PER_PAGE])
@@ -162,7 +162,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
         Department.unique_internal_identifier_label.is_not(None)
     ).first()
 
-    dept_selector = Select(browser.find_element_by_id("dept"))
+    dept_selector = Select(browser.find_element(By.ID, "dept"))
     uii_element = browser.find_element("id", "uii-question")
 
     dept_selector.select_by_value(str(dept_with_uii.id))
@@ -179,7 +179,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
         unique_internal_identifier_label=None
     ).first()
 
-    dept_selector = browser.find_element_by_id("dept")
+    dept_selector = browser.find_element(By.ID, "dept")
     scroll_to_element(browser, dept_selector)
     Select(dept_selector).select_by_value(str(dept_without_uii.id))
 
@@ -198,7 +198,7 @@ def test_incident_detail_display_read_more_button_for_descriptions_over_cutoff(
     ).one_or_none()
     incident_id = str(incident_long_description.id)
 
-    result = browser.find_element_by_id("description-overflow-row_" + incident_id)
+    result = browser.find_element(By.ID, "description-overflow-row_" + incident_id)
     scroll_to_element(browser, result)
     assert result.is_displayed()
 
@@ -230,7 +230,7 @@ def test_incident_detail_do_not_display_read_more_button_for_descriptions_under_
     browser.get(f"http://localhost:{server_port}/officers/1")
 
     # Select incident for officer that has description under cutoff chars
-    result = browser.find_element_by_id("description-overflow-row_1")
+    result = browser.find_element(By.ID, "description-overflow-row_1")
     scroll_to_element(browser, result)
     assert not result.is_displayed()
 
@@ -245,12 +245,12 @@ def test_click_to_read_more_displays_full_description(mockdata, browser, server_
     original_description = incident_long_description.description.strip()
     incident_id = str(incident_long_description.id)
 
-    button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    button = browser.find_element(By.ID, "description-overflow-button_" + incident_id)
     scroll_to_element(browser, button)
     button.click()
 
-    description_text = browser.find_element_by_id(
-        "incident-description_" + incident_id
+    description_text = browser.find_element(
+        By.ID, "incident-description_" + incident_id
     ).text.strip()
     assert len(description_text) == len(original_description)
     assert description_text == original_description
@@ -265,11 +265,11 @@ def test_click_to_read_more_hides_the_read_more_button(mockdata, browser, server
     ).one_or_none()
     incident_id = str(incident_long_description.id)
 
-    button = browser.find_element_by_id("description-overflow-button_" + incident_id)
+    button = browser.find_element(By.ID, "description-overflow-button_" + incident_id)
     scroll_to_element(browser, button)
     button.click()
 
-    buttonRow = browser.find_element_by_id("description-overflow-row_" + incident_id)
+    buttonRow = browser.find_element(By.ID, "description-overflow-row_" + incident_id)
     assert not buttonRow.is_displayed()
 
 
@@ -286,13 +286,13 @@ def test_officer_form_has_units_alpha_sorted(browser, server_port, session):
 
     # Check for the Unit sort on the 'add officer' form
     browser.get(f"http://localhost:{server_port}/officers/new")
-    unit_select = Select(browser.find_element_by_id("unit"))
+    unit_select = Select(browser.find_element(By.ID, "unit"))
     select_units_sorted = [x.text for x in unit_select.options]
     assert db_units_sorted == select_units_sorted
 
     # Check for the Unit sort on the 'add assignment' form
     browser.get(f"http://localhost:{server_port}/officers/1")
-    unit_select = Select(browser.find_element_by_id("unit"))
+    unit_select = Select(browser.find_element(By.ID, "unit"))
     select_units_sorted = [x.text for x in unit_select.options]
     assert db_units_sorted == select_units_sorted
 
@@ -312,13 +312,13 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
     browser.get(f"http://localhost:{server_port}/officers/1/edit")
 
     wait_for_element(browser, By.ID, "gender")
-    select = Select(browser.find_element_by_id("gender"))
+    select = Select(browser.find_element(By.ID, "gender"))
     selected_option = select.first_selected_option
     selected_text = selected_option.text
     assert selected_text == "Not Sure"
 
     wait_for_element(browser, By.ID, "race")
-    select = Select(browser.find_element_by_id("race"))
+    select = Select(browser.find_element(By.ID, "race"))
     selected_option = select.first_selected_option
     selected_text = selected_option.text
     assert selected_text == "Not Sure"
