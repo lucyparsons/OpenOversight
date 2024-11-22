@@ -908,8 +908,10 @@ def browser(app, server_port):
     # start headless webdriver
     visual_display = Xvfb()
     visual_display.start()
+    options = Options()
+    options.add_argument("--headless")
     driver = webdriver.Firefox(
-        options=Options(), service=Service(log_path="/tmp/geckodriver.log")
+        options=options, service=Service(log_path="/tmp/geckodriver.log")
     )
     # wait for browser to start up
     sleep(3)
