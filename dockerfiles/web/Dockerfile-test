@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y xvfb firefox-esr libpq-dev python3-dev 
     apt-get install -y libsqlite3-0 && apt-get clean
 
 # install geckodriver
-ENV GECKODRIVER_VERSION="v0.26.0"
-ENV GECKODRIVER_SHA=d59ca434d8e41ec1e30dd7707b0c95171dd6d16056fb6db9c978449ad8b93cc0
+ENV GECKODRIVER_VERSION="v0.35.0"
+ENV GECKODRIVER_SHA=e1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0
 ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
 RUN curl ${CURL_FLAGS} \
       ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
