@@ -58,7 +58,7 @@ rich~=13.4.2
 s3transfer~=0.6.1
 six~=1.16.0
 sphinx==7.1.2
-SQLAlchemy==1.4.54
+SQLAlchemy==1.4.52
 tornado~=6.4
 trio==0.22.1
 urllib3==1.26.20
