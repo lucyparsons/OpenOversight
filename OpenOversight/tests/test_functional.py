@@ -163,7 +163,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
     ).first()
 
     dept_selector = Select(browser.find_element(By.ID, "dept"))
-    uii_element = browser.find_element("id", "uii-question")
+    uii_element = browser.find_element(By.ID, "uii-question")
 
     dept_selector.select_by_value(str(dept_with_uii.id))
     assert uii_element.is_displayed()
@@ -183,7 +183,7 @@ def test_find_officer_cannot_see_uii_question_for_depts_without_uiis(
     scroll_to_element(browser, dept_selector)
     Select(dept_selector).select_by_value(str(dept_without_uii.id))
 
-    uii_element = browser.find_element("id", "uii-question")
+    uii_element = browser.find_element(By.ID, "uii-question")
     assert not uii_element.is_displayed()
 
 
@@ -216,7 +216,7 @@ def test_incident_detail_truncate_description_for_descriptions_over_cutoff(
 
     # Check that the text is truncated and contains more than just the ellipsis
     truncated_text = browser.find_element(
-        "id", "incident-description_" + incident_id
+        By.ID, "incident-description_" + incident_id
     ).text
     assert "…" in truncated_text
     # Include buffer for jinja rendered spaces
@@ -344,7 +344,7 @@ def test_image_classification_and_tagging(browser, server_port):
     browser.get(f"http://localhost:{server_port}/officers/new")
     wait_for_page_load(browser)
 
-    dept_select = Select(browser.find_element("id", "department"))
+    dept_select = Select(browser.find_element(By.ID, "department"))
     dept_select.select_by_visible_text("Auburn Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
@@ -364,7 +364,7 @@ def test_image_classification_and_tagging(browser, server_port):
     browser.get(f"http://localhost:{server_port}/submit")
     wait_for_page_load(browser)
 
-    select = browser.find_element("id", "department")
+    select = browser.find_element(By.ID, "department")
     scroll_to_element(browser, select)
     Select(select).select_by_value(dept_id)
     submit_image_to_dropzone(browser, img_path)
