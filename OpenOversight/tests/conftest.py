@@ -16,6 +16,7 @@ from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xvfbwrapper import Xvfb
 
@@ -906,7 +907,7 @@ def browser(app, server_port):
     # start headless webdriver
     visual_display = Xvfb()
     visual_display.start()
-    driver = webdriver.Firefox(service_log_path="/tmp/geckodriver.log")
+    driver = webdriver.Firefox(service=Service(service_log_path="/tmp/geckodriver.log"))
     # wait for browser to start up
     sleep(3)
     yield driver
