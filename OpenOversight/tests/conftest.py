@@ -16,6 +16,7 @@ from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
 from selenium import webdriver
+from selenium.webdriver.common.client_config import ClientConfig
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -911,7 +912,9 @@ def browser(app, server_port):
     options = Options()
     options.add_argument("--headless")
     driver = webdriver.Firefox(
-        options=options, service=Service(log_path="/tmp/geckodriver.log")
+        client_config=ClientConfig(remote_server_addr=f"http://localhost:{port}"),
+        options=options,
+        service=Service(log_path="/tmp/geckodriver.log"),
     )
     # wait for browser to start up
     sleep(3)
