@@ -907,7 +907,7 @@ def browser(app, server_port):
     # start headless webdriver
     visual_display = Xvfb()
     visual_display.start()
-    driver = webdriver.Firefox(service=Service(service_log_path="/tmp/geckodriver.log"))
+    driver = webdriver.Firefox(service=Service(log_path="/tmp/geckodriver.log"))
     # wait for browser to start up
     sleep(3)
     yield driver
