@@ -163,6 +163,7 @@ def test_find_officer_can_see_uii_question_for_depts_with_uiis(
     ).first()
 
     dept_selector = Select(browser.find_element_by_id("dept"))
+    scroll_to_element(browser, dept_selector)
     uii_element = browser.find_element_by_id("uii-question")
 
     dept_selector.select_by_value(str(dept_with_uii.id))
