@@ -103,7 +103,7 @@ def test_user_can_get_to_complaint(browser, server_port):
     )
 
     wait_for_element(browser, By.TAG_NAME, "h1")
-    # Complainant arrives at page with the badge number, name, and link
+    # Complaint arrives at page with the badge number, name, and link
     # to complaint form
 
     title_text = browser.find_element(By.TAG_NAME, "h1").text
