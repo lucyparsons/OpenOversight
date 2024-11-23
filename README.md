@@ -4,7 +4,7 @@
 
 OpenOversight is a Lucy Parsons Labs project to improve law enforcement accountability through public and crowdsourced data. We maintain a database of officer demographic information and provide digital galleries of photographs. This is done to help people identify law enforcement officers for filing complaints and in order for the public to see work-related information about law enforcement officers that interact with the public.
 
-This project is written and maintained by [@lucyparsonslabs](https://twitter.com/lucyparsonslabs) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our [contributing guide](/CONTRIB.md) and [code of conduct](/CODE_OF_CONDUCT.md). If you prefer to contribute in other ways, please submit images to our platform or talk to us about how to help sort and tag images. This project is live, and we are currently soliciting photographs to add to the database.
+This project is written and maintained by [@lucyparsonslabs](https://bsky.app/profile/lucyparsonslabs.com) with collaboration, partnerships, and contributions welcome. If you would like to contribute code or documentation, please see our [contributing guide](/CONTRIB.md) and [code of conduct](/CODE_OF_CONDUCT.md). If you prefer to contribute in other ways, please submit images to our platform or talk to us about how to help sort and tag images. This project is live, and we are currently soliciting photographs to add to the database.
 
 ## Note to Law Enforcement
 
