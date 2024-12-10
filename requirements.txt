@@ -23,7 +23,7 @@ Faker==18.13.0
 Flask==2.3.2
 Flask-Compress==1.13
 Flask-Limiter==3.3.1
-Flask-Login==0.6.2
+Flask-Login==0.6.3
 Flask-Mail==0.9.1
 Flask-Migrate==4.0.4
 Flask-Sitemap==0.4.0
@@ -56,6 +56,7 @@ recommonmark==0.7.1
 requests~=2.31.0
 rich~=13.4.2
 s3transfer~=0.6.1
+selenium==4.26.0
 six~=1.16.0
 sphinx==7.1.2
 SQLAlchemy==1.4.52
