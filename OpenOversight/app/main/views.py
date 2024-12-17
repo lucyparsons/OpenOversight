@@ -123,10 +123,6 @@ from OpenOversight.app.utils.general import (
     validate_redirect_url,
 )
 
-
-# Ensure the file is read/write by the creator only
-SAVED_UMASK = os.umask(0o077)
-
 sitemap_endpoints = []
 
 
