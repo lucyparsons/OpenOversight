@@ -44,7 +44,6 @@ OO_TIME_FORMAT = "%I:%M %p"
 ENCODING_UTF_8 = "utf-8"
 FILE_TYPE_HTML = "html"
 FILE_TYPE_PLAIN = "plain"
-SAVED_UMASK = os.umask(0o077)  # Ensure the file is read/write by the creator only
 
 # File Name Constants
 SERVICE_ACCOUNT_FILE = "service_account_key.json"
