@@ -6,6 +6,7 @@ from traceback import format_exc
 from typing import Optional
 
 from flask import (
+    Blueprint,
     Response,
     abort,
     current_app,
@@ -23,9 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
-from OpenOversight.app import limiter
 from OpenOversight.app.auth.forms import LoginForm
-from OpenOversight.app.main import main
 from OpenOversight.app.main.downloads import (
     assignment_record_maker,
     descriptions_record_maker,
@@ -100,6 +99,7 @@ from OpenOversight.app.utils.db import (
     dept_choices,
     unit_choices,
 )
+from OpenOversight.app.utils.flask import limiter
 from OpenOversight.app.utils.forms import (
     add_new_assignment,
     add_officer_profile,
@@ -123,6 +123,9 @@ from OpenOversight.app.utils.general import (
 )
 
 
+main_blueprint = Blueprint("main", __name__)
+
+
 def redirect_url(default="main.index"):
     return (
         validate_redirect_url(session.get("next"))
@@ -131,13 +134,13 @@ def redirect_url(default="main.index"):
     )
 
 
-@main.route("/")
-@main.route("/index")
+@main_blueprint.route("/")
+@main_blueprint.route("/index")
 def index():
     return render_template("index.html")
 
 
-@main.route("/timezone", methods=[HTTPMethod.POST])
+@main_blueprint.route("/timezone", methods=[HTTPMethod.POST])
 def set_session_timezone():
     if KEY_TIMEZONE not in session:
         timezone = request.data.decode(ENCODING_UTF_8)
@@ -148,7 +151,7 @@ def set_session_timezone():
     return Response("User timezone saved", status=HTTPStatus.OK)
 
 
-@main.route("/browse", methods=[HTTPMethod.GET])
+@main_blueprint.route("/browse", methods=[HTTPMethod.GET])
 def browse():
     departments = Department.query.filter(Department.officers.any()).order_by(
         Department.state.asc(), Department.name.asc()
@@ -156,7 +159,7 @@ def browse():
     return render_template("browse.html", departments=departments)
 
 
-@main.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
     form = FindOfficerForm()
 
@@ -195,15 +198,16 @@ def get_officer():
     )
 
 
-@main.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/label", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def redirect_get_started_labeling():
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.get_started_labeling"), code=HTTPStatus.PERMANENT_REDIRECT
+        url_for("main.get_started_labeling"),
+        code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
-@main.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
     form = LoginForm()
     if form.validate_on_submit():
@@ -218,7 +222,7 @@ def get_started_labeling():
     return render_template("label_data.html", departments=departments, form=form)
 
 
-@main.route(
+@main_blueprint.route(
     "/sort/department/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
@@ -230,7 +234,7 @@ def redirect_sort_images(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/sort/departments/<int:department_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
@@ -255,12 +259,12 @@ def sort_images(department_id: int):
     )
 
 
-@main.route("/tutorial")
+@main_blueprint.route("/tutorial")
 def get_tutorial():
     return render_template("tutorial.html")
 
 
-@main.route("/user/<username>")
+@main_blueprint.route("/user/<username>")
 @login_required
 def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
@@ -276,7 +280,9 @@ def profile(username: str):
     return render_template("profile.html", user=user, department=department)
 
 
-@main.route("/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route(
+    "/officer/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
 def redirect_officer_profile(officer_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -285,7 +291,9 @@ def redirect_officer_profile(officer_id: int):
     )
 
 
-@main.route("/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route(
+    "/officers/<int:officer_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
 def officer_profile(officer_id: int):
     form = AssignmentForm()
     try:
@@ -332,7 +340,9 @@ def officer_profile(officer_id: int):
     )
 
 
-@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
+@main_blueprint.route(
+    "/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST]
+)
 @ac_or_admin_required
 def redirect_add_assignment(officer_id: int):
     return redirect(
@@ -341,7 +351,9 @@ def redirect_add_assignment(officer_id: int):
     )
 
 
-@main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
+@main_blueprint.route(
+    "/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST]
+)
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
@@ -386,7 +398,7 @@ def add_assignment(officer_id: int):
         return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
-@main.route(
+@main_blueprint.route(
     "/officer/<int:officer_id>/assignment/<int:assignment_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -396,13 +408,15 @@ def redirect_edit_assignment(officer_id: int, assignment_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
         url_for(
-            "main.edit_assignment", officer_id=officer_id, assignment_id=assignment_id
+            "main.edit_assignment",
+            officer_id=officer_id,
+            assignment_id=assignment_id,
         ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/officers/<int:officer_id>/assignments/<int:assignment_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -445,7 +459,7 @@ def edit_assignment(officer_id: int, assignment_id: int):
     return render_template("edit_assignment.html", form=form)
 
 
-@main.route(
+@main_blueprint.route(
     "/officer/<int:officer_id>/salary/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @ac_or_admin_required
@@ -457,7 +471,7 @@ def redirect_add_salary(officer_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/officers/<int:officer_id>/salaries/new", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @ac_or_admin_required
@@ -508,7 +522,7 @@ def add_salary(officer_id: int):
         return render_template("add_edit_salary.html", form=form)
 
 
-@main.route(
+@main_blueprint.route(
     "/officer/<int:officer_id>/salary/<int:salary_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -522,7 +536,7 @@ def redirect_edit_salary(officer_id: int, salary_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/officers/<int:officer_id>/salaries/<int:salary_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -555,7 +569,7 @@ def edit_salary(officer_id: int, salary_id: int):
     return render_template("add_edit_salary.html", form=form, update=True)
 
 
-@main.route("/image/<int:image_id>")
+@main_blueprint.route("/image/<int:image_id>")
 @login_required
 def redirect_display_submission(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -565,7 +579,7 @@ def redirect_display_submission(image_id: int):
     )
 
 
-@main.route("/images/<int:image_id>")
+@main_blueprint.route("/images/<int:image_id>")
 @login_required
 def display_submission(image_id: int):
     try:
@@ -577,7 +591,7 @@ def display_submission(image_id: int):
     return render_template("image.html", image=image, path=proper_path)
 
 
-@main.route("/tag/<int:tag_id>")
+@main_blueprint.route("/tag/<int:tag_id>")
 def redirect_display_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -586,7 +600,7 @@ def redirect_display_tag(tag_id: int):
     )
 
 
-@main.route("/tags/<int:tag_id>")
+@main_blueprint.route("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
@@ -599,20 +613,22 @@ def display_tag(tag_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
 def redirect_classify_submission(image_id: int, contains_cops: int):
     return redirect(
         url_for(
-            "main.classify_submission", image_id=image_id, contains_cops=contains_cops
+            "main.classify_submission",
+            image_id=image_id,
+            contains_cops=contains_cops,
         ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/images/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
 )
 @login_required
@@ -637,7 +653,7 @@ def classify_submission(image_id: int, contains_cops: int):
     return redirect(redirect_url())
 
 
-@main.route("/department/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/department/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @admin_required
 def redirect_add_department():
@@ -648,7 +664,7 @@ def redirect_add_department():
     )
 
 
-@main.route("/departments/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/departments/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @admin_required
 def add_department():
@@ -704,7 +720,7 @@ def add_department():
         )
 
 
-@main.route(
+@main_blueprint.route(
     "/department/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
@@ -717,7 +733,7 @@ def redirect_edit_department(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/departments/<int:department_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
@@ -790,7 +806,10 @@ def edit_department(department_id: int):
                             f"You attempted to delete a rank, {rank}, that is still in use"
                         )
                     return redirect(
-                        url_for("main.edit_department", department_id=department_id)
+                        url_for(
+                            "main.edit_department",
+                            department_id=department_id,
+                        )
                     )
 
             for new_rank, order in new_ranks:
@@ -823,7 +842,7 @@ def edit_department(department_id: int):
         )
 
 
-@main.route("/department/<int:department_id>")
+@main_blueprint.route("/department/<int:department_id>")
 def redirect_list_officer(
     department_id: int,
     page: int = 1,
@@ -863,7 +882,7 @@ def redirect_list_officer(
     )
 
 
-@main.route("/departments/<int:department_id>")
+@main_blueprint.route("/departments/<int:department_id>")
 def list_officer(
     department_id: int,
     page: int = 1,
@@ -1040,7 +1059,7 @@ def list_officer(
     )
 
 
-@main.route("/department/<int:department_id>/ranks")
+@main_blueprint.route("/department/<int:department_id>/ranks")
 def redirect_get_dept_ranks(department_id: int, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1053,8 +1072,8 @@ def redirect_get_dept_ranks(department_id: int, is_sworn_officer: bool = False):
     )
 
 
-@main.route("/departments/<int:department_id>/ranks")
-@main.route("/ranks")
+@main_blueprint.route("/departments/<int:department_id>/ranks")
+@main_blueprint.route("/ranks")
 def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1079,7 +1098,7 @@ def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool =
     return jsonify(rank_list)
 
 
-@main.route("/department/<int:department_id>/units")
+@main_blueprint.route("/department/<int:department_id>/units")
 def redirect_get_dept_units(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1088,8 +1107,8 @@ def redirect_get_dept_units(department_id: int):
     )
 
 
-@main.route("/departments/<int:department_id>/units")
-@main.route("/units")
+@main_blueprint.route("/departments/<int:department_id>/units")
+@main_blueprint.route("/units")
 def get_dept_units(department_id: Optional[int] = None):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1109,7 +1128,7 @@ def get_dept_units(department_id: Optional[int] = None):
     return jsonify(unit_list)
 
 
-@main.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/officer/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def redirect_add_officer():
@@ -1120,7 +1139,7 @@ def redirect_add_officer():
     )
 
 
-@main.route("/officers/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/officers/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def add_officer():
@@ -1157,7 +1176,9 @@ def add_officer():
         )
 
 
-@main.route("/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route(
+    "/officer/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
 @login_required
 @ac_or_admin_required
 def redirect_edit_officer(officer_id: int):
@@ -1168,7 +1189,7 @@ def redirect_edit_officer(officer_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/officers/<int:officer_id>/edit", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
 @login_required
@@ -1206,7 +1227,7 @@ def edit_officer(officer_id: int):
         )
 
 
-@main.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/unit/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def redirect_add_unit():
@@ -1217,7 +1238,7 @@ def redirect_add_unit():
     )
 
 
-@main.route("/units/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/units/new", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def add_unit():
@@ -1238,7 +1259,7 @@ def add_unit():
         return render_template("add_unit.html", form=form)
 
 
-@main.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@main_blueprint.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def redirect_delete_tag(tag_id: int):
@@ -1249,7 +1270,7 @@ def redirect_delete_tag(tag_id: int):
     )
 
 
-@main.route("/tags/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@main_blueprint.route("/tags/delete/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def delete_tag(tag_id: int):
@@ -1275,7 +1296,7 @@ def delete_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
-@main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@main_blueprint.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 def redirect_set_featured_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1285,7 +1306,7 @@ def redirect_set_featured_tag(tag_id: int):
     )
 
 
-@main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@main_blueprint.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
 @login_required
 @ac_or_admin_required
 def set_featured_tag(tag_id: int):
@@ -1316,7 +1337,7 @@ def set_featured_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
-@main.route("/leaderboard")
+@main_blueprint.route("/leaderboard")
 @login_required
 def leaderboard():
     top_sorters, top_taggers = compute_leaderboard_stats()
@@ -1325,16 +1346,18 @@ def leaderboard():
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/cop_face/department/<int:department_id>/image/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route("/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
-@main.route(
+@main_blueprint.route(
+    "/cop_face/image/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
+@main_blueprint.route(
     "/cop_face/department/<int:department_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/cop_face/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def redirect_label_data(
     department_id: Optional[int] = None, image_id: Optional[int] = None
@@ -1346,18 +1369,18 @@ def redirect_label_data(
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/cop_faces/departments/<int:department_id>/images/<int:image_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route(
+@main_blueprint.route(
     "/cop_faces/images/<int:image_id>", methods=[HTTPMethod.GET, HTTPMethod.POST]
 )
-@main.route(
+@main_blueprint.route(
     "/cop_faces/departments/<int:department_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-@main.route("/cop_faces/", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/cop_faces/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def label_data(department_id: Optional[int] = None, image_id: Optional[int] = None):
     if department_id:
@@ -1456,7 +1479,7 @@ def label_data(department_id: Optional[int] = None, image_id: Optional[int] = No
     )
 
 
-@main.route("/image/tagged/<int:image_id>")
+@main_blueprint.route("/image/tagged/<int:image_id>")
 @login_required
 def redirect_complete_tagging(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1466,7 +1489,7 @@ def redirect_complete_tagging(image_id: int):
     )
 
 
-@main.route("/images/tagged/<int:image_id>")
+@main_blueprint.route("/images/tagged/<int:image_id>")
 @login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
@@ -1486,7 +1509,7 @@ def complete_tagging(image_id: int):
         return redirect(url_for("main.label_data"))
 
 
-@main.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/complaint", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def redirect_submit_complaint():
     return redirect(
         url_for("main.submit_complaint"),
@@ -1494,7 +1517,7 @@ def redirect_submit_complaint():
     )
 
 
-@main.route("/complaints", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/complaints", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def submit_complaint():
     return render_template(
         "complaint.html",
@@ -1506,7 +1529,7 @@ def submit_complaint():
     )
 
 
-@main.route("/submit", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@main_blueprint.route("/submit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @limiter.limit("5/minute")
 def submit_data():
     preferred_dept_id = Department.query.first().id
@@ -1529,7 +1552,7 @@ def submit_data():
         )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/department/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
 def redirect_download_dept_officers_csv(department_id: int):
@@ -1540,7 +1563,7 @@ def redirect_download_dept_officers_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
@@ -1577,7 +1600,7 @@ def download_dept_officers_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/department/<int:department_id>/assignments", methods=[HTTPMethod.GET]
 )
 def redirect_download_dept_assignments_csv(department_id: int):
@@ -1588,7 +1611,7 @@ def redirect_download_dept_assignments_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
@@ -1627,7 +1650,7 @@ def download_dept_assignments_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/department/<int:department_id>/incidents", methods=[HTTPMethod.GET]
 )
 def redirect_download_incidents_csv(department_id: int):
@@ -1638,7 +1661,7 @@ def redirect_download_incidents_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
@@ -1669,7 +1692,7 @@ def download_incidents_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/department/<int:department_id>/salaries", methods=[HTTPMethod.GET]
 )
 def redirect_download_dept_salaries_csv(department_id: int):
@@ -1680,7 +1703,7 @@ def redirect_download_dept_salaries_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
@@ -1712,7 +1735,9 @@ def download_dept_salaries_csv(department_id: int):
     )
 
 
-@main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
+@main_blueprint.route(
+    "/download/department/<int:department_id>/links", methods=[HTTPMethod.GET]
+)
 def redirect_download_dept_links_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1721,7 +1746,9 @@ def redirect_download_dept_links_csv(department_id: int):
     )
 
 
-@main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
+@main_blueprint.route(
+    "/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET]
+)
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
@@ -1751,7 +1778,7 @@ def download_dept_links_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/department/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
 )
 def redirect_download_dept_descriptions_csv(department_id: int):
@@ -1762,7 +1789,7 @@ def redirect_download_dept_descriptions_csv(department_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/download/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
 )
 @limiter.limit("5/minute")
@@ -1792,13 +1819,13 @@ def download_dept_descriptions_csv(department_id: int):
     )
 
 
-@main.route("/download/all", methods=[HTTPMethod.GET])
+@main_blueprint.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
     return render_template("departments_all.html", departments=departments)
 
 
-@main.route(
+@main_blueprint.route(
     "/submit_officer_images/officer/<int:officer_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -1812,7 +1839,7 @@ def redirect_submit_officer_images(officer_id: int):
     )
 
 
-@main.route(
+@main_blueprint.route(
     "/submit_officer_images/officers/<int:officer_id>",
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
@@ -1823,8 +1850,10 @@ def submit_officer_images(officer_id: int):
     return render_template("submit_officer_image.html", officer=officer)
 
 
-@main.route("/upload/department/<int:department_id>", methods=[HTTPMethod.POST])
-@main.route(
+@main_blueprint.route(
+    "/upload/department/<int:department_id>", methods=[HTTPMethod.POST]
+)
+@main_blueprint.route(
     "/upload/department/<int:department_id>/officer/<int:officer_id>",
     methods=[HTTPMethod.POST],
 )
@@ -1835,8 +1864,10 @@ def redirect_upload(department_id: int, officer_id: Optional[int] = None):
     )
 
 
-@main.route("/upload/departments/<int:department_id>", methods=[HTTPMethod.POST])
-@main.route(
+@main_blueprint.route(
+    "/upload/departments/<int:department_id>", methods=[HTTPMethod.POST]
+)
+@main_blueprint.route(
     "/upload/departments/<int:department_id>/officers/<int:officer_id>",
     methods=[HTTPMethod.POST],
 )
@@ -1899,17 +1930,17 @@ def upload(department_id: int, officer_id: Optional[int] = None):
         )
 
 
-@main.route("/about")
+@main_blueprint.route("/about")
 def about_oo():
     return render_template("about.html")
 
 
-@main.route("/privacy")
+@main_blueprint.route("/privacy")
 def privacy_oo():
     return render_template("privacy.html")
 
 
-@main.route("/shutdown")  # pragma: no cover
+@main_blueprint.route("/shutdown")  # pragma: no cover
 def server_shutdown():  # pragma: no cover
     if not current_app.testing:
         abort(HTTPStatus.NOT_FOUND)
@@ -2063,32 +2094,32 @@ class IncidentApi(ModelView):
 
 
 incident_view = IncidentApi.as_view("incident_api")
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/incidents/",
     defaults={"obj_id": None},
     endpoint="incident_api",
     view_func=incident_view,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/incidents/new",
     endpoint="incident_api_new",
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/incidents/<int:obj_id>",
     endpoint="incident_api",
     view_func=incident_view,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/incidents/<int:obj_id>/edit",
     endpoint="incident_api_edit",
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/incidents/<int:obj_id>/delete",
     endpoint="incident_api_delete",
     view_func=incident_view,
@@ -2187,46 +2218,46 @@ def redirect_delete_note(officer_id: int, obj_id=None):
 
 
 note_view = NoteApi.as_view("note_api")
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/notes/new",
     endpoint="note_api",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/note/new",
     view_func=redirect_new_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>",
     endpoint="note_api",
     view_func=note_view,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>",
     view_func=redirect_get_notes,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>/edit",
     endpoint="note_api_edit",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/edit",
     view_func=redirect_edit_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/notes/<int:obj_id>/delete",
     endpoint="note_api_delete",
     view_func=note_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/note/<int:obj_id>/delete",
     view_func=redirect_delete_note,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
@@ -2266,52 +2297,56 @@ def redirect_edit_description(officer_id: int, obj_id=None):
 def redirect_delete_description(officer_id: int, obj_id=None):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for("main.description_api_delete", officer_id=officer_id, obj_id=obj_id),
+        url_for(
+            "main.description_api_delete",
+            officer_id=officer_id,
+            obj_id=obj_id,
+        ),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
 
 description_view = DescriptionApi.as_view("description_api")
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/descriptions/new",
     endpoint="description_api_new",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/description/new",
     view_func=redirect_new_description,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>",
     endpoint="description_api",
     view_func=description_view,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>",
     view_func=redirect_get_description,
     methods=[HTTPMethod.GET],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/edit",
     endpoint="description_api_edit",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/edit",
     view_func=redirect_edit_description,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/descriptions/<int:obj_id>/delete",
     endpoint="description_api_delete",
     view_func=description_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/description/<int:obj_id>/delete",
     view_func=redirect_delete_description,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
@@ -2452,32 +2487,32 @@ def redirect_delete_link(officer_id: int, obj_id=None):
     )
 
 
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/links/new",
     view_func=OfficerLinkApi.as_view("link_api_new"),
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/link/new",
     view_func=redirect_new_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/links/<int:obj_id>/edit",
     view_func=OfficerLinkApi.as_view("link_api_edit"),
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/link/<int:obj_id>/edit",
     view_func=redirect_edit_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officers/<int:officer_id>/links/<int:obj_id>/delete",
     view_func=OfficerLinkApi.as_view("link_api_delete"),
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-main.add_url_rule(
+main_blueprint.add_url_rule(
     "/officer/<int:officer_id>/link/<int:obj_id>/delete",
     view_func=redirect_delete_link,
     methods=[HTTPMethod.GET, HTTPMethod.POST],

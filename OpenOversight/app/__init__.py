@@ -6,18 +6,19 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap5
 from flask_compress import Compress
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
+from OpenOversight.app.auth.views import auth_blueprint
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
+from OpenOversight.app.main.views import main_blueprint
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
+from OpenOversight.app.utils.flask import limiter
 
 
 bootstrap = Bootstrap5()
@@ -27,10 +28,6 @@ login_manager = LoginManager()
 login_manager.session_protection = "strong"
 login_manager.anonymous_user = AnonymousUser
 login_manager.login_view = "auth.login"
-
-limiter = Limiter(
-    key_func=get_remote_address, default_limits=["100 per minute", "5 per second"]
-)
 
 csrf = CSRFProtect()
 
@@ -49,13 +46,8 @@ def create_app(config_name="default"):
     login_manager.init_app(app)
     compress.init_app(app)
 
-    from OpenOversight.app.main import main as main_blueprint
-
     app.register_blueprint(main_blueprint)
-
-    from OpenOversight.app.auth import auth as auth_blueprint
-
-    app.register_blueprint(auth_blueprint, url_prefix="/auth")
+    app.register_blueprint(auth_blueprint)
 
     max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
     num_logs_to_keep = 5

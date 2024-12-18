@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 from flask import (
+    Blueprint,
     current_app,
     flash,
     redirect,
@@ -12,7 +13,6 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app.auth import auth
 from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
     ChangeEmailForm,
@@ -39,10 +39,11 @@ from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
 
+auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 js_loads = ["js/zxcvbn.js", "js/password.js"]
 
 
-@auth.before_app_request
+@auth_blueprint.before_app_request
 def before_request():
     if (
         current_user.is_authenticated
@@ -55,7 +56,7 @@ def before_request():
         return redirect(url_for("auth.unconfirmed"))
 
 
-@auth.route("/unconfirmed")
+@auth_blueprint.route("/unconfirmed")
 def unconfirmed():
     if current_user.is_anonymous or (
         current_user.confirmed_at and current_user.confirmed_by
@@ -71,7 +72,7 @@ def unconfirmed():
         return render_template("auth/unconfirmed.html")
 
 
-@auth.route("/login", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/login", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -90,7 +91,7 @@ def login():
     return render_template("auth/login.html", form=form)
 
 
-@auth.route("/logout")
+@auth_blueprint.route("/logout")
 @login_required
 def logout():
     logout_user()
@@ -98,7 +99,7 @@ def logout():
     return redirect(url_for("main.index"))
 
 
-@auth.route("/register", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/register", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -137,7 +138,7 @@ def register():
     return render_template("auth/register.html", form=form, jsloads=js_loads)
 
 
-@auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
+@auth_blueprint.route("/confirm/<token>", methods=[HTTPMethod.GET])
 @login_required
 def confirm(token):
     if current_user.confirmed_at and current_user.confirmed_by:
@@ -156,7 +157,7 @@ def confirm(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/confirm")
+@auth_blueprint.route("/confirm")
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
@@ -167,7 +168,7 @@ def resend_confirmation():
     return redirect(url_for("main.index"))
 
 
-@auth.route("/change-password", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/change-password", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def change_password():
     form = ChangePasswordForm()
@@ -188,7 +189,7 @@ def change_password():
     return render_template("auth/change_password.html", form=form, jsloads=js_loads)
 
 
-@auth.route("/reset", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/reset", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def password_reset_request():
     if not current_user.is_anonymous:
         return redirect(url_for("main.index"))
@@ -207,7 +208,7 @@ def password_reset_request():
     return render_template("auth/reset_password.html", form=form)
 
 
-@auth.route("/reset/<token>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/reset/<token>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def password_reset(token):
     if not current_user.is_anonymous:
         return redirect(url_for("main.index"))
@@ -226,7 +227,7 @@ def password_reset(token):
     return render_template("auth/reset_password.html", form=form)
 
 
-@auth.route("/change-email", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/change-email", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def change_email_request():
     form = ChangeEmailForm()
@@ -249,7 +250,7 @@ def change_email_request():
     return render_template("auth/change_email.html", form=form)
 
 
-@auth.route("/change-email/<token>")
+@auth_blueprint.route("/change-email/<token>")
 @login_required
 def change_email(token):
     if current_user.change_email(token):
@@ -259,7 +260,7 @@ def change_email(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/change-dept/", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/change-dept/", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @login_required
 def change_dept():
     form = ChangeDefaultDepartmentForm()
@@ -279,7 +280,7 @@ def change_dept():
     return render_template("auth/change_dept_pref.html", form=form)
 
 
-@auth.route("/users/", methods=[HTTPMethod.GET])
+@auth_blueprint.route("/users/", methods=[HTTPMethod.GET])
 @admin_required
 def get_users():
     page = int(request.args.get("page", 1))
@@ -290,7 +291,7 @@ def get_users():
     return render_template("auth/users.html", objects=users)
 
 
-@auth.route("/users/<int:user_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route("/users/<int:user_id>", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @admin_required
 def edit_user(user_id):
     user = db.session.get(User, user_id)
@@ -350,7 +351,9 @@ def edit_user(user_id):
                 return render_template("auth/user.html", user=user, form=form)
 
 
-@auth.route("/users/<int:user_id>/delete", methods=[HTTPMethod.GET, HTTPMethod.POST])
+@auth_blueprint.route(
+    "/users/<int:user_id>/delete", methods=[HTTPMethod.GET, HTTPMethod.POST]
+)
 @admin_required
 def delete_user(user_id):
     user = db.session.get(User, user_id)
