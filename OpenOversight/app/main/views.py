@@ -174,6 +174,7 @@ def browse():
     return render_template("browse.html", departments=departments)
 
 
+@sitemap_include
 @main_blueprint.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
     form = FindOfficerForm()
