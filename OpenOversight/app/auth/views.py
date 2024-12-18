@@ -12,7 +12,6 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app import sitemap
 from OpenOversight.app.auth import auth
 from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
@@ -41,18 +40,6 @@ from OpenOversight.app.utils.general import validate_redirect_url
 
 
 js_loads = ["js/zxcvbn.js", "js/password.js"]
-sitemap_endpoints = []
-
-
-def sitemap_include(view):
-    sitemap_endpoints.append(view.__name__)
-    return view
-
-
-@sitemap.register_generator
-def static_routes():
-    for endpoint in sitemap_endpoints:
-        yield "auth." + endpoint, {}
 
 
 @auth.before_app_request
@@ -84,7 +71,6 @@ def unconfirmed():
         return render_template("auth/unconfirmed.html")
 
 
-@sitemap_include
 @auth.route("/login", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def login():
     form = LoginForm()
@@ -112,7 +98,6 @@ def logout():
     return redirect(url_for("main.index"))
 
 
-@sitemap_include
 @auth.route("/register", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def register():
     form = RegistrationForm()
