@@ -18,7 +18,7 @@ from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
-from OpenOversight.app.utils.flask import limiter
+from OpenOversight.app.utils.flask import limiter, sitemap
 
 
 bootstrap = Bootstrap5()
@@ -44,6 +44,7 @@ def create_app(config_name="default"):
         EmailClient()
     limiter.init_app(app)
     login_manager.init_app(app)
+    sitemap.init_app(app)
     compress.init_app(app)
 
     app.register_blueprint(main_blueprint)
