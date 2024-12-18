@@ -99,7 +99,7 @@ from OpenOversight.app.utils.db import (
     dept_choices,
     unit_choices,
 )
-from OpenOversight.app.utils.flask import limiter
+from OpenOversight.app.utils.flask import limiter, sitemap
 from OpenOversight.app.utils.forms import (
     add_new_assignment,
     add_officer_profile,
@@ -125,6 +125,19 @@ from OpenOversight.app.utils.general import (
 
 main_blueprint = Blueprint("main", __name__)
 
+sitemap_endpoints = []
+
+
+def sitemap_include(view):
+    sitemap_endpoints.append(view.__name__)
+    return view
+
+
+@sitemap.register_generator
+def static_routes():
+    for endpoint in sitemap_endpoints:
+        yield "main." + endpoint, {}
+
 
 def redirect_url(default="main.index"):
     return (
@@ -134,6 +147,7 @@ def redirect_url(default="main.index"):
     )
 
 
+@sitemap_include
 @main_blueprint.route("/")
 @main_blueprint.route("/index")
 def index():
@@ -151,6 +165,7 @@ def set_session_timezone():
     return Response("User timezone saved", status=HTTPStatus.OK)
 
 
+@sitemap_include
 @main_blueprint.route("/browse", methods=[HTTPMethod.GET])
 def browse():
     departments = Department.query.filter(Department.officers.any()).order_by(
@@ -207,6 +222,7 @@ def redirect_get_started_labeling():
     )
 
 
+@sitemap_include
 @main_blueprint.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
     form = LoginForm()
@@ -259,6 +275,7 @@ def sort_images(department_id: int):
     )
 
 
+@sitemap_include
 @main_blueprint.route("/tutorial")
 def get_tutorial():
     return render_template("tutorial.html")
@@ -338,6 +355,12 @@ def officer_profile(officer_id: int):
         assignments=assignments,
         form=form,
     )
+
+
+@sitemap.register_generator
+def sitemap_officers():
+    for officer in Officer.query.all():
+        yield "main.officer_profile", {"officer_id": officer.id}
 
 
 @main_blueprint.route(
@@ -1529,6 +1552,7 @@ def submit_complaint():
     )
 
 
+@sitemap_include
 @main_blueprint.route("/submit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @limiter.limit("5/minute")
 def submit_data():
@@ -1819,6 +1843,7 @@ def download_dept_descriptions_csv(department_id: int):
     )
 
 
+@sitemap_include
 @main_blueprint.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
@@ -1930,6 +1955,7 @@ def upload(department_id: int, officer_id: Optional[int] = None):
         )
 
 
+@sitemap_include
 @main_blueprint.route("/about")
 def about_oo():
     return render_template("about.html")
@@ -2125,6 +2151,12 @@ main_blueprint.add_url_rule(
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
+
+
+@sitemap.register_generator
+def sitemap_incidents():
+    for incident in Incident.query.all():
+        yield "main.incident_api", {"obj_id": incident.id}
 
 
 class TextApi(ModelView):
