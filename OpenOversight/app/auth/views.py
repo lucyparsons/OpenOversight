@@ -35,12 +35,25 @@ from OpenOversight.app.models.emails import (
 )
 from OpenOversight.app.utils.auth import admin_required
 from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
+from OpenOversight.app.utils.flask import sitemap
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
 
 auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 js_loads = ["js/zxcvbn.js", "js/password.js"]
+sitemap_endpoints = []
+
+
+def sitemap_include(view):
+    sitemap_endpoints.append(view.__name__)
+    return view
+
+
+@sitemap.register_generator
+def static_routes():
+    for endpoint in sitemap_endpoints:
+        yield "auth." + endpoint, {}
 
 
 @auth_blueprint.before_app_request
@@ -72,6 +85,7 @@ def unconfirmed():
         return render_template("auth/unconfirmed.html")
 
 
+@sitemap_include
 @auth_blueprint.route("/login", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def login():
     form = LoginForm()
@@ -99,6 +113,7 @@ def logout():
     return redirect(url_for("main.index"))
 
 
+@sitemap_include
 @auth_blueprint.route("/register", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def register():
     form = RegistrationForm()
