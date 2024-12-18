@@ -1962,6 +1962,7 @@ def about_oo():
     return render_template("about.html")
 
 
+@sitemap_include
 @main_blueprint.route("/privacy")
 def privacy_oo():
     return render_template("privacy.html")
