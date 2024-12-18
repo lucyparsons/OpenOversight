@@ -23,7 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
-from OpenOversight.app import limiter, sitemap
+from OpenOversight.app import limiter
 from OpenOversight.app.auth.forms import LoginForm
 from OpenOversight.app.main import main
 from OpenOversight.app.main.downloads import (
@@ -123,20 +123,6 @@ from OpenOversight.app.utils.general import (
 )
 
 
-sitemap_endpoints = []
-
-
-def sitemap_include(view):
-    sitemap_endpoints.append(view.__name__)
-    return view
-
-
-@sitemap.register_generator
-def static_routes():
-    for endpoint in sitemap_endpoints:
-        yield "main." + endpoint, {}
-
-
 def redirect_url(default="main.index"):
     return (
         validate_redirect_url(session.get("next"))
@@ -145,7 +131,6 @@ def redirect_url(default="main.index"):
     )
 
 
-@sitemap_include
 @main.route("/")
 @main.route("/index")
 def index():
@@ -163,7 +148,6 @@ def set_session_timezone():
     return Response("User timezone saved", status=HTTPStatus.OK)
 
 
-@sitemap_include
 @main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
     departments = Department.query.filter(Department.officers.any()).order_by(
@@ -172,7 +156,6 @@ def browse():
     return render_template("browse.html", departments=departments)
 
 
-@sitemap_include
 @main.route("/find", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_officer():
     form = FindOfficerForm()
@@ -220,7 +203,6 @@ def redirect_get_started_labeling():
     )
 
 
-@sitemap_include
 @main.route("/labels", methods=[HTTPMethod.GET, HTTPMethod.POST])
 def get_started_labeling():
     form = LoginForm()
@@ -273,7 +255,6 @@ def sort_images(department_id: int):
     )
 
 
-@sitemap_include
 @main.route("/tutorial")
 def get_tutorial():
     return render_template("tutorial.html")
@@ -349,12 +330,6 @@ def officer_profile(officer_id: int):
         assignments=assignments,
         form=form,
     )
-
-
-@sitemap.register_generator
-def sitemap_officers():
-    for officer in Officer.query.all():
-        yield "main.officer_profile", {"officer_id": officer.id}
 
 
 @main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
@@ -1531,7 +1506,6 @@ def submit_complaint():
     )
 
 
-@sitemap_include
 @main.route("/submit", methods=[HTTPMethod.GET, HTTPMethod.POST])
 @limiter.limit("5/minute")
 def submit_data():
@@ -1818,7 +1792,6 @@ def download_dept_descriptions_csv(department_id: int):
     )
 
 
-@sitemap_include
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
     departments = Department.query.filter(Department.officers.any())
@@ -1926,13 +1899,11 @@ def upload(department_id: int, officer_id: Optional[int] = None):
         )
 
 
-@sitemap_include
 @main.route("/about")
 def about_oo():
     return render_template("about.html")
 
 
-@sitemap_include
 @main.route("/privacy")
 def privacy_oo():
     return render_template("privacy.html")
@@ -2123,12 +2094,6 @@ main.add_url_rule(
     view_func=incident_view,
     methods=[HTTPMethod.GET, HTTPMethod.POST],
 )
-
-
-@sitemap.register_generator
-def sitemap_incidents():
-    for incident in Incident.query.all():
-        yield "main.incident_api", {"obj_id": incident.id}
 
 
 class TextApi(ModelView):

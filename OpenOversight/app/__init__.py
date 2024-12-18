@@ -10,7 +10,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
 from OpenOversight.app.email_client import EmailClient
@@ -33,7 +32,6 @@ limiter = Limiter(
     key_func=get_remote_address, default_limits=["100 per minute", "5 per second"]
 )
 
-sitemap = Sitemap()
 csrf = CSRFProtect()
 
 
@@ -49,7 +47,6 @@ def create_app(config_name="default"):
         EmailClient()
     limiter.init_app(app)
     login_manager.init_app(app)
-    sitemap.init_app(app)
     compress.init_app(app)
 
     from OpenOversight.app.main import main as main_blueprint
