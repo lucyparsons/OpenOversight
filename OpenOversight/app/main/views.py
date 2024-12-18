@@ -1,4 +1,3 @@
-import os
 import re
 import sys
 from datetime import datetime
@@ -122,6 +121,7 @@ from OpenOversight.app.utils.general import (
     serve_image,
     validate_redirect_url,
 )
+
 
 sitemap_endpoints = []
 
