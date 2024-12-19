@@ -1,6 +1,7 @@
-from http import HTTPMethod
+import json
+from http import HTTPMethod, HTTPStatus
 
-from flask import Blueprint
+from flask import Blueprint, current_app
 from sqlalchemy.orm import joinedload
 
 from OpenOversight.app.models.database import Assignment, Department, Officer, db
@@ -27,3 +28,9 @@ def download_dept_officers(department_id: int):
             .all()
         )
         put_database_cache_entry(*cache_params, officers)
+
+    return current_app.response_class(
+        mimetype="application/json",
+        response=json.dumps(officers),
+        status=HTTPStatus.OK,
+    )
