@@ -124,7 +124,6 @@ from OpenOversight.app.utils.general import (
 
 
 main = Blueprint("main", __name__)
-
 sitemap_endpoints = []
 
 
