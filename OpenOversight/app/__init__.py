@@ -10,7 +10,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
-from OpenOversight.app.api.api import api as api_blueprint
+from OpenOversight.app.api.v1 import v1 as api_v1_blueprint
 from OpenOversight.app.auth.views import auth as auth_blueprint
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
@@ -49,7 +49,7 @@ def create_app(config_name="default"):
     compress.init_app(app)
 
     # Add Blueprints
-    app.register_blueprint(api_blueprint)
+    app.register_blueprint(api_v1_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
 
