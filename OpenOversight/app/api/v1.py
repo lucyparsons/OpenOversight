@@ -1,7 +1,6 @@
-import json
-from http import HTTPMethod, HTTPStatus
+from http import HTTPMethod
 
-from flask import Blueprint, current_app
+from flask import Blueprint, jsonify
 from sqlalchemy.orm import contains_eager, joinedload
 
 from OpenOversight.app.models.database import (
@@ -48,11 +47,7 @@ def get_dept_officers(department_id: int):
         )
         put_database_cache_entry(*cache_params, officers)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(officers),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(officers)
 
 
 @v1.route("/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET])
@@ -73,11 +68,7 @@ def get_dept_assignments(department_id: int):
         )
         put_database_cache_entry(*cache_params, assignments)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(assignments),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(assignments)
 
 
 @v1.route("/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET])
@@ -90,11 +81,7 @@ def get_dept_incidents(department_id: int):
         incidents = Incident.query.filter_by(department_id=department_id).all()
         put_database_cache_entry(*cache_params, incidents)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(incidents),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(incidents)
 
 
 @v1.route("/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET])
@@ -113,11 +100,7 @@ def get_dept_salaries(department_id: int):
         )
         put_database_cache_entry(*cache_params, salaries)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(salaries),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(salaries)
 
 
 @v1.route("/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
@@ -136,11 +119,7 @@ def get_dept_links(department_id: int):
         )
         put_database_cache_entry(*cache_params, links)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(links),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(links)
 
 
 @v1.route("/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET])
@@ -159,8 +138,4 @@ def get_dept_descriptions(department_id: int):
         )
         put_database_cache_entry(*cache_params, notes)
 
-    return current_app.response_class(
-        mimetype="application/json",
-        response=json.dumps(notes),
-        status=HTTPStatus.OK,
-    )
+    return jsonify(notes)
