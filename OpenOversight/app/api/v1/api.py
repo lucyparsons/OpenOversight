@@ -10,12 +10,14 @@ from OpenOversight.app.models.database_cache import (
     put_database_cache_entry,
 )
 from OpenOversight.app.utils.constants import KEY_DEPT_ALL_OFFICERS
+from OpenOversight.app.utils.flask import limiter
 
 
 v1 = Blueprint("v1", __name__, url_prefix="/v1")
 
 
 @v1.route("/departments/<int:department_id>/officers", methods=[HTTPMethod.GET])
+@limiter.limit("5/minute")
 def download_dept_officers(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
     officers = get_database_cache_entry(*cache_params)
