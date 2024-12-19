@@ -17,7 +17,7 @@ def test_get_dept_attributes(client, session, department_id: int):
 
         resp_officers = client.get(
             url_for("v1.get_dept_officers", department_id=department_id),
-            follow_recirects=False,
+            follow_redirects=True,
         )
         officers = json.loads(resp_officers.data.decode(ENCODING_UTF_8))
 
@@ -37,7 +37,7 @@ def test_get_dept_attributes(client, session, department_id: int):
 
         resp_assignments = client.get(
             url_for("v1.get_dept_assignments", department_id=department_id),
-            follow_recirects=False,
+            follow_redirects=True,
         )
         assignments = json.loads(resp_assignments.data.decode(ENCODING_UTF_8))
 
@@ -51,7 +51,7 @@ def test_get_dept_attributes(client, session, department_id: int):
 
         resp_incidents = client.get(
             url_for("v1.get_dept_incidents", department_id=department_id),
-            follow_recirects=False,
+            follow_redirects=True,
         )
         incidents = json.loads(resp_incidents.data.decode(ENCODING_UTF_8))
 
@@ -69,7 +69,7 @@ def test_get_dept_attributes(client, session, department_id: int):
 
         resp_salaries = client.get(
             url_for("v1.get_dept_salaries", department_id=department_id),
-            follow_recirects=False,
+            follow_redirects=True,
         )
         salaries = json.loads(resp_salaries.data.decode(ENCODING_UTF_8))
 
