@@ -10,10 +10,10 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
-from OpenOversight.app.auth.views import auth_blueprint
+from OpenOversight.app.auth.views import auth as auth_blueprint
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
-from OpenOversight.app.main.views import main_blueprint
+from OpenOversight.app.main.views import main as main_blueprint
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
@@ -47,8 +47,9 @@ def create_app(config_name="default"):
     sitemap.init_app(app)
     compress.init_app(app)
 
-    app.register_blueprint(main_blueprint)
+    # Add Blueprints
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(main_blueprint)
 
     max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
     num_logs_to_keep = 5
