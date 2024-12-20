@@ -30,7 +30,7 @@ def test_department_repr(mockdata):
     department = Department.query.first()
     assert (
         repr(department)
-        == f"<Department ID {department.id}: {department.name} {department.state}>"
+        == f"<Department ID {department.id} : {department.name} : {department.state}>"
     )
 
 
@@ -173,7 +173,12 @@ def test_user_repr(mockdata):
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}"
+    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}>"
+
+
+def test_link_repr(mockdata):
+    link = Link.query.first()
+    assert repr(link) == f"<Link ID: {link.id} : {link.description}>"
 
 
 def test_password_not_printed(mockdata):
