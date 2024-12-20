@@ -105,6 +105,6 @@ class CustomJSONEncoder(JSONEncoder):
             return obj.isoformat()
 
         if isinstance(obj, time):
-            return obj.strftime("%T")
+            return obj.strftime("%I:%M %p")
 
         return super().default(obj)
