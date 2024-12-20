@@ -185,15 +185,6 @@ class Department(BaseModel, TrackUpdates, Serializable):
     def __repr__(self):
         return f"<Department ID: {self.id} : {self.name} : {self.state}>"
 
-    def to_custom_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "short_name": self.short_name,
-            "state": self.state,
-            "unique_internal_identifier_label": self.unique_internal_identifier_label,
-        }
-
     @property
     def display_name(self) -> str:
         return self.name if not self.state else f"[{self.state}] {self.name}"
