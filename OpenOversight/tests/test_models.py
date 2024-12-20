@@ -141,6 +141,11 @@ def test_assignment_repr(mockdata):
     )
 
 
+def test_incident_repr(mockdata):
+    incident = Incident.query.first()
+    assert repr(incident) == f"<Incident ID: {incident.id} : {incident.report_number}>"
+
+
 def test_job_repr(mockdata):
     job = Job.query.first()
     assert repr(job) == f"<Job ID {job.id}: {job.job_title}>"
@@ -158,7 +163,7 @@ def test_face_repr(mockdata):
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert repr(unit) == f"Unit: {unit.description}"
+    assert repr(unit) == f"<Unit: {unit.description}>"
 
 
 def test_user_repr(mockdata):

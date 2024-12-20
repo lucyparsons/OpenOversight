@@ -474,7 +474,7 @@ class Unit(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"Unit: {self.description}"
+        return f"<Unit: {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates):
@@ -750,6 +750,9 @@ class Incident(BaseModel, TrackUpdates):
     department = db.relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
+
+    def __repr__(self):
+        return f"<Incident ID: {self.id} : {self.report_number}>"
 
 
 class User(UserMixin, BaseModel):
