@@ -30,7 +30,7 @@ def test_department_repr(mockdata):
     department = Department.query.first()
     assert (
         repr(department)
-        == f"<Department ID {department.id} : {department.name} : {department.state}>"
+        == f"<Department ID: {department.id} : {department.name} : {department.state}>"
     )
 
 
@@ -153,17 +153,17 @@ def test_job_repr(mockdata):
 
 def test_image_repr(mockdata):
     image = Image.query.first()
-    assert repr(image) == f"<Image ID {image.id}: {image.filepath}>"
+    assert repr(image) == f"<Image ID: {image.id} : {image.filepath}>"
 
 
 def test_face_repr(mockdata):
     face = Face.query.first()
-    assert repr(face) == f"<Tag ID {face.id}: {face.officer_id} - {face.img_id}>"
+    assert repr(face) == f"<Tag ID: {face.id} : {face.officer_id} : {face.img_id}>"
 
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert repr(unit) == f"<Unit: {unit.description}>"
+    assert repr(unit) == f"<Unit ID: {unit.id} : {unit.description}>"
 
 
 def test_user_repr(mockdata):
@@ -173,12 +173,12 @@ def test_user_repr(mockdata):
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}>"
+    assert repr(salary) == f"<Salary ID: {salary.officer_id} : {salary.salary}>"
 
 
 def test_link_repr(mockdata):
     link = Link.query.first()
-    assert repr(link) == f"<Link ID: {link.id} : {link.description}>"
+    assert repr(link) == f"<Link ID: {link.id} : {link.title}>"
 
 
 def test_password_not_printed(mockdata):
