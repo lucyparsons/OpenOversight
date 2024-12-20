@@ -47,10 +47,11 @@ def create_app(config_name="default"):
     sitemap.init_app(app)
     compress.init_app(app)
 
+    # Register Blueprints for application routes
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
 
-    max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
+    max_log_size = 10 * MEGABYTE  # Start new log file after 10 MB
     num_logs_to_keep = 5
     file_handler = RotatingFileHandler(
         "/tmp/openoversight.log", "a", max_log_size, num_logs_to_keep
@@ -67,7 +68,7 @@ def create_app(config_name="default"):
     app.logger.addHandler(file_handler)
     app.logger.info("OpenOversight startup")
 
-    # Also log when endpoints are getting hit hard
+    # Log when endpoints are getting hit hard
     limiter.logger.addHandler(file_handler)
 
     # Define error handlers
