@@ -136,7 +136,7 @@ class Department(BaseModel, TrackUpdates):
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
-        return f"<Department ID {self.id}: {self.name} {self.state}>"
+        return f"<Department ID {self.id} : {self.name} {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -279,6 +279,14 @@ class Officer(BaseModel, TrackUpdates):
         CheckConstraint("gender in ('M', 'F', 'Other')", name="gender_options"),
     )
 
+    def __repr__(self):
+        if self.unique_internal_identifier:
+            return (
+                f"<Officer ID {self.id}: {self.full_name()} "
+                f"({self.unique_internal_identifier})>"
+            )
+        return f"<Officer ID {self.id}: {self.full_name()}>"
+
     def full_name(self):
         if self.middle_initial:
             middle_initial = (
@@ -339,14 +347,6 @@ class Officer(BaseModel, TrackUpdates):
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
-    def __repr__(self):
-        if self.unique_internal_identifier:
-            return (
-                f"<Officer ID {self.id}: {self.full_name()} "
-                f"({self.unique_internal_identifier})>"
-            )
-        return f"<Officer ID {self.id}: {self.full_name()}>"
-
 
 class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
@@ -365,7 +365,7 @@ class Salary(BaseModel, TrackUpdates):
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return f"<Salary: ID {self.officer_id} : {self.salary}"
+        return f"<Salary: ID {self.officer_id} : {self.salary}>"
 
     @property
     def total_pay(self) -> float:
@@ -433,7 +433,7 @@ class Unit(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"Unit: {self.description}"
+        return f"<Unit ID: {self.id} : {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates):
@@ -485,7 +485,7 @@ class Face(BaseModel, TrackUpdates):
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
     def __repr__(self):
-        return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
+        return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
 
 
 class Image(BaseModel, TrackUpdates):
