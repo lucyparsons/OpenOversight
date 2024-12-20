@@ -19,6 +19,7 @@ from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
+from OpenOversight.app.utils.db import CustomJSONEncoder
 from OpenOversight.app.utils.flask import limiter, sitemap
 
 
@@ -37,6 +38,7 @@ def create_app(config_name="default"):
     app = Flask(__name__)
     # Creates and adds the Config object of the correct type to app.config
     app.config.from_object(config[config_name])
+    app.json_encoder = CustomJSONEncoder
 
     bootstrap.init_app(app)
     csrf.init_app(app)
