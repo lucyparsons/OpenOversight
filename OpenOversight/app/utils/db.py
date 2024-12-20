@@ -101,6 +101,10 @@ class CustomJSONEncoder(JSONEncoder):
     """
 
     def default(self, obj):
-        if isinstance(obj, (date, time, datetime)):
+        if isinstance(obj, (date, datetime)):
             return obj.isoformat()
+
+        if isinstance(obj, time):
+            return obj.strftime("%T")
+
         return super().default(obj)
