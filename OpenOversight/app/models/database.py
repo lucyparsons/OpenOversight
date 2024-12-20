@@ -406,7 +406,7 @@ class Assignment(BaseModel, TrackUpdates):
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
-        return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
+        return f"<Assignment ID: {self.officer_id} : {self.star_no}>"
 
     @property
     def start_date_or_min(self):
@@ -656,12 +656,12 @@ class Link(BaseModel, TrackUpdates):
     author = db.Column(db.String(255), nullable=True)
     has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __repr__(self):
-        return f"<Link ID: {self.id} : {self.title}>"
-
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
+
+    def __repr__(self):
+        return f"<Link ID: {self.id} : {self.title}>"
 
 
 class Incident(BaseModel, TrackUpdates):
