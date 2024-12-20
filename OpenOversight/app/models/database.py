@@ -212,6 +212,9 @@ class Note(BaseModel, TrackUpdates):
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
+    def __repr__(self):
+        return f"<Note ID: {self.id} : {self.text_contents}>"
+
 
 class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
@@ -220,6 +223,9 @@ class Description(BaseModel, TrackUpdates):
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+
+    def __repr__(self):
+        return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
 class Officer(BaseModel, TrackUpdates):

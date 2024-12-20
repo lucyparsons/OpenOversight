@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
+    Description,
     Face,
     Image,
     Incident,
@@ -17,6 +18,7 @@ from OpenOversight.app.models.database import (
     LicensePlate,
     Link,
     Location,
+    Note,
     Officer,
     Salary,
     Unit,
@@ -179,6 +181,19 @@ def test_salary_repr(mockdata):
 def test_link_repr(mockdata):
     link = Link.query.first()
     assert repr(link) == f"<Link ID: {link.id} : {link.title}>"
+
+
+def test_note_repr(mockdata):
+    note = Note.query.first()
+    assert repr(note) == f"<Note ID: {note.id} : {note.text_contents}>"
+
+
+def test_description_repr(mockdata):
+    description = Description.query.first()
+    assert (
+        repr(description)
+        == f"<Description ID: {description.id} : {description.text_contents}>"
+    )
 
 
 def test_password_not_printed(mockdata):
