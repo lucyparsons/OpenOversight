@@ -1681,17 +1681,7 @@ def download_incidents_csv(department_id: int):
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
     incidents = get_database_cache_entry(*cache_params)
     if incidents is None:
-        incidents = (
-            Incident.query.options(
-                joinedload(Incident.address),
-                joinedload(Incident.license_plates),
-                joinedload(Incident.links),
-                joinedload(Incident.officers),
-            )
-            .filter_by(department_id=department_id)
-            .all()
-        )
-
+        incidents = Incident.query.filter_by(department_id=department_id).all()
         put_database_cache_entry(*cache_params, incidents)
 
     field_names = [
