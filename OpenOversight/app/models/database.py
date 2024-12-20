@@ -183,7 +183,7 @@ class Department(BaseModel, TrackUpdates, Serializable):
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
-        return f"<Department ID {self.id} : {self.name} : {self.state}>"
+        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -430,7 +430,7 @@ class Salary(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Salary: ID {self.officer_id} : {self.salary}>"
+        return f"<Salary ID: {self.officer_id} : {self.salary}>"
 
     @property
     def total_pay(self) -> float:
@@ -504,7 +504,7 @@ class Unit(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Unit: {self.description}>"
+        return f"<Unit ID: {self.id} : {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates, Serializable):
@@ -556,7 +556,7 @@ class Face(BaseModel, TrackUpdates, Serializable):
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
     def __repr__(self):
-        return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
+        return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
 
 
 class Image(BaseModel, TrackUpdates, Serializable):
@@ -583,7 +583,7 @@ class Image(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Image ID {self.id}: {self.filepath}>"
+        return f"<Image ID: {self.id} : {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -730,7 +730,7 @@ class Link(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Link ID: {self.id} : {self.description}>"
+        return f"<Link ID: {self.id} : {self.title}>"
 
     @validates("url")
     def validate_url(self, key, url):
