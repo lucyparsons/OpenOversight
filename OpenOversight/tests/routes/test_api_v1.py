@@ -26,7 +26,7 @@ def test_get_dept_attributes(client, session, department_id: int):
 
         # Get assignments
         expected_assignments = (
-            session.get(Assignment)
+            session.query(Assignment)
             .join(Assignment.base_officer)
             .filter(Officer.department_id == department_id)
             .options(contains_eager(Assignment.base_officer))
@@ -55,7 +55,7 @@ def test_get_dept_attributes(client, session, department_id: int):
         )
         incidents = json.loads(resp_incidents.data.decode(ENCODING_UTF_8))
 
-        assert resp_assignments.status_code == HTTPStatus.OK
+        assert resp_incidents.status_code == HTTPStatus.OK
         assert len(incidents) == expected_incidents
 
         # Get salaries
@@ -73,5 +73,5 @@ def test_get_dept_attributes(client, session, department_id: int):
         )
         salaries = json.loads(resp_salaries.data.decode(ENCODING_UTF_8))
 
-        assert resp_assignments.status_code == HTTPStatus.OK
+        assert resp_salaries.status_code == HTTPStatus.OK
         assert len(salaries) == expected_salaries
