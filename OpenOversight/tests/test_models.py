@@ -196,6 +196,14 @@ def test_description_repr(mockdata):
     )
 
 
+def test_license_plate_repr(mockdata):
+    license_plate = LicensePlate.query.first()
+    assert (
+        repr(license_plate)
+        == f"<LicensePlate ID: {license_plate.id} : {license_plate.state} : {license_plate.number}>"
+    )
+
+
 def test_password_not_printed(mockdata):
     """Validate that password fields cannot be directly accessed."""
     user = User(password="bacon")

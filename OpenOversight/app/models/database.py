@@ -650,6 +650,9 @@ class LicensePlate(BaseModel, TrackUpdates):
     def validate_state(self, key, state):
         return state_validator(state)
 
+    def __repr__(self):
+        return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
+
 
 class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
