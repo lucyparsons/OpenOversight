@@ -183,7 +183,7 @@ class Department(BaseModel, TrackUpdates, Serializable):
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
-        return f"<Department ID {self.id}: {self.name} {self.state}>"
+        return f"<Department ID {self.id} : {self.name} : {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -430,7 +430,7 @@ class Salary(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Salary: ID {self.officer_id} : {self.salary}"
+        return f"<Salary: ID {self.officer_id} : {self.salary}>"
 
     @property
     def total_pay(self) -> float:
@@ -728,6 +728,9 @@ class Link(BaseModel, TrackUpdates, Serializable):
     has_content_warning: Mapped[bool] = db.Column(
         db.Boolean, nullable=False, default=False
     )
+
+    def __repr__(self):
+        return f"<Link ID: {self.id} : {self.description}>"
 
     @validates("url")
     def validate_url(self, key, url):
