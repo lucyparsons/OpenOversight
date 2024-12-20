@@ -31,6 +31,10 @@ from OpenOversight.app.utils.flask import limiter
 v1 = Blueprint("v1", __name__, url_prefix="/api/v1")
 
 
+def objs_to_dicts_jsonify(obj_list):
+    return jsonify([o.to_dict() for o in obj_list])
+
+
 @v1.route("/departments/<int:department_id>/officers", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_officers(department_id: int):
@@ -47,7 +51,7 @@ def get_dept_officers(department_id: int):
         )
         put_database_cache_entry(*cache_params, officers)
 
-    return jsonify(officers)
+    return objs_to_dicts_jsonify(officers)
 
 
 @v1.route("/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET])
@@ -68,7 +72,7 @@ def get_dept_assignments(department_id: int):
         )
         put_database_cache_entry(*cache_params, assignments)
 
-    return jsonify(assignments)
+    return objs_to_dicts_jsonify(assignments)
 
 
 @v1.route("/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET])
@@ -81,7 +85,7 @@ def get_dept_incidents(department_id: int):
         incidents = Incident.query.filter_by(department_id=department_id).all()
         put_database_cache_entry(*cache_params, incidents)
 
-    return jsonify(incidents)
+    return objs_to_dicts_jsonify(incidents)
 
 
 @v1.route("/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET])
@@ -100,7 +104,7 @@ def get_dept_salaries(department_id: int):
         )
         put_database_cache_entry(*cache_params, salaries)
 
-    return jsonify(salaries)
+    return objs_to_dicts_jsonify(salaries)
 
 
 @v1.route("/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
@@ -119,7 +123,7 @@ def get_dept_links(department_id: int):
         )
         put_database_cache_entry(*cache_params, links)
 
-    return jsonify(links)
+    return objs_to_dicts_jsonify(links)
 
 
 @v1.route("/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET])
@@ -138,4 +142,4 @@ def get_dept_descriptions(department_id: int):
         )
         put_database_cache_entry(*cache_params, notes)
 
-    return jsonify(notes)
+    return objs_to_dicts_jsonify(notes)
