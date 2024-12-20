@@ -10,6 +10,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
+from OpenOversight.app.auth.views import auth as auth_blueprint
 from OpenOversight.app.email_client import EmailClient
 from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.models.config import config
@@ -48,9 +49,6 @@ def create_app(config_name="default"):
     from OpenOversight.app.main import main as main_blueprint
 
     app.register_blueprint(main_blueprint)
-
-    from OpenOversight.app.auth import auth as auth_blueprint
-
     app.register_blueprint(auth_blueprint, url_prefix="/auth")
 
     max_log_size = 10 * MEGABYTE  # start new log file after 10 MB
