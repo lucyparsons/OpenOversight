@@ -91,13 +91,19 @@ officer_incidents = db.Table(
 
 
 @declarative_mixin
-class SerializerMixin:
+class Serializable:
     def to_dict(self):
         """Convert a generic model instance into a dictionary."""
         data = {}
         excluded = [
+            "approved_at",
+            "approved_by",
+            "confirmed_at",
+            "confirmed_by",
             "created_at",
             "created_by",
+            "disabled_at",
+            "disabled_by",
             "password_hash",
             "last_updated_at",
             "last_updated_by",
