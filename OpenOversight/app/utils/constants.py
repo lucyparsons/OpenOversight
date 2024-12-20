@@ -1,6 +1,3 @@
-import os
-
-
 # Cache Key Constants
 KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
 KEY_DEPT_ALL_INCIDENTS = "all_department_incidents"
