@@ -1,9 +1,7 @@
 import operator
 import re
-import time
 import uuid
-from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -12,6 +10,7 @@ from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import (
     DeclarativeMeta,
     Mapped,
@@ -92,6 +91,36 @@ officer_incidents = db.Table(
 
 
 @declarative_mixin
+class SerializerMixin:
+    def to_dict(self):
+        """Convert a generic model instance into a dictionary."""
+        data = {}
+        excluded = [
+            "created_at",
+            "created_by",
+            "password_hash",
+            "last_updated_at",
+            "last_updated_by",
+        ]
+
+        for column in inspect(self).mapper.column_attrs:
+            if column.key in excluded or column.key.startsWith("_"):
+                continue
+
+            value = getattr(self, column.key)
+            if isinstance(value, (date, datetime)):
+                data[column.key] = value.isoformat()
+            elif isinstance(value, date):
+                data[column.key] = value.strftime("%Y-%m-%d")
+            elif isinstance(value, time):
+                data[column.key] = value.strftime("%I:%M %p")
+            else:
+                data[column.key] = value
+
+        return data
+
+
+@declarative_mixin
 class TrackUpdates:
     """Add columns to track the date of and user who created and last modified
     the object.
@@ -128,7 +157,6 @@ class TrackUpdates:
         return db.relationship("User", foreign_keys=[cls.created_by])
 
 
-@dataclass
 class Department(BaseModel, TrackUpdates):
     __tablename__ = "departments"
     id: Mapped[int] = db.Column(db.Integer, primary_key=True)
@@ -187,7 +215,6 @@ class Department(BaseModel, TrackUpdates):
         remove_database_cache_entries(self, update_types)
 
 
-@dataclass
 class Job(BaseModel, TrackUpdates):
     __tablename__ = "jobs"
 
@@ -217,7 +244,6 @@ class Job(BaseModel, TrackUpdates):
         return self.job_title
 
 
-@dataclass
 class Note(BaseModel, TrackUpdates):
     __tablename__ = "notes"
 
@@ -229,7 +255,6 @@ class Note(BaseModel, TrackUpdates):
     officer = db.relationship("Officer", back_populates="notes")
 
 
-@dataclass
 class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
 
@@ -241,7 +266,6 @@ class Description(BaseModel, TrackUpdates):
     )
 
 
-@dataclass
 class Officer(BaseModel, TrackUpdates):
     __tablename__ = "officers"
 
@@ -305,6 +329,14 @@ class Officer(BaseModel, TrackUpdates):
         CheckConstraint("gender in ('M', 'F', 'Other')", name="gender_options"),
     )
 
+    def __repr__(self):
+        if self.unique_internal_identifier:
+            return (
+                f"<Officer ID {self.id}: {self.full_name()} "
+                f"({self.unique_internal_identifier})>"
+            )
+        return f"<Officer ID {self.id}: {self.full_name()}>"
+
     def full_name(self) -> str:
         if self.middle_initial:
             middle_initial = (
@@ -365,16 +397,7 @@ class Officer(BaseModel, TrackUpdates):
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
-    def __repr__(self):
-        if self.unique_internal_identifier:
-            return (
-                f"<Officer ID {self.id}: {self.full_name()} "
-                f"({self.unique_internal_identifier})>"
-            )
-        return f"<Officer ID {self.id}: {self.full_name()}>"
 
-
-@dataclass
 class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
 
@@ -411,7 +434,6 @@ class Salary(BaseModel, TrackUpdates):
         return str(self.year)
 
 
-@dataclass
 class Assignment(BaseModel, TrackUpdates):
     __tablename__ = "assignments"
 
@@ -457,7 +479,6 @@ class Assignment(BaseModel, TrackUpdates):
         return self.start_date or date.max
 
 
-@dataclass
 class Unit(BaseModel, TrackUpdates):
     __tablename__ = "unit_types"
 
@@ -628,7 +649,6 @@ incident_officers = db.Table(
 )
 
 
-@dataclass
 class Location(BaseModel, TrackUpdates):
     __tablename__ = "locations"
 
@@ -672,7 +692,6 @@ class Location(BaseModel, TrackUpdates):
             return f"{self.city} {self.state}"
 
 
-@dataclass
 class LicensePlate(BaseModel, TrackUpdates):
     __tablename__ = "license_plates"
 
@@ -688,7 +707,6 @@ class LicensePlate(BaseModel, TrackUpdates):
         return state_validator(state)
 
 
-@dataclass
 class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
 
@@ -707,7 +725,6 @@ class Link(BaseModel, TrackUpdates):
         return url_validator(url)
 
 
-@dataclass
 class Incident(BaseModel, TrackUpdates):
     __tablename__ = "incidents"
 
