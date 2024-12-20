@@ -254,7 +254,7 @@ class Officer(BaseModel, TrackUpdates):
     gender: Mapped[str] = db.Column(
         db.String(5), index=True, unique=False, nullable=True
     )
-    employment_date: Mapped[str] = db.Column(
+    employment_date: Mapped[date] = db.Column(
         db.Date, index=True, unique=False, nullable=True
     )
     birth_year: Mapped[int] = db.Column(
@@ -438,10 +438,10 @@ class Assignment(BaseModel, TrackUpdates):
         nullable=True,
     )
     unit = db.relationship("Unit")
-    start_date: Mapped[str] = db.Column(
+    start_date: Mapped[date] = db.Column(
         db.Date, index=True, unique=False, nullable=True
     )
-    resign_date: Mapped[str] = db.Column(
+    resign_date: Mapped[date] = db.Column(
         db.Date, index=True, unique=False, nullable=True
     )
 
@@ -672,12 +672,13 @@ class Location(BaseModel, TrackUpdates):
             return f"{self.city} {self.state}"
 
 
+@dataclass
 class LicensePlate(BaseModel, TrackUpdates):
     __tablename__ = "license_plates"
 
-    id = db.Column(db.Integer, primary_key=True)
-    number = db.Column(db.String(8), nullable=False, index=True)
-    state = db.Column(db.String(2), index=True)
+    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
+    number: Mapped[str] = db.Column(db.String(8), nullable=False, index=True)
+    state: Mapped[str] = db.Column(db.String(2), index=True)
 
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
@@ -687,16 +688,19 @@ class LicensePlate(BaseModel, TrackUpdates):
         return state_validator(state)
 
 
+@dataclass
 class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
 
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), index=True)
-    url = db.Column(db.Text(), nullable=False)
-    link_type = db.Column(db.String(100), index=True)
-    description = db.Column(db.Text(), nullable=True)
-    author = db.Column(db.String(255), nullable=True)
-    has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
+    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
+    title: Mapped[str] = db.Column(db.String(100), index=True)
+    url: Mapped[str] = db.Column(db.Text(), nullable=False)
+    link_type: Mapped[str] = db.Column(db.String(100), index=True)
+    description: Mapped[str] = db.Column(db.Text(), nullable=True)
+    author: Mapped[str] = db.Column(db.String(255), nullable=True)
+    has_content_warning: Mapped[bool] = db.Column(
+        db.Boolean, nullable=False, default=False
+    )
 
     @validates("url")
     def validate_url(self, key, url):
@@ -708,8 +712,8 @@ class Incident(BaseModel, TrackUpdates):
     __tablename__ = "incidents"
 
     id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    date: Mapped[str] = db.Column(db.Date, unique=False, index=True)
-    time: Mapped[str] = db.Column(db.Time, unique=False, index=True)
+    date: Mapped[date] = db.Column(db.Date, unique=False, index=True)
+    time: Mapped[time] = db.Column(db.Time, unique=False, index=True)
     report_number: Mapped[str] = db.Column(db.String(50), index=True)
     description: Mapped[str] = db.Column(db.Text(), nullable=True)
     address_id: Mapped[int] = db.Column(
@@ -740,7 +744,7 @@ class Incident(BaseModel, TrackUpdates):
             order_by="Incident.date.desc(), Incident.time.desc()",
         ),
     )
-    department_id = db.Column(
+    department_id: Mapped[int] = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
     )
     department = db.relationship(
