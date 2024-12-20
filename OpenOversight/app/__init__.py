@@ -6,11 +6,8 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap5
 from flask_compress import Compress
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from flask_sitemap import Sitemap
 from flask_wtf.csrf import CSRFProtect
 
 from OpenOversight.app.email_client import EmailClient
@@ -19,6 +16,7 @@ from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
+from OpenOversight.app.utils.flask import limiter, sitemap
 
 
 bootstrap = Bootstrap5()
@@ -29,11 +27,6 @@ login_manager.session_protection = "strong"
 login_manager.anonymous_user = AnonymousUser
 login_manager.login_view = "auth.login"
 
-limiter = Limiter(
-    key_func=get_remote_address, default_limits=["100 per minute", "5 per second"]
-)
-
-sitemap = Sitemap()
 csrf = CSRFProtect()
 
 
