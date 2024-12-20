@@ -136,7 +136,7 @@ class Department(BaseModel, TrackUpdates):
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
-        return f"<Department ID {self.id} : {self.name} {self.state}>"
+        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -365,7 +365,7 @@ class Salary(BaseModel, TrackUpdates):
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return f"<Salary: ID {self.officer_id} : {self.salary}>"
+        return f"<Salary ID: {self.officer_id} : {self.salary}>"
 
     @property
     def total_pay(self) -> float:
@@ -512,7 +512,7 @@ class Image(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"<Image ID {self.id}: {self.filepath}>"
+        return f"<Image ID: {self.id} : {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -656,6 +656,9 @@ class Link(BaseModel, TrackUpdates):
     author = db.Column(db.String(255), nullable=True)
     has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
 
+    def __repr__(self):
+        return f"<Link ID: {self.id} : {self.title}>"
+
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
@@ -703,6 +706,9 @@ class Incident(BaseModel, TrackUpdates):
     department = db.relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
+
+    def __repr__(self):
+        return f"<Incident ID: {self.id} : {self.report_number}>"
 
 
 class User(UserMixin, BaseModel):
