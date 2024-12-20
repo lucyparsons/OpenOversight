@@ -1,5 +1,3 @@
-from datetime import date, datetime, time
-from json import JSONEncoder
 from typing import Optional
 
 from sqlalchemy import func
@@ -92,19 +90,3 @@ def unit_choices(department_id: Optional[int] = None):
             .all()
         )
     return db.session.query(Unit).order_by(Unit.description.asc()).all()
-
-
-class CustomJSONEncoder(JSONEncoder):
-    """
-    Used to encode date, time, and datetime fields into ISO strings for JSON
-    encoding.
-    """
-
-    def default(self, obj):
-        if isinstance(obj, (date, datetime)):
-            return obj.isoformat()
-
-        if isinstance(obj, time):
-            return obj.strftime("%I:%M %p")
-
-        return super().default(obj)
