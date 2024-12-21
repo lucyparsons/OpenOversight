@@ -14,13 +14,7 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import (
-    DeclarativeMeta,
-    Mapped,
-    declarative_mixin,
-    declared_attr,
-    validates,
-)
+from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -168,15 +162,13 @@ class TrackUpdates:
 
 class Department(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "departments"
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    name: Mapped[str] = db.Column(
-        db.String(255), index=False, unique=False, nullable=False
-    )
-    short_name: Mapped[str] = db.Column(db.String(100), unique=False, nullable=False)
-    state: Mapped[str] = db.Column(db.String(2), server_default="", nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), index=False, unique=False, nullable=False)
+    short_name = db.Column(db.String(100), unique=False, nullable=False)
+    state = db.Column(db.String(2), server_default="", nullable=False)
 
     # See https://github.com/lucyparsons/OpenOversight/issues/462
-    unique_internal_identifier_label: Mapped[str] = db.Column(
+    unique_internal_identifier_label = db.Column(
         db.String(100), unique=False, nullable=True
     )
 
@@ -218,16 +210,14 @@ class Department(BaseModel, TrackUpdates, Serializable):
 class Job(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "jobs"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    job_title: Mapped[str] = db.Column(
-        db.String(255), index=True, unique=False, nullable=False
-    )
-    is_sworn_officer: Mapped[bool] = db.Column(db.Boolean, index=True, default=True)
-    order: Mapped[int] = db.Column(db.Integer, index=True, unique=False, nullable=False)
-    department_id: Mapped[int] = db.Column(
+    id = db.Column(db.Integer, primary_key=True)
+    job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
+    is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
+    order = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="jobs_department_id_fkey")
     )
-    department: Mapped[Department] = db.relationship(
+    department = db.relationship(
         "Department", backref=db.backref("jobs", cascade_backrefs=False)
     )
 
@@ -247,11 +237,9 @@ class Job(BaseModel, TrackUpdates, Serializable):
 class Note(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "notes"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    text_contents: Mapped[str] = db.Column(db.Text())
-    officer_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE")
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    text_contents = db.Column(db.Text())
+    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
 
@@ -259,38 +247,30 @@ class Description(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "descriptions"
 
     officer = db.relationship("Officer", back_populates="descriptions")
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    text_contents: Mapped[str] = db.Column(db.Text())
-    officer_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE")
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    text_contents = db.Column(db.Text())
+    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
 
 
 class Officer(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "officers"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    last_name: Mapped[str] = db.Column(db.String(120), index=True, unique=False)
-    first_name: Mapped[str] = db.Column(db.String(120), index=True, unique=False)
-    middle_initial: Mapped[str] = db.Column(db.String(120), unique=False, nullable=True)
-    suffix: Mapped[str] = db.Column(db.String(120), index=True, unique=False)
-    race: Mapped[str] = db.Column(db.String(120), index=True, unique=False)
-    gender: Mapped[str] = db.Column(
-        db.String(5), index=True, unique=False, nullable=True
-    )
-    employment_date: Mapped[date] = db.Column(
-        db.Date, index=True, unique=False, nullable=True
-    )
-    birth_year: Mapped[int] = db.Column(
-        db.Integer, index=True, unique=False, nullable=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    last_name = db.Column(db.String(120), index=True, unique=False)
+    first_name = db.Column(db.String(120), index=True, unique=False)
+    middle_initial = db.Column(db.String(120), unique=False, nullable=True)
+    suffix = db.Column(db.String(120), index=True, unique=False)
+    race = db.Column(db.String(120), index=True, unique=False)
+    gender = db.Column(db.String(5), index=True, unique=False, nullable=True)
+    employment_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    birth_year = db.Column(db.Integer, index=True, unique=False, nullable=True)
     assignments = db.relationship(
         "Assignment", back_populates="base_officer", cascade_backrefs=False
     )
     face = db.relationship(
         "Face", backref=db.backref("officer", cascade_backrefs=False)
     )
-    department_id: Mapped[int] = db.Column(
+    department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="officers_department_id_fkey")
     )
     department = db.relationship(
@@ -401,24 +381,18 @@ class Officer(BaseModel, TrackUpdates, Serializable):
 class Salary(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "salaries"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    officer_id: Mapped[int] = db.Column(
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(
         db.Integer,
         db.ForeignKey(
             "officers.id", name="salaries_officer_id_fkey", ondelete="CASCADE"
         ),
     )
     officer = db.relationship("Officer", back_populates="salaries")
-    salary: Mapped[float] = db.Column(
-        db.Float, index=True, unique=False, nullable=False
-    )
-    overtime_pay: Mapped[float] = db.Column(
-        db.Float, index=True, unique=False, nullable=True
-    )
-    year: Mapped[int] = db.Column(db.Integer, index=True, unique=False, nullable=False)
-    is_fiscal_year: Mapped[bool] = db.Column(
-        db.Boolean, index=False, unique=False, nullable=False
-    )
+    salary = db.Column(db.Float, index=True, unique=False, nullable=False)
+    overtime_pay = db.Column(db.Float, index=True, unique=False, nullable=True)
+    year = db.Column(db.Integer, index=True, unique=False, nullable=False)
+    is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
         return f"<Salary ID: {self.officer_id} : {self.salary}>"
@@ -437,35 +411,29 @@ class Salary(BaseModel, TrackUpdates, Serializable):
 class Assignment(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "assignments"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    officer_id: Mapped[int] = db.Column(
+    id = db.Column(db.Integer, primary_key=True)
+    officer_id = db.Column(
         db.Integer,
         db.ForeignKey(
             "officers.id", name="assignments_officer_id_fkey", ondelete="CASCADE"
         ),
     )
     base_officer = db.relationship("Officer", back_populates="assignments")
-    star_no: Mapped[str] = db.Column(
-        db.String(120), index=True, unique=False, nullable=True
-    )
-    job_id: Mapped[int] = db.Column(
+    star_no = db.Column(db.String(120), index=True, unique=False, nullable=True)
+    job_id = db.Column(
         db.Integer,
         db.ForeignKey("jobs.id", name="assignments_job_id_fkey"),
         nullable=False,
     )
     job = db.relationship("Job")
-    unit_id: Mapped[int] = db.Column(
+    unit_id = db.Column(
         db.Integer,
         db.ForeignKey("unit_types.id", name="assignments_unit_id_fkey"),
         nullable=True,
     )
     unit = db.relationship("Unit")
-    start_date: Mapped[date] = db.Column(
-        db.Date, index=True, unique=False, nullable=True
-    )
-    resign_date: Mapped[date] = db.Column(
-        db.Date, index=True, unique=False, nullable=True
-    )
+    start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
+    resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
         return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
@@ -482,9 +450,9 @@ class Assignment(BaseModel, TrackUpdates, Serializable):
 class Unit(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "unit_types"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    description: Mapped[str] = db.Column(db.String(120), index=True, unique=False)
-    department_id: Mapped[id] = db.Column(
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(120), index=True, unique=False)
+    department_id = db.Column(
         db.Integer,
         db.ForeignKey("departments.id", name="unit_types_department_id_fkey"),
     )
@@ -652,13 +620,13 @@ incident_officers = db.Table(
 class Location(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "locations"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    street_name: Mapped[str] = db.Column(db.String(100), index=True)
-    cross_street1: Mapped[str] = db.Column(db.String(100), unique=False)
-    cross_street2: Mapped[str] = db.Column(db.String(100), unique=False)
-    city: Mapped[str] = db.Column(db.String(100), unique=False, index=True)
-    state: Mapped[str] = db.Column(db.String(2), unique=False, index=True)
-    zip_code: Mapped[str] = db.Column(db.String(5), unique=False, index=True)
+    id = db.Column(db.Integer, primary_key=True)
+    street_name = db.Column(db.String(100), index=True)
+    cross_street1 = db.Column(db.String(100), unique=False)
+    cross_street2 = db.Column(db.String(100), unique=False)
+    city = db.Column(db.String(100), unique=False, index=True)
+    state = db.Column(db.String(2), unique=False, index=True)
+    zip_code = db.Column(db.String(5), unique=False, index=True)
 
     @validates("zip_code")
     def validate_zip_code(self, key, zip_code):
@@ -695,9 +663,9 @@ class Location(BaseModel, TrackUpdates, Serializable):
 class LicensePlate(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "license_plates"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    number: Mapped[str] = db.Column(db.String(8), nullable=False, index=True)
-    state: Mapped[str] = db.Column(db.String(2), index=True)
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(8), nullable=False, index=True)
+    state = db.Column(db.String(2), index=True)
 
     # for use if car is federal, diplomat, or other non-state
     # non_state_identifier = db.Column(db.String(20), index=True)
@@ -710,15 +678,13 @@ class LicensePlate(BaseModel, TrackUpdates, Serializable):
 class Link(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "links"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    title: Mapped[str] = db.Column(db.String(100), index=True)
-    url: Mapped[str] = db.Column(db.Text(), nullable=False)
-    link_type: Mapped[str] = db.Column(db.String(100), index=True)
-    description: Mapped[str] = db.Column(db.Text(), nullable=True)
-    author: Mapped[str] = db.Column(db.String(255), nullable=True)
-    has_content_warning: Mapped[bool] = db.Column(
-        db.Boolean, nullable=False, default=False
-    )
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), index=True)
+    url = db.Column(db.Text(), nullable=False)
+    link_type = db.Column(db.String(100), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    author = db.Column(db.String(255), nullable=True)
+    has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"<Link ID: {self.id} : {self.title}>"
@@ -731,11 +697,11 @@ class Link(BaseModel, TrackUpdates, Serializable):
 class Incident(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "incidents"
 
-    id: Mapped[int] = db.Column(db.Integer, primary_key=True)
-    date: Mapped[date] = db.Column(db.Date, unique=False, index=True)
-    time: Mapped[time] = db.Column(db.Time, unique=False, index=True)
-    report_number: Mapped[str] = db.Column(db.String(50), index=True)
-    description: Mapped[str] = db.Column(db.Text(), nullable=True)
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, unique=False, index=True)
+    time = db.Column(db.Time, unique=False, index=True)
+    report_number = db.Column(db.String(50), index=True)
+    description = db.Column(db.Text(), nullable=True)
     address_id = db.Column(
         db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
     )
@@ -764,7 +730,7 @@ class Incident(BaseModel, TrackUpdates, Serializable):
             order_by="Incident.date.desc(), Incident.time.desc()",
         ),
     )
-    department_id: Mapped[int] = db.Column(
+    department_id = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
     )
     department = db.relationship(
