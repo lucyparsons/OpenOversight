@@ -109,7 +109,7 @@ def test_officer_repr(session):
     ).first()
 
     assert (
-        repr(officer_no_uii) == f"<Officer I:  {officer_no_uii.id} : "
+        repr(officer_no_uii) == f"<Officer ID: {officer_no_uii.id} : "
         f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
         f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
     )

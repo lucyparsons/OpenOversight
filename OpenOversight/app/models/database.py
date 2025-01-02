@@ -291,7 +291,7 @@ class Officer(BaseModel, TrackUpdates):
                 f"<Officer ID: {self.id} : {self.full_name()} "
                 f"({self.unique_internal_identifier})>"
             )
-        return f"<Officer ID: {self.id}: {self.full_name()}>"
+        return f"<Officer ID: {self.id} : {self.full_name()}>"
 
     def full_name(self):
         if self.middle_initial:
