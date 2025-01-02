@@ -223,7 +223,7 @@ class Job(BaseModel, TrackUpdates):
     job_title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     is_sworn_officer: Mapped[bool] = mapped_column(Boolean, index=True, default=True)
     order: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
-    department_id: Mapped[Optional[int]] = mapped_column(
+    department_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("departments.id", name="jobs_department_id_fkey")
     )
     department: Mapped["Department"] = relationship(
