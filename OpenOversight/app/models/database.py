@@ -228,7 +228,7 @@ class Job(BaseModel, TrackUpdates, Serializable):
     )
 
     def __repr__(self):
-        return f"<Job ID {self.id}: {self.job_title}>"
+        return f"<Job ID: {self.id} : {self.job_title}>"
 
     def __str__(self):
         return self.job_title
@@ -242,6 +242,9 @@ class Note(BaseModel, TrackUpdates, Serializable):
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
+    def __repr__(self):
+        return f"<Note ID: {self.id} : {self.text_contents}>"
+
 
 class Description(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "descriptions"
@@ -250,6 +253,9 @@ class Description(BaseModel, TrackUpdates, Serializable):
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+
+    def __repr__(self):
+        return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
 class Officer(BaseModel, TrackUpdates, Serializable):
@@ -312,12 +318,12 @@ class Officer(BaseModel, TrackUpdates, Serializable):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                f"<Officer ID {self.id}: {self.full_name()} "
+                f"<Officer ID: {self.id} : {self.full_name()} "
                 f"({self.unique_internal_identifier})>"
             )
-        return f"<Officer ID {self.id}: {self.full_name()}>"
+        return f"<Officer ID: {self.id} : {self.full_name()}>"
 
-    def full_name(self) -> str:
+    def full_name(self):
         if self.middle_initial:
             middle_initial = (
                 self.middle_initial + "."
@@ -436,7 +442,7 @@ class Assignment(BaseModel, TrackUpdates, Serializable):
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
-        return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
+        return f"<Assignment ID: {self.officer_id} : {self.star_no}>"
 
     @property
     def start_date_or_min(self):
@@ -674,6 +680,9 @@ class LicensePlate(BaseModel, TrackUpdates, Serializable):
     def validate_state(self, key, state):
         return state_validator(state)
 
+    def __repr__(self):
+        return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
+
 
 class Link(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "links"
@@ -692,6 +701,9 @@ class Link(BaseModel, TrackUpdates, Serializable):
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
+
+    def __repr__(self):
+        return f"<Link ID: {self.id} : {self.title}>"
 
 
 class Incident(BaseModel, TrackUpdates, Serializable):
