@@ -198,7 +198,7 @@ class Job(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"<Job ID {self.id}: {self.job_title}>"
+        return f"<Job ID: {self.id} : {self.job_title}>"
 
     def __str__(self):
         return self.job_title
@@ -288,10 +288,10 @@ class Officer(BaseModel, TrackUpdates):
     def __repr__(self):
         if self.unique_internal_identifier:
             return (
-                f"<Officer ID {self.id}: {self.full_name()} "
+                f"<Officer ID: {self.id} : {self.full_name()} "
                 f"({self.unique_internal_identifier})>"
             )
-        return f"<Officer ID {self.id}: {self.full_name()}>"
+        return f"<Officer ID: {self.id}: {self.full_name()}>"
 
     def full_name(self):
         if self.middle_initial:
