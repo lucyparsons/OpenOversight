@@ -695,9 +695,6 @@ class Link(BaseModel, TrackUpdates, Serializable):
     author = db.Column(db.String(255), nullable=True)
     has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __repr__(self):
-        return f"<Link ID: {self.id} : {self.title}>"
-
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
