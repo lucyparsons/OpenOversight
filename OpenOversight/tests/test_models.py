@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from OpenOversight.app.models.database import (
     Assignment,
     Department,
+    Description,
     Face,
     Image,
     Incident,
@@ -17,6 +18,7 @@ from OpenOversight.app.models.database import (
     LicensePlate,
     Link,
     Location,
+    Note,
     Officer,
     Salary,
     Unit,
@@ -30,7 +32,7 @@ def test_department_repr(mockdata):
     department = Department.query.first()
     assert (
         repr(department)
-        == f"<Department ID {department.id}: {department.name} {department.state}>"
+        == f"<Department ID: {department.id} : {department.name} : {department.state}>"
     )
 
 
@@ -93,7 +95,7 @@ def test_officer_repr(session):
     ).first()
 
     assert (
-        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        repr(officer_uii) == f"<Officer ID: {officer_uii.id} : "
         f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
         f"({officer_uii.unique_internal_identifier})>"
     )
@@ -107,7 +109,7 @@ def test_officer_repr(session):
     ).first()
 
     assert (
-        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        repr(officer_no_uii) == f"<Officer ID: {officer_no_uii.id} : "
         f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
         f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
     )
@@ -118,7 +120,7 @@ def test_officer_repr(session):
 
     assert (
         repr(officer_no_mi)
-        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        == f"<Officer ID: {officer_no_mi.id} : {officer_no_mi.first_name} "
         f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
         f"({officer_no_mi.unique_internal_identifier})>"
     )
@@ -137,28 +139,33 @@ def test_assignment_repr(mockdata):
     assignment = Assignment.query.first()
     assert (
         repr(assignment)
-        == f"<Assignment: ID {assignment.base_officer.id} : {assignment.star_no}>"
+        == f"<Assignment ID: {assignment.base_officer.id} : {assignment.star_no}>"
     )
+
+
+def test_incident_repr(mockdata):
+    incident = Incident.query.first()
+    assert repr(incident) == f"<Incident ID: {incident.id} : {incident.report_number}>"
 
 
 def test_job_repr(mockdata):
     job = Job.query.first()
-    assert repr(job) == f"<Job ID {job.id}: {job.job_title}>"
+    assert repr(job) == f"<Job ID: {job.id} : {job.job_title}>"
 
 
 def test_image_repr(mockdata):
     image = Image.query.first()
-    assert repr(image) == f"<Image ID {image.id}: {image.filepath}>"
+    assert repr(image) == f"<Image ID: {image.id} : {image.filepath}>"
 
 
 def test_face_repr(mockdata):
     face = Face.query.first()
-    assert repr(face) == f"<Tag ID {face.id}: {face.officer_id} - {face.img_id}>"
+    assert repr(face) == f"<Tag ID: {face.id} : {face.officer_id} : {face.img_id}>"
 
 
 def test_unit_repr(mockdata):
     unit = Unit.query.first()
-    assert repr(unit) == f"Unit: {unit.description}"
+    assert repr(unit) == f"<Unit ID: {unit.id} : {unit.description}>"
 
 
 def test_user_repr(mockdata):
@@ -168,7 +175,33 @@ def test_user_repr(mockdata):
 
 def test_salary_repr(mockdata):
     salary = Salary.query.first()
-    assert repr(salary) == f"<Salary: ID {salary.officer_id} : {salary.salary}"
+    assert repr(salary) == f"<Salary ID: {salary.officer_id} : {salary.salary}>"
+
+
+def test_link_repr(mockdata):
+    link = Link.query.first()
+    assert repr(link) == f"<Link ID: {link.id} : {link.title}>"
+
+
+def test_note_repr(mockdata):
+    note = Note.query.first()
+    assert repr(note) == f"<Note ID: {note.id} : {note.text_contents}>"
+
+
+def test_description_repr(mockdata):
+    description = Description.query.first()
+    assert (
+        repr(description)
+        == f"<Description ID: {description.id} : {description.text_contents}>"
+    )
+
+
+def test_license_plate_repr(mockdata):
+    license_plate = LicensePlate.query.first()
+    assert (
+        repr(license_plate)
+        == f"<LicensePlate ID: {license_plate.id} : {license_plate.state} : {license_plate.number}>"
+    )
 
 
 def test_password_not_printed(mockdata):

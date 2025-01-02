@@ -136,7 +136,7 @@ class Department(BaseModel, TrackUpdates):
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
     def __repr__(self):
-        return f"<Department ID {self.id}: {self.name} {self.state}>"
+        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
 
     def to_custom_dict(self):
         return {
@@ -198,7 +198,7 @@ class Job(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"<Job ID {self.id}: {self.job_title}>"
+        return f"<Job ID: {self.id} : {self.job_title}>"
 
     def __str__(self):
         return self.job_title
@@ -212,6 +212,9 @@ class Note(BaseModel, TrackUpdates):
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
+    def __repr__(self):
+        return f"<Note ID: {self.id} : {self.text_contents}>"
+
 
 class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
@@ -220,6 +223,9 @@ class Description(BaseModel, TrackUpdates):
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+
+    def __repr__(self):
+        return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
 class Officer(BaseModel, TrackUpdates):
@@ -278,6 +284,14 @@ class Officer(BaseModel, TrackUpdates):
     __table_args__ = (
         CheckConstraint("gender in ('M', 'F', 'Other')", name="gender_options"),
     )
+
+    def __repr__(self):
+        if self.unique_internal_identifier:
+            return (
+                f"<Officer ID: {self.id} : {self.full_name()} "
+                f"({self.unique_internal_identifier})>"
+            )
+        return f"<Officer ID: {self.id} : {self.full_name()}>"
 
     def full_name(self):
         if self.middle_initial:
@@ -339,14 +353,6 @@ class Officer(BaseModel, TrackUpdates):
             return "Yes" if most_recent.resign_date is None else "No"
         return "Uncertain"
 
-    def __repr__(self):
-        if self.unique_internal_identifier:
-            return (
-                f"<Officer ID {self.id}: {self.full_name()} "
-                f"({self.unique_internal_identifier})>"
-            )
-        return f"<Officer ID {self.id}: {self.full_name()}>"
-
 
 class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
@@ -365,7 +371,7 @@ class Salary(BaseModel, TrackUpdates):
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     def __repr__(self):
-        return f"<Salary: ID {self.officer_id} : {self.salary}"
+        return f"<Salary ID: {self.officer_id} : {self.salary}>"
 
     @property
     def total_pay(self) -> float:
@@ -406,7 +412,7 @@ class Assignment(BaseModel, TrackUpdates):
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
     def __repr__(self):
-        return f"<Assignment: ID {self.officer_id} : {self.star_no}>"
+        return f"<Assignment ID: {self.officer_id} : {self.star_no}>"
 
     @property
     def start_date_or_min(self):
@@ -433,7 +439,7 @@ class Unit(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"Unit: {self.description}"
+        return f"<Unit ID: {self.id} : {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates):
@@ -485,7 +491,7 @@ class Face(BaseModel, TrackUpdates):
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
     def __repr__(self):
-        return f"<Tag ID {self.id}: {self.officer_id} - {self.img_id}>"
+        return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
 
 
 class Image(BaseModel, TrackUpdates):
@@ -512,7 +518,7 @@ class Image(BaseModel, TrackUpdates):
     )
 
     def __repr__(self):
-        return f"<Image ID {self.id}: {self.filepath}>"
+        return f"<Image ID: {self.id} : {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -644,6 +650,9 @@ class LicensePlate(BaseModel, TrackUpdates):
     def validate_state(self, key, state):
         return state_validator(state)
 
+    def __repr__(self):
+        return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
+
 
 class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
@@ -659,6 +668,9 @@ class Link(BaseModel, TrackUpdates):
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
+
+    def __repr__(self):
+        return f"<Link ID: {self.id} : {self.title}>"
 
 
 class Incident(BaseModel, TrackUpdates):
@@ -703,6 +715,9 @@ class Incident(BaseModel, TrackUpdates):
     department = db.relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
+
+    def __repr__(self):
+        return f"<Incident ID: {self.id} : {self.report_number}>"
 
 
 class Allegation(BaseModel, TrackUpdates):
