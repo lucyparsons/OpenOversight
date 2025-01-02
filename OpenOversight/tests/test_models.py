@@ -95,7 +95,7 @@ def test_officer_repr(session):
     ).first()
 
     assert (
-        repr(officer_uii) == f"<Officer ID {officer_uii.id}: "
+        repr(officer_uii) == f"<Officer ID: {officer_uii.id} : "
         f"{officer_uii.first_name} {officer_uii.middle_initial}. {officer_uii.last_name} "
         f"({officer_uii.unique_internal_identifier})>"
     )
@@ -109,7 +109,7 @@ def test_officer_repr(session):
     ).first()
 
     assert (
-        repr(officer_no_uii) == f"<Officer ID {officer_no_uii.id}: "
+        repr(officer_no_uii) == f"<Officer I:  {officer_no_uii.id} : "
         f"{officer_no_uii.first_name} {officer_no_uii.middle_initial}. "
         f"{officer_no_uii.last_name} {officer_no_uii.suffix}>"
     )
@@ -120,7 +120,7 @@ def test_officer_repr(session):
 
     assert (
         repr(officer_no_mi)
-        == f"<Officer ID {officer_no_mi.id}: {officer_no_mi.first_name} "
+        == f"<Officer ID: {officer_no_mi.id} : {officer_no_mi.first_name} "
         f"{officer_no_mi.last_name} {officer_no_mi.suffix} "
         f"({officer_no_mi.unique_internal_identifier})>"
     )
@@ -150,7 +150,7 @@ def test_incident_repr(mockdata):
 
 def test_job_repr(mockdata):
     job = Job.query.first()
-    assert repr(job) == f"<Job ID {job.id}: {job.job_title}>"
+    assert repr(job) == f"<Job ID: {job.id} : {job.job_title}>"
 
 
 def test_image_repr(mockdata):
