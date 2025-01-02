@@ -10,9 +10,29 @@ from cachetools import cached
 from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import CheckConstraint, UniqueConstraint, func
-from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
-from sqlalchemy.sql import func as sql_func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    MappedAsDataclass,
+    backref,
+    declarative_mixin,
+    declared_attr,
+    mapped_column,
+    relationship,
+    validates,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import (
@@ -34,51 +54,54 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken(SIGNATURE_ALGORITHM)
-BaseModel: DeclarativeMeta = db.Model
+
+
+class BaseModel(MappedAsDataclass, DeclarativeBase):
+    """subclasses will be converted to dataclasses"""
 
 
 officer_links = db.Table(
     "officer_links",
-    db.Column(
+    Column(
         "officer_id",
-        db.Integer,
-        db.ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
+        Integer,
+        ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
         primary_key=True,
     ),
-    db.Column(
+    Column(
         "link_id",
-        db.Integer,
-        db.ForeignKey("links.id", name="officer_links_link_id_fkey"),
+        Integer,
+        ForeignKey("links.id", name="officer_links_link_id_fkey"),
         primary_key=True,
     ),
-    db.Column(
+    Column(
         "created_at",
-        db.DateTime(timezone=True),
+        DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     ),
 )
 
 officer_incidents = db.Table(
     "officer_incidents",
-    db.Column(
+    Column(
         "officer_id",
-        db.Integer,
-        db.ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
+        Integer,
+        ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
         primary_key=True,
     ),
-    db.Column(
+    Column(
         "incident_id",
-        db.Integer,
-        db.ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
+        Integer,
+        ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
         primary_key=True,
     ),
-    db.Column(
+    Column(
         "created_at",
-        db.DateTime(timezone=True),
+        DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     ),
 )
@@ -93,52 +116,61 @@ class TrackUpdates:
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     )
     last_updated_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
+        onupdate=func.now(),
         unique=False,
-        onupdate=datetime.utcnow,
     )
 
     @declared_attr
     def created_by(cls):
         return db.Column(
-            db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+            db.Integer,
+            ForeignKey("users.id", ondelete="SET NULL"),
+            unique=False,
         )
 
     @declared_attr
     def last_updated_by(cls):
         return db.Column(
-            db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), unique=False
+            db.Integer,
+            ForeignKey("users.id", ondelete="SET NULL"),
+            unique=False,
         )
 
     @declared_attr
     def creator(cls):
-        return db.relationship("User", foreign_keys=[cls.created_by])
+        return relationship(
+            "User", foreign_keys=[cls.created_by], backref="created_objects"
+        )
+
+    @declared_attr
+    def last_updater(cls):
+        return relationship(
+            "User", foreign_keys=[cls.last_updated_by], backref="updated_objects"
+        )
 
 
 class Department(BaseModel, TrackUpdates):
     __tablename__ = "departments"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), index=False, unique=False, nullable=False)
-    short_name = db.Column(db.String(100), unique=False, nullable=False)
-    state = db.Column(db.String(2), server_default="", nullable=False)
 
-    # See https://github.com/lucyparsons/OpenOversight/issues/462
-    unique_internal_identifier_label = db.Column(
-        db.String(100), unique=False, nullable=True
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    short_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    state: Mapped[str] = mapped_column(String(2), server_default="", nullable=False)
+
+    unique_internal_identifier_label: Mapped[str] = mapped_column(
+        String(100), nullable=True
     )
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
-    def __repr__(self):
-        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
-
-    def to_custom_dict(self):
+    def to_custom_dict(self) -> dict:
         return {
             "id": self.id,
             "name": self.name,
@@ -148,28 +180,32 @@ class Department(BaseModel, TrackUpdates):
         }
 
     @property
-    def display_name(self):
+    def display_name(self) -> str:
         return self.name if not self.state else f"[{self.state}] {self.name}"
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
-    def total_documented_assignments(self):
+    def total_documented_assignments(self) -> int:
         return (
-            db.session.query(Assignment.id)
+            self.db_session.query(Assignment.id)
             .join(Officer, Assignment.officer_id == Officer.id)
             .filter(Officer.department_id == self.id)
             .count()
         )
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_INCIDENTS))
-    def total_documented_incidents(self):
+    def total_documented_incidents(self) -> int:
         return (
-            db.session.query(Incident).filter(Incident.department_id == self.id).count()
+            self.db_session.query(Incident)
+            .filter(Incident.department_id == self.id)
+            .count()
         )
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_OFFICERS))
-    def total_documented_officers(self):
+    def total_documented_officers(self) -> int:
         return (
-            db.session.query(Officer).filter(Officer.department_id == self.id).count()
+            self.db_session.query(Officer)
+            .filter(Officer.department_id == self.id)
+            .count()
         )
 
     def remove_database_cache_entries(self, update_types: List[str]) -> None:
@@ -180,15 +216,16 @@ class Department(BaseModel, TrackUpdates):
 class Job(BaseModel, TrackUpdates):
     __tablename__ = "jobs"
 
-    id = db.Column(db.Integer, primary_key=True)
-    job_title = db.Column(db.String(255), index=True, unique=False, nullable=False)
-    is_sworn_officer = db.Column(db.Boolean, index=True, default=True)
-    order = db.Column(db.Integer, index=True, unique=False, nullable=False)
-    department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="jobs_department_id_fkey")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    job_title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
+    is_sworn_officer: Mapped[bool] = mapped_column(Boolean, index=True, default=True)
+    order: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    department_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("departments.id", name="jobs_department_id_fkey")
     )
-    department = db.relationship(
-        "Department", backref=db.backref("jobs", cascade_backrefs=False)
+    department: Mapped["Department"] = relationship(
+        "Department",
+        backref=backref("jobs", cascade_backrefs=False),
     )
 
     __table_args__ = (
@@ -197,23 +234,16 @@ class Job(BaseModel, TrackUpdates):
         ),
     )
 
-    def __repr__(self):
-        return f"<Job ID: {self.id} : {self.job_title}>"
-
-    def __str__(self):
-        return self.job_title
-
 
 class Note(BaseModel, TrackUpdates):
     __tablename__ = "notes"
 
-    id = db.Column(db.Integer, primary_key=True)
-    text_contents = db.Column(db.Text())
-    officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-    officer = db.relationship("Officer", back_populates="notes")
-
-    def __repr__(self):
-        return f"<Note ID: {self.id} : {self.text_contents}>"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    text_contents: Mapped[str] = mapped_column(Text, nullable=True)
+    officer_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("officers.id", ondelete="CASCADE")
+    )
+    officer: Mapped["Officer"] = relationship("Officer", back_populates="notes")
 
 
 class Description(BaseModel, TrackUpdates):
@@ -539,7 +569,7 @@ incident_links = db.Table(
         "created_at",
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     ),
 )
@@ -564,7 +594,7 @@ incident_license_plates = db.Table(
         "created_at",
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     ),
 )
@@ -587,7 +617,7 @@ incident_officers = db.Table(
         "created_at",
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     ),
 )
@@ -722,6 +752,7 @@ class Incident(BaseModel, TrackUpdates):
 
 class User(UserMixin, BaseModel):
     __tablename__ = "users"
+
     id = db.Column(db.Integer, primary_key=True)
 
     # A universally unique identifier (UUID) that can be
@@ -796,7 +827,7 @@ class User(UserMixin, BaseModel):
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
-        server_default=sql_func.now(),
+        server_default=func.now(),
         unique=False,
     )
 
