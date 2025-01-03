@@ -42,41 +42,47 @@ BaseModel: DeclarativeMeta = db.Model
 
 @declarative_mixin
 class Serializable:
-    # Source: https://gist.github.com/jhgaylor/6332950
-    def __repr__(self):
-        def filter_properties(obj):
-            # This function decides which properties should be exposed through repr
-            properties = obj.__dict__.keys()
-            for prop in properties:
-                if prop[0] != "_" and not callable(getattr(obj, prop)):
-                    yield getattr(obj, prop), prop
-            return
+    EXCLUDED = [
+        "approved_at",
+        "approved_by",
+        "confirmed_at",
+        "confirmed_by",
+        "created_at",
+        "created_by",
+        "disabled_at",
+        "disabled_by",
+        "password_hash",
+        "last_updated_at",
+        "last_updated_by",
+    ]
 
-        prop_tuples = filter_properties(self)
-        prop_string_tuples = (": ".join(prop) for prop in prop_tuples)
-        prop_output_string = " | ".join(prop_string_tuples)
-        cls_name = self.__class__.__name__
-        return f"<{cls_name}('{prop_output_string}')>"
+    def __repr__(self):
+        ret_str = f"<{self.__class__.__name__} ("
+        for column in inspect(self).mapper.column_attrs:
+            if column.key in self.EXCLUDED or column.key.startswith("_"):
+                continue
+
+            if ret_str[-1] != "(":
+                ret_str += " : "
+
+            value = getattr(self, column.key)
+            if isinstance(value, (date, datetime)):
+                ret_str += f"{column.key}: {value.isoformat()}"
+            elif isinstance(value, date):
+                ret_str += f'{column.key}: {value.strftime("%Y-%m-%d")}'
+            elif isinstance(value, dt_time):
+                ret_str += f'{column.key}: {value.strftime("%I:%M %p")}'
+            else:
+                ret_str += f"{column.key}: {value}"
+
+        return ret_str + ")"
 
     def to_dict(self):
         """Convert a generic model instance into a dictionary."""
         data = {}
-        excluded = [
-            "approved_at",
-            "approved_by",
-            "confirmed_at",
-            "confirmed_by",
-            "created_at",
-            "created_by",
-            "disabled_at",
-            "disabled_by",
-            "password_hash",
-            "last_updated_at",
-            "last_updated_by",
-        ]
 
         for column in inspect(self).mapper.column_attrs:
-            if column.key in excluded or column.key.startswith("_"):
+            if column.key in self.EXCLUDED or column.key.startswith("_"):
                 continue
 
             value = getattr(self, column.key)
@@ -189,15 +195,6 @@ class Department(BaseModel, TrackUpdates, Serializable):
     )
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
-
-    def to_custom_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "short_name": self.short_name,
-            "state": self.state,
-            "unique_internal_identifier_label": self.unique_internal_identifier_label,
-        }
 
     @property
     def display_name(self):
