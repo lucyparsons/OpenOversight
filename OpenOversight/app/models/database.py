@@ -191,9 +191,6 @@ class Department(BaseModel, TrackUpdates, Serializable):
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
-    def __repr__(self):
-        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
-
     def to_custom_dict(self):
         return {
             "id": self.id,
@@ -253,9 +250,6 @@ class Job(BaseModel, TrackUpdates, Serializable):
         ),
     )
 
-    def __repr__(self):
-        return f"<Job ID: {self.id} : {self.job_title}>"
-
     def __str__(self):
         return self.job_title
 
@@ -268,9 +262,6 @@ class Note(BaseModel, TrackUpdates, Serializable):
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
-    def __repr__(self):
-        return f"<Note ID: {self.id} : {self.text_contents}>"
-
 
 class Description(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "descriptions"
@@ -279,9 +270,6 @@ class Description(BaseModel, TrackUpdates, Serializable):
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-
-    def __repr__(self):
-        return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
 class Officer(BaseModel, TrackUpdates, Serializable):
@@ -426,9 +414,6 @@ class Salary(BaseModel, TrackUpdates, Serializable):
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
-    def __repr__(self):
-        return f"<Salary ID: {self.officer_id} : {self.salary}>"
-
     @property
     def total_pay(self) -> float:
         return self.salary + self.overtime_pay
@@ -467,9 +452,6 @@ class Assignment(BaseModel, TrackUpdates, Serializable):
     start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
-    def __repr__(self):
-        return f"<Assignment ID: {self.officer_id} : {self.star_no}>"
-
     @property
     def start_date_or_min(self):
         return self.start_date or date.min
@@ -493,9 +475,6 @@ class Unit(BaseModel, TrackUpdates, Serializable):
         backref=db.backref("unit_types", cascade_backrefs=False),
         order_by="Unit.description.asc()",
     )
-
-    def __repr__(self):
-        return f"<Unit ID: {self.id} : {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates, Serializable):
@@ -546,9 +525,6 @@ class Face(BaseModel, TrackUpdates, Serializable):
 
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
-    def __repr__(self):
-        return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
-
 
 class Image(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "raw_images"
@@ -572,9 +548,6 @@ class Image(BaseModel, TrackUpdates, Serializable):
     department = db.relationship(
         "Department", backref=db.backref("raw_images", cascade_backrefs=False)
     )
-
-    def __repr__(self):
-        return f"<Image ID: {self.id} : {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -706,9 +679,6 @@ class LicensePlate(BaseModel, TrackUpdates, Serializable):
     def validate_state(self, key, state):
         return state_validator(state)
 
-    def __repr__(self):
-        return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
-
 
 class Link(BaseModel, TrackUpdates, Serializable):
     __tablename__ = "links"
@@ -724,9 +694,6 @@ class Link(BaseModel, TrackUpdates, Serializable):
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
-
-    def __repr__(self):
-        return f"<Link ID: {self.id} : {self.title}>"
 
 
 class Incident(BaseModel, TrackUpdates, Serializable):
@@ -771,9 +738,6 @@ class Incident(BaseModel, TrackUpdates, Serializable):
     department = db.relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
-
-    def __repr__(self):
-        return f"<Incident ID: {self.id} : {self.report_number}>"
 
 
 class User(UserMixin, BaseModel, Serializable):
@@ -1028,6 +992,3 @@ class User(UserMixin, BaseModel, Serializable):
         db.session.add(self)
         db.session.commit()
         return True
-
-    def __repr__(self):
-        return f"<User {self.username!r}>"
