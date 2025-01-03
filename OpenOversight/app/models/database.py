@@ -1,8 +1,8 @@
 import operator
 import re
-import time
+import time as time_obj
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -221,7 +221,6 @@ class Job(BaseModel, TrackUpdates):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     job_title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
-    is_sworn_officer: Mapped[bool] = mapped_column(Boolean, index=True, default=True)
     order: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     department_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("departments.id", name="jobs_department_id_fkey")
@@ -230,6 +229,7 @@ class Job(BaseModel, TrackUpdates):
         "Department",
         backref=backref("jobs", cascade_backrefs=False),
     )
+    is_sworn_officer: Mapped[bool] = mapped_column(Boolean, index=True, default=True)
 
     __table_args__ = (
         UniqueConstraint(
@@ -484,22 +484,23 @@ class Face(BaseModel, TrackUpdates):
     face_position_y: Mapped[int] = mapped_column(Integer, unique=False)
     face_width: Mapped[int] = mapped_column(Integer, unique=False)
     face_height: Mapped[int] = mapped_column(Integer, unique=False)
-    featured: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="false"
-    )
 
-    image: Mapped["Image"] = relationship(
-        "Image",
-        backref="faces",
-        cascade_backrefs=False,
-        foreign_keys=[img_id],
-    )
     original_image: Mapped["Image"] = relationship(
         "Image",
         backref="tags",
         cascade_backrefs=False,
         foreign_keys=[original_image_id],
         lazy=True,
+    )
+    image: Mapped["Image"] = relationship(
+        "Image",
+        backref="faces",
+        cascade_backrefs=False,
+        foreign_keys=[img_id],
+    )
+
+    featured: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
     )
 
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
@@ -518,10 +519,6 @@ class Image(BaseModel, TrackUpdates):
     )
     contains_cops: Mapped[bool] = mapped_column(Boolean, nullable=True)
 
-    is_tagged: Mapped[bool] = mapped_column(
-        Boolean, default=False, unique=False, nullable=True
-    )
-
     department_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("departments.id", name="raw_images_department_id_fkey"),
@@ -530,35 +527,39 @@ class Image(BaseModel, TrackUpdates):
         "Department", backref="raw_images", cascade_backrefs=False
     )
 
+    is_tagged: Mapped[bool] = mapped_column(
+        Boolean, default=False, unique=False, nullable=True
+    )
+
 
 incident_links = db.Table(
     "incident_links",
-    mapped_column(
+    Column(
         "incident_id",
         Integer,
         ForeignKey("incidents.id", name="incident_links_incident_id_fkey"),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "link_id",
         Integer,
         ForeignKey("links.id", name="incident_links_link_id_fkey"),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
 )
 
 incident_license_plates = db.Table(
     "incident_license_plates",
-    mapped_column(
+    Column(
         "incident_id",
         Integer,
         ForeignKey("incidents.id", name="incident_license_plates_incident_id_fkey"),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "license_plate_id",
         Integer,
         ForeignKey(
@@ -566,26 +567,26 @@ incident_license_plates = db.Table(
         ),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
 )
 
 incident_officers = db.Table(
     "incident_officers",
-    mapped_column(
+    Column(
         "incident_id",
         Integer,
         ForeignKey("incidents.id", name="incident_officers_incident_id_fkey"),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "officers_id",
         Integer,
         ForeignKey("officers.id", name="incident_officers_officers_id_fkey"),
         primary_key=True,
     ),
-    mapped_column(
+    Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
 )
@@ -671,13 +672,17 @@ class Incident(BaseModel, TrackUpdates):
     __tablename__ = "incidents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    date: Mapped[date | None] = mapped_column(Date, index=True)
-    time: Mapped[time | None] = mapped_column(Time, index=True)
-    report_number: Mapped[str | None] = mapped_column(String(50), index=True)
-    description: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    date: Mapped[Optional[date]] = mapped_column(Date, index=True, nullable=True)
+    time: Mapped[Optional[time]] = mapped_column(Time, index=True, nullable=True)
+    report_number: Mapped[Optional[str]] = mapped_column(
+        String(50), index=True, nullable=True
+    )
+    description: Mapped[Optional[str]] = mapped_column(Text(), nullable=True)
 
-    address_id: Mapped[int | None] = mapped_column(
-        Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
+    address_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("locations.id", name="incidents_address_id_fkey"),
+        nullable=True,
     )
     address: Mapped["Location"] = relationship(
         "Location", backref=db.backref("incidents", cascade_backrefs=False)
@@ -708,8 +713,10 @@ class Incident(BaseModel, TrackUpdates):
         ),
     )
 
-    department_id: Mapped[int | None] = mapped_column(
-        Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
+    department_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("departments.id", name="incidents_department_id_fkey"),
+        nullable=True,
     )
     department: Mapped["Department"] = relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
@@ -818,7 +825,7 @@ class User(UserMixin, BaseModel):
         secret = current_app.config["SECRET_KEY"]
         header = {"alg": SIGNATURE_ALGORITHM}
 
-        now = int(time.time())
+        now = int(time_obj.time())
         payload["iat"] = now
         payload["exp"] = now + expiration
 
