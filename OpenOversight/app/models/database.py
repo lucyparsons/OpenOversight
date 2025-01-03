@@ -216,6 +216,24 @@ class Department(BaseModel, TrackUpdates):
         remove_database_cache_entries(self, update_types)
 
 
+class Link(BaseModel, TrackUpdates):
+    __tablename__ = "links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str | None] = mapped_column(String(100), index=True)
+    url: Mapped[str] = mapped_column(Text(), nullable=False)
+    link_type: Mapped[str | None] = mapped_column(String(100), index=True)
+    description: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    author: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    has_content_warning: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+
+    @validates("url")
+    def validate_url(self, key, url):
+        return url_validator(url)
+
+
 class Job(BaseModel, TrackUpdates):
     __tablename__ = "jobs"
 
@@ -650,24 +668,6 @@ class LicensePlate(BaseModel, TrackUpdates):
         return state_validator(state)
 
 
-class Link(BaseModel, TrackUpdates):
-    __tablename__ = "links"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str | None] = mapped_column(String(100), index=True)
-    url: Mapped[str] = mapped_column(Text(), nullable=False)
-    link_type: Mapped[str | None] = mapped_column(String(100), index=True)
-    description: Mapped[str | None] = mapped_column(Text(), nullable=True)
-    author: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    has_content_warning: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False
-    )
-
-    @validates("url")
-    def validate_url(self, key, url):
-        return url_validator(url)
-
-
 class Incident(BaseModel, TrackUpdates):
     __tablename__ = "incidents"
 
@@ -727,14 +727,6 @@ class User(UserMixin, BaseModel):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-
-    _uuid: Mapped[str] = mapped_column(
-        String(36),
-        unique=True,
-        nullable=False,
-        index=True,
-        default=lambda: str(uuid.uuid4()),
-    )
     email: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
     username: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
     password_hash: Mapped[str | None] = mapped_column(String(128))
@@ -748,7 +740,7 @@ class User(UserMixin, BaseModel):
         Integer,
         ForeignKey("users.id", ondelete="SET NULL", name="users_approved_by_fkey"),
     )
-    is_area_coordinator: Mapped[bool] = mapped_column(Boolean, default=False)
+
     ac_department_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("departments.id", name="users_ac_department_id_fkey")
     )
@@ -757,7 +749,6 @@ class User(UserMixin, BaseModel):
         backref=db.backref("coordinators", cascade_backrefs=False),
         foreign_keys=[ac_department_id],
     )
-    is_administrator: Mapped[bool] = mapped_column(Boolean, default=False)
     disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     disabled_by: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -793,10 +784,19 @@ class User(UserMixin, BaseModel):
         "Face", back_populates=KEY_DB_CREATOR, foreign_keys="Face.created_by"
     )
 
+    _uuid: Mapped[str] = mapped_column(
+        String(36),
+        unique=True,
+        nullable=False,
+        index=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    is_area_coordinator: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_administrator: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
+        default=func.now(),
         nullable=False,
-        server_default=func.now(),
         unique=False,
     )
 
