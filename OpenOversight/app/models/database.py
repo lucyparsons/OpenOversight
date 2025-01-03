@@ -58,6 +58,7 @@ class BaseModel(Base):
     ]
 
     def __repr__(self) -> str:
+        """Convert model to a string that contains all values needed for recreation."""
         ret_str = f"<{self.__class__.__name__} ("
         for column in inspect(self).mapper.column_attrs:
             if column.key in self.EXCLUDED or column.key.startswith("_"):
