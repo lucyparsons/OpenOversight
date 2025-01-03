@@ -207,7 +207,7 @@ def get_officer():
     return render_template(
         "input_find_officer.html",
         form=form,
-        depts_dict=[dept_choice.to_custom_dict() for dept_choice in dept_choices()],
+        depts_dict=[dept_choice.to_dict() for dept_choice in dept_choices()],
         jsloads=["js/find_officer.js"],
     )
 
