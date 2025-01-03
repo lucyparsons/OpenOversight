@@ -63,53 +63,6 @@ class BaseModel(MappedAsDataclass, DeclarativeBase):
     """subclasses will be converted to dataclasses"""
 
 
-officer_links = db.Table(
-    "officer_links",
-    Column(
-        "officer_id",
-        Integer,
-        ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
-        primary_key=True,
-    ),
-    Column(
-        "link_id",
-        Integer,
-        ForeignKey("links.id", name="officer_links_link_id_fkey"),
-        primary_key=True,
-    ),
-    Column(
-        "created_at",
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        unique=False,
-    ),
-)
-
-officer_incidents = db.Table(
-    "officer_incidents",
-    Column(
-        "officer_id",
-        Integer,
-        ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
-        primary_key=True,
-    ),
-    Column(
-        "incident_id",
-        Integer,
-        ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
-        primary_key=True,
-    ),
-    Column(
-        "created_at",
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        unique=False,
-    ),
-)
-
-
 @declarative_mixin
 class TrackUpdates:
     """Add columns to track the date of and user who created and last modified
@@ -276,6 +229,30 @@ class Description(BaseModel, TrackUpdates):
         Integer, ForeignKey("officers.id", ondelete="CASCADE")
     )
     officer: Mapped["Officer"] = relationship("Officer", back_populates="descriptions")
+
+
+officer_links = db.Table(
+    "officer_links",
+    db.Column(
+        "officer_id",
+        Integer,
+        ForeignKey("officers.id", name="officer_links_officer_id_fkey"),
+        primary_key=True,
+    ),
+    db.Column(
+        "link_id",
+        Integer,
+        ForeignKey("links.id", name="officer_links_link_id_fkey"),
+        primary_key=True,
+    ),
+    db.Column(
+        "created_at",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        unique=False,
+    ),
+)
 
 
 class Officer(BaseModel, TrackUpdates):
@@ -550,6 +527,29 @@ class Image(BaseModel, TrackUpdates):
     )
 
 
+officer_incidents = db.Table(
+    "officer_incidents",
+    Column(
+        "officer_id",
+        Integer,
+        ForeignKey("officers.id", name="officer_incidents_officer_id_fkey"),
+        primary_key=True,
+    ),
+    Column(
+        "incident_id",
+        Integer,
+        ForeignKey("incidents.id", name="officer_incidents_incident_id_fkey"),
+        primary_key=True,
+    ),
+    Column(
+        "created_at",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        unique=False,
+    ),
+)
+
 incident_links = db.Table(
     "incident_links",
     Column(
@@ -789,7 +789,7 @@ class User(UserMixin, BaseModel):
         unique=True,
         nullable=False,
         index=True,
-        default=lambda: str(uuid.uuid4()),
+        insert_default=lambda: str(uuid.uuid4()),
     )
     is_area_coordinator: Mapped[bool] = mapped_column(Boolean, default=False)
     is_administrator: Mapped[bool] = mapped_column(Boolean, default=False)
