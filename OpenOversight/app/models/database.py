@@ -877,8 +877,8 @@ class User(UserMixin, BaseModel):
             return False
         self.confirmed_at = datetime.now(timezone.utc)
         self.confirmed_by = confirming_user_id
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
 
     def generate_reset_token(self, expiration=3600):
@@ -893,8 +893,8 @@ class User(UserMixin, BaseModel):
         if data.get("reset") != self.uuid:
             return False
         self.password = new_password
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
@@ -915,8 +915,8 @@ class User(UserMixin, BaseModel):
             return False
         self.email = new_email
         self.regenerate_uuid()
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
 
     def regenerate_uuid(self) -> None:
@@ -938,8 +938,8 @@ class User(UserMixin, BaseModel):
 
         self.approved_at = datetime.now(timezone.utc)
         self.approved_by = approving_user_id
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
 
     def confirm_user(self, confirming_user_id: int) -> bool:
@@ -949,8 +949,8 @@ class User(UserMixin, BaseModel):
 
         self.confirmed_at = datetime.now(timezone.utc)
         self.confirmed_by = confirming_user_id
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
 
     def disable_user(self, disabling_user_id: int) -> bool:
@@ -960,6 +960,6 @@ class User(UserMixin, BaseModel):
 
         self.disabled_at = datetime.now(timezone.utc)
         self.disabled_by = disabling_user_id
-        db.session.add(self)
-        db.session.commit()
+        self.db_session.add(self)
+        self.db_session.commit()
         return True
