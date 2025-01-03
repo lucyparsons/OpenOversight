@@ -45,11 +45,10 @@ class Serializable:
     # Source: https://gist.github.com/jhgaylor/6332950
     def __repr__(self):
         def filter_properties(obj):
-            # this function decides which properties should be exposed through repr
-            # TODO: don't show methods
+            # This function decides which properties should be exposed through repr
             properties = obj.__dict__.keys()
             for prop in properties:
-                if prop[0] != "_":
+                if prop[0] != "_" and not callable(getattr(obj, prop)):
                     yield getattr(obj, prop), prop
             return
 
