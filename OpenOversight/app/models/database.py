@@ -57,7 +57,7 @@ class BaseModel(Base):
         "last_updated_by",
     ]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         ret_str = f"<{self.__class__.__name__} ("
         for column in inspect(self).mapper.column_attrs:
             if column.key in self.EXCLUDED or column.key.startswith("_"):
@@ -78,7 +78,7 @@ class BaseModel(Base):
 
         return ret_str + ")>"
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert a generic model instance into a dictionary."""
         data = {}
 
