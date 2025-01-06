@@ -6,6 +6,7 @@ from traceback import format_exc
 from typing import Optional
 
 from flask import (
+    Blueprint,
     Response,
     abort,
     current_app,
@@ -23,9 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
-from OpenOversight.app import limiter, sitemap
 from OpenOversight.app.auth.forms import LoginForm
-from OpenOversight.app.main import main
 from OpenOversight.app.main.downloads import (
     assignment_record_maker,
     descriptions_record_maker,
@@ -100,6 +99,7 @@ from OpenOversight.app.utils.db import (
     dept_choices,
     unit_choices,
 )
+from OpenOversight.app.utils.flask import limiter, sitemap
 from OpenOversight.app.utils.forms import (
     add_new_assignment,
     add_officer_profile,
@@ -123,6 +123,7 @@ from OpenOversight.app.utils.general import (
 )
 
 
+main = Blueprint("main", __name__)
 sitemap_endpoints = []
 
 

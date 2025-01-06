@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from http import HTTPMethod, HTTPStatus
 
 from flask import (
+    Blueprint,
     current_app,
     flash,
     redirect,
@@ -12,8 +13,6 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from OpenOversight.app import sitemap
-from OpenOversight.app.auth import auth
 from OpenOversight.app.auth.forms import (
     ChangeDefaultDepartmentForm,
     ChangeEmailForm,
@@ -36,10 +35,12 @@ from OpenOversight.app.models.emails import (
 )
 from OpenOversight.app.utils.auth import admin_required
 from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
+from OpenOversight.app.utils.flask import sitemap
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
 
+auth = Blueprint("auth", __name__, url_prefix="/auth")
 js_loads = ["js/zxcvbn.js", "js/password.js"]
 sitemap_endpoints = []
 
