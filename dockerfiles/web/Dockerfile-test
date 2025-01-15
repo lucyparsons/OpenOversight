@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
 RUN apt-get update && apt-get install -y curl xvfb firefox-esr libpq-dev python3-dev && \
-    apt-get install -y libsqlite3-0 gcc graphviz-dev graphviz && apt-get clean
+    apt-get install -y libsqlite3-0 graphviz-dev graphviz && apt-get clean
 
 # install geckodriver
 ENV GECKODRIVER_VERSION="v0.35.0"
