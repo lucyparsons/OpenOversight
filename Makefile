@@ -31,6 +31,10 @@ create_db: start
 	## Creating database
 	docker compose run --rm web flask db stamp head
 
+.PHONY: create_db_diagram
+create_db_diagram:
+	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/database_relationships.png
+
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
 
