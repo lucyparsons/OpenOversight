@@ -4,4 +4,4 @@
 Running `make dev` in the docker environment will create and persist the database.
 
 ## Database Diagram
-![](database_relationships.July2024.png)
+![](database_relationships.png)
