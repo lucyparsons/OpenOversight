@@ -26,5 +26,6 @@ dispatcher where…", "Improve our handling of…", etc.
 
 ## Tests and Linting
 - [ ] This branch is up-to-date with the `develop` branch.
+- [ ] The database diagram has been updated if any database column names have been changed, added, or dropped.
 - [ ] `pytest` passes on my local development environment.
 - [ ] `pre-commit` passes on my local development environment.
