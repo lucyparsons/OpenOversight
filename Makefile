@@ -33,7 +33,9 @@ create_db: start
 
 .PHONY: create_db_diagram
 create_db_diagram:
-	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/database_relationships.png
+	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o schema.dot
+	dot -Tpng -o database/database_relationships.png -Gstart=42 -Kdot schema.dot
+	rm schema.dot
 
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
