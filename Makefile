@@ -33,9 +33,13 @@ create_db: start
 
 .PHONY: create_db_diagram
 create_db_diagram:
-	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o schema.dot
-	dot -Tpng -o database/database_relationships.png -Gstart=42 -Kdot schema.dot
-	rm schema.dot
+	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o schema.new.dot
+	sort schema.new.dot -o schema.new.dot
+	@if diff schema.dot schema.new.dot &>/dev/null; then \
+		rm schema.new.dot \
+	else \
+		echo 'Files differ'; \
+	fi
 
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
