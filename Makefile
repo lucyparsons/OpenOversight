@@ -33,16 +33,18 @@ create_db: start
 
 .PHONY: create_db_diagram
 create_db_diagram:
-	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o schema.new.dot
-	sort schema.new.dot -o schema.new.dot.sorted
-	sort schema.dot -o schema.dot.sorted
+	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/schema.new.dot
+	sort database/schema.new.dot -o schema.new.dot.sorted
+	sort database/schema.dot -o schema.dot.sorted
 	@if diff schema.dot.sorted schema.new.dot.sorted &>/dev/null; then \
-		mv schema.new.dot schema.dot; \
-		dot -Tpng -o database/database_relationships.png -Gstart=42 -Grankdir=TB -Kdot -Gseed=42 schema.dot; \
+  		echo 'No schema changes detected!'; \
+		rm database/schema.new.dot; \
 	else \
-		rm schema.new.dot; \
+	  	echo 'Detected schema changes, making new DB relationship diagram!'; \
+  		mv database/schema.new.dot database/schema.dot; \
+		dot -Tpng -o database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
 	fi
-	rm *.dot.sorted
+	rm schema.dot.sorted schema.new.dot.sorted
 
 
 
