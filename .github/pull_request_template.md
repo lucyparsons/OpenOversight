@@ -26,6 +26,6 @@ dispatcher where…", "Improve our handling of…", etc.
 
 ## Tests and Linting
 - [ ] This branch is up-to-date with the `develop` branch.
-- [ ] The database diagram (`database/database_relationships.png`) has been updated if any database column have been changed, added, or dropped.
+- [ ] Ran `make create_db_diagram` command.
 - [ ] `pytest` passes on my local development environment.
 - [ ] `pre-commit` passes on my local development environment.
