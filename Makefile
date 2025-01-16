@@ -52,8 +52,6 @@ create_db_diagram:
 	# Remove all sorted files
 	rm schema.dot.sorted schema.new.dot.sorted
 
-
-
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
 
