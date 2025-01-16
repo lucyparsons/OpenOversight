@@ -31,6 +31,27 @@ create_db: start
 	## Creating database
 	docker compose run --rm web flask db stamp head
 
+.PHONY: create_db_diagram
+create_db_diagram:
+	# Create new dot file showing current version of schema
+	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/schema.new.dot
+	# Sort new version of schema file
+	sort database/schema.new.dot -o schema.new.dot.sorted
+	# Create old schema file if it does not exist and then sort it
+	touch database/schema.dot
+	sort database/schema.dot -o schema.dot.sorted
+	# Create a new diagram if there are changes, otherwise clean up files
+	@if diff schema.dot.sorted schema.new.dot.sorted &>/dev/null; then \
+  		echo 'No schema changes detected!'; \
+		rm database/schema.new.dot; \
+	else \
+	  	echo 'Detected schema changes, making new DB relationship diagram!'; \
+  		mv database/schema.new.dot database/schema.dot; \
+		dot -Tpng -o database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
+	fi
+	# Remove all sorted files
+	rm schema.dot.sorted schema.new.dot.sorted
+
 .PHONY: dev
 dev: create_empty_secret build start create_db populate
 
