@@ -2,7 +2,9 @@ import operator
 import re
 import time
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime
+from datetime import time as dt_time
+from datetime import timezone
 from typing import List, Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -11,6 +13,7 @@ from flask import current_app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, func
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import DeclarativeMeta, declarative_mixin, declared_attr, validates
 from sqlalchemy.sql import func as sql_func
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -34,7 +37,67 @@ from OpenOversight.app.validators import state_validator, url_validator
 
 db = SQLAlchemy()
 jwt = JsonWebToken(SIGNATURE_ALGORITHM)
-BaseModel: DeclarativeMeta = db.Model
+Base: DeclarativeMeta = db.Model
+
+
+class BaseModel(Base):
+    __abstract__ = True
+
+    EXCLUDED = [
+        "approved_at",
+        "approved_by",
+        "confirmed_at",
+        "confirmed_by",
+        "created_at",
+        "created_by",
+        "disabled_at",
+        "disabled_by",
+        "password_hash",
+        "last_updated_at",
+        "last_updated_by",
+    ]
+
+    def __repr__(self) -> str:
+        """Convert model to a string that contains all values needed for recreation."""
+        ret_str = f"<{self.__class__.__name__} ("
+        for column in inspect(self).mapper.column_attrs:
+            if column.key in self.EXCLUDED or column.key.startswith("_"):
+                continue
+
+            if ret_str[-1] != "(":
+                ret_str += " : "
+
+            value = getattr(self, column.key)
+            if isinstance(value, (date, datetime)):
+                ret_str += f"{column.key}: {value.isoformat()}"
+            elif isinstance(value, date):
+                ret_str += f'{column.key}: {value.strftime("%Y-%m-%d")}'
+            elif isinstance(value, dt_time):
+                ret_str += f'{column.key}: {value.strftime("%I:%M %p")}'
+            else:
+                ret_str += f"{column.key}: {value}"
+
+        return ret_str + ")>"
+
+    def to_dict(self) -> dict:
+        """Convert a generic model instance into a dictionary."""
+        data = {}
+
+        for column in inspect(self).mapper.column_attrs:
+            if column.key in self.EXCLUDED or column.key.startswith("_"):
+                continue
+
+            value = getattr(self, column.key)
+            if isinstance(value, (date, datetime)):
+                data[column.key] = value.isoformat()
+            elif isinstance(value, date):
+                data[column.key] = value.strftime("%Y-%m-%d")
+            elif isinstance(value, dt_time):
+                data[column.key] = value.strftime("%I:%M %p")
+            else:
+                data[column.key] = value
+
+        return data
 
 
 officer_links = db.Table(
@@ -135,18 +198,6 @@ class Department(BaseModel, TrackUpdates):
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
-    def __repr__(self):
-        return f"<Department ID: {self.id} : {self.name} : {self.state}>"
-
-    def to_custom_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "short_name": self.short_name,
-            "state": self.state,
-            "unique_internal_identifier_label": self.unique_internal_identifier_label,
-        }
-
     @property
     def display_name(self):
         return self.name if not self.state else f"[{self.state}] {self.name}"
@@ -197,9 +248,6 @@ class Job(BaseModel, TrackUpdates):
         ),
     )
 
-    def __repr__(self):
-        return f"<Job ID: {self.id} : {self.job_title}>"
-
     def __str__(self):
         return self.job_title
 
@@ -212,9 +260,6 @@ class Note(BaseModel, TrackUpdates):
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
     officer = db.relationship("Officer", back_populates="notes")
 
-    def __repr__(self):
-        return f"<Note ID: {self.id} : {self.text_contents}>"
-
 
 class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
@@ -223,9 +268,6 @@ class Description(BaseModel, TrackUpdates):
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
-
-    def __repr__(self):
-        return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
 class Officer(BaseModel, TrackUpdates):
@@ -370,9 +412,6 @@ class Salary(BaseModel, TrackUpdates):
     year = db.Column(db.Integer, index=True, unique=False, nullable=False)
     is_fiscal_year = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
-    def __repr__(self):
-        return f"<Salary ID: {self.officer_id} : {self.salary}>"
-
     @property
     def total_pay(self) -> float:
         return self.salary + self.overtime_pay
@@ -411,9 +450,6 @@ class Assignment(BaseModel, TrackUpdates):
     start_date = db.Column(db.Date, index=True, unique=False, nullable=True)
     resign_date = db.Column(db.Date, index=True, unique=False, nullable=True)
 
-    def __repr__(self):
-        return f"<Assignment ID: {self.officer_id} : {self.star_no}>"
-
     @property
     def start_date_or_min(self):
         return self.start_date or date.min
@@ -437,9 +473,6 @@ class Unit(BaseModel, TrackUpdates):
         backref=db.backref("unit_types", cascade_backrefs=False),
         order_by="Unit.description.asc()",
     )
-
-    def __repr__(self):
-        return f"<Unit ID: {self.id} : {self.description}>"
 
 
 class Face(BaseModel, TrackUpdates):
@@ -490,9 +523,6 @@ class Face(BaseModel, TrackUpdates):
 
     __table_args__ = (UniqueConstraint("officer_id", "img_id", name="unique_faces"),)
 
-    def __repr__(self):
-        return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
-
 
 class Image(BaseModel, TrackUpdates):
     __tablename__ = "raw_images"
@@ -516,9 +546,6 @@ class Image(BaseModel, TrackUpdates):
     department = db.relationship(
         "Department", backref=db.backref("raw_images", cascade_backrefs=False)
     )
-
-    def __repr__(self):
-        return f"<Image ID: {self.id} : {self.filepath}>"
 
 
 incident_links = db.Table(
@@ -650,9 +677,6 @@ class LicensePlate(BaseModel, TrackUpdates):
     def validate_state(self, key, state):
         return state_validator(state)
 
-    def __repr__(self):
-        return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
-
 
 class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
@@ -668,9 +692,6 @@ class Link(BaseModel, TrackUpdates):
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
-
-    def __repr__(self):
-        return f"<Link ID: {self.id} : {self.title}>"
 
 
 class Incident(BaseModel, TrackUpdates):
@@ -715,9 +736,6 @@ class Incident(BaseModel, TrackUpdates):
     department = db.relationship(
         "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
     )
-
-    def __repr__(self):
-        return f"<Incident ID: {self.id} : {self.report_number}>"
 
 
 class Allegation(BaseModel, TrackUpdates):
@@ -994,6 +1012,3 @@ class User(UserMixin, BaseModel):
         db.session.add(self)
         db.session.commit()
         return True
-
-    def __repr__(self):
-        return f"<User {self.username!r}>"

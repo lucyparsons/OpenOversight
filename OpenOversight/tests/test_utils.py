@@ -212,7 +212,10 @@ def test_user_cannot_submit_invalid_file_extension(mockdata):
 
 def test_unit_choices(mockdata):
     unit_choices_result = [str(x) for x in unit_choices()]
-    assert "<Unit ID: 4 : Bureau of Organized Crime>" in unit_choices_result
+    assert (
+        "<Unit (id: 4 : description: Bureau of Organized Crime : department_id: 2)>"
+        in unit_choices_result
+    )
 
 
 @upload_s3_patch
