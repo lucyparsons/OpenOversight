@@ -146,6 +146,7 @@ officer_incidents = db.Table(
     ),
 )
 
+
 @declarative_mixin
 class TrackUpdates:
     """Add columns to track the date of and user who created and last modified
