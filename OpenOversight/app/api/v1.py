@@ -1,6 +1,6 @@
 from http import HTTPMethod
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, Response, jsonify
 from sqlalchemy.orm import contains_eager, joinedload
 
 from OpenOversight.app.models.database import (
@@ -31,7 +31,7 @@ from OpenOversight.app.utils.flask import limiter
 v1 = Blueprint("v1", __name__, url_prefix="/api/v1")
 
 
-def objs_to_dicts_jsonify(obj_list):
+def objs_to_dicts_jsonify(obj_list) -> Response:
     return jsonify([o.to_dict() for o in obj_list])
 
 
