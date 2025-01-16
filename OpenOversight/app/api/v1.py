@@ -39,7 +39,7 @@ def objs_to_dicts_jsonify(obj_list: List[BaseModel]) -> Response:
 
 @v1.route("/departments/<int:department_id>/officers", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_officers(department_id: int):
+def get_dept_officers(department_id: int) -> Response:
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
     officers = get_database_cache_entry(*cache_params)
 
@@ -58,7 +58,7 @@ def get_dept_officers(department_id: int):
 
 @v1.route("/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_assignments(department_id: int):
+def get_dept_assignments(department_id: int) -> Response:
     cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
     assignments = get_database_cache_entry(*cache_params)
 
@@ -79,7 +79,7 @@ def get_dept_assignments(department_id: int):
 
 @v1.route("/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_incidents(department_id: int):
+def get_dept_incidents(department_id: int) -> Response:
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
     incidents = get_database_cache_entry(*cache_params)
 
@@ -92,7 +92,7 @@ def get_dept_incidents(department_id: int):
 
 @v1.route("/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_salaries(department_id: int):
+def get_dept_salaries(department_id: int) -> Response:
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
     salaries = get_database_cache_entry(*cache_params)
 
@@ -111,7 +111,7 @@ def get_dept_salaries(department_id: int):
 
 @v1.route("/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_links(department_id: int):
+def get_dept_links(department_id: int) -> Response:
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
     links = get_database_cache_entry(*cache_params)
 
@@ -130,7 +130,7 @@ def get_dept_links(department_id: int):
 
 @v1.route("/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
-def get_dept_descriptions(department_id: int):
+def get_dept_descriptions(department_id: int) -> Response:
     cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
     notes = get_database_cache_entry(*cache_params)
 
