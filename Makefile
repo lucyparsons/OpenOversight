@@ -35,6 +35,7 @@ create_db: start
 create_db_diagram:
 	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/schema.new.dot
 	sort database/schema.new.dot -o schema.new.dot.sorted
+	touch database/schema.dot
 	sort database/schema.dot -o schema.dot.sorted
 	@if diff schema.dot.sorted schema.new.dot.sorted &>/dev/null; then \
   		echo 'No schema changes detected!'; \
