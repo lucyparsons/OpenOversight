@@ -86,43 +86,6 @@ officer_incidents = db.Table(
     ),
 )
 
-
-@declarative_mixin
-class Serializable:
-    def to_dict(self):
-        """Convert a generic model instance into a dictionary."""
-        data = {}
-        excluded = [
-            "approved_at",
-            "approved_by",
-            "confirmed_at",
-            "confirmed_by",
-            "created_at",
-            "created_by",
-            "disabled_at",
-            "disabled_by",
-            "password_hash",
-            "last_updated_at",
-            "last_updated_by",
-        ]
-
-        for column in inspect(self).mapper.column_attrs:
-            if column.key in excluded or column.key.startswith("_"):
-                continue
-
-            value = getattr(self, column.key)
-            if isinstance(value, (date, datetime)):
-                data[column.key] = value.isoformat()
-            elif isinstance(value, date):
-                data[column.key] = value.strftime("%Y-%m-%d")
-            elif isinstance(value, dt_time):
-                data[column.key] = value.strftime("%I:%M %p")
-            else:
-                data[column.key] = value
-
-        return data
-
-
 @declarative_mixin
 class TrackUpdates:
     """Add columns to track the date of and user who created and last modified
@@ -160,7 +123,7 @@ class TrackUpdates:
         return db.relationship("User", foreign_keys=[cls.created_by])
 
 
-class Department(BaseModel, TrackUpdates, Serializable):
+class Department(BaseModel, TrackUpdates):
     __tablename__ = "departments"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
@@ -207,7 +170,7 @@ class Department(BaseModel, TrackUpdates, Serializable):
         remove_database_cache_entries(self, update_types)
 
 
-class Job(BaseModel, TrackUpdates, Serializable):
+class Job(BaseModel, TrackUpdates):
     __tablename__ = "jobs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -234,7 +197,7 @@ class Job(BaseModel, TrackUpdates, Serializable):
         return self.job_title
 
 
-class Note(BaseModel, TrackUpdates, Serializable):
+class Note(BaseModel, TrackUpdates):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -246,7 +209,7 @@ class Note(BaseModel, TrackUpdates, Serializable):
         return f"<Note ID: {self.id} : {self.text_contents}>"
 
 
-class Description(BaseModel, TrackUpdates, Serializable):
+class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
 
     officer = db.relationship("Officer", back_populates="descriptions")
@@ -258,7 +221,7 @@ class Description(BaseModel, TrackUpdates, Serializable):
         return f"<Description ID: {self.id} : {self.text_contents}>"
 
 
-class Officer(BaseModel, TrackUpdates, Serializable):
+class Officer(BaseModel, TrackUpdates):
     __tablename__ = "officers"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -384,7 +347,7 @@ class Officer(BaseModel, TrackUpdates, Serializable):
         return "Uncertain"
 
 
-class Salary(BaseModel, TrackUpdates, Serializable):
+class Salary(BaseModel, TrackUpdates):
     __tablename__ = "salaries"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -414,7 +377,7 @@ class Salary(BaseModel, TrackUpdates, Serializable):
         return str(self.year)
 
 
-class Assignment(BaseModel, TrackUpdates, Serializable):
+class Assignment(BaseModel, TrackUpdates):
     __tablename__ = "assignments"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -453,7 +416,7 @@ class Assignment(BaseModel, TrackUpdates, Serializable):
         return self.start_date or date.max
 
 
-class Unit(BaseModel, TrackUpdates, Serializable):
+class Unit(BaseModel, TrackUpdates):
     __tablename__ = "unit_types"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -472,7 +435,7 @@ class Unit(BaseModel, TrackUpdates, Serializable):
         return f"<Unit ID: {self.id} : {self.description}>"
 
 
-class Face(BaseModel, TrackUpdates, Serializable):
+class Face(BaseModel, TrackUpdates):
     __tablename__ = "faces"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -524,7 +487,7 @@ class Face(BaseModel, TrackUpdates, Serializable):
         return f"<Tag ID: {self.id} : {self.officer_id} : {self.img_id}>"
 
 
-class Image(BaseModel, TrackUpdates, Serializable):
+class Image(BaseModel, TrackUpdates):
     __tablename__ = "raw_images"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -623,7 +586,7 @@ incident_officers = db.Table(
 )
 
 
-class Location(BaseModel, TrackUpdates, Serializable):
+class Location(BaseModel, TrackUpdates):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -666,7 +629,7 @@ class Location(BaseModel, TrackUpdates, Serializable):
             return f"{self.city} {self.state}"
 
 
-class LicensePlate(BaseModel, TrackUpdates, Serializable):
+class LicensePlate(BaseModel, TrackUpdates):
     __tablename__ = "license_plates"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -684,7 +647,7 @@ class LicensePlate(BaseModel, TrackUpdates, Serializable):
         return f"<LicensePlate ID: {self.id} : {self.state} : {self.number}>"
 
 
-class Link(BaseModel, TrackUpdates, Serializable):
+class Link(BaseModel, TrackUpdates):
     __tablename__ = "links"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -703,7 +666,7 @@ class Link(BaseModel, TrackUpdates, Serializable):
         return f"<Link ID: {self.id} : {self.title}>"
 
 
-class Incident(BaseModel, TrackUpdates, Serializable):
+class Incident(BaseModel, TrackUpdates):
     __tablename__ = "incidents"
 
     id = db.Column(db.Integer, primary_key=True)
