@@ -818,7 +818,9 @@ class Incident(BaseModel, TrackUpdates):
         db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
     )
     address = db.relationship(
-        "Location", backref=db.backref("incidents", cascade_backrefs=False)
+        "Location",
+        backref=db.backref("incidents", cascade_backrefs=False),
+        lazy="joined",
     )
     license_plates = db.relationship(
         "LicensePlate",
