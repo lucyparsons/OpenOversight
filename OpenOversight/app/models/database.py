@@ -202,6 +202,7 @@ class TrackUpdates:
 
 class Department(BaseModel, TrackUpdates):
     __tablename__ = "departments"
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), index=False, unique=False, nullable=False)
     short_name = db.Column(db.String(100), unique=False, nullable=False)
@@ -854,6 +855,7 @@ class Incident(BaseModel, TrackUpdates):
 
 class User(UserMixin, BaseModel):
     __tablename__ = "users"
+
     id = db.Column(db.Integer, primary_key=True)
 
     # A universally unique identifier (UUID) that can be
