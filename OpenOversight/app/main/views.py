@@ -21,7 +21,7 @@ from flask import (
 from flask_login import current_user, login_required, login_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import contains_eager, selectinload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
 from OpenOversight.app.auth.forms import LoginForm
@@ -70,10 +70,6 @@ from OpenOversight.app.models.database import (
     Unit,
     User,
     db,
-)
-from OpenOversight.app.models.database_cache import (
-    get_database_cache_entry,
-    put_database_cache_entry,
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
@@ -1721,18 +1717,7 @@ def redirect_download_dept_links_csv(department_id: int):
 @main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id: int):
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
-    links = get_database_cache_entry(*cache_params)
-    if links is None:
-        links = (
-            db.session.query(Link)
-            .join(Link.officers)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Link.officers))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, links)
-
+    links = Department.get_links(department_id)
     field_names = [
         "id",
         "title",
@@ -1743,6 +1728,7 @@ def download_dept_links_csv(department_id: int):
         "officers",
         "incidents",
     ]
+
     return make_downloadable_csv(
         links, department_id, "Links", field_names, links_record_maker
     )

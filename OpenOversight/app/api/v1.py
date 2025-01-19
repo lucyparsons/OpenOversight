@@ -1,14 +1,9 @@
 from http import HTTPMethod
 
 from flask import Blueprint, Response, jsonify
-from sqlalchemy.orm import Query, contains_eager
+from sqlalchemy.orm import Query
 
-from OpenOversight.app.models.database import Department, Link, Officer, db
-from OpenOversight.app.models.database_cache import (
-    get_database_cache_entry,
-    put_database_cache_entry,
-)
-from OpenOversight.app.utils.constants import KEY_DEPT_ALL_LINKS
+from OpenOversight.app.models.database import Department
 from OpenOversight.app.utils.flask import limiter
 
 
@@ -50,19 +45,7 @@ def get_dept_salaries(department_id: int) -> Response:
 @v1.route("/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_links(department_id: int) -> Response:
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
-    links = get_database_cache_entry(*cache_params)
-
-    if links is None:
-        links = (
-            db.session.query(Link)
-            .join(Link.officers)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Link.officers))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, links)
-
+    links = Department.get_links(department_id)
     return objs_to_dicts_jsonify(links)
 
 
