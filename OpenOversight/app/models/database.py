@@ -16,6 +16,8 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, func
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import (
     DeclarativeMeta,
+    Query,
+    contains_eager,
     declarative_mixin,
     declared_attr,
     joinedload,
@@ -35,6 +37,7 @@ from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_DB_CREATOR,
+    KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
@@ -212,7 +215,7 @@ class Department(BaseModel, TrackUpdates):
         return self.name if not self.state else f"[{self.state}] {self.name}"
 
     @staticmethod
-    def get_officers(department_id: int) -> List[BaseModel]:
+    def get_officers(department_id: int) -> Query:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
         officers = get_database_cache_entry(*cache_params)
 
@@ -227,6 +230,25 @@ class Department(BaseModel, TrackUpdates):
             put_database_cache_entry(*cache_params, officers)
 
         return officers
+
+    @staticmethod
+    def get_assignments(department_id: int) -> Query:
+        cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
+        assignments = get_database_cache_entry(*cache_params)
+
+        if assignments is None:
+            assignments = (
+                db.session.query(Assignment)
+                .join(Assignment.base_officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Assignment.base_officer))
+                .options(joinedload(Assignment.unit))
+                .options(joinedload(Assignment.job))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, assignments)
+
+        return assignments
 
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
     def total_documented_assignments(self) -> int:

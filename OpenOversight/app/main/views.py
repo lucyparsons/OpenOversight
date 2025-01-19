@@ -21,7 +21,7 @@ from flask import (
 from flask_login import current_user, login_required, login_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import contains_eager, joinedload, selectinload
+from sqlalchemy.orm import contains_eager, selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
 from OpenOversight.app.auth.forms import LoginForm
@@ -1618,19 +1618,7 @@ def redirect_download_dept_assignments_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id: int):
-    cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
-    assignments = get_database_cache_entry(*cache_params)
-    if assignments is None:
-        assignments = (
-            db.session.query(Assignment)
-            .join(Assignment.base_officer)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Assignment.base_officer))
-            .options(joinedload(Assignment.unit))
-            .options(joinedload(Assignment.job))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, assignments)
+    assignments = Department.get_assignments(department_id)
 
     field_names = [
         "id",

@@ -2,10 +2,9 @@ from http import HTTPMethod
 from typing import List
 
 from flask import Blueprint, Response, jsonify
-from sqlalchemy.orm import contains_eager, joinedload
+from sqlalchemy.orm import contains_eager
 
 from OpenOversight.app.models.database import (
-    Assignment,
     BaseModel,
     Department,
     Description,
@@ -20,7 +19,6 @@ from OpenOversight.app.models.database_cache import (
     put_database_cache_entry,
 )
 from OpenOversight.app.utils.constants import (
-    KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
@@ -46,21 +44,7 @@ def get_dept_officers(department_id: int) -> Response:
 @v1.route("/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_assignments(department_id: int) -> Response:
-    cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
-    assignments = get_database_cache_entry(*cache_params)
-
-    if assignments is None:
-        assignments = (
-            db.session.query(Assignment)
-            .join(Assignment.base_officer)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Assignment.base_officer))
-            .options(joinedload(Assignment.unit))
-            .options(joinedload(Assignment.job))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, assignments)
-
+    assignments = Department.get_assignments(department_id)
     return objs_to_dicts_jsonify(assignments)
 
 
