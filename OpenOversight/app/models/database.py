@@ -38,6 +38,7 @@ from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     KEY_DB_CREATOR,
     KEY_DEPT_ALL_ASSIGNMENTS,
+    KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
@@ -216,23 +217,6 @@ class Department(BaseModel, TrackUpdates):
         return self.name if not self.state else f"[{self.state}] {self.name}"
 
     @staticmethod
-    def get_officers(department_id: int) -> Query:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
-        officers = get_database_cache_entry(*cache_params)
-
-        if officers is None:
-            officers = (
-                db.session.query(Officer)
-                .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-                .options(joinedload(Officer.salaries))
-                .filter_by(department_id=department_id)
-                .all()
-            )
-            put_database_cache_entry(*cache_params, officers)
-
-        return officers
-
-    @staticmethod
     def get_assignments(department_id: int) -> Query:
         cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
         assignments = get_database_cache_entry(*cache_params)
@@ -250,6 +234,34 @@ class Department(BaseModel, TrackUpdates):
             put_database_cache_entry(*cache_params, assignments)
 
         return assignments
+
+    @staticmethod
+    def get_incidents(department_id: int) -> Query:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
+        incidents = get_database_cache_entry(*cache_params)
+
+        if incidents is None:
+            incidents = Incident.query.filter_by(department_id=department_id).all()
+            put_database_cache_entry(*cache_params, incidents)
+
+        return incidents
+
+    @staticmethod
+    def get_officers(department_id: int) -> Query:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
+        officers = get_database_cache_entry(*cache_params)
+
+        if officers is None:
+            officers = (
+                db.session.query(Officer)
+                .options(joinedload(Officer.assignments).joinedload(Assignment.job))
+                .options(joinedload(Officer.salaries))
+                .filter_by(department_id=department_id)
+                .all()
+            )
+            put_database_cache_entry(*cache_params, officers)
+
+        return officers
 
     @staticmethod
     def get_salaries(department_id: int) -> Query:

@@ -8,7 +8,6 @@ from OpenOversight.app.models.database import (
     BaseModel,
     Department,
     Description,
-    Incident,
     Link,
     Officer,
     db,
@@ -18,7 +17,6 @@ from OpenOversight.app.models.database_cache import (
     put_database_cache_entry,
 )
 from OpenOversight.app.utils.constants import (
-    KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
 )
@@ -49,13 +47,7 @@ def get_dept_assignments(department_id: int) -> Response:
 @v1.route("/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_incidents(department_id: int) -> Response:
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
-    incidents = get_database_cache_entry(*cache_params)
-
-    if incidents is None:
-        incidents = Incident.query.filter_by(department_id=department_id).all()
-        put_database_cache_entry(*cache_params, incidents)
-
+    incidents = Department.get_incidents(department_id)
     return objs_to_dicts_jsonify(incidents)
 
 

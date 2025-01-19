@@ -82,7 +82,6 @@ from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
     FLASH_MSG_PERMANENT_REDIRECT,
     KEY_DEPT_ALL_ASSIGNMENTS,
-    KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
     KEY_DEPT_ALL_OFFICERS,
@@ -1619,7 +1618,6 @@ def redirect_download_dept_assignments_csv(department_id: int):
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id: int):
     assignments = Department.get_assignments(department_id)
-
     field_names = [
         "id",
         "officer id",
@@ -1631,6 +1629,7 @@ def download_dept_assignments_csv(department_id: int):
         "unit id",
         "unit description",
     ]
+
     return make_downloadable_csv(
         assignments,
         department_id,
@@ -1656,12 +1655,7 @@ def redirect_download_incidents_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id: int):
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
-    incidents = get_database_cache_entry(*cache_params)
-    if incidents is None:
-        incidents = Incident.query.filter_by(department_id=department_id).all()
-        put_database_cache_entry(*cache_params, incidents)
-
+    incidents = Department.get_incidents(department_id)
     field_names = [
         "id",
         "report_num",
@@ -1673,6 +1667,7 @@ def download_incidents_csv(department_id: int):
         "links",
         "officers",
     ]
+
     return make_downloadable_csv(
         incidents,
         department_id,
@@ -1699,7 +1694,6 @@ def redirect_download_dept_salaries_csv(department_id: int):
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id: int):
     salaries = Department.get_salaries(department_id)
-
     field_names = [
         "id",
         "officer id",
@@ -1710,6 +1704,7 @@ def download_dept_salaries_csv(department_id: int):
         "year",
         "is_fiscal_year",
     ]
+
     return make_downloadable_csv(
         salaries, department_id, "Salaries", field_names, salary_record_maker
     )
