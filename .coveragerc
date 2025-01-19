@@ -1,0 +1,3 @@
+[run]
+omit =
+    OpenOversight/migrations/versions/*
