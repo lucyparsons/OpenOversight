@@ -1580,18 +1580,7 @@ def redirect_download_dept_officers_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id: int):
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
-    officers = get_database_cache_entry(*cache_params)
-    if officers is None:
-        officers = (
-            db.session.query(Officer)
-            .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-            .options(joinedload(Officer.salaries))
-            .filter_by(department_id=department_id)
-            .all()
-        )
-        put_database_cache_entry(*cache_params, officers)
-
+    officers = Department.get_officers(department_id)
     field_names = [
         "id",
         "unique identifier",
@@ -1607,6 +1596,7 @@ def download_dept_officers_csv(department_id: int):
         "job title",
         "most recent salary",
     ]
+
     return make_downloadable_csv(
         officers, department_id, "Officers", field_names, officer_record_maker
     )

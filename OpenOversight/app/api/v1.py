@@ -24,7 +24,6 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
-    KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_ALL_SALARIES,
 )
 from OpenOversight.app.utils.flask import limiter
@@ -40,19 +39,7 @@ def objs_to_dicts_jsonify(obj_list: List[BaseModel]) -> Response:
 @v1.route("/departments/<int:department_id>/officers", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_officers(department_id: int) -> Response:
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
-    officers = get_database_cache_entry(*cache_params)
-
-    if officers is None:
-        officers = (
-            db.session.query(Officer)
-            .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-            .options(joinedload(Officer.salaries))
-            .filter_by(department_id=department_id)
-            .all()
-        )
-        put_database_cache_entry(*cache_params, officers)
-
+    officers = Department.get_officers(department_id)
     return objs_to_dicts_jsonify(officers)
 
 
