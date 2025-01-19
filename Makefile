@@ -14,7 +14,7 @@ build_with_version: create_empty_secret
 .PHONY: test_with_version
 test_with_version: build_with_version
 	touch OpenOversight/tests/coverage.xml
-	docker compose run --rm web-test pytest --cov=OpenOversight/app --cov=OpenOversight/tests --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+	docker compose run --rm web-test pytest --cov=OpenOversight/app --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
 
 # Run containers
 .PHONY: start
