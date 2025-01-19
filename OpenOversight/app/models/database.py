@@ -228,7 +228,6 @@ class Department(BaseModel, TrackUpdates):
 
         return officers
 
-    @staticmethod
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
     def total_documented_assignments(self) -> int:
         return (
