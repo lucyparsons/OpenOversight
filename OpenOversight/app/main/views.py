@@ -83,7 +83,6 @@ from OpenOversight.app.utils.constants import (
     FLASH_MSG_PERMANENT_REDIRECT,
     KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_LINKS,
-    KEY_DEPT_ALL_NOTES,
     KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
@@ -1765,18 +1764,7 @@ def redirect_download_dept_descriptions_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id: int):
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
-    notes = get_database_cache_entry(*cache_params)
-    if notes is None:
-        notes = (
-            db.session.query(Description)
-            .join(Description.officer)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Description.officer))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, notes)
-
+    descriptions = Department.get_descriptions(department_id)
     field_names = [
         "id",
         "text_contents",
@@ -1785,8 +1773,9 @@ def download_dept_descriptions_csv(department_id: int):
         "created_at",
         "last_updated_at",
     ]
+
     return make_downloadable_csv(
-        notes, department_id, "Notes", field_names, descriptions_record_maker
+        descriptions, department_id, "Notes", field_names, descriptions_record_maker
     )
 
 

@@ -39,6 +39,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DB_CREATOR,
     KEY_DEPT_ALL_ASSIGNMENTS,
     KEY_DEPT_ALL_INCIDENTS,
+    KEY_DEPT_ALL_NOTES,
     KEY_DEPT_ALL_OFFICERS,
     KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
@@ -234,6 +235,21 @@ class Department(BaseModel, TrackUpdates):
             put_database_cache_entry(*cache_params, assignments)
 
         return assignments
+
+    @staticmethod
+    def get_descriptions(department_id: int) -> Query:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
+        notes = get_database_cache_entry(*cache_params)
+
+        if notes is None:
+            notes = (
+                db.session.query(Description)
+                .join(Description.officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Description.officer))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, notes)
 
     @staticmethod
     def get_incidents(department_id: int) -> Query:
