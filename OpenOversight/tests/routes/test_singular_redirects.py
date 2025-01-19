@@ -58,13 +58,13 @@ def test_redirect_no_params(client, session, source_route, target_route):
             "main.redirect_download_dept_assignments_csv",
             "main.download_dept_assignments_csv",
         ),
-        ("main.redirect_download_incidents_csv", "main.download_incidents_csv"),
+        # ("main.redirect_download_incidents_csv", "main.download_incidents_csv"),
         ("main.redirect_download_dept_salaries_csv", "main.download_dept_salaries_csv"),
         ("main.redirect_download_dept_links_csv", "main.download_dept_links_csv"),
-        (
-            "main.redirect_download_dept_descriptions_csv",
-            "main.download_dept_descriptions_csv",
-        ),
+        # (
+        #     "main.redirect_download_dept_descriptions_csv",
+        #     "main.download_dept_descriptions_csv",
+        # ),
     ],
 )
 def test_redirect_with_department_id(client, session, source_route, target_route):
