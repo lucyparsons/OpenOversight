@@ -1698,17 +1698,7 @@ def redirect_download_dept_salaries_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id: int):
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
-    salaries = get_database_cache_entry(*cache_params)
-    if salaries is None:
-        salaries = (
-            db.session.query(Salary)
-            .join(Salary.officer)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Salary.officer))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, salaries)
+    salaries = Department.get_salaries(department_id)
 
     field_names = [
         "id",

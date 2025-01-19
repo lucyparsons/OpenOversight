@@ -11,7 +11,6 @@ from OpenOversight.app.models.database import (
     Incident,
     Link,
     Officer,
-    Salary,
     db,
 )
 from OpenOversight.app.models.database_cache import (
@@ -22,7 +21,6 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
     KEY_DEPT_ALL_LINKS,
     KEY_DEPT_ALL_NOTES,
-    KEY_DEPT_ALL_SALARIES,
 )
 from OpenOversight.app.utils.flask import limiter
 
@@ -64,19 +62,7 @@ def get_dept_incidents(department_id: int) -> Response:
 @v1.route("/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def get_dept_salaries(department_id: int) -> Response:
-    cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
-    salaries = get_database_cache_entry(*cache_params)
-
-    if salaries is None:
-        salaries = (
-            db.session.query(Salary)
-            .join(Salary.officer)
-            .filter(Officer.department_id == department_id)
-            .options(contains_eager(Salary.officer))
-            .all()
-        )
-        put_database_cache_entry(*cache_params, salaries)
-
+    salaries = Department.get_salaries(department_id)
     return objs_to_dicts_jsonify(salaries)
 
 
