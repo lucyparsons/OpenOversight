@@ -377,10 +377,10 @@ class Note(BaseModel, TrackUpdates):
 class Description(BaseModel, TrackUpdates):
     __tablename__ = "descriptions"
 
-    officer = db.relationship("Officer", back_populates="descriptions")
     id = db.Column(db.Integer, primary_key=True)
     text_contents = db.Column(db.Text())
     officer_id = db.Column(db.Integer, db.ForeignKey("officers.id", ondelete="CASCADE"))
+    officer = db.relationship("Officer", back_populates="descriptions")
 
 
 class Officer(BaseModel, TrackUpdates):
