@@ -1,3 +1,2 @@
-[report]
-omit =
-    OpenOversight/migrations/versions/*
+[run]
+omit = OpenOversight/migrations/versions/*
