@@ -241,17 +241,19 @@ class Department(BaseModel, TrackUpdates):
     @staticmethod
     def get_descriptions(department_id: int) -> Query:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
-        notes = get_database_cache_entry(*cache_params)
+        descriptions = get_database_cache_entry(*cache_params)
 
-        if notes is None:
-            notes = (
+        if descriptions is None:
+            descriptions = (
                 db.session.query(Description)
                 .join(Description.officer)
                 .filter(Officer.department_id == department_id)
                 .options(contains_eager(Description.officer))
                 .all()
             )
-            put_database_cache_entry(*cache_params, notes)
+            put_database_cache_entry(*cache_params, descriptions)
+
+        return descriptions
 
     @staticmethod
     def get_incidents(department_id: int) -> Query:
