@@ -20,7 +20,14 @@ from OpenOversight.app.models.database import (
     User,
 )
 from OpenOversight.app.utils.choices import STATE_CHOICES
-from OpenOversight.tests.conftest import SPRINGFIELD_PD
+from OpenOversight.tests.conftest import AC_DEPT, SPRINGFIELD_PD
+
+
+def test_no_omitted_fields_in_to_dict(mockdata):
+    department_dict = Department.query.filter_by(id=AC_DEPT).first().to_dict()
+
+    assert "created_by" not in department_dict.keys()
+    assert "last_updated_at" not in department_dict.keys()
 
 
 def test_department_total_documented_officers(mockdata):
