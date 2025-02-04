@@ -199,6 +199,149 @@ class TrackUpdates:
         return db.relationship("User", foreign_keys=[cls.created_by])
 
 
+class Department(BaseModel, TrackUpdates):
+    __tablename__ = "departments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), index=False, unique=False, nullable=False)
+    short_name = db.Column(db.String(100), unique=False, nullable=False)
+    state = db.Column(db.String(2), server_default="", nullable=False)
+
+    # See https://github.com/lucyparsons/OpenOversight/issues/462
+    unique_internal_identifier_label = db.Column(
+        db.String(100), unique=False, nullable=True
+    )
+
+    __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
+
+    @property
+    def display_name(self) -> str:
+        return self.name if not self.state else f"[{self.state}] {self.name}"
+
+    @staticmethod
+    def get_assignments(department_id: int) -> List:
+        cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
+        assignments = get_database_cache_entry(*cache_params)
+
+        if assignments is None:
+            assignments = (
+                db.session.query(Assignment)
+                .join(Assignment.base_officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Assignment.base_officer))
+                .options(joinedload(Assignment.unit))
+                .options(joinedload(Assignment.job))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, assignments)
+
+        return assignments
+
+    @staticmethod
+    def get_descriptions(department_id: int) -> List:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
+        descriptions = get_database_cache_entry(*cache_params)
+
+        if descriptions is None:
+            descriptions = (
+                db.session.query(Description)
+                .join(Description.officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Description.officer))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, descriptions)
+
+        return descriptions
+
+    @staticmethod
+    def get_incidents(department_id: int) -> List:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
+        incidents = get_database_cache_entry(*cache_params)
+
+        if incidents is None:
+            incidents = Incident.query.filter_by(department_id=department_id).all()
+            put_database_cache_entry(*cache_params, incidents)
+
+        return incidents
+
+    @staticmethod
+    def get_links(department_id: int) -> List:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
+        links = get_database_cache_entry(*cache_params)
+
+        if links is None:
+            links = (
+                db.session.query(Link)
+                .join(Link.officers)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Link.officers))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, links)
+
+        return links
+
+    @staticmethod
+    def get_officers(department_id: int) -> List:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
+        officers = get_database_cache_entry(*cache_params)
+
+        if officers is None:
+            officers = (
+                db.session.query(Officer)
+                .options(joinedload(Officer.assignments).joinedload(Assignment.job))
+                .options(joinedload(Officer.salaries))
+                .filter_by(department_id=department_id)
+                .all()
+            )
+            put_database_cache_entry(*cache_params, officers)
+
+        return officers
+
+    @staticmethod
+    def get_salaries(department_id: int) -> List:
+        cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
+        salaries = get_database_cache_entry(*cache_params)
+
+        if salaries is None:
+            salaries = (
+                db.session.query(Salary)
+                .join(Salary.officer)
+                .filter(Officer.department_id == department_id)
+                .options(contains_eager(Salary.officer))
+                .all()
+            )
+            put_database_cache_entry(*cache_params, salaries)
+
+        return salaries
+
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
+    def total_documented_assignments(self) -> int:
+        return (
+            db.session.query(Assignment.id)
+            .join(Officer, Assignment.officer_id == Officer.id)
+            .filter(Officer.department_id == self.id)
+            .count()
+        )
+
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_INCIDENTS))
+    def total_documented_incidents(self) -> int:
+        return (
+            db.session.query(Incident).filter(Incident.department_id == self.id).count()
+        )
+
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_OFFICERS))
+    def total_documented_officers(self) -> int:
+        return (
+            db.session.query(Officer).filter(Officer.department_id == self.id).count()
+        )
+
+    def remove_database_cache_entries(self, update_types: List[str]) -> None:
+        """Remove the Department model key from the cache if it exists."""
+        remove_database_cache_entries(self, update_types)
+
+
 class Job(BaseModel, TrackUpdates):
     __tablename__ = "jobs"
 
@@ -651,149 +794,6 @@ class Link(BaseModel, TrackUpdates):
     @validates("url")
     def validate_url(self, key, url):
         return url_validator(url)
-
-
-class Department(BaseModel, TrackUpdates):
-    __tablename__ = "departments"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), index=False, unique=False, nullable=False)
-    short_name = db.Column(db.String(100), unique=False, nullable=False)
-    state = db.Column(db.String(2), server_default="", nullable=False)
-
-    # See https://github.com/lucyparsons/OpenOversight/issues/462
-    unique_internal_identifier_label = db.Column(
-        db.String(100), unique=False, nullable=True
-    )
-
-    __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
-
-    @property
-    def display_name(self) -> str:
-        return self.name if not self.state else f"[{self.state}] {self.name}"
-
-    @staticmethod
-    def get_assignments(department_id: int) -> List[Assignment]:
-        cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
-        assignments = get_database_cache_entry(*cache_params)
-
-        if assignments is None:
-            assignments = (
-                db.session.query(Assignment)
-                .join(Assignment.base_officer)
-                .filter(Officer.department_id == department_id)
-                .options(contains_eager(Assignment.base_officer))
-                .options(joinedload(Assignment.unit))
-                .options(joinedload(Assignment.job))
-                .all()
-            )
-            put_database_cache_entry(*cache_params, assignments)
-
-        return assignments
-
-    @staticmethod
-    def get_descriptions(department_id: int) -> List:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
-        descriptions = get_database_cache_entry(*cache_params)
-
-        if descriptions is None:
-            descriptions = (
-                db.session.query(Description)
-                .join(Description.officer)
-                .filter(Officer.department_id == department_id)
-                .options(contains_eager(Description.officer))
-                .all()
-            )
-            put_database_cache_entry(*cache_params, descriptions)
-
-        return descriptions
-
-    @staticmethod
-    def get_incidents(department_id: int) -> List:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
-        incidents = get_database_cache_entry(*cache_params)
-
-        if incidents is None:
-            incidents = Incident.query.filter_by(department_id=department_id).all()
-            put_database_cache_entry(*cache_params, incidents)
-
-        return incidents
-
-    @staticmethod
-    def get_links(department_id: int) -> List:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
-        links = get_database_cache_entry(*cache_params)
-
-        if links is None:
-            links = (
-                db.session.query(Link)
-                .join(Link.officers)
-                .filter(Officer.department_id == department_id)
-                .options(contains_eager(Link.officers))
-                .all()
-            )
-            put_database_cache_entry(*cache_params, links)
-
-        return links
-
-    @staticmethod
-    def get_officers(department_id: int) -> List:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
-        officers = get_database_cache_entry(*cache_params)
-
-        if officers is None:
-            officers = (
-                db.session.query(Officer)
-                .options(joinedload(Officer.assignments).joinedload(Assignment.job))
-                .options(joinedload(Officer.salaries))
-                .filter_by(department_id=department_id)
-                .all()
-            )
-            put_database_cache_entry(*cache_params, officers)
-
-        return officers
-
-    @staticmethod
-    def get_salaries(department_id: int) -> List:
-        cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
-        salaries = get_database_cache_entry(*cache_params)
-
-        if salaries is None:
-            salaries = (
-                db.session.query(Salary)
-                .join(Salary.officer)
-                .filter(Officer.department_id == department_id)
-                .options(contains_eager(Salary.officer))
-                .all()
-            )
-            put_database_cache_entry(*cache_params, salaries)
-
-        return salaries
-
-    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
-    def total_documented_assignments(self) -> int:
-        return (
-            db.session.query(Assignment.id)
-            .join(Officer, Assignment.officer_id == Officer.id)
-            .filter(Officer.department_id == self.id)
-            .count()
-        )
-
-    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_INCIDENTS))
-    def total_documented_incidents(self) -> int:
-        return (
-            db.session.query(Incident).filter(Incident.department_id == self.id).count()
-        )
-
-    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_OFFICERS))
-    def total_documented_officers(self) -> int:
-        return (
-            db.session.query(Officer).filter(Officer.department_id == self.id).count()
-        )
-
-    def remove_database_cache_entries(self, update_types: List[str]) -> None:
-        """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entries(self, update_types)
 
 
 class Location(BaseModel, TrackUpdates):
