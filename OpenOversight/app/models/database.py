@@ -734,68 +734,6 @@ incident_officers = db.Table(
 )
 
 
-class Incident(BaseModel, TrackUpdates):
-    __tablename__ = "incidents"
-
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, unique=False, index=True)
-    time = db.Column(db.Time, unique=False, index=True)
-    report_number = db.Column(db.String(50), index=True)
-    description = db.Column(db.Text(), nullable=True)
-    address_id = db.Column(
-        db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
-    )
-    address = db.relationship(
-        "Location",
-        backref=db.backref("incidents", cascade_backrefs=False),
-        lazy="joined",
-    )
-    license_plates = db.relationship(
-        "LicensePlate",
-        secondary=incident_license_plates,
-        lazy="subquery",
-        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
-    )
-    links = db.relationship(
-        "Link",
-        secondary=incident_links,
-        lazy="subquery",
-        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
-    )
-    officers = db.relationship(
-        "Officer",
-        secondary=officer_incidents,
-        lazy="subquery",
-        backref=db.backref(
-            "incidents",
-            cascade_backrefs=False,
-            order_by="Incident.date.desc(), Incident.time.desc()",
-        ),
-    )
-    department_id = db.Column(
-        db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
-    )
-    department = db.relationship(
-        "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
-    )
-
-
-class Link(BaseModel, TrackUpdates):
-    __tablename__ = "links"
-
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), index=True)
-    url = db.Column(db.Text(), nullable=False)
-    link_type = db.Column(db.String(100), index=True)
-    description = db.Column(db.Text(), nullable=True)
-    author = db.Column(db.String(255), nullable=True)
-    has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
-
-    @validates("url")
-    def validate_url(self, key, url):
-        return url_validator(url)
-
-
 class Location(BaseModel, TrackUpdates):
     __tablename__ = "locations"
 
@@ -852,6 +790,68 @@ class LicensePlate(BaseModel, TrackUpdates):
     @validates("state")
     def validate_state(self, key, state):
         return state_validator(state)
+
+
+class Link(BaseModel, TrackUpdates):
+    __tablename__ = "links"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), index=True)
+    url = db.Column(db.Text(), nullable=False)
+    link_type = db.Column(db.String(100), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    author = db.Column(db.String(255), nullable=True)
+    has_content_warning = db.Column(db.Boolean, nullable=False, default=False)
+
+    @validates("url")
+    def validate_url(self, key, url):
+        return url_validator(url)
+
+
+class Incident(BaseModel, TrackUpdates):
+    __tablename__ = "incidents"
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, unique=False, index=True)
+    time = db.Column(db.Time, unique=False, index=True)
+    report_number = db.Column(db.String(50), index=True)
+    description = db.Column(db.Text(), nullable=True)
+    address_id = db.Column(
+        db.Integer, db.ForeignKey("locations.id", name="incidents_address_id_fkey")
+    )
+    address = db.relationship(
+        "Location",
+        backref=db.backref("incidents", cascade_backrefs=False),
+        lazy="joined",
+    )
+    license_plates = db.relationship(
+        "LicensePlate",
+        secondary=incident_license_plates,
+        lazy="subquery",
+        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
+    )
+    links = db.relationship(
+        "Link",
+        secondary=incident_links,
+        lazy="subquery",
+        backref=db.backref("incidents", cascade_backrefs=False, lazy=True),
+    )
+    officers = db.relationship(
+        "Officer",
+        secondary=officer_incidents,
+        lazy="subquery",
+        backref=db.backref(
+            "incidents",
+            cascade_backrefs=False,
+            order_by="Incident.date.desc(), Incident.time.desc()",
+        ),
+    )
+    department_id = db.Column(
+        db.Integer, db.ForeignKey("departments.id", name="incidents_department_id_fkey")
+    )
+    department = db.relationship(
+        "Department", backref=db.backref("incidents", cascade_backrefs=False), lazy=True
+    )
 
 
 class User(UserMixin, BaseModel):
