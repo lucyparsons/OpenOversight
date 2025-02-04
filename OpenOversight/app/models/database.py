@@ -692,7 +692,7 @@ class Department(BaseModel, TrackUpdates):
         return assignments
 
     @staticmethod
-    def get_descriptions(department_id: int) -> List[Description]:
+    def get_descriptions(department_id: int) -> List:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
         descriptions = get_database_cache_entry(*cache_params)
 
@@ -709,7 +709,7 @@ class Department(BaseModel, TrackUpdates):
         return descriptions
 
     @staticmethod
-    def get_incidents(department_id: int) -> List[Incident]:
+    def get_incidents(department_id: int) -> List:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
         incidents = get_database_cache_entry(*cache_params)
 
@@ -720,7 +720,7 @@ class Department(BaseModel, TrackUpdates):
         return incidents
 
     @staticmethod
-    def get_links(department_id: int) -> List[Link]:
+    def get_links(department_id: int) -> List:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
         links = get_database_cache_entry(*cache_params)
 
@@ -737,7 +737,7 @@ class Department(BaseModel, TrackUpdates):
         return links
 
     @staticmethod
-    def get_officers(department_id: int) -> List[Officer]:
+    def get_officers(department_id: int) -> List:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
         officers = get_database_cache_entry(*cache_params)
 
@@ -754,7 +754,7 @@ class Department(BaseModel, TrackUpdates):
         return officers
 
     @staticmethod
-    def get_salaries(department_id: int) -> List[Salary]:
+    def get_salaries(department_id: int) -> List:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
         salaries = get_database_cache_entry(*cache_params)
 
