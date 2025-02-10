@@ -29,7 +29,7 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker compose run --rm web flask db stamp head
+	docker compose run --rm web python ./create_db.py
 
 .PHONY: create_db_diagram
 create_db_diagram:

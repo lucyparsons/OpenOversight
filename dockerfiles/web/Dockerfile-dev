@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y xvfb libpq-dev python3-dev graphviz-dev
 COPY requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY test_data.py /usr/src/app/
+COPY create_db.py test_data.py /usr/src/app/
 
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 ENV SQLALCHEMY_DATABASE_URI postgresql://openoversight:terriblepassword@postgres/openoversight-dev
