@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import argparse
 
 from OpenOversight.app import create_app
