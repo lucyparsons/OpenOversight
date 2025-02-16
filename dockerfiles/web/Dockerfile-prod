@@ -28,6 +28,9 @@ COPY requirements.txt /usr/src/app/
 # Install required python packages with pip.
 RUN pip3 install -r requirements.txt
 
+# Copy python script to initialize database.
+COPY create_db.py /usr/src/app/
+
 WORKDIR /usr/src/app/
 
 FROM base as production
