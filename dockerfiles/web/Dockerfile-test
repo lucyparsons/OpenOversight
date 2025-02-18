@@ -30,7 +30,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     pip3 install --no-cache-dir -r requirements.txt && \
     pip3 install --no-cache-dir -r dev-requirements.txt
 
-COPY test_data.py /usr/src/app/
+COPY create_db.py test_data.py /usr/src/app/
 
 ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
