@@ -13,13 +13,11 @@
   {% endif %}
 {% endblock meta %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">Incidents</h1>
+    {% if department %}<h1 class="hero lead text-light">{{ department.name }}</h1>{% endif %}
+  </div>
   <div class="container py-5" role="main">
-    <h1>Incidents</h1>
-    {% if department %}
-      <h2>
-        <small>{{ department.name }}</small>
-      </h2>
-    {% endif %}
     <div class="row">
       <div class="filter-sidebar col-sm-3">
         <h3 class="sidebar-title">Filter incidents</h3>

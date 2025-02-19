@@ -24,9 +24,9 @@
       </script>
     {% endif %}
     <!-- Bundled CSS -->
-    <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='css/openoversight.css') }}"
-          rel="stylesheet">
+    <!-- Bootstrap -->
+    {{ bootstrap.load_css() }}
+    {{ bootstrap.load_js() }}
     <!-- Embedded video styles -->
     <link href="{{ url_for('static', filename='css/responsive_embed.css') }}"
           rel="stylesheet">
@@ -38,14 +38,16 @@
           rel="stylesheet">
     <!-- jQuery -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-    <!-- Bootstrap -->
-    {{ bootstrap.load_css() }}
-    {{ bootstrap.load_js() }}
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='css/fonts.css') }}"
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/openoversight.css') }}"
+          rel="stylesheet">
     {% block head %}
     {% endblock head %}
   </head>
-  <body role="document">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
+  <body role="document" class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-dark navbar-expand-lg bg-body-tertiary sticky-top">
       <div class="container">
         <a class="navbar-brand" href="{{ url_for("main.index") }}">OpenOversight</a>
         <button type="button"
@@ -74,6 +76,9 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for("main.about_oo") }}">About</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for("main.contact_oo") }}">Contact</a>
+            </li>
             {% if current_user and current_user.is_administrator %}
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for("auth.get_users") }}">Users</a>
@@ -82,7 +87,7 @@
           </ul>
           <ul class="navbar-nav">
             {% if current_user and current_user.is_authenticated %}
-              <li class="dropdown nav-item">
+              <li class="dropdown nav-item usernav account">
                 <a class="nav-link dropdown-toggle"
                    data-bs-toggle="dropdown"
                    aria-expanded="false">
@@ -109,10 +114,10 @@
                 </ul>
               </li>
             {% else %}
-              <li class="nav-item">
+              <li class="nav-item usernav register">
                 <a class="nav-link" href="{{ url_for("auth.register") }}">Register</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item usernav">
                 <a class="nav-link" href="{{ url_for("auth.login") }}">Log In</a>
               </li>
             {% endif %}
@@ -139,43 +144,44 @@
     {% endwith %}
     {% block content %}
     {% endblock content %}
-    <footer class="footer {% block footer_class %}{% endblock footer_class %}">
-      <hr class="py-0 my-0">
+    <footer class="footer mt-auto {% block footer_class %}{% endblock footer_class %}">
       <div class="container">
         <div class="row text-center horizontal-padding">
-          <div class="col-sm-4">
-            <h5>OpenOversight</h5>
+          <div class="col-sm-12 d-lg-flex justify-content-center">
+            <a class="nav-link mx-4" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+            <a class="nav-link mx-4" href="{{ url_for("main.browse") }}">Browse Officers</a>
+            <a class="nav-link mx-4" href="{{ url_for("main.submit_data") }}">Submit Images</a>
+            <a class="nav-link mx-4"
+               href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+            <a class="nav-link mx-4" href="{{ url_for("main.about_oo") }}">About</a>
+            <a class="nav-link mx-4" href="{{ url_for("main.contact_oo") }}">Contact</a>
+          </div>
+        </div>
+        <div class="row text-center horizontal-padding">
+          <div class="col-sm-12">
             <p class="font-weight-300">
-              A product of Lucy Parsons Labs in Chicago, IL.
+              OpenOversight is a product of Lucy Parsons Labs in Chicago, IL.
               <br>
-              <a href="https://lucyparsonslabs.com/" target="_blank">Lucy Parsons Labs</a>
-              <br>
+            </p>
+            <a href="https://lucyparsonslabs.com/" target="_blank">
+              <img src="{{ url_for("static", filename="images/lpl-logo-white-transparent.png") }}" class="mt-4 lpl-logo" alt="Lucy Parsons Labs logo">
+            </a>
+            <p>
+              <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa-brands fa-facebook fa-3x social"></i></a>
+              <a href="https://www.instagram.com/lucyparsonslabs/"><i class="fa-brands fa-instagram fa-3x social"></i></a>
+              <a href="https://bsky.app/profile/lucyparsonslabs.com"><i class="fa-brands fa-bluesky fa-3x social"></i></a>
+              <a href="https://github.com/lucyparsons/openoversight"><i class="fa-brands fa-github fa-3x social"></i></a>
+              <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope fa-3x social"></i></a>
+            </p>
+            <p>
+              <a href="{{ url_for("main.privacy_oo") }}">Privacy Policy</a>
+              <br />
               <a href="https://lucyparsonslabs.com/donate" target="_blank">Donate</a>
               <br>
-              <a href="{{ url_for("main.all_data") }}" target="_blank">Download Department Data</a>
+              <a href="{{ url_for("main.all_data") }}"  target="_blank">Download Department Data</a>
             </p>
-          </div>
-          <div class="col-sm-4">
-            <h5>Contact</h5>
-            <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa-brands fa-square-facebook fa-3x social"></i></a>
-            <a href="https://www.instagram.com/lucyparsonslabs/"><i class="fa-brands fa-square-instagram fa-3x social"></i></a>
-            <a href="https://bsky.app/profile/lucyparsonslabs.com"><i class="fa-brands fa-square-bluesky fa-3x social"></i></a>
-            <a href="https://github.com/lucyparsons/openoversight"><i class="fa-brands fa-github-square fa-3x social"></i></a>
-            <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope-square fa-3x social"></i></a>
-            <br>
-            <a href="{{ url_for("main.privacy_oo") }}" class="btn">Privacy Policy</a>
-          </div>
-          <div class="col-sm-4">
-            <h5>Navigation</h5>
-            <p class="font-weight-300">
-              <a href="{{ url_for("main.get_officer") }}">Find an Officer</a>
-              <br>
-              <a href="{{ url_for("main.submit_data") }}">Submit Images</a>
-              <br>
-              <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
-              <br>
-              <a href="{{ url_for("main.about_oo") }}">About</a>
-              <br>
+            <p>
+              <a href="https://repeater.digital">Designed by Repeater.Digital</a>
             </p>
           </div>
         </div>

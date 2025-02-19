@@ -7,20 +7,18 @@
         content="Find an officer you interacted with using this form.">
 {% endblock meta %}
 {% block content %}
-  <div role="main">
+  <div role="main" class="page-find-officer">
     <div class="hero-section no-sub">
-      <div class="hero">Find an Officer</div>
+      <h1 class="hero">Find an Officer</h1>
     </div>
-  </div>
-  <div class="container" role="main">
-    <div class="horizontal-padding">
-      <p class="font-weight-300">
-        Fill in the information you know about an officer you interacted with. Don't worry if you don't know or
-        have answers to every question. OpenOversight takes what you provide and generates a digital gallery of
-        officers who may be a match.
+    <div class="col-lg-6 mx-auto py-5">
+      <p>
+        There are a lot of cops out there. Fill in whatever information you have and OpenOversight will narrow the options down to a digital gallery of officers who may be a match.
       </p>
     </div>
-    <form action="{{ url_for("main.get_officer") }}" method="post" class="form">
+    <form action="{{ url_for("main.get_officer") }}"
+          method="post"
+          class="form col-lg-6 mx-auto">
       {{ form.hidden_tag() }}
       <div id="step-1"
            class="card mb-5"
@@ -118,14 +116,14 @@
                 {% endfor %}
               </div>
               <div id="show-img-div">
-                <p>
+                <div>
                   <button type="button" id="show-img" class="btn btn-link">Show rank shoulder patches as reference</button>
-                </p>
+                </div>
               </div>
               <div id="hidden-img" class="no-display">
-                <p>
+                <div>
                   <button type="button" id="hide-img" class="btn btn-link">Hide rank shoulder patches</button>
-                </p>
+                </div>
                 <img src="{{ url_for('static', filename='images/OfficerRank.png') }}"
                      width="50%"
                      height="50%"
@@ -221,10 +219,10 @@
         </div>
       </div>
       <div class="container my-5">
-        <div class="col-md-6 offset-3">
-          <input class="btn btn-primary btn-lg next input-group input-group-lg"
+        <div class="col-md-6 offset-3 text-center">
+          <input class="btn btn-primary icon-btn find"
                  type="submit"
-                 value="Generate officer gallery"
+                 value="Generate Officer Gallery"
                  id="user-notification"
                  name="submit-officer-search-form" />
           <img id="loader"

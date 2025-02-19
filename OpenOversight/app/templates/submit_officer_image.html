@@ -8,12 +8,15 @@
 {% block content %}
   <div class="container theme-showcase py-5" role="main">
     <div class="page-header">
-      <h1>
-        Submit images <small>of {{ officer.full_name() }} in uniform. Officer faces should be clearly visible in each photograph. It is preferred (but not required) for the name and/or badge number to be visible. </small>
-      </h1>
+      <h1>Submit images of {{ officer.full_name() }} in uniform</h1>
+      <p>
+        Officer faces should be clearly visible in each photograph. It is preferred (but not required) for the name and/or badge number to be visible.
+      </p>
     </div>
     <div class="header">
-      <h3>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</h3>
+      <p>
+        <b>Drop images here to submit photos of {{ officer.full_name() }} in {{ officer.department.name }}:</b>
+      </p>
     </div>
     <form action="{{ url_for('main.upload', department_id=officer.department_id, officer_id=officer.id) }}"
           class="dropzone"

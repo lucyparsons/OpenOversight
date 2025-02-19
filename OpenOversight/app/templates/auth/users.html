@@ -4,10 +4,10 @@
   OpenOversight Admin - Users
 {% endblock title %}
 {% block content %}
-  <div class="container py-5" role="main">
-    <div class="text-center">
-      <h1 class="page-header">Users</h1>
-    </div>
+  <div class="hero-section no-sub">
+    <h1 class="hero">Users</h1>
+  </div>
+  <div class="container" role="main">
     <div class="horizontal-padding">
       {% with paginate=objects,
         next_url=url_for('auth.get_users', page=objects.next_num),

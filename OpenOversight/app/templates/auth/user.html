@@ -4,13 +4,11 @@
   OpenOversight Admin - Update User
 {% endblock title %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">Update {{ user.username }}</h1>
+    <h1 class="hero lead">{{ user.email }}</h1>
+  </div>
   <div class="container theme-showcase py-5" role="main">
-    <div class="page-header">
-      <h1>
-        Update {{ user.username }}
-        <small>{{ user.email }}</small>
-      </h1>
-    </div>
     <div class="col-md-6 col-12">
       <form class="form" method="post" role="form">
         {{ wtf.render_form(form, button_map={

@@ -3,6 +3,7 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import pytest
+import us.states
 from flask import current_app, session
 
 from OpenOversight.app import filters
@@ -122,3 +123,11 @@ def test_local_time(value, expected_output):
 
 def test_thousands_separator():
     assert "1,234,567" == filters.thousands_separator(1234567)
+
+
+def test_get_state_full_name():
+    assert "Federal" == filters.get_state_full_name("FA")
+    with patch("us.states.lookup") as mock_lookup:
+        mock_lookup.return_value = us.states.OR
+        assert "Oregon" == filters.get_state_full_name("test")
+        mock_lookup.assert_called_with("test")

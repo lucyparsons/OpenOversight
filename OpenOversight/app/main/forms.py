@@ -103,7 +103,7 @@ class FindOfficerForm(Form):
         "dept",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
     unit = StringField("unit", default="Not Sure", validators=[Optional()])
     current_job = BooleanField("current_job", default=None, validators=[Optional()])
@@ -122,12 +122,8 @@ class FindOfficerForm(Form):
         choices=GENDER_CHOICES,
         validators=[AnyOf(allowed_values(GENDER_CHOICES))],
     )
-    min_age = IntegerField(
-        "min_age", default=16, validators=[NumberRange(min=16, max=100)]
-    )
-    max_age = IntegerField(
-        "max_age", default=85, validators=[NumberRange(min=16, max=100)]
-    )
+    min_age = IntegerField("min_age", validators=[NumberRange(min=16, max=100)])
+    max_age = IntegerField("max_age", validators=[NumberRange(min=16, max=100)])
     require_photo = BooleanField(
         "require_photo", default=False, validators=[Optional()]
     )
@@ -285,7 +281,7 @@ class AddOfficerForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
     first_name = StringField(
         "First name",
@@ -407,7 +403,7 @@ class EditOfficerForm(Form):
         "Department",
         validators=[Optional()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
     submit = SubmitField(label="Update")
 
@@ -422,7 +418,7 @@ class AddUnitForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
     submit = SubmitField(label="Add")
 
@@ -432,7 +428,7 @@ class AddImageForm(Form):
         "Department",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
 
 
@@ -533,7 +529,7 @@ class IncidentForm(DateFieldForm):
         "Department*",
         validators=[DataRequired()],
         query_factory=dept_choices,
-        get_label="display_name",
+        get_label="name",
     )
     address = FormField(LocationForm)
     officers = FieldList(

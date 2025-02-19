@@ -10,142 +10,154 @@
 {% endblock meta %}
 {% block content %}
   {% if current_user and current_user.is_authenticated %}
+    <div class="hero-section no-sub">
+      <h1 class="hero">Volunteer</h1>
+    </div>
     <div class="container theme-showcase" role="main">
-      <div class="text-center frontpage-leads">
-        <h1>
-          <small>Volunteer</small>
-        </h1>
-      </div>
-      <div class="text-center frontpage-leads">
-        <p>
-          <a class="btn btn-lg btn-primary"
-             href="{{ url_for("main.get_tutorial") }}">
-            {{ render_icon("exclamation-triangle-fill") }}
-            Tutorial
+      <div class="volunteer-top-buttons row my-5">
+        <div class="col-lg-6">
+          <a href="{{ url_for("main.get_tutorial") }}"
+             class="tutorial-btn-lg text-center">
+            <img alt="Document icon"
+                 class="p-2"
+                 src="{{ url_for('static', filename='images/question-document.svg') }}">
+            <h3>Start with a Tutorial</h3>
+            <p>New to OpenOversight or just need a refresher? Get started here.</p>
           </a>
-        </p>
-        <p>New to working on images for OpenOversight? Or just need a refresher?</p>
-        <p>
-          <a class="btn btn-lg btn-primary"
-             href="{{ url_for("main.leaderboard") }}">
-            {{ render_icon("hand-thumbs-up") }}
-            Leaderboard
-          </a>
-        </p>
-      </div>
-      {% for department in departments %}
-        <div class="text-center frontpage-leads">
-          <h2>
-            <small>{{ department.name }} ({{ department.short_name }})</small>
-          </h2>
-          <p>
-            <a class="btn btn-lg btn-primary"
-               href="{{ url_for('main.sort_images', department_id=department.id) }}">
-              {{ render_icon("copy") }}
-              Image classification
-            </a>
-            <a class="btn btn-lg btn-primary"
-               href="{{ url_for('main.label_data', department_id=department.id) }}">
-              {{ render_icon("tag") }}
-              Officer identification
-            </a>
-          </p>
         </div>
-      {% endfor %}
-      <div class="text-center frontpage-leads">
-        {% if current_user.is_administrator %}
-          <a href="{{ url_for("main.add_department") }}"
-             class="btn btn-primary"
-             role="button">
-            {{ render_icon("plus") }}
-            Add New Department
+        <div class="col-lg-6">
+          <a href="{{ url_for("main.leaderboard") }}"
+             class="leaderboard-btn-lg text-center">
+            <img alt="Trophy icon"
+                 class="p-2"
+                 src="{{ url_for('static', filename='images/trophy.svg') }}">
+            <h3>See the Leaderboard</h3>
+            <p>See the top users by images sorted and identified. Are you on the list?</p>
           </a>
-        {% endif %}
-        {% if current_user.is_administrator or current_user.is_area_coordinator %}
-          <a href="{{ url_for("main.add_officer") }}"
-             class="btn btn-primary"
-             role="button">
-            {{ render_icon("plus") }}
-            Add New Officer
-          </a>
-          <a href="{{ url_for("main.add_unit") }}"
-             class="btn btn-primary"
-             role="button">
-            {{ render_icon("plus") }}
-            Add New Unit
-          </a>
-          <a href="{{ url_for("main.incident_api_new") }}"
-             class="btn btn-primary"
-             role="button">
-            {{ render_icon("plus") }}
-            Add New Incident
-          </a>
-        {% endif %}
+        </div>
+      </div>
+      <div class="horizontal-padding vertical-padding">
+        <h2>Upload photos of officers</h2>
+        <p>Submit photos containing uniformed law enforcement officers.</p>
+        <a class="btn btn-full btn-primary icon-btn upload"
+           href="{{ url_for("main.submit_data") }}">
+          <img alt="Officer image upload"
+               class="me-2"
+               height="50"
+               width="66"
+               src="{{ url_for('static', filename='images/officer-upload-white.svg') }}">
+        Start uploading</a>
+        <h2 class="mt-5">Sort uploaded photos &amp; identify officers</h2>
+        <p>
+          Go through uploaded photos to determine if each is a valid photo of an officer. Go through officer photos to identify them.
+        </p>
+        <p>Use the list below to get started.</p>
+        {% for state, departments in departments_by_state.items() %}
+          <div class="state-row">
+            <h3>{{ state | get_state_full_name }}</h3>
+          </div>
+          {% for department in departments %}
+            <div class="frontpage-leads vertical-padding">
+              <a class="btn btn-sm btn-primary sort-btn"
+                 href="{{ url_for('main.sort_images', department_id=department.id) }}">
+                <img src="{{ url_for('static', filename='images/sort-photos-white.svg') }}"
+                     alt="sort photos">
+                Sort
+              </a>
+              <a class="btn btn-sm btn-primary identify-btn"
+                 href="{{ url_for('main.label_data', department_id=department.id) }}">
+                <img src="{{ url_for('static', filename='images/identify-officers-white.svg') }}"
+                     alt="identify photos">
+                Identify
+              </a>
+              <span class="dept-inline ms-3">
+                <a href="{{ url_for('main.list_officer', department_id=department.id) }}">{{ department.name }} ({{ department.short_name }})</a>
+              </span>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      <div class="text-center frontpage-leads row">
+        <div class="col-12">
+          {% if current_user.is_administrator %}
+            <a href="{{ url_for("main.add_department") }}"
+               class="btn btn-primary"
+               role="button">
+              {{ render_icon("plus") }}
+              Add New Department
+            </a>
+          {% endif %}
+          {% if current_user.is_administrator or current_user.is_area_coordinator %}
+            <a href="{{ url_for("main.add_officer") }}"
+               class="btn btn-primary"
+               role="button">
+              {{ render_icon("plus") }}
+              Add New Officer
+            </a>
+            <a href="{{ url_for("main.add_unit") }}"
+               class="btn btn-primary"
+               role="button">
+              {{ render_icon("plus") }}
+              Add New Unit
+            </a>
+            <a href="{{ url_for("main.incident_api_new") }}"
+               class="btn btn-primary"
+               role="button">
+              {{ render_icon("plus") }}
+              Add New Incident
+            </a>
+          {% endif %}
+        </div>
       </div>
     </div>
   {% else %}
-    <div role="main" class="theme-showcase">
-      <div class="text-center">
-        <div class="hero-section">
-          <div class="hero">Volunteer</div>
-          <div class="subhero">
-            Help OpenOversight create transparency with the first public, searchable
-            database of law enforcement officers.
+    <div role="main" class="page-volunteer">
+      <div class="hero-section no-sub">
+        <h1 class="hero">Volunteer</h1>
+      </div>
+      <div>
+        <div class="col-lg-6 mx-auto pt-5">
+          <p>
+            We’re powered by people like you. Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.
+          </p>
+          <p>Here are easy ways you can help:</p>
+        </div>
+        <div class="col-lg-6 mx-auto mt-5 align-items-center display-flex volunteer-options">
+          <div class="col-sm-4 me-5 text-end">
+            <img src="{{ url_for('static', filename='images/officer-upload-gray.svg') }}"
+                 alt="Upload officer photos">
+          </div>
+          <div class="col-sm-8 my-4">
+            <h3>Upload photos of officers</h3>
+            <p>Submit photos containing uniformed law enforcement officers.</p>
           </div>
         </div>
-        <div class="container horizontal-padding">
-          <h2 class="horizontal-padding font-weight-300">How you can help</h2>
-          <div class="row pb-50">
-            <div class="col-lg-4 horizontal-padding">
-              <span class="fa-solid fa-image fa-2x"></span>
-              <p class="lead margin-less">Sort Images</p>
-              <div class="font-weight-300">Sort submitted images into those with and without officers.</div>
-            </div>
-            <div class="col-lg-4 horizontal-padding">
-              <span class="fa-solid fa-users fa-2x"></span>
-              <p class="lead margin-less">Identify Officers</p>
-              <div class="font-weight-300">Have a photo containing uniformed officers?</div>
-            </div>
-            <div class="col-lg-4 horizontal-padding">
-              <span class="fa-solid fa-envelope fa-2x"></span>
-              <p class="lead margin-less">Contact Us</p>
-              <div class="font-weight-300">Reach out with any questions, concerns, or ways you'd like to get involved.</div>
-            </div>
+        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options">
+          <div class="col-sm-4 me-5 text-end">
+            <img src="{{ url_for('static', filename='images/sort-photos-gray.svg') }}"
+                 alt="Sort uploaded photos">
+          </div>
+          <div class="col-sm-8 my-4">
+            <h3>Sort uploaded photos</h3>
+            <p>Go through uploaded photos to determine if each is a valid photo of an officer.</p>
           </div>
         </div>
-        <div class="container-fluid bg-blue-gray">
-          <div class="row display-flex vertical-padding">
-            <div class="col-lg-6 col-half-no-border bordered-box">
-              <div class="text-center">
-                <h1>
-                  <small>Log In</small>
-                </h1>
-              </div>
-              <form class="form" method="post" role="form">
-                {{ form.hidden_tag() }}
-                {{ wtf.render_hidden_errors(form) }}
-                {{ wtf.render_field(form.email) }}
-                {{ wtf.render_field(form.password) }}
-                <div class="text-center">
-                  {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'secondary btn-lg'}) }}
-                  {% if error %}{{ error }}{% endif %}
-                </div>
-              </form>
-              <p class="text-center">
-                <a href="{{ url_for("auth.password_reset_request") }}">Forgot Password</a>
-              </p>
-            </div>
-            <div class="col-lg-6 col-half-no-border bg-blue-gray">
-              <div class="text-center">
-                <h1>
-                  <small>Interested in volunteering?</small>
-                </h1>
-                <div class="horizontal-padding">
-                  <a class="btn btn-lg btn-info" href="{{ url_for("auth.register") }}">Sign Up</a>
-                </div>
-              </div>
-            </div>
+        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options">
+          <div class="col-sm-4 me-5 text-end">
+            <img src="{{ url_for('static', filename='images/identify-officers-gray.svg') }}"
+                 alt="Identify officers">
           </div>
+          <div class="col-sm-8 my-4">
+            <h3>Identify officers</h3>
+            <p>Go through uploaded photos to determine if each is a valid photo of an officer.</p>
+          </div>
+        </div>
+        <div class="col-lg-6 mx-auto my-2 py-5 text-center">
+          <h2>Get Started!</h2>
+          <a class="btn btn-lg btn-info btn-primary m-2"
+             href="{{ url_for("auth.register") }}">Register a new account</a>
+          <a class="btn btn-lg btn-info btn-primary m-2"
+             href="{{ url_for("auth.login") }}">Log In</a>
         </div>
       </div>
     </div>

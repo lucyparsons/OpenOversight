@@ -85,6 +85,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
+    MAP_PATHS,
 )
 from OpenOversight.app.utils.db import (
     add_department_query,
@@ -144,7 +145,15 @@ def redirect_url(default="main.index"):
 @main.route("/")
 @main.route("/index")
 def index():
-    return render_template("index.html")
+    departments_by_state = Department.by_state()
+    department_count = sum(
+        [len(state_depts) for state_depts in departments_by_state.values()]
+    )
+    return render_template(
+        "index.html",
+        state_count=len(departments_by_state.keys()),
+        department_count=department_count,
+    )
 
 
 @main.route("/timezone", methods=[HTTPMethod.POST])
@@ -161,10 +170,12 @@ def set_session_timezone():
 @sitemap_include
 @main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
-    departments = Department.query.filter(Department.officers.any()).order_by(
-        Department.state.asc(), Department.name.asc()
+    departments_by_state = Department.by_state()
+    return render_template(
+        "browse.html",
+        departments_by_state=departments_by_state,
+        map_paths=MAP_PATHS,
     )
-    return render_template("browse.html", departments=departments)
 
 
 @sitemap_include
@@ -227,8 +238,10 @@ def get_started_labeling():
         flash("Invalid username or password.")
     else:
         current_app.logger.info(form.errors)
-    departments = Department.query.all()
-    return render_template("label_data.html", departments=departments, form=form)
+    departments_by_state = Department.by_state()
+    return render_template(
+        "label_data.html", departments_by_state=departments_by_state, form=form
+    )
 
 
 @main.route(
@@ -850,8 +863,8 @@ def redirect_list_officer(
     race=None,
     gender=None,
     rank=None,
-    min_age: str = "16",
-    max_age: str = "100",
+    min_age=None,
+    max_age=None,
     last_name=None,
     first_name=None,
     badge=None,
@@ -890,8 +903,8 @@ def list_officer(
     race=None,
     gender=None,
     rank=None,
-    min_age="16",
-    max_age="100",
+    min_age=None,
+    max_age=None,
     last_name=None,
     first_name=None,
     badge=None,
@@ -1757,8 +1770,11 @@ def download_dept_descriptions_csv(department_id: int):
 @sitemap_include
 @main.route("/download/all", methods=[HTTPMethod.GET])
 def all_data():
-    departments = Department.query.filter(Department.officers.any())
-    return render_template("departments_all.html", departments=departments)
+    departments_by_state = Department.by_state()
+    return render_template(
+        "departments_all.html",
+        departments_by_state=departments_by_state,
+    )
 
 
 @main.route(
@@ -1866,6 +1882,12 @@ def upload(department_id: int, officer_id: Optional[int] = None):
 @main.route("/about")
 def about_oo():
     return render_template("about.html")
+
+
+@sitemap_include
+@main.route("/contact")
+def contact_oo():
+    return render_template("contact.html")
 
 
 @sitemap_include

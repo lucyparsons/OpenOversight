@@ -6,40 +6,77 @@
   <meta name="description" content="Browse a department on OpenOversight.">
 {% endblock meta %}
 {% block content %}
-  <div class="container pb-5" role="main">
-    <div class="text-center frontpage-leads">
-      <h1>
-        <small>Browse a Department</small>
-      </h1>
+  <div role="main" class="page-browse">
+    <div class="hero-section no-sub">
+      <h1 class="hero">Browse Officers by Department</h1>
     </div>
-    <div class="text-center">
-      {% for department in departments %}
-        <div class="mb-5">
-          <h2>
-            {{ department.display_name }}
-            {% if current_user.is_administrator %}
-              <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
-                <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
+    <div class="vertical-padding text-center">
+      <div class="col-lg-6 text-start mx-auto py-5">
+        <p class="mb-5">Use the map or list below to browse officers by department.</p>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             version="1.1"
+             viewBox="0 0 1000 618">
+          <defs>
+          <style>
+              .cls-1 {
+                  fill: #0099c9;
+              }
+
+              .cls-1,
+              .cls-2 {
+                  stroke: #fff;
+                  stroke-width: .8px;
+              }
+
+              .cls-2 {
+                  fill: #d3d3d3;
+              }
+          </style>
+          </defs>
+          {% for state, path in map_paths.items() %}
+            {% if state in departments_by_state.keys() %}
+              <a href="#state-{{ state }}">
+                <path class="cls-1" d="{{ path }}" />
               </a>
+            {% else %}
+              <path class="cls-2" d="{{ path }}" />
             {% endif %}
-          </h2>
-          <div class="my-3">
-            <b class="dept-{{ department.id }}">Officers Documented:</b> {{ department.total_documented_officers() | thousands_separator }}
-            <br>
-            <b class="dept-{{ department.id }}">Assignments Documented:</b> {{ department.total_documented_assignments() | thousands_separator }}
-            <br>
-            <b class="dept-{{ department.id }}">Incidents Documented:</b> {{ department.total_documented_incidents() | thousands_separator }}
+          {% endfor %}
+        </svg>
+        {% for state, departments in departments_by_state.items() %}
+          <div id="state-{{ state }}" class="state-row mt-5">
+            <h3>{{ state | get_state_full_name }}</h3>
           </div>
-          <div>
-            <a class="btn btn-lg btn-primary"
-               href="{{ url_for('main.list_officer', department_id=department.id) }}">Officers</a>
-            {% if department.incidents %}
-              <a class="btn btn-lg btn-primary"
-                 href="{{ url_for('main.incident_api', department_id=department.id) }}">Incidents</a>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+          {% for department in departments %}
+            <div class="frontpage-leads department-row vertical-padding">
+              <span class="dept-inline">
+                <a href="{{ url_for('main.list_officer', department_id=department.id) }}">
+                  {{ department.name }}
+                  {% if current_user.is_administrator %}
+                    <a href="{{ url_for('main.edit_department', department_id=department.id) }}">
+                      <i class="fa-solid fa-pencil-square" aria-hidden="true"></i>
+                    </a>
+                  {% endif %}
+                </a>
+              </span>
+              <span class="officers bg-light-gray me-1">
+                <img src="{{ url_for('static', filename='images/officer-icon-sm.svg') }}"
+                     alt="Officers Documented"
+                     title="Officers Documented"
+                     class="pe-1">
+                {{ department.total_documented_officers() | thousands_separator }}
+              </span>
+              <span class="incidents bg-light-gray">
+                <img src="{{ url_for('static', filename='images/incident-icon-sm.svg') }}"
+                     alt="Incidents Documented"
+                     title="Incidents Documented"
+                     class="pe-1">
+                {{ department.total_documented_incidents() | thousands_separator }}
+              </span>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
     </div>
   </div>
 {% endblock content %}

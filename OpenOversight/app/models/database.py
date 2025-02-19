@@ -1,3 +1,4 @@
+import itertools
 import operator
 import re
 import time
@@ -214,10 +215,6 @@ class Department(BaseModel, TrackUpdates):
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
-    @property
-    def display_name(self) -> str:
-        return self.name if not self.state else f"[{self.state}] {self.name}"
-
     @staticmethod
     def get_assignments(department_id: int) -> List:
         cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
@@ -340,6 +337,17 @@ class Department(BaseModel, TrackUpdates):
     def remove_database_cache_entries(self, update_types: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
         remove_database_cache_entries(self, update_types)
+
+    @staticmethod
+    def by_state() -> dict[str, list["Department"]]:
+        departments = Department.query.filter(Department.officers.any()).order_by(
+            Department.state.asc(), Department.name.asc()
+        )
+        departments_by_state = {
+            state: list(group)
+            for state, group in itertools.groupby(departments, lambda d: d.state)
+        }
+        return departments_by_state
 
 
 class Job(BaseModel, TrackUpdates):

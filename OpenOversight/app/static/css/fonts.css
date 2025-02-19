@@ -1,0 +1,14 @@
+@font-face {
+    font-family: "Titillium Web";
+    font-weight: 400;
+    src: url(/static/webfonts/Titillium_Web/TitilliumWeb-Regular.ttf);
+}
+@font-face {
+    font-family: "Titillium Web";
+    font-weight: 700;
+    src: url(/static/webfonts/Titillium_Web/TitilliumWeb-Bold.ttf);
+}
+@font-face {
+    font-family: "Inter";
+    src: url(/static/webfonts/Inter/Inter-VariableFont_opsz,wght.ttf);
+}
