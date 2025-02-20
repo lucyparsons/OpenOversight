@@ -12,11 +12,6 @@ body {
   text-align: center;
 }
 
-.btn {
-  padding-left: .75rem;
-  padding-right: .75rem;
-}
-
 label.btn {
   margin-bottom: 0;
 }

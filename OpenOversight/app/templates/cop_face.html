@@ -2,163 +2,133 @@
 {% from "bootstrap5/utils.html" import render_icon %}
 {% block head %}
   <link href="{{ url_for('static', filename='css/cropper.css') }}"
-        rel="stylesheet"
-        xmlns="http://www.w3.org/1999/html">
+        rel="stylesheet">
   <link href="{{ url_for('static', filename='css/tagger.css') }}"
         rel="stylesheet">
 {% endblock head %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">Identify Officers</h1>
+    {% if department %}<h1 class="hero lead">{{ department.name }}</h1>{% endif %}
+  </div>
   <div class="container theme-showcase py-5" role="main">
     {% if current_user and current_user.is_authenticated %}
       {% if image and not current_user.disabled_at and not current_user_disabled_by %}
         <div class="row">
-          <div class="text-center">
-            <h1>
-              <small>Select the face of each officer in the photo and identify them.</small>
-            </h1>
-            <h2>
-              <small class="muted">{{ department.name }}</small>
-            </h2>
+          <div>
+            <h1>Identify officers in the photo below.</h1>
+            <p>For photos with multiple faces, you will be able to select another face after completing your current one.</p>
+            <p>
+              <a href="{{ url_for("main.get_tutorial") }}">Learn more in our quick tutorial</a>
+            </p>
           </div>
         </div>
-        <div class="row">
-          <div class="subtle-pad">
-            <img class="center-block img-responsive"
-                 id="image"
-                 src="{{ path }}"
-                 alt="Picture">
-          </div>
-        </div>
-        <div class="row console mt-3">
-          <div class="col-sm-2 text-center">
-            <div class="preview docs-preview clearfix">
-              <div class="img-preview preview-lg"></div>
-            </div>
-          </div>
-          <div class="col-sm-5 text-center">
-            <div class="docs-data">
-              <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
-                    method="post">
-                {{ form.hidden_tag() }}
-                <div class="input-group input-group-sm">
-                  <input type="text"
-                         class="d-none form-control"
-                         name="dataX"
-                         id="dataX"
-                         placeholder="x">
-                </div>
-                {% for error in form.dataX.errors %}
-                  <p>
-                    <span class="red">[{{ error }}]</span>
-                  </p>
+        <div class="card p-5">
+          <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
+                method="post">
+            {% if form.errors %}
+              <div class="row bg-white p-3 pb-0">
+                {% for field, errors in form.errors.items() %}
+                  <div class="alert alert-danger">{{ form[field].label }}: {{ ", ".join(errors) }}</div>
                 {% endfor %}
-                <div class="input-group input-group-sm">
-                  <input type="text"
-                         class="d-none form-control"
-                         name="dataY"
-                         id="dataY"
-                         placeholder="y">
-                </div>
-                <div class="input-group input-group-sm"></div>
-                {% for error in form.dataY.errors %}
-                  <p>
-                    <span class="red">[{{ error }}]</span>
-                  </p>
-                {% endfor %}
-                <div class="input-group input-group-sm">
-                  <input type="text"
-                         class="d-none form-control"
-                         name="dataWidth"
-                         id="dataWidth"
-                         placeholder="width">
-                </div>
-                {% for error in form.dataWidth.errors %}
-                  <p>
-                    <span class="red">[{{ error }}]</span>
-                  </p>
-                {% endfor %}
-                <div class="input-group input-group-sm">
-                  <input type="text"
-                         class="d-none form-control"
-                         name="dataHeight"
-                         id="dataHeight"
-                         placeholder="height">
-                </div>
-                {% for error in form.dataHeight.errors %}
-                  <p>
-                    <span class="red">[{{ error }}]</span>
-                  </p>
-                {% endfor %}
-                <div class="input-group input-group-sm id-input">
-                  <label class="input-group-text" for="officer_id">OpenOversight ID</label>
-                  <input type="text"
-                         class="form-control"
-                         name="officer_id"
-                         id="officer_id"
-                         placeholder="officer ID">
-                </div>
-                {% for error in form.officer_id.errors %}
-                  <p>
-                    <span class="red">[{{ error }}]</span>
-                  </p>
-                {% endfor %}
-                <input type="text"
-                       class="d-none form-control"
-                       name="image_id"
-                       id="image_id"
-                       placeholder="image ID"
-                       value="{{ image.id }}">
-                {% for error in form.image_id.errors %}
-                  <p>
-                    <span class="red">Image: [{{ error }}]</span>
-                  </p>
-                {% endfor %}
-                <input type="submit"
-                       class="btn btn-sm btn-primary form-control addface-button"
-                       value="Add identified face" />
-                <a class="btn btn-sm btn-secondary form-control launchroster-button"
-                   href="{{ url_for("main.get_officer") }}"
-                   target='_blank'>Launch roster search form</a>
-                <div class="text-center input-explanation">
-                  <div class="text addface-button-explanation">
-                    <b>Explanation</b>: click this button to associate the selected image with the entered OpenOversight ID.
-                  </div>
-                  <div class="text id-explanation">
-                    <b>Explanation</b>: after matching the officer's name, badge number, or face to the roster, enter the officer's OpenOversight ID here.
-                  </div>
-                  <div class="text launchroster-button-explanation">
-                    <b>Explanation</b>: click this button to open the police roster.  Use the roster to find the officer's OpenOversight ID.
+              </div>
+            {% endif %}
+            <div class="bg-white p-4 mb-2">
+              <div class="row">
+                <div class="col-sm-2 text-center">
+                  <div class="preview docs-preview clearfix">
+                    <div class="img-preview preview-md"></div>
                   </div>
                 </div>
-              </form>
-            </div>
-          </div>
-          <div class="col-sm-5 text-center">
-            <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
-               class="skip-button btn btn-lg btn-primary"
-               role="button">
-              <div>{{ render_icon("arrow-repeat") }}</div>
-              Next Photo
-            </a>
-            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
-               class="done-button btn btn-lg btn-success">
-              <div>{{ render_icon("check-circle-fill") }}</div>
-              All officers have been identified!
-            </a>
-          </div>
-          <hr>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="text-center button-explanation">
-                <div class="text done-button-explanation">
-                  <b>Explanation</b>: click this button ONLY when all officers in it have been identified. This will remove it from the identification queue for ALL users.
+                <div class="col-sm-12 col-md-3 text-center">
+                  <div>
+                    {{ form.hidden_tag() }}
+                    <div class="input-group input-group-sm">
+                      <input type="text"
+                             class="d-none form-control"
+                             name="dataX"
+                             id="dataX"
+                             placeholder="x">
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <input type="text"
+                             class="d-none form-control"
+                             name="dataY"
+                             id="dataY"
+                             placeholder="y">
+                    </div>
+                    <div class="input-group input-group-sm"></div>
+                    <div class="input-group input-group-sm">
+                      <input type="text"
+                             class="d-none form-control"
+                             name="dataWidth"
+                             id="dataWidth"
+                             placeholder="width">
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <input type="text"
+                             class="d-none form-control"
+                             name="dataHeight"
+                             id="dataHeight"
+                             placeholder="height">
+                    </div>
+                    <div class="text-start my-1">
+                      <h5>OpenOversight ID</h5>
+                      <input type="text"
+                             class="form-control"
+                             name="officer_id"
+                             id="officer_id"
+                             placeholder="Enter the ID #">
+                    </div>
+                    <input type="text"
+                           class="d-none form-control"
+                           name="image_id"
+                           id="image_id"
+                           placeholder="image ID"
+                           value="{{ image.id }}">
+                  </div>
                 </div>
-                <div class="text skip-button-explanation">
-                  <b>Explanation</b>: click this button if you would like to move on to the next image, without saving any info about this image.
+                <div class="col-sm-12 col-md-4 text-md-end text-ms-start">
+                  <a class="btn btn-primary icon-btn find launchroster-button text-start"
+                     href="{{ url_for("main.get_officer") }}"
+                     target='_blank'>
+                    Search for the officer
+                    <sup>
+                      {{ render_icon("box-arrow-up-right") }}
+                    </sup>
+                  </a>
+                </div>
+                <div class="col-sm-12 col-md-3 text-start">
+                  <input type="submit"
+                         class="btn btn-success icon-btn check addface-button text-start"
+                         value="Add identified face" />
                 </div>
               </div>
             </div>
+          </form>
+          <div class="row">
+            <div class="subtle-pad">
+              <img class="center-block img-responsive"
+                   id="image"
+                   src="{{ path }}"
+                   alt="Picture">
+            </div>
           </div>
+          <div class="text-center mt-3">
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
+               class="done-button btn btn-lg btn-success mx-auto">
+              {{ render_icon("check") }}
+              All officers have been identified!
+            </a>
+          </div>
+        </div>
+        <div class="mt-5 text-end">
+          <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
+             class="skip-button btn btn-lg btn-primary"
+             role="button">
+            Next Photo
+            {{ render_icon("arrow-right") }}
+          </a>
         </div>
       {% elif current_user.disabled_at and current_user.disabled_by %}
         <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
@@ -169,9 +139,6 @@
         </p>
       {% else %}
         <h3>All images have been tagged!</h3>
-        <h4>
-          <small class="muted">{{ department.name }}</small>
-        </h4>
         <p>
           <a href="{{ url_for("main.submit_data") }}"
              class="btn btn-lg btn-primary"

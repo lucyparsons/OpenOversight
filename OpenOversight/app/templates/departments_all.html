@@ -15,7 +15,7 @@
         {% for dept in departments %}
           <p>
             <h2>{{ dept.name }}</h2>
-            <ul class="list-group">
+            <ul class="list-group vertical-padding">
               <a href={{ url_for('main.download_dept_officers_csv',department_id=dept.id) }}>
                 <li class="list-group-item">officers.csv</li>
               </a>

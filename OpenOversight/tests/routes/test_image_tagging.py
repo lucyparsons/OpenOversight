@@ -326,6 +326,7 @@ def test_user_is_redirected_to_correct_department_after_tagging(client, session)
         department = session.get(Department, department_id)
 
         assert rv.status_code == HTTPStatus.OK
+        assert "Marked image as completed" in rv.data.decode(ENCODING_UTF_8)
         assert department.name in rv.data.decode(ENCODING_UTF_8)
 
 
