@@ -13,9 +13,9 @@
     <div class="hero-section no-sub">
       <h1 class="hero">Volunteer</h1>
     </div>
-    <div class="container theme-showcase" role="main">
+    <div class="container theme-showcase vertical-padding" role="main">
       <div class="volunteer-top-buttons row my-5">
-        <div class="col-lg-6">
+        <div class="col-lg-6 mb-1">
           <a href="{{ url_for("main.get_tutorial") }}"
              class="tutorial-btn-lg text-center">
             <img alt="Document icon"
@@ -25,7 +25,7 @@
             <p>New to OpenOversight or just need a refresher? Get started here.</p>
           </a>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-6 mb-1">
           <a href="{{ url_for("main.leaderboard") }}"
              class="leaderboard-btn-lg text-center">
             <img alt="Trophy icon"
@@ -58,13 +58,13 @@
           </div>
           {% for department in departments %}
             <div class="frontpage-leads vertical-padding">
-              <a class="btn btn-sm btn-primary sort-btn"
+              <a class="btn btn-sm btn-primary sort-btn mb-1"
                  href="{{ url_for('main.sort_images', department_id=department.id) }}">
                 <img src="{{ url_for('static', filename='images/sort-photos-white.svg') }}"
                      alt="sort photos">
                 Sort
               </a>
-              <a class="btn btn-sm btn-primary identify-btn"
+              <a class="btn btn-sm btn-primary identify-btn mb-1"
                  href="{{ url_for('main.label_data', department_id=department.id) }}">
                 <img src="{{ url_for('static', filename='images/identify-officers-white.svg') }}"
                      alt="identify photos">
@@ -81,7 +81,7 @@
         <div class="col-12">
           {% if current_user.is_administrator %}
             <a href="{{ url_for("main.add_department") }}"
-               class="btn btn-primary"
+               class="btn btn-primary mb-1"
                role="button">
               {{ render_icon("plus") }}
               Add New Department
@@ -89,19 +89,19 @@
           {% endif %}
           {% if current_user.is_administrator or current_user.is_area_coordinator %}
             <a href="{{ url_for("main.add_officer") }}"
-               class="btn btn-primary"
+               class="btn btn-primary mb-1"
                role="button">
               {{ render_icon("plus") }}
               Add New Officer
             </a>
             <a href="{{ url_for("main.add_unit") }}"
-               class="btn btn-primary"
+               class="btn btn-primary mb-1"
                role="button">
               {{ render_icon("plus") }}
               Add New Unit
             </a>
             <a href="{{ url_for("main.incident_api_new") }}"
-               class="btn btn-primary"
+               class="btn btn-primary mb-1"
                role="button">
               {{ render_icon("plus") }}
               Add New Incident
@@ -116,13 +116,13 @@
         <h1 class="hero">Volunteer</h1>
       </div>
       <div>
-        <div class="col-lg-6 mx-auto pt-5">
+        <div class="col-lg-6 mx-auto pt-5 vertical-padding">
           <p>
             We’re powered by people like you. Help OpenOversight create transparency with the first public, searchable database of law enforcement officers.
           </p>
           <p>Here are easy ways you can help:</p>
         </div>
-        <div class="col-lg-6 mx-auto mt-5 align-items-center display-flex volunteer-options">
+        <div class="col-lg-6 mx-auto mt-5 align-items-center display-flex volunteer-options vertical-padding">
           <div class="col-sm-4 me-5 text-end">
             <img src="{{ url_for('static', filename='images/officer-upload-gray.svg') }}"
                  alt="Upload officer photos">
@@ -132,7 +132,7 @@
             <p>Submit photos containing uniformed law enforcement officers.</p>
           </div>
         </div>
-        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options">
+        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options vertical-padding">
           <div class="col-sm-4 me-5 text-end">
             <img src="{{ url_for('static', filename='images/sort-photos-gray.svg') }}"
                  alt="Sort uploaded photos">
@@ -142,7 +142,7 @@
             <p>Go through uploaded photos to determine if each is a valid photo of an officer.</p>
           </div>
         </div>
-        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options">
+        <div class="col-lg-6 mx-auto align-items-center display-flex volunteer-options vertical-padding">
           <div class="col-sm-4 me-5 text-end">
             <img src="{{ url_for('static', filename='images/identify-officers-gray.svg') }}"
                  alt="Identify officers">
