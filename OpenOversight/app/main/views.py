@@ -85,7 +85,6 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
-    MAP_PATHS,
 )
 from OpenOversight.app.utils.db import (
     add_department_query,
@@ -174,7 +173,7 @@ def browse():
     return render_template(
         "browse.html",
         departments_by_state=departments_by_state,
-        map_paths=MAP_PATHS,
+        map_paths=current_app.config["MAP_DATA"],
     )
 
 
