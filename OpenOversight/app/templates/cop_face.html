@@ -27,20 +27,23 @@
           <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
                 method="post">
             {% if form.errors %}
-              <div class="row bg-white p-3 pb-0">
+              <div>
                 {% for field, errors in form.errors.items() %}
-                  <div class="alert alert-danger">{{ form[field].label }}: {{ ", ".join(errors) }}</div>
+                  <div class="alert alert-danger">
+                    <b>Error</b>:
+                    {{ field }}: {{ ", ".join(errors) }}
+                  </div>
                 {% endfor %}
               </div>
             {% endif %}
             <div class="bg-white p-4 mb-2">
               <div class="row">
-                <div class="col-sm-2 text-center">
+                <div class="col-2 text-center">
                   <div class="preview docs-preview clearfix">
                     <div class="img-preview preview-md"></div>
                   </div>
                 </div>
-                <div class="col-sm-12 col-md-3 text-center">
+                <div class="col-12 col-md-3 text-center">
                   <div>
                     {{ form.hidden_tag() }}
                     <div class="input-group input-group-sm">
@@ -88,8 +91,8 @@
                            value="{{ image.id }}">
                   </div>
                 </div>
-                <div class="col-sm-12 col-md-4 text-md-end text-ms-start">
-                  <a class="btn btn-primary icon-btn find launchroster-button text-start"
+                <div class="col-12 col-md-4 text-md-end text-start">
+                  <a class="btn btn-primary icon-btn find launchroster-button text-start w-100 m-1"
                      href="{{ url_for("main.get_officer") }}"
                      target='_blank'>
                     Search for the officer
@@ -98,9 +101,9 @@
                     </sup>
                   </a>
                 </div>
-                <div class="col-sm-12 col-md-3 text-start">
+                <div class="col-12 col-md-3 text-start">
                   <input type="submit"
-                         class="btn btn-success icon-btn check addface-button text-start"
+                         class="btn btn-success icon-btn check addface-button text-start text-wrap w-100 m-1"
                          value="Add identified face" />
                 </div>
               </div>
@@ -122,7 +125,7 @@
             </a>
           </div>
         </div>
-        <div class="mt-5 text-end">
+        <div class="mt-5 text-md-end text-center">
           <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
              class="skip-button btn btn-lg btn-primary"
              role="button">

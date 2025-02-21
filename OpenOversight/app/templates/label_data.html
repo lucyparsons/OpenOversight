@@ -36,10 +36,10 @@
           </a>
         </div>
       </div>
-      <div class="horizontal-padding vertical-padding">
+      <div class="horizontal-padding">
         <h2>Upload photos of officers</h2>
         <p>Submit photos containing uniformed law enforcement officers.</p>
-        <a class="btn btn-full btn-primary icon-btn upload"
+        <a class="btn btn-full btn-primary upload fs-4"
            href="{{ url_for("main.submit_data") }}">
           <img alt="Officer image upload"
                class="me-2"
@@ -57,57 +57,57 @@
             <h3>{{ state | get_state_full_name }}</h3>
           </div>
           {% for department in departments %}
-            <div class="frontpage-leads vertical-padding">
-              <a class="btn btn-sm btn-primary sort-btn mb-1"
-                 href="{{ url_for('main.sort_images', department_id=department.id) }}">
-                <img src="{{ url_for('static', filename='images/sort-photos-white.svg') }}"
-                     alt="sort photos">
-                Sort
-              </a>
-              <a class="btn btn-sm btn-primary identify-btn mb-1"
-                 href="{{ url_for('main.label_data', department_id=department.id) }}">
-                <img src="{{ url_for('static', filename='images/identify-officers-white.svg') }}"
-                     alt="identify photos">
-                Identify
-              </a>
-              <span class="dept-inline ms-3">
+            <div class="frontpage-leads vertical-padding row">
+              <div class="dept-inline col-12 col-sm-8 order-sm-2 order-1">
                 <a href="{{ url_for('main.list_officer', department_id=department.id) }}">{{ department.name }} ({{ department.short_name }})</a>
-              </span>
+              </div>
+              <div class="col-12 col-sm-4 order-sm-1 order-2">
+                <a class="btn btn-sm btn-primary sort-btn mb-1"
+                   href="{{ url_for('main.sort_images', department_id=department.id) }}">
+                  <img src="{{ url_for('static', filename='images/sort-photos-white.svg') }}"
+                       alt="sort photos">
+                  Sort
+                </a>
+                <a class="btn btn-sm btn-primary identify-btn mb-1"
+                   href="{{ url_for('main.label_data', department_id=department.id) }}">
+                  <img src="{{ url_for('static', filename='images/identify-officers-white.svg') }}"
+                       alt="identify photos">
+                  Identify
+                </a>
+              </div>
             </div>
           {% endfor %}
         {% endfor %}
       </div>
-      <div class="text-center frontpage-leads row">
-        <div class="col-12">
-          {% if current_user.is_administrator %}
-            <a href="{{ url_for("main.add_department") }}"
-               class="btn btn-primary mb-1"
-               role="button">
-              {{ render_icon("plus") }}
-              Add New Department
-            </a>
-          {% endif %}
-          {% if current_user.is_administrator or current_user.is_area_coordinator %}
-            <a href="{{ url_for("main.add_officer") }}"
-               class="btn btn-primary mb-1"
-               role="button">
-              {{ render_icon("plus") }}
-              Add New Officer
-            </a>
-            <a href="{{ url_for("main.add_unit") }}"
-               class="btn btn-primary mb-1"
-               role="button">
-              {{ render_icon("plus") }}
-              Add New Unit
-            </a>
-            <a href="{{ url_for("main.incident_api_new") }}"
-               class="btn btn-primary mb-1"
-               role="button">
-              {{ render_icon("plus") }}
-              Add New Incident
-            </a>
-          {% endif %}
-        </div>
+      <div class="row justify-content-center mb-5">
+        {% if current_user.is_administrator %}
+          <a href="{{ url_for("main.add_department") }}"
+             class="btn btn-primary m-1 col-12 col-md-2"
+             role="button">
+            {{ render_icon("plus") }}
+            Add New Department
+          </a>
+        {% endif %}
+        {% if current_user.is_administrator or current_user.is_area_coordinator %}
+          <a href="{{ url_for("main.add_officer") }}"
+             class="btn btn-primary m-1 col-12 col-md-2"
+             role="button">
+            {{ render_icon("plus") }}
+            Add New Officer
+          </a>
+          <a href="{{ url_for("main.add_unit") }}"
+             class="btn btn-primary m-1 col-12 col-md-2"
+             role="button">
+            {{ render_icon("plus") }}
+            Add New Unit
+          </a>
+          <a href="{{ url_for("main.incident_api_new") }}"
+             class="btn btn-primary m-1 col-12 col-md-2"
+             role="button">
+            {{ render_icon("plus") }}
+            Add New Incident
+          </a>
+        {% endif %}
       </div>
     </div>
   {% else %}

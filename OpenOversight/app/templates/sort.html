@@ -29,37 +29,37 @@
           <h1>Do you see uniformed law enforcement officers in the photo below?</h1>
         </div>
         <div class="row vertical-padding">
-          <div class="col-sm-4 text-center">
-            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
-                  method="post">
-              <button type="submit"
-                      name="action"
-                      id="answer-no"
-                      class="btn btn-lg btn-danger">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                {{ render_icon("ban") }}
-                <u>N</u>o
-              </button>
-            </form>
-          </div>
-          <div class="col-sm-4 text-center">
-            <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
-               id="answer-skip"
-               class="btn btn-lg btn-primary"
-               role="button">
-              {{ render_icon("repeat") }}
-              <u>S</u>kip</a>
-          </div>
-          <div class="col-sm-4 text-center">
+          <div class="col-sm-4 text-center order-sm-3">
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
                   method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
               <button type="submit"
                       name="action"
                       id="answer-yes"
-                      class="btn btn-lg btn-success">
+                      class="btn btn-lg btn-success m-1">
                 {{ render_icon("check") }}
                 <u>Y</u>es!
+              </button>
+            </form>
+          </div>
+          <div class="col-sm-4 text-center order-sm-2">
+            <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
+               id="answer-skip"
+               class="btn btn-lg btn-primary m-1"
+               role="button">
+              {{ render_icon("repeat") }}
+              <u>S</u>kip</a>
+          </div>
+          <div class="col-sm-4 text-center order-sm-1">
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                  method="post">
+              <button type="submit"
+                      name="action"
+                      id="answer-no"
+                      class="btn btn-lg btn-danger m-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                {{ render_icon("ban") }}
+                <u>N</u>o
               </button>
             </form>
           </div>
