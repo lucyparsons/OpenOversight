@@ -148,9 +148,15 @@ def index():
     department_count = sum(
         [len(state_depts) for state_depts in departments_by_state.values()]
     )
+
+    state_count = len(departments_by_state.keys())
+    # Exclude Federal (FA) from state count
+    if "FA" in departments_by_state.keys():
+        state_count -= 1
+
     return render_template(
         "index.html",
-        state_count=len(departments_by_state.keys()),
+        state_count=state_count,
         department_count=department_count,
     )
 
