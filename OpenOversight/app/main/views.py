@@ -158,6 +158,8 @@ def index():
         "index.html",
         state_count=state_count,
         department_count=department_count,
+        departments_by_state=departments_by_state,
+        map_paths=current_app.config["MAP_DATA"],
     )
 
 
