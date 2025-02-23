@@ -324,8 +324,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
     assert selected_text == "Not Sure"
 
 
-@pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_image_classification_and_tagging(browser, server_port):
+def test_image_classification_and_tagging(browser, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
     star_no = 1312
@@ -337,7 +336,12 @@ def test_image_classification_and_tagging(browser, server_port):
     wait_for_page_load(browser)
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
-    browser.find_element(By.ID, "submit").click()
+    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
+
+    submit = browser.find_element(By.ID, "submit")
+    scroll_to_element(browser, submit)
+    submit.click()
+
     wait_for_page_load(browser)
 
     # 2. Add a new officer
@@ -345,7 +349,7 @@ def test_image_classification_and_tagging(browser, server_port):
     wait_for_page_load(browser)
 
     dept_select = Select(browser.find_element(By.ID, "department"))
-    dept_select.select_by_visible_text("Auburn Police Department")
+    dept_select.select_by_visible_text("[WA] Auburn Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")
@@ -387,7 +391,7 @@ def test_image_classification_and_tagging(browser, server_port):
     # 5. Identify the new officer in the uploaded image
     browser.get(f"http://localhost:{server_port}/cop_faces/departments/{dept_id}")
     wait_for_page_load(browser)
-    browser.find_element(By.ID, "officer_id").send_keys(officer_id)
+    browser.find_element(By.ID, "star_no").send_keys(star_no)
     add_face = browser.find_element(
         By.CSS_SELECTOR, "input[value='Add identified face']"
     )
@@ -425,8 +429,7 @@ def test_image_classification_and_tagging(browser, server_port):
     assert image.location["y"] <= frame.location["y"]
 
 
-@pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_anonymous_user_can_upload_image(browser, server_port):
+def test_anonymous_user_can_upload_image(browser, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
 
@@ -438,7 +441,11 @@ def test_anonymous_user_can_upload_image(browser, server_port):
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
     Select(browser.find_element(By.ID, "state")).select_by_value("WA")
-    browser.find_element(By.ID, "submit").click()
+
+    submit = browser.find_element(By.ID, "submit")
+    scroll_to_element(browser, submit)
+    submit.click()
+
     wait_for_page_load(browser)
 
     # 2. Log out

@@ -99,17 +99,17 @@ OO_HELP_EMAIL="sample_admin_email@domain.com"
 ```
 
 ## Testing S3 Functionality
-We use an S3 bucket for image uploads. If you are working on functionality involving image uploads,
-then you should follow the "S3 Image Hosting" section in [DEPLOY.md](/DEPLOY.md) to make a test S3 bucket
-on Amazon Web Services.
+We use [minio](https://min.io/) to mock our S3 uploads. If you are working on functionality involving
+image uploads, then you will need to add the following variables to your .env file:
 
-Once you have done this, you can put your AWS credentials in the following environmental variables:
-
-```shell
-$ export S3_BUCKET_NAME=openoversight-test
-$ export AWS_ACCESS_KEY_ID=testtest
-$ export AWS_SECRET_ACCESS_KEY=testtest
-$ export AWS_DEFAULT_REGION=us-east-1
+```
+AWS_ACCESS_KEY_ID=minio
+AWS_SECRET_ACCESS_KEY=<YOUR MINIO PASSWORD>
+AWS_DEFAULT_REGION=us-east-1
+AWS_ENDPOINT_URL=http://minio:9000
+S3_BUCKET_NAME=openoversight-test
+MINIO_ROOT_USER=minio
+MINIO_ROOT_PASSWORD=<SAME MINIO PASSWORD>
 ```
 
 Now when you run `make dev` as usual in the same session, you will be able to submit images to

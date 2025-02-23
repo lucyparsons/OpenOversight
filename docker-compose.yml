@@ -1,6 +1,7 @@
 version: "3.2"
 
 volumes:
+  minio:
   postgres:
     driver: local
 
@@ -9,6 +10,37 @@ secrets:
     file: ./service_account_key.json
 
 services:
+ minio:
+   image: minio/minio
+   volumes:
+     - minio:/data
+   ports:
+     - "9000:9000"
+     - "9001:9001"
+   env_file:
+     - .env
+   command: server /data --console-address ":9001"
+   healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+     interval: 30s
+     timeout: 20s
+     retries: 3
+
+ createbucket:
+   image: minio/mc
+   env_file:
+     - .env
+   depends_on:
+     - minio
+   entrypoint: >
+     /bin/sh -c "
+     sleep 5;
+     /usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+     /usr/bin/mc mb /myminio/${S3_BUCKET_NAME}
+     /usr/bin/mc anonymous set public myminio/${S3_BUCKET_NAME};
+     exit 0;
+     "
+
  postgres:
    restart: always
    image: postgres:latest
@@ -26,6 +58,11 @@ services:
    build:
       context: .
       dockerfile: dockerfiles/web/Dockerfile-dev
+   depends_on:
+     - postgres
+     - minio
+   env_file:
+     - .env
    environment:
      APPROVE_REGISTRATIONS: "${APPROVE_REGISTRATIONS}"
      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
@@ -60,6 +97,10 @@ services:
      args:
        - MAKE_PYTHON_VERSION
      dockerfile: dockerfiles/web/Dockerfile-test
+   depends_on:
+     - minio
+   env_file:
+     - .env
    environment:
      ENV: "testing"
      FLASK_APP: OpenOversight.app
