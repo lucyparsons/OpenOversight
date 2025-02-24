@@ -101,6 +101,10 @@ def display_currency(value: float) -> str:
 def get_state_full_name(abbrev: str) -> str:
     if abbrev == "FA":
         return "Federal"
+
+    state = us.states.lookup(abbrev)
+    if state is None:
+        return "N/A"
     return us.states.lookup(abbrev).name
 
 
