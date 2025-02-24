@@ -105,6 +105,11 @@ class TestingConfig(BaseConfig):
         self.NUM_OFFICERS = 120
         self.RATELIMIT_ENABLED = False
         self.SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+        # Disable sqlite cached statements
+        # https://github.com/python/cpython/issues/118172
+        self.SQLALCHEMY_ENGINE_OPTIONS = {
+            "connect_args": {"cached_statements": 0},
+        }
 
 
 class ProductionConfig(BaseConfig):
