@@ -349,7 +349,7 @@ def test_image_classification_and_tagging(browser, server_port, session):
     wait_for_page_load(browser)
 
     dept_select = Select(browser.find_element(By.ID, "department"))
-    dept_select.select_by_visible_text("Auburn Police Department")
+    dept_select.select_by_visible_text("Chicago Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")
@@ -439,9 +439,9 @@ def test_anonymous_user_can_upload_image(browser, server_port, session):
     # 1. Create new department as admin (to avoid mockdata)
     browser.get(f"http://localhost:{server_port}/departments/new")
     wait_for_page_load(browser)
-    browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
-    browser.find_element(By.ID, "short_name").send_keys("APD")
-    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
+    browser.find_element(By.ID, "name").send_keys("Chicago Police Department")
+    browser.find_element(By.ID, "short_name").send_keys("CPD")
+    Select(browser.find_element(By.ID, "state")).select_by_value("IL")
 
     submit = browser.find_element(By.ID, "submit")
     scroll_to_element(browser, submit)
