@@ -14,72 +14,75 @@
         rel="stylesheet">
 {% endblock head %}
 {% block content %}
-  <div class="container theme-showcase py-5" role="main">
-    <div class="page-header border-bottom border-secondary-subtle mb-4">
-      <h1>
-        Submit images <small>of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible. </small>
-      </h1>
+  <div class="page-submit-image" role="main">
+    <div class="hero-section no-sub">
+      <h1 class="hero">Submit images</h1>
     </div>
-    <div class="header">
-      <h3>What happens when I submit a photograph?</h3>
+    <div class="col-lg-6 mx-auto py-5 vertical-padding">
       <p>
-        The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system). Volunteers <a href="https://openoversight.com/label">sort through submitted images</a> by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.
+        Submit images of officers in uniform. Officer faces should be clearly visible in each photograph. It is preferred if the name and/or badge number is also visible.
       </p>
       {% if not current_user.id %}
         <p>
-          Please consider creating an account and logging in so that we can keep track of the images you've submitted and contact you with any questions.
+          Please consider first <a href="{{ url_for("auth.register") }}">creating an account</a> and <a href="{{ url_for("auth.login") }}">logging in</a> so that we can keep track of the images you've submitted and contact you with any questions.
         </p>
       {% else %}
         <p>Your user ID will be attached to all photo submissions while you are signed in.</p>
       {% endif %}
-    </div>
-    <h3>Select the department that the police officer in your image belongs to:</h3>
-    <div class="form-group">
-      <form class="form"
-            name="dept-select"
-            id="dept-select"
-            method="post"
-            role="form"
-            label="dept-select">
-        {{ wtf.render_field(form.department) }}
+      <div class="card mb-5">
+        <div class="card-header">
+          <h2 class="card-title">What department does the officer belong to?</h2>
+        </div>
+        <div class="card-body row">
+          <div class="form-group">
+            <form class="form"
+                  name="dept-select"
+                  id="dept-select"
+                  method="post"
+                  role="form"
+                  label="dept-select">
+              {{ wtf.render_field(form.department) }}
+            </form>
+          </div>
+        </div>
+      </div>
+      <form id="my-cop-dropzone"
+            action="{{ url_for('main.upload', department_id=1) }}"
+            class="dropzone">
       </form>
-      <br>
+      <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
+      <script>
+          // Select user's preferred department by default
+          document.getElementById("department").selectedIndex = {{ preferred_dept_id }} - 1;
+          // Save the preferred department in dept_id
+          let dept_id = document.getElementById("department").selectedIndex + 1;
+          const csrf_token = "{{ csrf_token() }}";
+
+          // Store changes in drop down list in dept_id variable
+          $(function() {
+              const select_dept = $('#dept-select');
+              select_dept.on('change', function() {
+                  // fires when department selection changes
+                  dept_id = document.getElementById("department").value;
+              });
+          });
+
+          const getURL = (file) => "/upload/department/" + dept_id;
+          init_dropzone("#my-cop-dropzone", getURL, csrf_token);
+      </script>
+      <h3 class="mt-4">What happens next?</h3>
+      <p>
+        The next step after a photograph of an officer has been submitted is to match it to the correct badge number, name, and OpenOversight ID (a unique identifier in our system).
+      </p>
+      <p>
+        Volunteers sort through submitted images by first confirming that officers are present in each photograph, and then by matching each photograph to the officer it depicts.
+      </p>
+      <h3 class="mt-4">High security submissions?</h3>
+      <p>
+        We do not log unique identifying information of visitors to our website. If you have privacy concerns in submitting photographs, we recommend you use the <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser</a> when using our form.
+      </p>
     </div>
-    <h3>Drop images here to submit photos of officers:</h3>
-    <form id="my-cop-dropzone"
-          action="{{ url_for('main.upload', department_id=1) }}"
-          class="dropzone">
-    </form>
-    <p>
-      Drag photographs from your computer directly into the box above or click the box to launch a finder window.
-      If you are on mobile, you can click the box above to select pictures from your photo library or camera roll.
-      An image is successfully uploaded when you see a check mark over it.
-    </p>
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
-    <script>
-        // Select user's preferred department by default
-        document.getElementById("department").selectedIndex = {{ preferred_dept_id }} - 1;
-        // Save the preferred department in dept_id
-        let dept_id = document.getElementById("department").selectedIndex + 1;
-        const csrf_token = "{{ csrf_token() }}";
-
-        // Store changes in drop down list in dept_id variable
-        $(function() {
-            const select_dept = $('#dept-select');
-            select_dept.on('change', function() {
-                // fires when department selection changes
-                dept_id = document.getElementById("department").value;
-            });
-        });
-
-        const getURL = (file) => "/upload/department/" + dept_id;
-        init_dropzone("#my-cop-dropzone", getURL, csrf_token);
-    </script>
-    <h3>High Security Submissions</h3>
-    <p>
-      We do not log unique identifying information of visitors to our website, but if you have privacy concerns in submitting photographs, we recommend using <a href="https://www.torproject.org/projects/torbrowser.html.en">Tor Browser.</a>
-    </p>
   </div>
 {% endblock content %}

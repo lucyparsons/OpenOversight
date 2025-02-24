@@ -40,6 +40,7 @@
           <a href="{{ url_for("main.incident_api") }}">Incidents</a>
         </li>
         {% if incident.department %}
+          <li class="breadcrumb-item active" aria-current="page">{{ incident.department.state | get_state_full_name }}</li>
           <li class="breadcrumb-item active" aria-current="page">
             <a href="{{ url_for('main.incident_api', department_id=incident.department_id) }}">{{ incident.department.name }}</a>
           </li>

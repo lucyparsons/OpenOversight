@@ -13,15 +13,21 @@
   {% endif %}
 {% endblock meta %}
 {% block content %}
-  <div class="container py-5" role="main">
-    <h1>Incidents</h1>
+  <div class="hero-section no-sub">
     {% if department %}
-      <h2>
-        <small>{{ department.name }}</small>
-      </h2>
+      <h1 class="hero">{{ department.name }}</h1>
+      <h1 class="hero lead text-light">{{ department.state | get_state_full_name }}</h1>
+    {% else %}
+      <h1 class="hero">Incidents</h1>
     {% endif %}
+  </div>
+  <div class="container py-5" role="main">
     <div class="row">
-      <div class="filter-sidebar col-sm-3">
+      <h1 class="my-5">
+        Incidents
+        <small class="text-body-secondary fw-normal">({{ incidents.total | thousands_separator }} documented)</small>
+      </h1>
+      <div class="filter-sidebar col-sm-3 px-3">
         <h3 class="sidebar-title">Filter incidents</h3>
         <form class="form" method="get" role="form">
           {% if department %}<div class="hidden">{{ wtf.render_field(form.department_id) }}</div>{% endif %}

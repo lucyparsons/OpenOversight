@@ -1,62 +1,65 @@
 {% extends "base.html" %}
+{% block title %}
+  OpenOversight - Profile: {{ user.username }}
+{% endblock title %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">User Profile: {{ user.username }}</h1>
+  </div>
   <div class="container py-5" role="main">
-    <h1>Profile: {{ user.username }}</h1>
     <div class="row">
       <div class="col-sm-6 col-md-4">
-        <div class="card">
-          <div class="card-body">
-            <h3 class="card-title">User Statistics</h3>
-            <table class="table table-hover">
-              <tbody>
-                <tr>
-                  <td>
-                    <b>Number of images classified</b>
-                  </td>
-                  <td>{{ user.classifications|length }}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Number of officers identified</b>
-                  </td>
-                  <td>{{ user.tags|length }}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div>
+          <h3>User Statistics</h3>
+          <table class="table table-hover">
+            <tbody>
+              <tr>
+                <td>
+                  <b>Number of images classified</b>
+                </td>
+                <td>{{ user.classifications|length }}</td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Number of officers identified</b>
+                </td>
+                <td>{{ user.tags|length }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            <a href="{{ url_for("main.leaderboard") }}"
+               class="btn btn-primary"
+               role="button">Show leaderboard</a>
+          </p>
+          <h3>Account Status</h3>
+          {% if user.disabled_at and user.disabled_by %}
+            <p>Disabled</p>
+          {% elif not user.disabled_at and not user.disabled_by %}
+            <p>Enabled</p>
+          {% endif %}
+          {% if current_user.is_administrator and not user.is_administrators %}
+            <h3>
+              <a href="{{ url_for('auth.edit_user', user_id=user.id) }}">Edit user</a> <small class="text-body-tertiary">Admin only</small>
+            </h3>
+          {% endif %}
+          {% if current_user.is_administrator %}
+            <h3>User Email</h3>
             <p>
-              <a href="{{ url_for("main.leaderboard") }}"
-                 class="btn btn-primary"
-                 role="button">Show leaderboard</a>
+              <code>{{ user.email }}</code>
             </p>
-            <h3>Account Status</h3>
-            {% if user.disabled_at and user.disabled_by %}
-              <p>Disabled</p>
-            {% elif not user.disabled_at and not user.disabled_by %}
-              <p>Enabled</p>
-            {% endif %}
-            {% if current_user.is_administrator and not user.is_administrators %}
-              <h3>
-                <a href="{{ url_for('auth.edit_user', user_id=user.id) }}">Edit user</a> <small class="text-body-tertiary">Admin only</small>
-              </h3>
-            {% endif %}
-            {% if current_user.is_administrator %}
-              <h3>User Email</h3>
-              <p>
-                <code>{{ user.email }}</code>
-              </p>
-            {% endif %}
-            {% if department is defined %}
-              <h3>Default Department</h3>
-              <p>
-                <code>{{ department }}</code>
-              </p>
-            {% endif %}
-          </div>
+          {% endif %}
+          {% if department is defined %}
+            <h3>Default Department</h3>
+            <p>
+              <code>{{ department }}</code>
+            </p>
+          {% endif %}
         </div>
       </div>
     </div>
     {% if user.classifications %}
-      <div class="row">
+      <div class="row mt-3">
         <div class="col-sm-12 col-md-12">
           <h2>Image classifications</h2>
           <table class="table table-hover">
@@ -85,7 +88,7 @@
       </div>
     {% endif %}
     {% if user.tags %}
-      <div class="row">
+      <div class="row mt-3">
         <div class="col-sm-12 col-md-12">
           <h2>Officer Identifications</h2>
           <table class="table table-hover">

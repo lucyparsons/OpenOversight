@@ -19,48 +19,47 @@
   </script>
 {% endblock js_footer %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">Sort Uploaded Photos</h1>
+  </div>
   <div class="container theme-showcase py-5" role="main">
     {% if current_user and current_user.is_authenticated %}
       {% if image and not current_user.disabled_at and not current_user.disabled_by %}
-        <div class="row">
-          <div class="text-center">
-            <h1>
-              <small>Do you see uniformed law enforcement officers in the photo?</small>
-            </h1>
-          </div>
+        <div class="row my-5 mx-auto">
+          <h1>Do you see uniformed law enforcement officers in the photo below?</h1>
         </div>
-        <div class="row">
-          <div class="col-sm-4 text-center">
-            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
-                  method="post">
-              <button type="submit"
-                      name="action"
-                      id="answer-no"
-                      class="btn btn-lg btn-danger">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                {{ render_icon("ban") }}
-                <u>N</u>o
-              </button>
-            </form>
-          </div>
-          <div class="col-sm-4 text-center">
-            <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
-               id="answer-skip"
-               class="btn btn-lg btn-primary"
-               role="button">
-              {{ render_icon("repeat") }}
-              <u>S</u>kip</a>
-          </div>
-          <div class="col-sm-4 text-center">
+        <div class="row vertical-padding">
+          <div class="col-sm-4 text-center order-sm-3">
             <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
                   method="post">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
               <button type="submit"
                       name="action"
                       id="answer-yes"
-                      class="btn btn-lg btn-success">
+                      class="btn btn-lg btn-success m-1">
                 {{ render_icon("check") }}
                 <u>Y</u>es!
+              </button>
+            </form>
+          </div>
+          <div class="col-sm-4 text-center order-sm-2">
+            <a href="{{ url_for('main.sort_images', department_id=department_id) }}"
+               id="answer-skip"
+               class="btn btn-lg btn-primary m-1"
+               role="button">
+              {{ render_icon("repeat") }}
+              <u>S</u>kip</a>
+          </div>
+          <div class="col-sm-4 text-center order-sm-1">
+            <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                  method="post">
+              <button type="submit"
+                      name="action"
+                      id="answer-no"
+                      class="btn btn-lg btn-danger m-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                {{ render_icon("ban") }}
+                <u>N</u>o
               </button>
             </form>
           </div>
@@ -71,20 +70,18 @@
           </div>
         </div>
       {% elif current_user.disabled_at and current_user.disabled_by %}
-        <h3>Your account has been disabled due to too many incorrect classifications/tags!</h3>
+        <h1>Your account has been disabled due to too many incorrect classifications/tags!</h1>
         <p>
           <a href="mailto:info@lucyparsonslabs.com"
              class="btn btn-lg btn-primary"
              role="button">Email us to get it enabled again</a>
         </p>
       {% else %}
-        <h3>All images have been classified!</h3>
+        <h1>All images have been classified!</h1>
         <p>
           <a href="{{ url_for("main.submit_data") }}"
              class="btn btn-lg btn-primary"
              role="button">Submit officer pictures to us</a>
-        </p>
-        <p>
           <a href="{{ url_for('main.label_data', department_id=department_id) }}"
              class="btn btn-lg btn-primary"
              role="button">identify officers in the classified images</a>

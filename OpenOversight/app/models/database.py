@@ -1,3 +1,4 @@
+import itertools
 import operator
 import re
 import time
@@ -214,12 +215,8 @@ class Department(BaseModel, TrackUpdates):
 
     __table_args__ = (UniqueConstraint("name", "state", name="departments_name_state"),)
 
-    @property
-    def display_name(self) -> str:
-        return self.name if not self.state else f"[{self.state}] {self.name}"
-
     @staticmethod
-    def get_assignments(department_id: int) -> List:
+    def get_assignments(department_id: int) -> list["Assignment"]:
         cache_params = Department(id=department_id), KEY_DEPT_ALL_ASSIGNMENTS
         assignments = get_database_cache_entry(*cache_params)
 
@@ -238,7 +235,7 @@ class Department(BaseModel, TrackUpdates):
         return assignments
 
     @staticmethod
-    def get_descriptions(department_id: int) -> List:
+    def get_descriptions(department_id: int) -> list["Description"]:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_NOTES)
         descriptions = get_database_cache_entry(*cache_params)
 
@@ -255,7 +252,7 @@ class Department(BaseModel, TrackUpdates):
         return descriptions
 
     @staticmethod
-    def get_incidents(department_id: int) -> List:
+    def get_incidents(department_id: int) -> list["Incident"]:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_INCIDENTS)
         incidents = get_database_cache_entry(*cache_params)
 
@@ -266,7 +263,7 @@ class Department(BaseModel, TrackUpdates):
         return incidents
 
     @staticmethod
-    def get_links(department_id: int) -> List:
+    def get_links(department_id: int) -> list["Link"]:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_LINKS)
         links = get_database_cache_entry(*cache_params)
 
@@ -283,7 +280,7 @@ class Department(BaseModel, TrackUpdates):
         return links
 
     @staticmethod
-    def get_officers(department_id: int) -> List:
+    def get_officers(department_id: int) -> list["Officer"]:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_OFFICERS)
         officers = get_database_cache_entry(*cache_params)
 
@@ -300,7 +297,7 @@ class Department(BaseModel, TrackUpdates):
         return officers
 
     @staticmethod
-    def get_salaries(department_id: int) -> List:
+    def get_salaries(department_id: int) -> list["Salary"]:
         cache_params = (Department(id=department_id), KEY_DEPT_ALL_SALARIES)
         salaries = get_database_cache_entry(*cache_params)
 
@@ -340,6 +337,17 @@ class Department(BaseModel, TrackUpdates):
     def remove_database_cache_entries(self, update_types: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
         remove_database_cache_entries(self, update_types)
+
+    @staticmethod
+    def by_state() -> dict[str, list["Department"]]:
+        departments = Department.query.filter(Department.officers.any()).order_by(
+            Department.state.asc(), Department.name.asc()
+        )
+        departments_by_state = {
+            state: list(group)
+            for state, group in itertools.groupby(departments, lambda d: d.state)
+        }
+        return departments_by_state
 
 
 class Job(BaseModel, TrackUpdates):

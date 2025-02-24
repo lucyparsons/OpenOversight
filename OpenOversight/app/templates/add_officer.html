@@ -27,9 +27,7 @@
         {{ wtf.render_field(form.unique_internal_identifier) }}
         {{ wtf.render_field(form.job_id, class="form-select") }}
         {{ wtf.render_field(form.unit, class="form-select") }}
-        <h4>
-          <small><a href="{{ url_for("main.add_unit") }}">Don't see your unit? Add one!</a></small>
-        </h4>
+        <a href="{{ url_for("main.add_unit") }}">Don't see your unit? Add one!</a>
         {{ wtf.render_field(form.employment_date) }}
         {{ wtf.render_field(form.birth_year) }}
         <div>
@@ -54,7 +52,7 @@
           {% endfor %}
           <button class="btn btn-success js-add-another-button" disabled>Add another description</button>
         </div>
-        {{ wtf.render_field(form.submit, id="submit", button_map={'submit':'primary'}) }}
+        {{ wtf.render_field(form.submit, id="submit", class="mt-5", button_map={'submit':'primary'}) }}
       </form>
       <br>
     </div>

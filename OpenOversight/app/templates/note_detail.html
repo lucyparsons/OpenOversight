@@ -4,8 +4,6 @@
     <div class="page-header">
       <h1>Viewing Note {{ obj.id }} on Officer {{ obj.officer_id }}</h1>
     </div>
-    <p class="lead">
-      <p>{{ obj.text_contents | markdown }}</p>
-    </p>
+    <p>{{ obj.text_contents | markdown }}</p>
   </div>
 {% endblock content %}

@@ -89,6 +89,7 @@
   <div class="container theme-showcase py-5" role="main">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
+        <li class="breadcrumb-item">{{ officer.department.state | get_state_full_name }}</li>
         <li class="breadcrumb-item">
           <a href="{{ url_for('main.list_officer',department_id=officer.department.id) }}">{{ officer.department.name|title }}</a>
         </li>

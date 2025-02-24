@@ -1,75 +1,111 @@
 {% extends "base.html" %}
 {% block content %}
-  <div class="theme-showcase" role="main">
+  <div id="homepage" role="main">
     <div class="text-center">
-      <div class="hero-section">
-        <div class="hero">Help Us Build Transparency</div>
-        <div class="subhero">OpenOversight: A public, searchable database of law enforcement officers.</div>
+      <div class="hero-section container-fluid">
+        <div class="hero">
+          <h1>OpenOversight</h1>
+        </div>
+        <div class="subhero offset-lg-3 col-lg-6">
+          <p>Building transparency with a public, searchable database of law enforcement officers.</p>
+          <p>
+            <strong>Powered by you.</strong>
+          </p>
+        </div>
       </div>
-      <div class="container-fluid sink-row">
+      <div class="container-fluid" id="find-browse">
+        <div class="row display-flex horizontal-padding text-start">
+          <div class="col-lg-12">
+            <p>
+              OpenOversight has officer information in {{ department_count }} departments across {{ state_count }} states and the federal government in our public database.
+            </p>
+          </div>
+        </div>
         <div class="row display-flex horizontal-padding text-start">
           <div class="col-lg-6">
-            <div class="col-half-border bg-white">
-              <h1>
-                <small>Browse or Find a Law Enforcement Officer</small>
-              </h1>
-              <div class="text-muted">Search the database</div>
-              <p class="my-4">
-                Search our public database for available information on officers in your city or to identify an officer with whom you have had a negative interaction.
-              </p>
-              <a href="{{ url_for("main.browse") }}"
-                 class="btn btn-lg btn-primary mt-1">Browse officers</a>
-              <a href="{{ url_for("main.get_officer") }}"
-                 id="cpd"
-                 class="btn btn-lg btn-primary mt-1">Identify officers</a>
-            </div>
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 version="1.1"
+                 viewBox="0 0 1000 618">
+              <defs>
+              <style>
+                  .cls-1 {
+                      fill: #0099c9;
+                  }
+
+                  .cls-1,
+                  .cls-2 {
+                      stroke: #fff;
+                      stroke-width: .8px;
+                  }
+
+                  .cls-2 {
+                      fill: #d3d3d3;
+                  }
+              </style>
+              </defs>
+              {% for state, path in map_paths.items() %}
+                {% if state in departments_by_state.keys() %}
+                  <path class="cls-1" d="{{ path }}" />
+                {% else %}
+                  <path class="cls-2" d="{{ path }}" />
+                {% endif %}
+              {% endfor %}
+            </svg>
           </div>
           <div class="col-lg-6">
-            <div class="col-half-border bg-white">
-              <h1>
-                <small>Submit an Image</small>
-              </h1>
-              <div class="text-muted">Contribute to the database</div>
-              <p class="my-4">Have a photo containing uniformed law enforcement officers? Drop them here.</p>
-              <a class="btn btn-lg btn-primary"
-                 href="{{ url_for("main.submit_data") }}">Submit Image</a>
-            </div>
+            <a href="{{ url_for("main.get_officer") }}"
+               id="cpd"
+               class="btn btn-primary btn-full text-start mt-4 icon-btn find">Find an officer</a>
+            <a href="{{ url_for("main.browse") }}"
+               class="btn btn-primary btn-full text-start mt-4 icon-btn browse">Browse officer database</a>
           </div>
         </div>
       </div>
     </div>
-    <div class="hr-banner">Want to help? Here are two ways...</div>
-    <div class="container-fluid">
+    <div class="container-fluid" id="contribute">
       <div class="row display-flex">
-        <div class="col-lg-6 bg-light-gray text-left">
-          <div class="col-half-no-border">
-            <h1>
-              <small>Volunteer</small>
-            </h1>
-            <p class="my-4">
-              We're looking for volunteers to help us sort through images. If you're interested in helping out, please
-              sign up!
-            </p>
-            <a class="btn btn-lg btn-secondary"
-               href="{{ url_for("main.get_started_labeling") }}">Put me to work</a>
-          </div>
+        <div class="col-lg-12 text-center">
+          <h2>Contribute</h2>
         </div>
-        <div class="col-lg-6 bg-blue-gray text-left">
-          <div class="col-half-no-border">
-            <h1>
-              <small>Donate</small>
-            </h1>
+      </div>
+      <div class="row display-flex contribute-options">
+        <div class="col-lg-4 text-center my-4">
+          <a class="btn contribute-btn h-100"
+             href="{{ url_for("main.submit_data") }}">
+            <img src="{{ url_for("static", filename="images/add-officer-lg.svg") }}" alt="Add Officer">
+            <h3 class="my-3">Add an officer photo to the database</h3>
+            <p class="my-4">Submit photos containing uniformed law enforcement officers.</p>
+          </a>
+        </div>
+        <div class="col-lg-4 text-center my-4">
+          <a class="btn contribute-btn h-100"
+             href="{{ url_for("main.get_started_labeling") }}"
+             target="_blank">
+            <img src="{{ url_for("static", filename="images/volunteer-lg.svg") }}" alt="Volunteer">
+            <h3 class="my-3">Volunteer</h3>
             <p class="my-4">
-              <!--TODO check on link + copy-->
-              We are entirely volunteer funded and directed. Donations are greatly appreciated, and can be funded
-              through PayPal, YouCaring, or Bitcoin.
-              <br>
-              Note: We are an IRS 501(c)3 not-for-profit and all donations are tax deductible!
+              We're looking for volunteers to help us sort through images. If you're interested in helping out, please sign up!
             </p>
-            <a class="btn btn-lg btn-secondary"
-               href="https://lucyparsonslabs.com/donate"
-               target="_blank">Donate</a>
-          </div>
+          </a>
+        </div>
+        <div class="col-lg-4 text-center my-4">
+          <a class="btn contribute-btn h-100"
+             href="https://lucyparsonslabs.com/donate"
+             target="_blank">
+            <img src="{{ url_for("static", filename="images/donate-lg.svg") }}" alt="Donate">
+            <h3 class="my-3">Donate</h3>
+            <p class="my-4">We are entirely volunteer funded and directed. Donations are tax-deductible.</p>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid" id="about-oo">
+      <div class="row display-flex horizontal-padding text-start py-5">
+        <div class="col col-lg-12 mx-auto px-4">
+          <h2>About Us</h2>
+          <p>
+            OpenOversight is a <a href="https://www.lucyparsonslabs.com">Lucy Parsons Labs</a> project that aims to improve law enforcement visibility and transparency using public and crowdsourced data. We maintain databases, digital galleries, and profiles of individual law enforcement officers from departments across the United States that consolidate information including names, birthdates, mentions in news articles, salaries, and photographs.  <a href="{{ url_for("main.about_oo") }}">Learn more ></a>
+          </p>
         </div>
       </div>
     </div>

@@ -451,7 +451,7 @@ def test_anonymous_user_can_upload_image(browser, server_port):
     select = browser.find_element(By.ID, "department")
     dept_select = Select(select)
     scroll_to_element(browser, select)
-    dept_select.select_by_visible_text("[WA] Auburn Police Department")
+    dept_select.select_by_visible_text("Auburn Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
     submit_image_to_dropzone(browser, img_path)

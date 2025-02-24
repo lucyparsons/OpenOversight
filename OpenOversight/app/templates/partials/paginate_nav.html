@@ -2,7 +2,7 @@
   <ul class="pagination">
     {% if paginate.has_prev %}
       <li class="page-item previous">
-        <a role="button" class="btn btn-light" href="{{ prev_url }}">
+        <a role="button" class="btn btn-primary" href="{{ prev_url }}">
           <span aria-hidden="true">←</span>
           Previous
         </a>
@@ -19,7 +19,7 @@
     </div>
     {% if paginate.has_next %}
       <li class="next">
-        <a role="button" class="btn btn-light" href="{{ next_url }}">
+        <a role="button" class="btn btn-primary" href="{{ next_url }}">
           Next
           <span aria-hidden="true">→</span>
         </a>

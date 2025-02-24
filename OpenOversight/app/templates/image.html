@@ -88,17 +88,17 @@
                 Classify <small class="text-body-tertiary">Admin only</small>
               </h3>
               <p>
-                <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
-                      method="post">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                  <button type="submit" name="action" class="btn btn-primary">No cops here</button>
-                </form>
-              </p>
-              <p>
                 <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=1) }}"
                       method="post">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                   <button type="submit" name="action" class="btn btn-primary">Cops here</button>
+                </form>
+              </p>
+              <p>
+                <form action="{{ url_for('main.classify_submission', image_id=image.id, contains_cops=0) }}"
+                      method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button type="submit" name="action" class="btn btn-primary">No cops here</button>
                 </form>
               </p>
               <h3>

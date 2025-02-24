@@ -4,10 +4,10 @@
   OpenOversight - Volunteer Change Email Address
 {% endblock title %}
 {% block content %}
+  <div class="hero-section no-sub">
+    <h1 class="hero">Change Your Email Address</h1>
+  </div>
   <div class="container theme-showcase py-5" role="main">
-    <div class="page-header">
-      <h1>Change Your Email Address</h1>
-    </div>
     <div class="col-md-6">{{ wtf.render_form(form, button_map={'submit':'primary'}) }}</div>
   </div>
 {% endblock content %}

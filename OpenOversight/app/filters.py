@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 import bleach
 import markdown as _markdown
+import us.states
 from bleach_allowlist import markdown_attrs, markdown_tags
 from flask import Flask, current_app, session
 from markupsafe import Markup
@@ -97,6 +98,12 @@ def display_currency(value: float) -> str:
     return f"${value:,.2f}"
 
 
+def get_state_full_name(abbrev: str) -> str:
+    if abbrev == "FA":
+        return "Federal"
+    return us.states.lookup(abbrev).name
+
+
 def instantiate_filters(app: Flask):
     """Instantiate all template filters"""
     app.template_filter("capfirst")(capfirst_filter)
@@ -110,3 +117,4 @@ def instantiate_filters(app: Flask):
     app.template_filter("local_time")(local_time)
     app.template_filter("thousands_separator")(thousands_separator)
     app.template_filter("display_currency")(display_currency)
+    app.template_filter("get_state_full_name")(get_state_full_name)
