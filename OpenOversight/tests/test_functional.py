@@ -370,7 +370,6 @@ def test_image_classification_and_tagging(browser, server_port, session):
 
     select = browser.find_element(By.ID, "department")
     scroll_to_element(browser, select)
-    print(f"&&&&&&&: {dept_id}")
     Select(select).select_by_value(dept_id)
     submit_image_to_dropzone(browser, img_path)
 
