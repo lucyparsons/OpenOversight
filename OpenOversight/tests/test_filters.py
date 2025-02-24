@@ -126,6 +126,7 @@ def test_thousands_separator():
 
 
 def test_get_state_full_name():
+    assert "N/A" == filters.get_state_full_name("??")
     assert "Federal" == filters.get_state_full_name("FA")
     with patch("us.states.lookup") as mock_lookup:
         mock_lookup.return_value = us.states.OR
