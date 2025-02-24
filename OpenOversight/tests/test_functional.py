@@ -349,7 +349,7 @@ def test_image_classification_and_tagging(browser, server_port, session):
     wait_for_page_load(browser)
 
     dept_select = Select(browser.find_element(By.ID, "department"))
-    dept_select.select_by_visible_text("Chicago Police Department")
+    dept_select.select_by_visible_text("Auburn Police Department")
     dept_id = dept_select.first_selected_option.get_attribute("value")
 
     browser.find_element(By.ID, "first_name").send_keys("Officer")
