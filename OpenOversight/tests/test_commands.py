@@ -60,6 +60,10 @@ def run_command_print_output(cli, args=None, **kwargs):
     return result
 
 
+def test_make_admin_user__success(session):
+    pass
+
+
 def test_add_department__success(session):
     AddedPD = PoliceDepartment("Added Police Department", "APD")
 
