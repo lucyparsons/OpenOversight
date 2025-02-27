@@ -67,7 +67,7 @@ def make_admin_user():
         username=username,
         email=email,
         password=password,
-        confirmed_at=datetime.datetime.now(),
+        confirmed_at=datetime.now(),
         confirmed_by=admin_user.id,
         is_administrator=True,
     )
