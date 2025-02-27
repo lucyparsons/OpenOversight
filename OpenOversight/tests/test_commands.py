@@ -69,29 +69,28 @@ def run_command_print_output(cli, args=None, **kwargs):
 MAKE_ADMIN_USER_EMAIL = "daveyjones@example.com"
 
 
-@patch("builtins.input", side_effect=["daveyjones", MAKE_ADMIN_USER_EMAIL])
 @patch(
-    "getpass.getpass",
+    "OpenOversight.app.commands.getpass",
     side_effect=[UNCONFIRMED_USER_PASSWORD, UNCONFIRMED_USER_PASSWORD],
 )
-def test_make_admin_user__success(session):
-    session.add(
-        User(
-            username="daveyjones",
-            email=MAKE_ADMIN_USER_EMAIL,
-            password=UNCONFIRMED_USER_PASSWORD,
-        )
-    )
-    session.commit()
+@patch(
+    "OpenOversight.app.commands.input",
+    side_effect=[MAKE_ADMIN_USER_EMAIL.split("@")[0], MAKE_ADMIN_USER_EMAIL],
+)
+def test_make_admin_user__success(mock_input, mock_getpass, mockdata, session):
+    non_existing_user = User.by_username(
+        MAKE_ADMIN_USER_EMAIL.split("@")[0]
+    ).one_or_none()
+    assert non_existing_user is None
 
-    result = run_command_print_output(
-        make_admin_user,
-    )
+    result = run_command_print_output(make_admin_user, [])
 
-    admin_user = User.query.filter_by(is_administrator=True).first()
-    test_user = User.by_email(MAKE_ADMIN_USER_EMAIL).one_or_none()
+    admin_user = session.query(User).filter_by(is_administrator=True).first()
+    test_user = session.query(User).filter_by(email=MAKE_ADMIN_USER_EMAIL).one_or_none()
 
     assert result.exit_code == 0
+    assert test_user is not None
+    assert "Administrator daveyjones successfully added" in result.output
     assert test_user.confirmed_by == admin_user.id
     assert test_user.confirmed_at is not None
     assert test_user.is_administrator is True
