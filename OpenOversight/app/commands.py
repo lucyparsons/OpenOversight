@@ -61,11 +61,14 @@ def make_admin_user():
             break
         print("Passwords did not match")
 
+    admin_user = User.query.filter_by(is_administrator=True).first()
+
     u = User(
         username=username,
         email=email,
         password=password,
-        confirmed=True,
+        confirmed_at=datetime.datetime.now(),
+        confirmed_by=admin_user.id,
         is_administrator=True,
     )
     db.session.add(u)
