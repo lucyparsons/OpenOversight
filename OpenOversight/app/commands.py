@@ -61,15 +61,19 @@ def make_admin_user():
             break
         print("Passwords did not match")
 
-    u = User(
+    user = User(
         username=username,
         email=email,
         password=password,
-        confirmed=True,
         is_administrator=True,
     )
-    db.session.add(u)
+    db.session.add(user)
+    db.session.flush()
+
+    user.confirmed_at = datetime.now()
+    user.confirmed_by = user.id
     db.session.commit()
+
     print(f"Administrator {username} successfully added")
     current_app.logger.info(f"Administrator {username} added with email {email}")
 

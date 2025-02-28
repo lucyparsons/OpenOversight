@@ -356,6 +356,7 @@ def test_image_classification_and_tagging(browser, server_port, session):
     browser.find_element(By.ID, "last_name").send_keys("Friendly")
     browser.find_element(By.ID, "star_no").send_keys(star_no)
 
+    wait_for_element(browser, By.ID, "submit")
     submit = browser.find_element(By.ID, "submit")
     scroll_to_element(browser, submit)
     submit.click()

@@ -5,6 +5,7 @@ import random
 import traceback
 import uuid
 from datetime import date, time
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -17,6 +18,7 @@ from OpenOversight.app.commands import (
     advanced_csv_import,
     bulk_add_officers,
     create_officer_from_row,
+    make_admin_user,
 )
 from OpenOversight.app.models.database import (
     Assignment,
@@ -38,7 +40,11 @@ from OpenOversight.tests.conftest import (
     PoliceDepartment,
     generate_officer,
 )
-from OpenOversight.tests.constants import FILE_MODE_WRITE, GENERAL_USER_EMAIL
+from OpenOversight.tests.constants import (
+    FILE_MODE_WRITE,
+    GENERAL_USER_EMAIL,
+    UNCONFIRMED_USER_PASSWORD,
+)
 
 
 def run_command_print_output(cli, args=None, **kwargs):
@@ -58,6 +64,34 @@ def run_command_print_output(cli, args=None, **kwargs):
         print(result.exception)
         print(traceback.print_exception(*result.exc_info))
     return result
+
+
+MAKE_ADMIN_USER_EMAIL = "daveyjones@example.com"
+
+
+@patch(
+    "OpenOversight.app.commands.getpass",
+    side_effect=[UNCONFIRMED_USER_PASSWORD, UNCONFIRMED_USER_PASSWORD],
+)
+@patch(
+    "OpenOversight.app.commands.input",
+    side_effect=[MAKE_ADMIN_USER_EMAIL.split("@")[0], MAKE_ADMIN_USER_EMAIL],
+)
+def test_make_admin_user__success(mock_input, mock_getpass, mockdata, session):
+    non_existing_user = User.by_username(
+        MAKE_ADMIN_USER_EMAIL.split("@")[0]
+    ).one_or_none()
+    assert non_existing_user is None
+
+    result = run_command_print_output(make_admin_user, [])
+
+    test_user = session.query(User).filter_by(email=MAKE_ADMIN_USER_EMAIL).one_or_none()
+
+    assert result.exit_code == 0
+    assert "Administrator daveyjones successfully added" in result.output
+    assert test_user.confirmed_by == test_user.id
+    assert test_user.confirmed_at is not None
+    assert test_user.is_administrator is True
 
 
 def test_add_department__success(session):
