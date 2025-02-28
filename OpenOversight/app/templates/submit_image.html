@@ -65,7 +65,7 @@
             dept_id = $("#department").val();
         });
 
-        const getURL = (file) => "/upload/department/" + dept_id;
+        const getURL = (file) => "/upload/departments/" + dept_id;
         init_dropzone("#my-cop-dropzone", getURL, csrf_token);
       </script>
       <h3 class="mt-4">What happens next?</h3>
