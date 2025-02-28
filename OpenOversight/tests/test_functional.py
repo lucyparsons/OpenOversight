@@ -471,7 +471,9 @@ def test_anonymous_user_can_upload_image(browser, server_port, session):
     wait_for_page_load(browser)
 
     page_text = browser.find_element(By.TAG_NAME, "body").text
-    assert "Do you see uniformed law enforcement officers in the photo below?" in page_text
+    assert (
+        "Do you see uniformed law enforcement officers in the photo below?" in page_text
+    )
 
     browser.find_element(By.ID, "answer-yes").click()
     wait_for_page_load(browser)
