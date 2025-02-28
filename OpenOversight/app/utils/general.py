@@ -143,6 +143,10 @@ def replace_list(items, obj, attr, model, db):
 
 
 def serve_image(filepath: str):
+    # Custom change for development. Do not replace minio with localhost in
+    # automated tests since these run inside the docker container.
+    if "minio" in filepath and not current_app.config.get("TESTING"):
+        filepath = filepath.replace("minio", "localhost")
     if "http" in filepath:
         return filepath
     if "static" in filepath:

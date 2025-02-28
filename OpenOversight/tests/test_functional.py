@@ -391,7 +391,7 @@ def test_image_classification_and_tagging(browser, server_port, session):
     # 5. Identify the new officer in the uploaded image
     browser.get(f"http://localhost:{server_port}/cop_faces/departments/{dept_id}")
     wait_for_page_load(browser)
-    browser.find_element(By.ID, "star_no").send_keys(star_no)
+    browser.find_element(By.ID, "officer_id").send_keys(officer_id)
     add_face = browser.find_element(
         By.CSS_SELECTOR, "input[value='Add identified face']"
     )
@@ -471,7 +471,7 @@ def test_anonymous_user_can_upload_image(browser, server_port, session):
     wait_for_page_load(browser)
 
     page_text = browser.find_element(By.TAG_NAME, "body").text
-    assert "Do you see uniformed law enforcement officers in the photo?" in page_text
+    assert "Do you see uniformed law enforcement officers in the photo below?" in page_text
 
     browser.find_element(By.ID, "answer-yes").click()
     wait_for_page_load(browser)
