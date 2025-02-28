@@ -85,12 +85,11 @@ def test_make_admin_user__success(mock_input, mock_getpass, mockdata, session):
 
     result = run_command_print_output(make_admin_user, [])
 
-    admin_user = session.query(User).filter_by(is_administrator=True).first()
     test_user = session.query(User).filter_by(email=MAKE_ADMIN_USER_EMAIL).one_or_none()
 
     assert result.exit_code == 0
     assert "Administrator daveyjones successfully added" in result.output
-    assert test_user.confirmed_by == admin_user.id
+    assert test_user.confirmed_by == test_user.id
     assert test_user.confirmed_at is not None
     assert test_user.is_administrator is True
 
