@@ -4,11 +4,11 @@ default: build start create_db populate test stop clean
 
 # Build containers
 .PHONY: build
-build:
+build: create_empty_secret create_default_env
 	docker compose build
 
 .PHONY: build_with_version
-build_with_version: create_empty_secret
+build_with_version: create_empty_secret create_default_env
 	docker compose build --build-arg MAKE_PYTHON_VERSION=$(PYTHON_VERSION)
 
 .PHONY: test_with_version
@@ -53,7 +53,7 @@ create_db_diagram:
 	rm schema.dot.sorted schema.new.dot.sorted
 
 .PHONY: dev
-dev: create_empty_secret build start create_db populate
+dev: create_empty_secret create_default_env build start create_db populate
 
 # Build and run containers
 .PHONY: populate
@@ -119,3 +119,7 @@ create_empty_secret:
 	(echo "Need to delete that empty directory first"; \
 	 sudo rm -d service_account_key.json/; \
 	 touch service_account_key.json)
+
+.PHONY: create_default_env
+create_default_env:
+	if [ ! -f .env ]; then cp .env.example .env; fi

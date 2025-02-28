@@ -54,23 +54,19 @@
       <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
       <script src="{{ url_for('static', filename='js/init-dropzone.js') }}"></script>
       <script>
-          // Select user's preferred department by default
-          document.getElementById("department").selectedIndex = {{ preferred_dept_id }} - 1;
-          // Save the preferred department in dept_id
-          let dept_id = document.getElementById("department").selectedIndex + 1;
-          const csrf_token = "{{ csrf_token() }}";
+        const csrf_token = "{{ csrf_token() }}";
 
-          // Store changes in drop down list in dept_id variable
-          $(function() {
-              const select_dept = $('#dept-select');
-              select_dept.on('change', function() {
-                  // fires when department selection changes
-                  dept_id = document.getElementById("department").value;
-              });
-          });
+        // Select user's preferred department by default
+        let dept_id = {{ preferred_dept_id }};
+        $("#department").val(dept_id);
 
-          const getURL = (file) => "/upload/department/" + dept_id;
-          init_dropzone("#my-cop-dropzone", getURL, csrf_token);
+        // Store drop down list changes in dept_id variable
+        $("#dept-select").on('change', function() {
+            dept_id = $("#department").val();
+        });
+
+        const getURL = (file) => "/upload/departments/" + dept_id;
+        init_dropzone("#my-cop-dropzone", getURL, csrf_token);
       </script>
       <h3 class="mt-4">What happens next?</h3>
       <p>
