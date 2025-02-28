@@ -324,8 +324,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
     assert selected_text == "Not Sure"
 
 
-@pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_image_classification_and_tagging(browser, server_port):
+def test_image_classification_and_tagging(browser, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
     star_no = 1312
@@ -337,7 +336,12 @@ def test_image_classification_and_tagging(browser, server_port):
     wait_for_page_load(browser)
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
-    browser.find_element(By.ID, "submit").click()
+    Select(browser.find_element(By.ID, "state")).select_by_value("WA")
+
+    submit = browser.find_element(By.ID, "submit")
+    scroll_to_element(browser, submit)
+    submit.click()
+
     wait_for_page_load(browser)
 
     # 2. Add a new officer
@@ -425,8 +429,7 @@ def test_image_classification_and_tagging(browser, server_port):
     assert image.location["y"] <= frame.location["y"]
 
 
-@pytest.mark.skip("Enable once real file upload in tests is supported.")
-def test_anonymous_user_can_upload_image(browser, server_port):
+def test_anonymous_user_can_upload_image(browser, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
 
@@ -438,7 +441,11 @@ def test_anonymous_user_can_upload_image(browser, server_port):
     browser.find_element(By.ID, "name").send_keys("Auburn Police Department")
     browser.find_element(By.ID, "short_name").send_keys("APD")
     Select(browser.find_element(By.ID, "state")).select_by_value("WA")
-    browser.find_element(By.ID, "submit").click()
+
+    submit = browser.find_element(By.ID, "submit")
+    scroll_to_element(browser, submit)
+    submit.click()
+
     wait_for_page_load(browser)
 
     # 2. Log out
@@ -464,7 +471,9 @@ def test_anonymous_user_can_upload_image(browser, server_port):
     wait_for_page_load(browser)
 
     page_text = browser.find_element(By.TAG_NAME, "body").text
-    assert "Do you see uniformed law enforcement officers in the photo?" in page_text
+    assert (
+        "Do you see uniformed law enforcement officers in the photo below?" in page_text
+    )
 
     browser.find_element(By.ID, "answer-yes").click()
     wait_for_page_load(browser)
