@@ -61,16 +61,15 @@ def make_admin_user():
             break
         print("Passwords did not match")
 
-    u = User(
+    user = User(
         username=username,
         email=email,
         password=password,
         is_administrator=True,
     )
-    db.session.add(u)
-    db.session.commit()
+    db.session.add(user)
+    db.session.flush()
 
-    user = User.by_username(username).one_or_none()
     user.confirmed_at = datetime.now()
     user.confirmed_by = user.id
     db.session.commit()
