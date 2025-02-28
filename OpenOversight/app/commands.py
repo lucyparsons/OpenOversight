@@ -61,18 +61,20 @@ def make_admin_user():
             break
         print("Passwords did not match")
 
-    admin_user = User.query.filter_by(is_administrator=True).first()
-
     u = User(
         username=username,
         email=email,
         password=password,
-        confirmed_at=datetime.now(),
-        confirmed_by=admin_user.id,
         is_administrator=True,
     )
     db.session.add(u)
     db.session.commit()
+
+    user = User.by_username(username).one_or_none()
+    user.confirmed_at = datetime.now()
+    user.confirmed_by = user.id
+    db.session.commit()
+
     print(f"Administrator {username} successfully added")
     current_app.logger.info(f"Administrator {username} added with email {email}")
 
