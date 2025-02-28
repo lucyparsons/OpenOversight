@@ -96,7 +96,7 @@ services:
        - MAKE_PYTHON_VERSION
      dockerfile: dockerfiles/web/Dockerfile-test
    depends_on:
-     - minio
+     - createbucket
    env_file:
      - .env
    environment:
