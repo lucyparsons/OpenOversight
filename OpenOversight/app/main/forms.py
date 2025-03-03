@@ -122,8 +122,12 @@ class FindOfficerForm(Form):
         choices=GENDER_CHOICES,
         validators=[AnyOf(allowed_values(GENDER_CHOICES))],
     )
-    min_age = IntegerField("min_age", validators=[NumberRange(min=16, max=100)])
-    max_age = IntegerField("max_age", validators=[NumberRange(min=16, max=100)])
+    min_age = IntegerField(
+        "min_age", validators=[Optional(), NumberRange(min=16, max=100)]
+    )
+    max_age = IntegerField(
+        "max_age", validators=[Optional(), NumberRange(min=16, max=100)]
+    )
     require_photo = BooleanField(
         "require_photo", default=False, validators=[Optional()]
     )
