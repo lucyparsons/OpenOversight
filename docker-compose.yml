@@ -107,3 +107,4 @@ services:
      TIMEZONE: "America/Chicago"
    volumes:
      - ./OpenOversight/:/usr/src/app/OpenOversight/:z
+     - ./build/test-results:/test-results

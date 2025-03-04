@@ -50,13 +50,13 @@ psycopg2==2.9.6
 pycparser~=2.21
 Pygments~=2.15.1
 pytest~=7.4.0
+pytest-playwright==0.7.0
 python-dateutil==2.8.2
 PyYAML~=6.0
 recommonmark==0.7.1
 requests==2.32.0
 rich~=13.4.2
 s3transfer~=0.6.1
-selenium==4.26.0
 six~=1.16.0
 sphinx==7.1.2
 SQLAlchemy==1.4.52
@@ -70,5 +70,4 @@ Werkzeug==3.0.6
 wrapt~=1.15.0
 wtforms==3.0.1
 WTForms-SQLAlchemy==0.3.0
-xvfbwrapper~=0.2.9
 zipp==3.19.1
