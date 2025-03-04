@@ -34,6 +34,7 @@ $(document).ready(function() {
             $('#current-uii').text(deptUiidLabel);
             $('#uii-question').show();
         } else {
+            $('#unique_internal_identifier').text('');
             $('#uii-question').hide();
         }
     });

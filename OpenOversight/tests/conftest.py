@@ -8,18 +8,14 @@ import uuid
 from datetime import date, datetime, time, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
-from time import sleep
 from typing import List, Optional
 
 import pytest
 from faker import Faker
 from flask import current_app
 from PIL import Image as Pimage
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+from playwright.sync_api import Page
 from sqlalchemy.orm import scoped_session, sessionmaker
-from xvfbwrapper import Xvfb
 
 from OpenOversight.app import create_app
 from OpenOversight.app.models.database import (
@@ -895,28 +891,15 @@ def server_port(worker_number):
 
 
 @pytest.fixture(scope="session")
-def browser(app, server_port):
+def server(app, server_port):
     # start server
     port = server_port
     print("Starting server at port {port}")
     threading.Thread(
         target=app.run, daemon=True, kwargs={"debug": False, "port": port}
     ).start()
-    # give the server a few seconds to ensure it is up
-    sleep(10)
 
-    # start headless webdriver
-    visual_display = Xvfb()
-    visual_display.start()
-    options = Options()
-    options.add_argument("--headless")
-    driver = webdriver.Firefox(
-        options=options, service=Service(log_path="/tmp/geckodriver.log")
-    )
-    # wait for browser to start up
-    sleep(3)
-    yield driver
 
-    # shutdown headless webdriver
-    driver.quit()
-    visual_display.stop()
+@pytest.fixture
+def page(app, server, page: Page):
+    yield page

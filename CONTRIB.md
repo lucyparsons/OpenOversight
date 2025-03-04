@@ -23,6 +23,12 @@ We use [pre-commit](https://pre-commit.com/) for automated linting and style che
 
 You can run `pre-commit run --all-files` or `make lint` to run pre-commit over your local codebase, or `pre-commit run` to run it only over the currently stages files.
 
+## Testing
+
+To run tests, run `make test` once your containers are up and running.
+
+We use Playwright for functional testing. If functional tests fail locally, you can find per-test traces in the `build/test-results` directory. In the Lint and Test GitHub action, traces are uploaded as an artifact you can download via the "Upload Artifact" step. Once you have your trace, you can upload it to the [Playwright Trace Viewer](https://trace.playwright.dev/) tool for debugging.
+
 ### Accessibility
 Keep in mind when adding images that `alt` tags are required for screen readers. If text outside of the image explains what the image is or is referring to, the tag can be an empty string (`alt=""`). The tag can also be empty if the image is decoration and does not add information or context. If the image has text or important information, use the present tense to describe what is happening in the image.
 

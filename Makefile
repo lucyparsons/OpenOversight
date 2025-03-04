@@ -14,7 +14,7 @@ build_with_version: create_empty_secret create_default_env
 .PHONY: test_with_version
 test_with_version: build_with_version
 	touch OpenOversight/tests/coverage.xml
-	docker compose run --rm web-test pytest --cov=OpenOversight --cov-report xml:OpenOversight/tests/coverage.xml --doctest-modules -n 4 --dist=loadfile -v OpenOversight/tests/
+	docker compose run --rm web-test pytest --cov-report xml:OpenOversight/tests/coverage.xml -n 4 --dist=loadfile -v OpenOversight/tests/
 
 # Run containers
 .PHONY: start
@@ -70,9 +70,9 @@ populate: create_db
 .PHONY: test
 test: start
 	if [ -z "$(name)" ]; then \
-		docker compose run --rm web-test pytest --cov --doctest-modules -n auto --dist=loadfile -v OpenOversight/tests/; \
+		docker compose run --rm web-test pytest -n auto --dist=loadfile -v OpenOversight/tests/; \
 	else \
-		docker compose run --rm web-test pytest --cov --doctest-modules -v OpenOversight/tests/ -k $(name); \
+		docker compose run --rm web-test pytest -v OpenOversight/tests/ -k $(name); \
 	fi
 
 .PHONY: lint

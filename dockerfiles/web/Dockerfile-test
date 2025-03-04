@@ -6,22 +6,11 @@ WORKDIR /usr/src/app
 ENV CURL_FLAGS="--proto =https --tlsv1.2 -sSf -L --max-redirs 1 -O"
 
 ENV DEBIAN-FRONTEND noninteractive
-ENV DISPLAY=:1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
-RUN apt-get update && apt-get install -y curl xvfb firefox-esr libpq-dev python3-dev && \
+RUN apt-get update && apt-get install -y curl libpq-dev python3-dev && \
     apt-get install -y libsqlite3-0 graphviz-dev graphviz && apt-get clean
-
-# install geckodriver
-ENV GECKODRIVER_VERSION="v0.35.0"
-ENV GECKODRIVER_SHA=ac26e9ba8f3b8ce0fbf7339b9c9020192f6dcfcbf04a2bcd2af80dfe6bb24260
-ENV GECKODRIVER_BASE_URL="https://github.com/mozilla/geckodriver/releases/download"
-RUN curl ${CURL_FLAGS} \
-      ${GECKODRIVER_BASE_URL}/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-RUN echo "${GECKODRIVER_SHA}  geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz" | sha256sum --check -
-RUN mkdir geckodriver
-RUN tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz -C geckodriver
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
 # install rust and cargo so we can use jellyfish
@@ -30,9 +19,10 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     pip3 install --no-cache-dir -r requirements.txt && \
     pip3 install --no-cache-dir -r dev-requirements.txt
 
+RUN playwright install --with-deps chromium
+
 COPY create_db.py test_data.py /usr/src/app/
 
-ENV PATH="/usr/src/app/geckodriver:${PATH}"
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 
 WORKDIR /usr/src/app/
