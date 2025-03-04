@@ -1,7 +1,6 @@
 import os
 import re
 
-import pytest
 from flask import current_app
 from playwright.sync_api import expect
 from sqlalchemy.sql.expression import func
