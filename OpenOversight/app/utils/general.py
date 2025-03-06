@@ -1,7 +1,8 @@
 import random
 import sys
+from collections.abc import Callable, Hashable, Iterable
 from distutils.util import strtobool
-from typing import Optional, Union
+from typing import Any, Optional, TypeVar, Union
 from urllib.parse import urlparse
 from zoneinfo import available_timezones
 
@@ -159,6 +160,11 @@ def str_is_true(str_) -> bool:
     return bool(strtobool(str_.lower()))
 
 
+def url_for_target_null_values_skipped(target: str, **kwargs: Any) -> str:
+    kwargs_skipped = {key: value for key, value in kwargs.items() if value}
+    return url_for(target, **kwargs_skipped)
+
+
 def validate_redirect_url(url: Optional[str]) -> Optional[str]:
     """
     Check that a url does not redirect to another domain.
@@ -173,3 +179,35 @@ def validate_redirect_url(url: Optional[str]) -> Optional[str]:
         return None
 
     return url
+
+
+T = TypeVar("T", bound=Hashable)
+
+
+def multi_selection_valid_or_default(
+    choices: Iterable[T], default: Iterable[T]
+) -> Callable[[Iterable[T]], Iterable[T]]:
+    def filter(values: Iterable[T]) -> Iterable[T]:
+        if set(values).issubset(choices):
+            return values
+        return default
+
+    return filter
+
+
+def single_selection_valid_or_default(
+    choices: Iterable[T], default: T
+) -> Callable[[T], T]:
+    def filter(value: T) -> T:
+        if value in choices:
+            return value
+        return default
+
+    return filter
+
+
+def parse_int_or_default(value: str, default: int = 0) -> int:
+    try:
+        return int(value)
+    except ValueError:
+        return default
