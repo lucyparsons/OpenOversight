@@ -19,6 +19,15 @@ from OpenOversight.app.models.database import db
 from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
 from OpenOversight.app.utils.flask import limiter, sitemap
+from OpenOversight.app.commands import (
+        add_department,
+        add_job_title,
+        advanced_csv_import,
+        bulk_add_officers,
+        link_images_to_department,
+        link_officers_to_department,
+        make_admin_user,
+    )
 
 
 bootstrap = Bootstrap5()
@@ -114,15 +123,6 @@ def create_app(config_name="default"):
     Migrate(
         app, db, os.path.join(os.path.dirname(__file__), "..", "migrations")
     )  # Adds 'db' command
-    from OpenOversight.app.commands import (
-        add_department,
-        add_job_title,
-        advanced_csv_import,
-        bulk_add_officers,
-        link_images_to_department,
-        link_officers_to_department,
-        make_admin_user,
-    )
 
     app.cli.add_command(make_admin_user)
     app.cli.add_command(link_images_to_department)
