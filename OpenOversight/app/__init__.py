@@ -6,7 +6,6 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, jsonify, render_template, request
 from flask_bootstrap import Bootstrap5
 from flask_compress import Compress
-from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 
@@ -25,18 +24,13 @@ from OpenOversight.app.filters import instantiate_filters
 from OpenOversight.app.main.views import main as main_blueprint
 from OpenOversight.app.models.config import config
 from OpenOversight.app.models.database import db
-from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
-from OpenOversight.app.utils.flask import limiter, sitemap
+from OpenOversight.app.utils.flask import limiter, login_manager, sitemap
 
 
 bootstrap = Bootstrap5()
 compress = Compress()
 
-login_manager = LoginManager()
-login_manager.session_protection = "strong"
-login_manager.anonymous_user = AnonymousUser
-login_manager.login_view = "auth.login"
 
 csrf = CSRFProtect()
 

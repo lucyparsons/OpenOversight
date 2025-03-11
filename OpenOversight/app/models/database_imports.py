@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import dateutil.parser
 
-from OpenOversight.app import login_manager
 from OpenOversight.app.models.database import (
     Assignment,
     Incident,
@@ -21,6 +20,7 @@ from OpenOversight.app.utils.choices import (
     RACE_CHOICES,
     SUFFIX_CHOICES,
 )
+from OpenOversight.app.utils.flask import login_manager
 from OpenOversight.app.utils.general import get_or_create, str_is_true
 from OpenOversight.app.validators import state_validator, url_validator
 
