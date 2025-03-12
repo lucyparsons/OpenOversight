@@ -83,6 +83,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    KEY_MAP_DATA,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
 )
@@ -159,7 +160,7 @@ def index():
         state_count=state_count,
         department_count=department_count,
         departments_by_state=departments_by_state,
-        map_paths=current_app.config["MAP_DATA"],
+        map_paths=current_app.config.get(KEY_MAP_DATA),
     )
 
 
@@ -181,7 +182,7 @@ def browse():
     return render_template(
         "browse.html",
         departments_by_state=departments_by_state,
-        map_paths=current_app.config["MAP_DATA"],
+        map_paths=current_app.config.get(KEY_MAP_DATA),
     )
 
 
