@@ -46,6 +46,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    KEY_DEPTS_BY_STATE,
     SIGNATURE_ALGORITHM,
 )
 from OpenOversight.app.validators import state_validator, url_validator
@@ -334,11 +335,8 @@ class Department(BaseModel, TrackUpdates):
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
 
-    def remove_database_cache_entries(self, update_types: List[str]) -> None:
-        """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entries(self, update_types)
-
     @staticmethod
+    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPTS_BY_STATE))
     def by_state() -> dict[str, list["Department"]]:
         departments = Department.query.filter(Department.officers.any()).order_by(
             Department.state.asc(), Department.name.asc()
@@ -348,6 +346,10 @@ class Department(BaseModel, TrackUpdates):
             for state, group in itertools.groupby(departments, lambda d: d.state)
         }
         return departments_by_state
+
+    def remove_database_cache_entries(self, update_types: List[str]) -> None:
+        """Remove the Department model key from the cache if it exists."""
+        remove_database_cache_entries(self, update_types)
 
 
 class Job(BaseModel, TrackUpdates):
