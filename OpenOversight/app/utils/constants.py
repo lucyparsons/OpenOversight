@@ -1,4 +1,5 @@
 # Cache Key Constants
+KEY_DEPTS_BY_STATE = "list_departments_by_state"
 KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
 KEY_DEPT_ALL_INCIDENTS = "all_department_incidents"
 KEY_DEPT_ALL_LINKS = "all_department_links"
