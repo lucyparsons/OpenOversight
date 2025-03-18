@@ -91,7 +91,8 @@
                                 name="rank"
                                 class="select2-multi-search"
                                 multiple="multiple">
-                          {% for rank_key, rank, selected in form.rank.iter_choices() %}
+                          {% for choice in form.rank.iter_choices() %}
+                            {% set rank_key, rank, selected = choice[:3] %}
                             <option value="{{ rank_key }}"
                                     {% if selected %}selected="selected"{% endif %}>{{ rank }}</option>
                           {% endfor %}
@@ -106,7 +107,8 @@
                                 name="unit"
                                 class="select2-multi-search"
                                 multiple="multiple">
-                          {% for unit_key, unit, selected in form.unit.iter_choices() %}
+                          {% for choice in form.unit.iter_choices() %}
+                            {% set unit_key, unit, selected = choice[:3] %}
                             <option value="{{ unit_key }}"
                                     {% if selected %}selected="selected"{% endif %}>{{ unit }}</option>
                           {% endfor %}
@@ -141,7 +143,8 @@
                   <div class="panel-body">
                     <div class="form-group checkbox mb-3">
                       <label for="race">Officer Race</label>
-                      {% for race_key, race, selected in form.race.iter_choices() %}
+                      {% for choice in form.race.iter_choices() %}
+                        {% set race_key, race, selected = choice[:3] %}
                         <label class="form-check">
                           <input type="checkbox"
                                  class="form-check-input"
@@ -155,7 +158,8 @@
                     </div>
                     <div class="form-group radio mb-3">
                       <label for="race">Officer Gender</label>
-                      {% for gender_key, gender, selected in form.gender.iter_choices() %}
+                      {% for choice in form.gender.iter_choices() %}
+                        {% set gender_key, gender, selected = choice[:3] %}
                         <label class="form-check">
                           <input type="radio"
                                  class="form-check-input"

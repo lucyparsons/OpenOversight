@@ -918,16 +918,19 @@ def list_officer(
         error_out=False,
     )
 
-    img_id_to_officer = {}
+    img_id_to_officers: dict[int, list[Officer]] = {}
     for officer in officers.items:
         if officer.face:
             face_image_id = sorted(
                 officer.face, key=lambda x: x.featured, reverse=True
             )[0].img_id
-            img_id_to_officer[face_image_id] = officer
-    images = Image.query.filter(Image.id.in_(img_id_to_officer.keys())).all()
+            if face_image_id not in img_id_to_officers:
+                img_id_to_officers[face_image_id] = []
+            img_id_to_officers[face_image_id].append(officer)
+    images = Image.query.filter(Image.id.in_(img_id_to_officers.keys())).all()
     for image in images:
-        img_id_to_officer[image.id].image = serve_image(image.filepath)
+        for officer in img_id_to_officers[image.id]:
+            officer.image = serve_image(image.filepath)
 
     next_url = url_for_target_null_values_skipped(
         "main.list_officer",
