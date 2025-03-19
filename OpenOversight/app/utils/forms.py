@@ -23,7 +23,6 @@ from OpenOversight.app.models.database import (
     Note,
     Officer,
     Salary,
-    Unit,
     User,
     db,
 )
@@ -283,8 +282,7 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
         officer_query = officer_query.filter(
             Officer.first_name.ilike(f"%%{form_data['first_name']}%%")
         )
-    if not department_id and form_data.get("dept"):
-        department_id = form_data["dept"].id
+    if department_id:
         officer_query = officer_query.filter(Officer.department_id == department_id)
 
     if form_data.get("unique_internal_identifier"):
@@ -323,50 +321,24 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
             )
         )
 
-    job_ids = []
-    if form_data.get("rank"):
-        job_ids = [
-            job.id
-            for job in Job.query.filter_by(department_id=department_id)
-            .filter(Job.job_title.in_(form_data.get("rank")))
-            .all()
-        ]
+    job_ids = [job.id for job in form_data.get("rank", [])]
 
-        if "Not Sure" in form_data["rank"]:
-            form_data["rank"].append(None)
+    unit_ids = {unit.id for unit in form_data.get("unit", [])}
 
-    unit_ids = []
-    include_null_unit = False
-    if form_data.get("unit"):
-        unit_ids = [
-            unit.id
-            for unit in Unit.query.filter_by(department_id=department_id)
-            .filter(Unit.description.in_(form_data.get("unit")))
-            .all()
-        ]
-
-        if "Not Sure" in form_data["unit"]:
-            include_null_unit = True
-
-    if (
-        form_data.get("badge")
-        or unit_ids
-        or include_null_unit
-        or job_ids
-        or form_data.get("current_job")
-    ):
+    if form_data.get("badge") or unit_ids or job_ids or form_data.get("current_job"):
         officer_query = officer_query.join(Officer.assignments)
         if form_data.get("badge"):
             officer_query = officer_query.filter(
                 Assignment.star_no.like(f"%%{form_data['badge']}%%")
             )
 
-        if unit_ids or include_null_unit:
+        if unit_ids:
             # Split into 2 expressions because the SQL IN keyword does not match NULLs
             unit_filters = []
-            if unit_ids:
-                unit_filters.append(Assignment.unit_id.in_(unit_ids))
-            if include_null_unit:
+            nn_unit_ids = unit_ids - {None}
+            if nn_unit_ids:
+                unit_filters.append(Assignment.unit_id.in_(nn_unit_ids))
+            if None in unit_ids:
                 unit_filters.append(Assignment.unit_id.is_(None))
             officer_query = officer_query.filter(or_(*unit_filters))
 
@@ -376,12 +348,7 @@ def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
         if form_data.get("current_job"):
             officer_query = officer_query.filter(Assignment.resign_date.is_(None))
     officer_query = officer_query.options(selectinload(Officer.assignments)).distinct()
-
     return officer_query
-
-
-def grab_officers(form):
-    return filter_by_form(form, Officer.query)
 
 
 def set_dynamic_default(form_field, value):

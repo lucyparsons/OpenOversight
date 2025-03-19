@@ -91,11 +91,10 @@
                                 name="rank"
                                 class="select2-multi-search"
                                 multiple="multiple">
-                          {% for rank_key, rank in choices['rank'] %}
+                          {% for choice in form.rank.iter_choices() %}
+                            {% set rank_key, rank, selected = choice[:3] %}
                             <option value="{{ rank_key }}"
-                                    {% if rank_key in form_data['rank'] %}selected="selected"{% endif %}>
-                              {{ rank }}
-                            </option>
+                                    {% if selected %}selected="selected"{% endif %}>{{ rank }}</option>
                           {% endfor %}
                         </select>
                       </div>
@@ -108,11 +107,10 @@
                                 name="unit"
                                 class="select2-multi-search"
                                 multiple="multiple">
-                          {% for unit_key, unit in choices['unit'] %}
+                          {% for choice in form.unit.iter_choices() %}
+                            {% set unit_key, unit, selected = choice[:3] %}
                             <option value="{{ unit_key }}"
-                                    {% if unit_key in form_data['unit'] %}selected="selected"{% endif %}>
-                              {{ unit }}
-                            </option>
+                                    {% if selected %}selected="selected"{% endif %}>{{ unit }}</option>
                           {% endfor %}
                         </select>
                       </div>
@@ -145,28 +143,30 @@
                   <div class="panel-body">
                     <div class="form-group checkbox mb-3">
                       <label for="race">Officer Race</label>
-                      {% for race_key, race in choices['race'] %}
+                      {% for choice in form.race.iter_choices() %}
+                        {% set race_key, race, selected = choice[:3] %}
                         <label class="form-check">
                           <input type="checkbox"
                                  class="form-check-input"
                                  id="race-{{ race_key }}"
                                  name="race"
                                  value="{{ race_key }}"
-                                 {% if race_key in form_data['race'] %}checked="checked"{% endif %} />
+                                 {% if selected %}checked="checked"{% endif %} />
                           {{ race }}
                         </label>
                       {% endfor %}
                     </div>
                     <div class="form-group radio mb-3">
                       <label for="race">Officer Gender</label>
-                      {% for gender_key, gender in choices['gender'] %}
+                      {% for choice in form.gender.iter_choices() %}
+                        {% set gender_key, gender, selected = choice[:3] %}
                         <label class="form-check">
                           <input type="radio"
                                  class="form-check-input"
                                  id="gender-{{ gender_key }}"
                                  name="gender"
                                  value="{{ gender_key }}"
-                                 {% if gender_key in form_data['gender'] %}checked="checked"{% endif %} />
+                                 {% if selected %}checked="checked"{% endif %} />
                           {{ gender }}
                         </label>
                       {% endfor %}

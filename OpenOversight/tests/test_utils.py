@@ -4,8 +4,10 @@ import pytest
 from flask import current_app
 from flask_login import current_user
 from mock import MagicMock, Mock, patch
+from werkzeug.datastructures import MultiDict
 
-from OpenOversight.app.models.database import Department, Image, Officer, Unit
+from OpenOversight.app.main.forms import BrowseForm
+from OpenOversight.app.models.database import Department, Image, Job, Officer, Unit
 from OpenOversight.app.utils.cloud import (
     compute_hash,
     crop_image,
@@ -13,7 +15,7 @@ from OpenOversight.app.utils.cloud import (
     upload_file_to_s3,
 )
 from OpenOversight.app.utils.db import unit_choices
-from OpenOversight.app.utils.forms import filter_by_form, grab_officers
+from OpenOversight.app.utils.forms import filter_by_form
 from OpenOversight.app.utils.general import allowed_file, validate_redirect_url
 from OpenOversight.tests.routes.route_helpers import login_user
 
@@ -23,6 +25,22 @@ upload_s3_patch = patch(
     "OpenOversight.app.utils.cloud.upload_file_to_s3",
     MagicMock(return_value="https://s3-some-bucket/someaddress.jpg"),
 )
+
+
+def grab_officers(form_data, department_id):
+    form = BrowseForm()
+    form.rank.query = list(
+        Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
+        .order_by(Job.order.asc())
+        .all()
+    )
+    form.unit.query = list(
+        Unit.query.filter_by(department_id=department_id)
+        .order_by(Unit.description.asc())
+        .all()
+    ) + [Unit(id=None, description="Not Sure")]
+    form.process(MultiDict(form_data))
+    return filter_by_form(form.data, Officer.query, department_id)
 
 
 def test_department_filter(mockdata):
@@ -36,9 +54,9 @@ def test_department_filter(mockdata):
             "max_age": 85,
             "name": "",
             "badge": "",
-            "dept": department,
             "unique_internal_identifier": "",
-        }
+        },
+        department_id=department.id,
     )
     for element in results.all():
         assert element.department == department
@@ -46,14 +64,14 @@ def test_department_filter(mockdata):
 
 def test_race_filter_select_all_black_officers(mockdata):
     department = Department.query.first()
-    results = grab_officers({"race": ["BLACK"], "dept": department})
+    results = grab_officers({"race": ["BLACK"]}, department_id=department.id)
     for element in results.all():
         assert element.race in ("BLACK", "Not Sure")
 
 
 def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
     department = Department.query.first()
-    results = grab_officers({"gender": ["M"], "dept": department})
+    results = grab_officers({"gender": ["M"]}, department_id=department.id)
 
     result_genders = [officer.gender for officer in results.all()]
     for element in results.all():
@@ -64,7 +82,7 @@ def test_gender_filter_select_all_male_or_not_sure_officers(mockdata):
 
 def test_gender_filter_include_all_genders_if_not_sure(mockdata):
     department = Department.query.first()
-    results = grab_officers({"gender": ["Not Sure"], "dept": department})
+    results = grab_officers({"gender": ["Not Sure"]}, department_id=department.id)
 
     result_genders = [officer.gender for officer in results.all()]
     for gender in ("M", "F", "Other", None):
@@ -76,7 +94,7 @@ def test_gender_filter_include_all_genders_if_not_sure(mockdata):
 
 def test_rank_filter_select_all_commanders(mockdata):
     department = Department.query.first()
-    results = grab_officers({"rank": ["Commander"], "dept": department})
+    results = grab_officers({"rank": ["Commander"]}, department_id=department.id)
     for element in results.all():
         assignment = element.assignments[0]
         assert assignment.job.job_title in ("Commander", "Not Sure")
@@ -84,7 +102,7 @@ def test_rank_filter_select_all_commanders(mockdata):
 
 def test_rank_filter_select_all_police_officers(mockdata):
     department = Department.query.first()
-    results = grab_officers({"rank": ["Police Officer"], "dept": department})
+    results = grab_officers({"rank": ["Police Officer"]}, department_id=department.id)
     for element in results.all():
         assignment = element.assignments[0]
         assert assignment.job.job_title in ("Police Officer", "Not Sure")
@@ -92,14 +110,14 @@ def test_rank_filter_select_all_police_officers(mockdata):
 
 def test_filter_by_name(mockdata):
     department = Department.query.first()
-    results = grab_officers({"last_name": "J", "dept": department})
+    results = grab_officers({"last_name": "J"}, department_id=department.id)
     for element in results.all():
         assert "J" in element.last_name
 
 
 def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = Department.query.first()
-    results = grab_officers({"name": "S", "dept": department})
+    results = grab_officers({"name": "S"}, department_id=department.id)
     no_assignments = False
     for element in results.all():
         if len(element.assignments) == 0:
@@ -110,7 +128,7 @@ def test_filters_do_not_exclude_officers_without_assignments(mockdata):
 
 def test_filter_by_badge_no(mockdata):
     department = Department.query.first()
-    results = grab_officers({"badge": "12", "dept": department})
+    results = grab_officers({"badge": "12"}, department_id=department.id)
     for element in results.all():
         assignment = element.assignments[0]
         assert "12" in str(assignment.star_no)
@@ -128,9 +146,9 @@ def test_filter_by_full_unique_internal_identifier_returns_officers(mockdata):
             "max_age": 85,
             "name": "",
             "badge": "",
-            "dept": department,
             "unique_internal_identifier": target_unique_internal_id,
-        }
+        },
+        department_id=department.id,
     )
     for element in results:
         returned_unique_internal_id = element.unique_internal_identifier
@@ -150,9 +168,9 @@ def test_filter_by_partial_unique_internal_identifier_returns_officers(mockdata)
             "max_age": 85,
             "name": "",
             "badge": "",
-            "dept": department,
             "unique_internal_identifier": partial_identifier,
-        }
+        },
+        department_id=department.id,
     )
     for element in results:
         returned_identifier = element.unique_internal_identifier
@@ -316,7 +334,7 @@ def test_filter_by_form_filter_unit(
     unit_id = Unit.query.filter_by(description="Donut Devourers").one().id
     department_id = Department.query.first().id
 
-    officers = filter_by_form(form_data, Officer.query, department_id).all()
+    officers = grab_officers(form_data, department_id).all()
 
     for officer in officers:
         found = False
