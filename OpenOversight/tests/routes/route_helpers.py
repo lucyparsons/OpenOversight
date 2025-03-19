@@ -76,7 +76,7 @@ def process_form_data(form_dict: dict) -> dict:
     new_dict = {}
     for key, value in form_dict.items():
         if isinstance(value, list):
-            if value[0]:
+            if len(value) > 0 and value[0]:
                 if isinstance(value[0], dict):
                     for idx, item in enumerate(value):
                         for sub_key, sub_value in item.items():

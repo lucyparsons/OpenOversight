@@ -12,6 +12,7 @@ from wtforms import (
     HiddenField,
     IntegerField,
     SelectField,
+    SelectMultipleField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -27,7 +28,7 @@ from wtforms.validators import (
     Regexp,
     ValidationError,
 )
-from wtforms_sqlalchemy.fields import QuerySelectField
+from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 
 from OpenOversight.app.formfields import TimeField
 from OpenOversight.app.models.database import Officer, db
@@ -41,6 +42,11 @@ from OpenOversight.app.utils.choices import (
     SUFFIX_CHOICES,
 )
 from OpenOversight.app.utils.db import dept_choices, unit_choices
+from OpenOversight.app.utils.general import (
+    multi_selection_valid_or_default,
+    parse_int_or_default,
+    single_selection_valid_or_default,
+)
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
 
@@ -561,49 +567,59 @@ class IncidentForm(DateFieldForm):
 class BrowseForm(Form):
     # Any fields added to this form should generally also be added to FindOfficerForm
     # query set in view function
-    rank = QuerySelectField(
+    rank = QuerySelectMultipleField(
         "rank",
         validators=[Optional()],
         get_label="job_title",
         get_pk=lambda job: job.job_title,
+        default=[],
     )
     # query set in view function
-    unit = QuerySelectField(
+    unit = QuerySelectMultipleField(
         "unit",
         validators=[Optional()],
         get_label="description",
         get_pk=lambda unit: unit.description,
+        default=[],
     )
-    current_job = BooleanField("current_job", default=None, validators=[Optional()])
-    name = StringField("Last name")
+    current_job = BooleanField(
+        "current_job", default=False, false_values=(False, "False", "false", "")
+    )
+    first_name = StringField("First name")
+    last_name = StringField("Last name")
     badge = StringField("Badge number")
     unique_internal_identifier = StringField("Unique ID")
-    race = SelectField(
+    race = SelectMultipleField(
         "race",
         default="Not Sure",
         choices=RACE_CHOICES,
-        validators=[AnyOf(allowed_values(RACE_CHOICES))],
+        filters=[multi_selection_valid_or_default(allowed_values(RACE_CHOICES), [])],
     )
-    gender = SelectField(
+    gender = SelectMultipleField(
         "gender",
         default="Not Sure",
         choices=GENDER_CHOICES,
-        validators=[AnyOf(allowed_values(GENDER_CHOICES))],
+        filters=[multi_selection_valid_or_default(allowed_values(GENDER_CHOICES), [])],
     )
     min_age = SelectField(
         "minimum age",
-        default=16,
+        default=None,
         choices=AGE_CHOICES,
-        validators=[AnyOf(allowed_values(AGE_CHOICES))],
+        filters=[single_selection_valid_or_default(allowed_values(AGE_CHOICES), None)],
     )
     max_age = SelectField(
         "maximum age",
-        default=100,
+        default=None,
         choices=AGE_CHOICES,
-        validators=[AnyOf(allowed_values(AGE_CHOICES))],
+        filters=[single_selection_valid_or_default(allowed_values(AGE_CHOICES), None)],
     )
     require_photo = BooleanField(
-        "require_photo", default=False, validators=[Optional()]
+        "require_photo",
+        default=False,
+        false_values=(False, "False", "false", ""),
+    )
+    page = HiddenField(
+        "page", default=1, filters=[lambda val: max(parse_int_or_default(val), 1)]
     )
     submit = SubmitField(label="Submit")
 

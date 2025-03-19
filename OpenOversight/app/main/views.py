@@ -4,6 +4,7 @@ from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
 from typing import Optional
+from urllib.parse import urlencode
 
 from flask import (
     Blueprint,
@@ -72,7 +73,6 @@ from OpenOversight.app.models.database import (
     db,
 )
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
-from OpenOversight.app.utils.choices import AGE_CHOICES, GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.cloud import crop_image, save_image_to_s3_and_db
 from OpenOversight.app.utils.constants import (
     ENCODING_UTF_8,
@@ -114,6 +114,7 @@ from OpenOversight.app.utils.general import (
     get_random_image,
     replace_list,
     serve_image,
+    url_for_target_null_values_skipped,
     validate_redirect_url,
 )
 
@@ -867,39 +868,12 @@ def edit_department(department_id: int):
 @main.route("/department/<int:department_id>")
 def redirect_list_officer(
     department_id: int,
-    page: int = 1,
-    race=None,
-    gender=None,
-    rank=None,
-    min_age=None,
-    max_age=None,
-    last_name=None,
-    first_name=None,
-    badge=None,
-    unique_internal_identifier=None,
-    unit=None,
-    current_job=None,
-    require_photo: Optional[bool] = None,
 ):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
-        url_for(
-            "main.list_officer",
-            department_id=department_id,
-            page=page,
-            race=race,
-            gender=gender,
-            rank=rank,
-            min_age=min_age,
-            max_age=max_age,
-            last_name=last_name,
-            first_name=first_name,
-            badge=badge,
-            unique_internal_identifier=unique_internal_identifier,
-            unit=unit,
-            current_job=current_job,
-            require_photo=require_photo,
-        ),
+        url_for("main.list_officer", department_id=department_id)
+        + "?"
+        + urlencode(request.args.to_dict(flat=False), doseq=True),
         code=HTTPStatus.PERMANENT_REDIRECT,
     )
 
@@ -907,19 +881,6 @@ def redirect_list_officer(
 @main.route("/departments/<int:department_id>")
 def list_officer(
     department_id: int,
-    page: int = 1,
-    race=None,
-    gender=None,
-    rank=None,
-    min_age=None,
-    max_age=None,
-    last_name=None,
-    first_name=None,
-    badge=None,
-    unique_internal_identifier=None,
-    unit=None,
-    current_job=None,
-    require_photo: Optional[bool] = None,
 ):
     try:
         department = Department.query.filter_by(id=department_id).one()
@@ -927,83 +888,20 @@ def list_officer(
         abort(HTTPStatus.NOT_FOUND)
 
     form = BrowseForm()
-    form.rank.query = (
+    form.rank.query = list(
         Job.query.filter_by(department_id=department_id, is_sworn_officer=True)
         .order_by(Job.order.asc())
         .all()
     )
-    form_data = form.data
-    form_data["race"] = race or []
-    form_data["gender"] = gender or []
-    form_data["rank"] = rank or []
-    form_data["min_age"] = min_age
-    form_data["max_age"] = max_age
-    form_data["last_name"] = last_name
-    form_data["first_name"] = first_name
-    form_data["badge"] = badge
-    form_data["unit"] = unit or []
-    form_data["current_job"] = current_job
-    form_data["unique_internal_identifier"] = unique_internal_identifier
-    form_data["require_photo"] = require_photo
-
-    age_range = {ac[0] for ac in AGE_CHOICES}
-
-    # Set form data based on URL
-    if (min_age_arg := request.args.get("min_age")) and min_age_arg in age_range:
-        form_data["min_age"] = min_age_arg
-    if (max_age_arg := request.args.get("max_age")) and max_age_arg in age_range:
-        form_data["max_age"] = max_age_arg
-    if page_arg := request.args.get("page"):
-        page = int(page_arg)
-    if last_name_arg := request.args.get("last_name"):
-        form_data["last_name"] = last_name_arg
-    if first_name_arg := request.args.get("first_name"):
-        form_data["first_name"] = first_name_arg
-    if badge_arg := request.args.get("badge"):
-        form_data["badge"] = badge_arg
-    if uid := request.args.get("unique_internal_identifier"):
-        form_data["unique_internal_identifier"] = uid
-    if (races := request.args.getlist("race")) and all(
-        race in [rc[0] for rc in RACE_CHOICES] for race in races
-    ):
-        form_data["race"] = races
-    if (genders := request.args.getlist("gender")) and all(
-        # Every time you complain we add a new gender
-        gender in [gc[0] for gc in GENDER_CHOICES]
-        for gender in genders
-    ):
-        form_data["gender"] = genders
-    if require_photo_arg := request.args.get("require_photo"):
-        form_data["require_photo"] = require_photo_arg
-
-    unit_selections = ["Not Sure"] + [
-        uc[0]
-        for uc in db.session.query(Unit.description)
-        .filter_by(department_id=department_id)
+    form.unit.query = list(
+        Unit.query.filter_by(department_id=department_id)
         .order_by(Unit.description.asc())
         .all()
-    ]
-    rank_selections = [
-        jc[0]
-        for jc in db.session.query(Job.job_title, Job.order)
-        .filter_by(department_id=department_id)
-        .order_by(Job.job_title)
-        .all()
-    ]
-    if (units := request.args.getlist("unit")) and all(
-        unit in unit_selections for unit in units
-    ):
-        form_data["unit"] = units
-    if (ranks := request.args.getlist("rank")) and all(
-        rank in rank_selections for rank in ranks
-    ):
-        form_data["rank"] = ranks
-    if current_job_arg := request.args.get("current_job"):
-        form_data["current_job"] = current_job_arg
+    ) + [Unit(id=None, description="Not Sure")]
+    form.process(request.args)
+    form_data = form.data
 
-    officers = filter_by_form(form_data, Officer.query, department_id).filter(
-        Officer.department_id == department_id
-    )
+    officers = filter_by_form(form_data, Officer.query, department_id)
 
     # Filter officers by presence of a photo
     if form_data["require_photo"]:
@@ -1011,29 +909,31 @@ def list_officer(
     else:
         officers = officers.options(selectinload(Officer.face))
 
+    officers = officers.options(selectinload(Officer.incidents))
+
     officers = officers.order_by(Officer.last_name, Officer.first_name, Officer.id)
 
     officers = officers.paginate(
-        page=page, per_page=current_app.config[KEY_OFFICERS_PER_PAGE], error_out=False
+        page=form_data["page"],
+        per_page=current_app.config[KEY_OFFICERS_PER_PAGE],
+        error_out=False,
     )
 
+    img_id_to_officers: dict[int, list[Officer]] = {}
     for officer in officers.items:
-        officer_face = sorted(officer.face, key=lambda x: x.featured, reverse=True)
+        if officer.face:
+            face_image_id = sorted(
+                officer.face, key=lambda x: x.featured, reverse=True
+            )[0].img_id
+            if face_image_id not in img_id_to_officers:
+                img_id_to_officers[face_image_id] = []
+            img_id_to_officers[face_image_id].append(officer)
+    images = Image.query.filter(Image.id.in_(img_id_to_officers.keys())).all()
+    for image in images:
+        for officer in img_id_to_officers[image.id]:
+            officer.image = serve_image(image.filepath)
 
-        # Could do some extra work to not lazy load images but load them all together.
-        # To do that properly we would want to ensure to only load the first picture of
-        # each officer.
-        if officer_face and officer_face[0].image:
-            officer.image = officer_face[0].image.filepath
-
-    choices = {
-        "race": RACE_CHOICES,
-        "gender": GENDER_CHOICES,
-        "rank": [(rc, rc) for rc in rank_selections],
-        "unit": [(uc, uc) for uc in unit_selections],
-    }
-
-    next_url = url_for(
+    next_url = url_for_target_null_values_skipped(
         "main.list_officer",
         department_id=department.id,
         page=officers.next_num,
@@ -1050,7 +950,7 @@ def list_officer(
         current_job=form_data["current_job"],
         require_photo=form_data["require_photo"],
     )
-    prev_url = url_for(
+    prev_url = url_for_target_null_values_skipped(
         "main.list_officer",
         department_id=department.id,
         page=officers.prev_num,
@@ -1074,7 +974,6 @@ def list_officer(
         department=department,
         officers=officers,
         form_data=form_data,
-        choices=choices,
         next_url=next_url,
         prev_url=prev_url,
         jsloads=["js/select2.min.js", "js/list_officer.js"],
