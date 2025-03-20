@@ -1,7 +1,6 @@
 import random
 import sys
 from collections.abc import Callable, Hashable, Iterable
-from distutils.util import strtobool
 from typing import Any, Optional, TypeVar, Union
 from urllib.parse import urlparse
 from zoneinfo import available_timezones
@@ -102,6 +101,10 @@ def normalize_gender(input_gender: str) -> Union[str, None]:
     return normalized_genders.get(input_gender.lower().strip())
 
 
+def str_to_bool(val: str) -> int:
+    return val.lower() in ("y", "yes", "t", "true", "on", "1")
+
+
 def prompt_yes_no(prompt, default="no"):
     if default is None:
         yn = " [y/n] "
@@ -116,9 +119,9 @@ def prompt_yes_no(prompt, default="no"):
         sys.stdout.write(prompt + yn)
         choice = input().lower()
         if default is not None and choice == "":
-            return strtobool(default)
+            return str_to_bool(default)
         try:
-            ret = strtobool(choice)
+            ret = str_to_bool(choice)
         except ValueError:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
             continue
@@ -157,7 +160,7 @@ def serve_image(filepath: str):
 def str_is_true(str_) -> bool:
     if str_ is None:
         return False
-    return bool(strtobool(str_.lower()))
+    return bool(str_to_bool(str_.lower()))
 
 
 def url_for_target_null_values_skipped(target: str, **kwargs: Any) -> str:
