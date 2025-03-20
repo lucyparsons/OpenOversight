@@ -718,6 +718,9 @@ def add_department():
                 Job(job_title="Not Sure", order=0, department_id=department.id)
             )
             db.session.flush()
+            Department(id=department.id).remove_database_cache_entries(
+                [KEY_DEPTS_BY_STATE],
+            )
             if form.jobs.data:
                 order = 1
                 for job in form.data["jobs"]:
@@ -732,9 +735,6 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
-                Department(id=department.id).remove_database_cache_entries(
-                    [KEY_DEPTS_BY_STATE],
-                )
             flash(
                 f"New department {department.name} in {department.state} added to OpenOversight"
             )
