@@ -219,13 +219,11 @@ def test_department_counts(mockdata, client, faker):
         assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is True
 
         dept_name = str(faker.uuid4())
-        dept_short_name = faker.first_name()
-        dept_state = random.choice([st.abbr for st in states.STATES])
 
         form = DepartmentForm(
             name=dept_name,
-            short_name=dept_short_name,
-            state=dept_state,
+            short_name=faker.first_name(),
+            state=random.choice([st.abbr for st in states.STATES]),
         )
 
         client.post(url_for("main.add_department"), data=form.data)
