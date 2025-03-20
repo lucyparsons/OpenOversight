@@ -83,6 +83,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_SALARIES,
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    KEY_DEPTS_BY_STATE,
     KEY_MAP_DATA,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
@@ -731,6 +732,9 @@ def add_department():
                         )
                         order += 1
                 db.session.commit()
+                Department(id=department.id).remove_database_cache_entries(
+                    [KEY_DEPTS_BY_STATE],
+                )
             flash(
                 f"New department {department.name} in {department.state} added to OpenOversight"
             )
@@ -795,6 +799,9 @@ def edit_department(department_id: int):
         department.state = form.state.data
         department.last_updated_by = current_user.id
         db.session.flush()
+        Department(id=department_id).remove_database_cache_entries(
+            [KEY_DEPTS_BY_STATE],
+        )
         if form.jobs.data:
             new_ranks = []
             order = 1
