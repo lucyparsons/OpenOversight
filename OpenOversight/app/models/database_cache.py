@@ -12,7 +12,10 @@ DB_CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 def get_model_cache_key(model: Model, update_type: str) -> Any:
     """Create unique db.Model key."""
-    return hashkey(model.id, update_type, model.__class__.__name__)
+    if model is not None:
+        return hashkey(model.id, update_type, model.__class__.__name__)
+    else:
+        return hashkey(None, update_type, model.__class__.__name__)
 
 
 def model_cache_key(update_type: str):
