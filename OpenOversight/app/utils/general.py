@@ -100,6 +100,7 @@ def normalize_gender(input_gender: str) -> Union[str, None]:
 
     return normalized_genders.get(input_gender.lower().strip())
 
+
 def str_to_bool(val: str) -> int:
     return val.lower() in ("y", "yes", "t", "true", "on", "1")
 
