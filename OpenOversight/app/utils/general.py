@@ -1,7 +1,6 @@
 import random
 import sys
 from collections.abc import Callable, Hashable, Iterable
-from distutils.util import strtobool
 from typing import Any, Optional, TypeVar, Union
 from urllib.parse import urlparse
 from zoneinfo import available_timezones
@@ -100,6 +99,10 @@ def normalize_gender(input_gender: str) -> Union[str, None]:
     }
 
     return normalized_genders.get(input_gender.lower().strip())
+
+
+def strtobool(val: str) -> int:
+    return val.lower() in ("y", "yes", "t", "true", "on", "1")
 
 
 def prompt_yes_no(prompt, default="no"):
