@@ -203,3 +203,14 @@ def test_documented_officers(mockdata, client, faker):
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False
+
+
+def test_department_counts(mockdata, client, faker):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is True
