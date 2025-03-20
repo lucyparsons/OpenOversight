@@ -348,6 +348,7 @@ class Department(BaseModel, TrackUpdates):
                 state: list(group)
                 for state, group in itertools.groupby(departments, lambda d: d.state)
             }
+            put_database_cache_entry(*cache_params, departments_by_state)
 
         return departments_by_state
 
