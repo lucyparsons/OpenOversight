@@ -336,15 +336,19 @@ class Department(BaseModel, TrackUpdates):
         )
 
     @staticmethod
-    @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPTS_BY_STATE))
     def by_state() -> dict[str, list["Department"]]:
-        departments = Department.query.filter(Department.officers.any()).order_by(
-            Department.state.asc(), Department.name.asc()
-        )
-        departments_by_state = {
-            state: list(group)
-            for state, group in itertools.groupby(departments, lambda d: d.state)
-        }
+        cache_params = (None, KEY_DEPTS_BY_STATE)
+        departments_by_state = get_database_cache_entry(*cache_params)
+
+        if departments_by_state is None:
+            departments = Department.query.filter(Department.officers.any()).order_by(
+                Department.state.asc(), Department.name.asc()
+            )
+            departments_by_state = {
+                state: list(group)
+                for state, group in itertools.groupby(departments, lambda d: d.state)
+            }
+
         return departments_by_state
 
     def remove_database_cache_entries(self, update_types: List[str]) -> None:
