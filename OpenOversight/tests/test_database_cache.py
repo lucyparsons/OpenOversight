@@ -3,10 +3,13 @@ from datetime import date
 from http import HTTPStatus
 
 from flask import current_app, url_for
+from us import states
 
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
     AssignmentForm,
+    DepartmentForm,
+    EditDepartmentForm,
     IncidentForm,
     LicensePlateForm,
     LinkForm,
@@ -208,6 +211,41 @@ def test_documented_officers(mockdata, client, faker):
 def test_department_counts(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is True
+
+        dept_name = str(faker.uuid4())
+        dept_short_name = faker.first_name()
+        dept_state = random.choice([st.abbr for st in states.STATES])
+
+        form = DepartmentForm(
+            name=dept_name,
+            short_name=dept_short_name,
+            state=dept_state,
+        )
+
+        client.post(url_for("main.add_department"), data=form.data)
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is True
+
+        department = Department.query.filter_by(name=dept_name).one()
+        corrected_form = EditDepartmentForm(
+            short_name=faker.first_name(),
+        )
+
+        client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=corrected_form.data,
+            follow_redirects=True,
+        )
 
         assert has_database_cache_entry(None, KEY_DEPT_ALL_ASSIGNMENTS) is False
 
