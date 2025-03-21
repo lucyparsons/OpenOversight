@@ -13,36 +13,7 @@
     <div class="text-center">
       <div class="col-lg-6 text-start mx-auto py-5">
         <p class="mb-5 vertical-padding">Use the map or list below to browse officers by department.</p>
-        <svg xmlns="http://www.w3.org/2000/svg"
-             version="1.1"
-             viewBox="0 0 1000 618">
-          <defs>
-          <style>
-              .cls-1 {
-                  fill: #0099c9;
-              }
-
-              .cls-1,
-              .cls-2 {
-                  stroke: #fff;
-                  stroke-width: .8px;
-              }
-
-              .cls-2 {
-                  fill: #d3d3d3;
-              }
-          </style>
-          </defs>
-          {% for state, path in map_paths.items() %}
-            {% if state in departments_by_state.keys() %}
-              <a href="#state-{{ state }}">
-                <path class="cls-1" d="{{ path }}" />
-              </a>
-            {% else %}
-              <path class="cls-2" d="{{ path }}" />
-            {% endif %}
-          {% endfor %}
-        </svg>
+        <object type="image/svg+xml" data="{{ url_for('main.render_map') }}"></object>
         {% for state, departments in departments_by_state.items() %}
           <div id="state-{{ state }}" class="state-row mt-5">
             <h3>{{ state | get_state_full_name }}</h3>

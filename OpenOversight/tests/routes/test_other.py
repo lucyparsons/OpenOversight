@@ -4,6 +4,7 @@ from http import HTTPStatus
 import pytest
 from flask import current_app, url_for
 
+from OpenOversight.app.models.database import Department
 from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_TIMEZONE
 from OpenOversight.tests.constants import GENERAL_USER_USERNAME
 from OpenOversight.tests.routes.route_helpers import login_user
@@ -89,3 +90,14 @@ def test_timezone_setting_empty_string(client):
         assert rv.status_code == HTTPStatus.OK
         with client.session_transaction() as session:
             assert session[KEY_TIMEZONE] == current_app.config.get(KEY_TIMEZONE)
+
+
+def test_map_rendering(client, mockdata):
+    with current_app.test_request_context():
+        departments_by_state = Department.by_state()
+        rv = client.get(url_for("main.render_map"))
+        assert rv.status_code == HTTPStatus.OK
+        assert rv.mimetype == "image/svg+xml"
+
+        for state in departments_by_state.keys():
+            assert f"#state-{state}" in rv.data.decode(ENCODING_UTF_8)
