@@ -13,7 +13,7 @@
     <div class="text-center">
       <div class="col-lg-6 text-start mx-auto py-5">
         <p class="mb-5 vertical-padding">Use the map or list below to browse officers by department.</p>
-        <object type="image/svg+xml" data="{{ url_for('main.render_map') }}"></object>
+        <object type="image/svg+xml" data="{{ url_for("main.render_map") }}"></object>
         {% for state, departments in departments_by_state.items() %}
           <div id="state-{{ state }}" class="state-row mt-5">
             <h3>{{ state | get_state_full_name }}</h3>
