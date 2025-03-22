@@ -30,7 +30,7 @@ Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.2
 google-api-python-client==2.92.0
-gunicorn==22.0.0
+gunicorn==23.0.0
 httplib2==0.22.0
 idna~=3.7
 itsdangerous~=2.1.2
