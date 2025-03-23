@@ -143,8 +143,8 @@ def redirect_url(default="main.index"):
 
 
 @sitemap_include
-@main.route("/")
-@main.route("/index")
+@main.route("/", methods=[HTTPMethod.GET])
+@main.route("/index", methods=[HTTPMethod.GET])
 def index():
     departments_by_state = Department.by_state()
     department_count = sum(
