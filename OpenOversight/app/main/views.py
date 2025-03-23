@@ -84,7 +84,6 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_DEPTS_BY_STATE,
-    KEY_MAP_DATA,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
 )
@@ -162,7 +161,6 @@ def index():
         state_count=state_count,
         department_count=department_count,
         departments_by_state=departments_by_state,
-        map_paths=current_app.config.get(KEY_MAP_DATA),
     )
 
 
@@ -181,10 +179,19 @@ def set_session_timezone():
 @main.route("/browse", methods=[HTTPMethod.GET])
 def browse():
     departments_by_state = Department.by_state()
-    return render_template(
-        "browse.html",
-        departments_by_state=departments_by_state,
-        map_paths=current_app.config.get(KEY_MAP_DATA),
+    return render_template("browse.html", departments_by_state=departments_by_state)
+
+
+@main.route("/map.svg", methods=[HTTPMethod.GET])
+def render_map():
+    departments_by_state = Department.by_state()
+    return Response(
+        render_template(
+            "map.svg",
+            departments_by_state=departments_by_state,
+            map_paths=current_app.config["MAP_DATA"],
+        ),
+        mimetype="image/svg+xml",
     )
 
 

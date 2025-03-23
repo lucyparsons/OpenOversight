@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 618">
+  <defs>
+    <style>
+      .cls-1 {
+          fill: #0099c9;
+      }
+
+      .cls-1,
+      .cls-2 {
+          stroke: #fff;
+          stroke-width: .8px;
+      }
+
+      .cls-2 {
+          fill: #d3d3d3;
+      }
+    </style>
+  </defs>
+  {% for state, path in map_paths.items() %}
+    {% if state in departments_by_state.keys() %}
+      <a href="{{ url_for('main.browse') }}#state-{{ state }}" target="_top">
+        <path class="cls-1" d="{{ path }}" />
+      </a>
+    {% else %}
+      <path class="cls-2" d="{{ path }}" />
+    {% endif %}
+  {% endfor %}
+</svg>
