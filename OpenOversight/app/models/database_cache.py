@@ -10,12 +10,12 @@ from OpenOversight.app.utils.constants import HOUR
 DB_CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 
-def get_model_cache_key(model: Union[Model, None], update_type: str) -> Any:
+def get_model_cache_key(model: Model, update_type: str) -> Any:
     """Create unique db.Model key."""
     if model is not None:
         return hashkey(model.id, update_type, model.__class__.__name__)
     else:
-        return hashkey(None, update_type, model.__class__.__name__)
+        return hashkey(model.__class__.__name__, update_type, model.__class__.__name__)
 
 
 def model_cache_key(update_type: str):
