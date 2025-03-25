@@ -314,6 +314,23 @@ class Department(BaseModel, TrackUpdates):
 
         return salaries
 
+    @staticmethod
+    def by_state() -> dict[str, list["Department"]]:
+        cache_params = (None, KEY_DEPTS_BY_STATE)
+        departments_by_state = get_database_cache_entry(*cache_params)
+
+        if departments_by_state is None:
+            departments = Department.query.filter(Department.officers.any()).order_by(
+                Department.state.asc(), Department.name.asc()
+            )
+            departments_by_state = {
+                state: list(group)
+                for state, group in itertools.groupby(departments, lambda d: d.state)
+            }
+            put_database_cache_entry(*cache_params, departments_by_state)
+
+        return departments_by_state
+
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
     def total_documented_assignments(self) -> int:
         return (
@@ -334,23 +351,6 @@ class Department(BaseModel, TrackUpdates):
         return (
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
-
-    @staticmethod
-    def by_state() -> dict[str, list["Department"]]:
-        cache_params = (None, KEY_DEPTS_BY_STATE)
-        departments_by_state = get_database_cache_entry(*cache_params)
-
-        if departments_by_state is None:
-            departments = Department.query.filter(Department.officers.any()).order_by(
-                Department.state.asc(), Department.name.asc()
-            )
-            departments_by_state = {
-                state: list(group)
-                for state, group in itertools.groupby(departments, lambda d: d.state)
-            }
-            put_database_cache_entry(*cache_params, departments_by_state)
-
-        return departments_by_state
 
     def remove_database_cache_entries(self, update_types: List[str]) -> None:
         """Remove the Department model key from the cache if it exists."""
