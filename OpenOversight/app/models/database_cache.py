@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, List
 
 from cachetools import TTLCache
 from cachetools.keys import hashkey
@@ -45,7 +45,7 @@ def get_database_cache_entry(model: Model, update_type: str) -> Any:
         return None
 
 
-def has_database_cache_entry(model: Union[Model, None], update_type: str) -> bool:
+def has_database_cache_entry(model: Model, update_type: str) -> bool:
     """db.Model key exists in cache."""
     key = get_model_cache_key(model, update_type)
     return key in DB_CACHE.keys()
