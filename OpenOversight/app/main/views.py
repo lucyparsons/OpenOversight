@@ -72,6 +72,7 @@ from OpenOversight.app.models.database import (
     User,
     db,
 )
+from OpenOversight.app.models.database_cache import remove_database_cache_entries
 from OpenOversight.app.utils.auth import ac_or_admin_required, admin_required
 from OpenOversight.app.utils.cloud import crop_image, save_image_to_s3_and_db
 from OpenOversight.app.utils.constants import (
@@ -415,7 +416,8 @@ def add_assignment(officer_id: int):
         ):
             try:
                 add_new_assignment(officer_id, form, current_user)
-                Department(id=officer.department_id).remove_database_cache_entries(
+                remove_database_cache_entries(
+                    Department.query.filter_by(id=officer.department_id).one(),
                     [KEY_DEPT_ALL_ASSIGNMENTS, KEY_DEPT_TOTAL_ASSIGNMENTS],
                 )
                 flash("Added new assignment!")
@@ -486,7 +488,8 @@ def edit_assignment(officer_id: int, assignment_id: int):
             id=int(form.job_title.raw_data[0])
         ).one()
         assignment = edit_existing_assignment(assignment, form)
-        Department(id=officer.department_id).remove_database_cache_entries(
+        remove_database_cache_entries(
+            Department.query.filter_by(id=officer.department_id).one(),
             [KEY_DEPT_ALL_ASSIGNMENTS],
         )
         flash(f"Edited officer assignment ID {assignment.id}")
@@ -539,7 +542,8 @@ def add_salary(officer_id: int):
             )
             db.session.add(new_salary)
             db.session.commit()
-            Department(id=officer.department_id).remove_database_cache_entries(
+            remove_database_cache_entries(
+                Department.query.filter_by(id=officer.department_id).one(),
                 [KEY_DEPT_ALL_SALARIES],
             )
             flash("Added new salary!")
@@ -596,7 +600,8 @@ def edit_salary(officer_id: int, salary_id: int):
         form.populate_obj(salary)
         db.session.add(salary)
         db.session.commit()
-        Department(id=officer.department_id).remove_database_cache_entries(
+        remove_database_cache_entries(
+            Department.query.filter_by(id=officer.department_id).one(),
             [KEY_DEPT_ALL_SALARIES],
         )
         flash(f"Edited officer salary ID {salary.id}")
@@ -726,7 +731,7 @@ def add_department():
                 Job(job_title="Not Sure", order=0, department_id=department.id)
             )
             db.session.flush()
-            Department.remove_database_cache_entries(
+            remove_database_cache_entries(
                 Type[Department],
                 [KEY_DEPTS_BY_STATE],
             )
@@ -808,7 +813,7 @@ def edit_department(department_id: int):
         department.state = form.state.data
         department.last_updated_by = current_user.id
         db.session.flush()
-        Department.remove_database_cache_entries(
+        remove_database_cache_entries(
             Type[Department],
             [KEY_DEPTS_BY_STATE],
         )
@@ -1100,8 +1105,9 @@ def add_officer():
                 new_form_data[key] = "y"
         form = AddOfficerForm(new_form_data)
         officer = add_officer_profile(form, current_user)
-        Department(id=officer.department_id).remove_database_cache_entries(
-            [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS]
+        remove_database_cache_entries(
+            Department.query.filter_by(id=officer.department_id).one(),
+            [KEY_DEPT_ALL_OFFICERS, KEY_DEPT_TOTAL_OFFICERS],
         )
         flash(f"New Officer {officer.last_name} added to OpenOversight")
         return redirect(url_for("main.submit_officer_images", officer_id=officer.id))
@@ -1151,8 +1157,9 @@ def edit_officer(officer_id: int):
 
     if form.validate_on_submit():
         officer = edit_officer_profile(officer, form)
-        Department(id=officer.department_id).remove_database_cache_entries(
-            [KEY_DEPT_TOTAL_OFFICERS]
+        remove_database_cache_entries(
+            Department.query.filter_by(id=officer.department_id).one(),
+            [KEY_DEPT_TOTAL_OFFICERS],
         )
         flash(f"Officer {officer.last_name} edited")
         return redirect(url_for("main.officer_profile", officer_id=officer.id))
@@ -2279,8 +2286,9 @@ class OfficerLinkApi(ModelView):
             self.officer.links.append(link)
             db.session.add(link)
             db.session.commit()
-            Department(id=self.officer.department_id).remove_database_cache_entries(
-                [KEY_DEPT_ALL_LINKS]
+            remove_database_cache_entries(
+                Department.query.filter_by(id=self.officer.department_id).one(),
+                [KEY_DEPT_ALL_LINKS],
             )
             flash(f"{self.model_name} created!")
             return self.get_redirect_url(obj_id=link.id)
@@ -2300,7 +2308,7 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            Department.remove_database_cache_entries(
+            remove_database_cache_entries(
                 Department.query.filter_by(id=self.officer.department_id).one(),
                 [KEY_DEPT_ALL_LINKS],
             )
