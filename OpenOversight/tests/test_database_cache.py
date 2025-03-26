@@ -1,6 +1,7 @@
 import random
 from datetime import date
 from http import HTTPStatus
+from typing import Type
 
 from flask import current_app, url_for
 from us import states
@@ -75,6 +76,8 @@ def test_documented_assignments(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
+        assert isinstance(department, Department)
+
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
@@ -114,6 +117,8 @@ def test_documented_incidents(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
+        assert isinstance(department, Department)
+
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
@@ -166,6 +171,8 @@ def test_documented_officers(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
+        assert isinstance(department, Department)
+
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
@@ -213,11 +220,11 @@ def test_department_counts(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True
 
         dept_name = str(faker.uuid4())
         dept_short_name = faker.first_name()
@@ -231,11 +238,11 @@ def test_department_counts(mockdata, client, faker):
 
         client.post(url_for("main.add_department"), data=form.data)
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True
 
         department = Department.query.filter_by(name=dept_name).one()
         corrected_form = EditDepartmentForm(
@@ -250,8 +257,8 @@ def test_department_counts(mockdata, client, faker):
             follow_redirects=True,
         )
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(None, KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True

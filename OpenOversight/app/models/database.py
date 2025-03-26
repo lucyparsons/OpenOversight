@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from datetime import time as dt_time
 from datetime import timezone
-from typing import List, Optional
+from typing import List, Optional, Type, Union
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -352,9 +352,12 @@ class Department(BaseModel, TrackUpdates):
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
 
-    def remove_database_cache_entries(self, update_types: List[str]) -> None:
+    @staticmethod
+    def remove_database_cache_entries(
+        department: Union[Type["Department"], "Department"], update_types: List[str]
+    ) -> None:
         """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entries(self, update_types)
+        remove_database_cache_entries(department, update_types)
 
 
 class Job(BaseModel, TrackUpdates):

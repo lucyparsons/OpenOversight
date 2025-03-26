@@ -88,8 +88,10 @@ class ModelView(MethodView):
 
             match self.model.__name__:
                 case Incident.__name__:
-                    Department(id=new_obj.department_id).remove_database_cache_entries(
-                        [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
+                    Department.remove_database_cache_entries(
+                        Department.query.filter_by(id=new_obj.department_id).one()[
+                            KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS
+                        ],
                     )
                 case Note.__name__:
                     officer = Officer.query.filter_by(

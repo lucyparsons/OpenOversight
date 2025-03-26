@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
-from typing import Optional
+from typing import Optional, Type
 from urllib.parse import urlencode
 
 from flask import (
@@ -725,7 +725,8 @@ def add_department():
                 Job(job_title="Not Sure", order=0, department_id=department.id)
             )
             db.session.flush()
-            Department(id=department.id).remove_database_cache_entries(
+            Department.remove_database_cache_entries(
+                Type[Department],
                 [KEY_DEPTS_BY_STATE],
             )
             if form.jobs.data:
@@ -806,7 +807,8 @@ def edit_department(department_id: int):
         department.state = form.state.data
         department.last_updated_by = current_user.id
         db.session.flush()
-        Department(id=department_id).remove_database_cache_entries(
+        Department.remove_database_cache_entries(
+            Type[Department],
             [KEY_DEPTS_BY_STATE],
         )
         if form.jobs.data:
@@ -2297,8 +2299,9 @@ class OfficerLinkApi(ModelView):
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
-            Department(id=self.officer.department_id).remove_database_cache_entries(
-                [KEY_DEPT_ALL_LINKS]
+            Department.remove_database_cache_entries(
+                Department.query.filter_by(id=self.officer.department_id).one(),
+                [KEY_DEPT_ALL_LINKS],
             )
             flash(f"{self.model_name} successfully deleted!")
             return self.get_post_delete_url()
