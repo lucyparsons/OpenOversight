@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from datetime import time as dt_time
 from datetime import timezone
-from typing import List, Optional, Type, Union
+from typing import Optional
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -31,7 +31,6 @@ from OpenOversight.app.models.database_cache import (
     get_database_cache_entry,
     model_cache_key,
     put_database_cache_entry,
-    remove_database_cache_entries,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
@@ -351,13 +350,6 @@ class Department(BaseModel, TrackUpdates):
         return (
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
-
-    @staticmethod
-    def remove_database_cache_entries(
-        department: Union[Type["Department"], "Department"], update_types: List[str]
-    ) -> None:
-        """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entries(department, update_types)
 
 
 class Job(BaseModel, TrackUpdates):
