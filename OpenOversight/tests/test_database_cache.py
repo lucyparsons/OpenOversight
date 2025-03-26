@@ -220,11 +220,11 @@ def test_department_counts(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True
 
         dept_name = str(faker.uuid4())
         dept_short_name = faker.first_name()
@@ -238,7 +238,7 @@ def test_department_counts(mockdata, client, faker):
 
         client.post(url_for("main.add_department"), data=form.data)
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
@@ -257,8 +257,8 @@ def test_department_counts(mockdata, client, faker):
             follow_redirects=True,
         )
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is False
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True

@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
 from traceback import format_exc
-from typing import Optional, Type
+from typing import Optional
 from urllib.parse import urlencode
 
 from flask import (
@@ -732,7 +732,7 @@ def add_department():
             )
             db.session.flush()
             remove_database_cache_entries(
-                Type[Department],
+                Department,
                 [KEY_DEPTS_BY_STATE],
             )
             if form.jobs.data:
@@ -814,7 +814,7 @@ def edit_department(department_id: int):
         department.last_updated_by = current_user.id
         db.session.flush()
         remove_database_cache_entries(
-            Type[Department],
+            Department,
             [KEY_DEPTS_BY_STATE],
         )
         if form.jobs.data:
