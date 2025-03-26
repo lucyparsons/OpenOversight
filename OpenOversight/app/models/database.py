@@ -316,7 +316,7 @@ class Department(BaseModel, TrackUpdates):
 
     @staticmethod
     def by_state() -> dict[str, list["Department"]]:
-        cache_params = (None, KEY_DEPTS_BY_STATE)
+        cache_params = (Department, KEY_DEPTS_BY_STATE)
         departments_by_state = get_database_cache_entry(*cache_params)
 
         if departments_by_state is None:
