@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Type, Union
 
 from cachetools import TTLCache
 from cachetools.keys import hashkey
@@ -10,12 +10,12 @@ from OpenOversight.app.utils.constants import HOUR
 DB_CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 
-def get_model_cache_key(model: Model, update_type: str) -> Any:
+def get_model_cache_key(model: Union[Type[Model], Model], update_type: str) -> Any:
     """Create unique db.Model key."""
-    if model is not None:
+    if isinstance(model, type):  # If a class is passed
+        return hashkey(model.__name__, update_type)
+    else:  # If an instance is passed
         return hashkey(model.id, update_type, model.__class__.__name__)
-    else:
-        return hashkey(model.__class__.__name__, update_type, model.__class__.__name__)
 
 
 def model_cache_key(update_type: str):
@@ -30,13 +30,13 @@ def model_cache_key(update_type: str):
     per department.
     """
 
-    def _cache_key(model: Model):
+    def _cache_key(model: Union[Type[Model], Model]):
         return get_model_cache_key(model, update_type)
 
     return _cache_key
 
 
-def get_database_cache_entry(model: Model, update_type: str) -> Any:
+def get_database_cache_entry(model: Union[Type[Model], Model], update_type: str) -> Any:
     """Get db.Model entry for key in the cache."""
     key = get_model_cache_key(model, update_type)
     if key in DB_CACHE.keys():
@@ -45,24 +45,27 @@ def get_database_cache_entry(model: Model, update_type: str) -> Any:
         return None
 
 
-def has_database_cache_entry(model: Model, update_type: str) -> bool:
+def has_database_cache_entry(
+    model: Union[Type[Model], Model], update_type: str
+) -> bool:
     """db.Model key exists in cache."""
     key = get_model_cache_key(model, update_type)
     return key in DB_CACHE.keys()
 
 
-def put_database_cache_entry(model: Model, update_type: str, data: Any) -> None:
+def put_database_cache_entry(
+    model: Union[Type[Model], Model], update_type: str, data: Any
+) -> None:
     """Put data in cache using the constructed key."""
     key = get_model_cache_key(model, update_type)
     DB_CACHE[key] = data
 
 
-def remove_database_cache_entries(model: Model, update_types: List[str]) -> None:
+def remove_database_cache_entries(
+    model: Union[Type[Model], Model], update_types: List[str]
+) -> None:
     """Remove db.Model key from cache if it exists."""
     for update_type in update_types:
-        model_key = get_model_cache_key(model, update_type)
-        none_key = get_model_cache_key(None, update_type)
-        if model_key in DB_CACHE.keys():
-            del DB_CACHE[model_key]
-        if none_key in DB_CACHE.keys():
-            del DB_CACHE[none_key]
+        key = get_model_cache_key(model, update_type)
+        if key in DB_CACHE.keys():
+            del DB_CACHE[key]
