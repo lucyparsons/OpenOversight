@@ -84,6 +84,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_OFFICERS,
     KEY_DEPTS_BY_STATE,
+    KEY_MAP_DATA,
     KEY_OFFICERS_PER_PAGE,
     KEY_TIMEZONE,
 )
@@ -189,7 +190,7 @@ def render_map():
         render_template(
             "map.svg",
             departments_by_state=departments_by_state,
-            map_paths=current_app.config["MAP_DATA"],
+            map_paths=current_app.config[KEY_MAP_DATA],
         ),
         mimetype="image/svg+xml",
     )
