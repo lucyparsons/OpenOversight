@@ -1,7 +1,6 @@
 import random
 from datetime import date
 from http import HTTPStatus
-from typing import Type
 
 from flask import current_app, url_for
 from us import states
@@ -242,7 +241,7 @@ def test_department_counts(mockdata, client, faker):
 
         client.get(url_for("main.index"))
 
-        assert has_database_cache_entry(Type[Department], KEY_DEPTS_BY_STATE) is True
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True
 
         department = Department.query.filter_by(name=dept_name).one()
         corrected_form = EditDepartmentForm(
