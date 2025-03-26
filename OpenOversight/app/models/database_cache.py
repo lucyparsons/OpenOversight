@@ -1,4 +1,4 @@
-from typing import Any, Hashable, List
+from typing import Any, List
 
 from cachetools import TTLCache
 from cachetools.keys import hashkey
@@ -10,7 +10,7 @@ from OpenOversight.app.utils.constants import HOUR
 DB_CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 
-def get_model_cache_key(model: Model, update_type: str) -> tuple[Hashable]:
+def get_model_cache_key(model: Model, update_type: str) -> Any:
     """Create unique db.Model key."""
     if model is not None:
         return hashkey(model.id, update_type, model.__class__.__name__)
