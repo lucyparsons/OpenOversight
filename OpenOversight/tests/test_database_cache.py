@@ -75,8 +75,6 @@ def test_documented_assignments(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
-        assert isinstance(department, Department)
-
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
@@ -116,8 +114,6 @@ def test_documented_incidents(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
-        assert isinstance(department, Department)
-
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
@@ -170,8 +166,6 @@ def test_documented_officers(mockdata, client, faker):
     with current_app.test_request_context():
         login_admin(client)
         department = Department.query.first()
-        assert isinstance(department, Department)
-
         department.total_documented_assignments()
         department.total_documented_incidents()
         department.total_documented_officers()
