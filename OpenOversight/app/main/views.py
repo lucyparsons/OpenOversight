@@ -1510,7 +1510,7 @@ def redirect_download_dept_officers_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id: int):
-    officers = Department.query.get_officers(department_id)
+    officers = Department.get_officers(department_id)
     field_names = [
         "id",
         "unique identifier",
@@ -1548,7 +1548,7 @@ def redirect_download_dept_assignments_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id: int):
-    assignments = Department.query.get_assignments(department_id)
+    assignments = Department.get_assignments(department_id)
     field_names = [
         "id",
         "officer id",
@@ -1586,7 +1586,7 @@ def redirect_download_incidents_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id: int):
-    incidents = Department.query.get_incidents(department_id)
+    incidents = Department.get_incidents(department_id)
     field_names = [
         "id",
         "report_num",
@@ -1624,7 +1624,7 @@ def redirect_download_dept_salaries_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id: int):
-    salaries = Department.query.get_salaries(department_id)
+    salaries = Department.get_salaries(department_id)
     field_names = [
         "id",
         "officer id",
@@ -1653,7 +1653,7 @@ def redirect_download_dept_links_csv(department_id: int):
 @main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id: int):
-    links = Department.query.get_links(department_id)
+    links = Department.get_links(department_id)
     field_names = [
         "id",
         "title",
@@ -1686,7 +1686,7 @@ def redirect_download_dept_descriptions_csv(department_id: int):
 )
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id: int):
-    descriptions = Department.query.get_descriptions(department_id)
+    descriptions = Department.get_descriptions(department_id)
     field_names = [
         "id",
         "text_contents",
