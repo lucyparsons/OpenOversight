@@ -1,4 +1,5 @@
 # Cache Key Constants
+KEY_DEPTS_BY_STATE = "list_departments_by_state"
 KEY_DEPT_ALL_ASSIGNMENTS = "all_department_assignments"
 KEY_DEPT_ALL_INCIDENTS = "all_department_incidents"
 KEY_DEPT_ALL_LINKS = "all_department_links"
@@ -17,6 +18,7 @@ KEY_ENV = "ENV"
 KEY_ENV_DEV = "development"
 KEY_ENV_TESTING = "testing"
 KEY_ENV_PROD = "production"
+KEY_MAP_DATA = "MAP_DATA"
 KEY_NUM_OFFICERS = "NUM_OFFICERS"
 KEY_OFFICERS_PER_PAGE = "OFFICERS_PER_PAGE"
 KEY_OO_MAIL_SUBJECT_PREFIX = "OO_MAIL_SUBJECT_PREFIX"

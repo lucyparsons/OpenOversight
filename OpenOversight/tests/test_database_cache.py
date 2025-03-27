@@ -3,10 +3,13 @@ from datetime import date
 from http import HTTPStatus
 
 from flask import current_app, url_for
+from us import states
 
 from OpenOversight.app.main.forms import (
     AddOfficerForm,
     AssignmentForm,
+    DepartmentForm,
+    EditDepartmentForm,
     IncidentForm,
     LicensePlateForm,
     LinkForm,
@@ -29,6 +32,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    KEY_DEPTS_BY_STATE,
 )
 from OpenOversight.app.utils.db import unit_choices
 from OpenOversight.tests.routes.route_helpers import login_admin, process_form_data
@@ -203,3 +207,51 @@ def test_documented_officers(mockdata, client, faker):
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_ASSIGNMENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_INCIDENTS) is True
         assert has_database_cache_entry(department, KEY_DEPT_TOTAL_OFFICERS) is False
+
+
+def test_department_counts(mockdata, client, faker):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True
+
+        dept_name = str(faker.uuid4())
+        dept_short_name = faker.first_name()
+        dept_state = random.choice([st.abbr for st in states.STATES])
+
+        form = DepartmentForm(
+            name=dept_name,
+            short_name=dept_short_name,
+            state=dept_state,
+        )
+
+        client.post(url_for("main.add_department"), data=form.data)
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True
+
+        department = Department.query.filter_by(name=dept_name).one()
+        corrected_form = EditDepartmentForm(
+            name=dept_name,
+            short_name=faker.first_name(),
+            state=dept_state,
+        )
+
+        client.post(
+            url_for("main.edit_department", department_id=department.id),
+            data=corrected_form.data,
+            follow_redirects=True,
+        )
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is False
+
+        client.get(url_for("main.index"))
+
+        assert has_database_cache_entry(Department, KEY_DEPTS_BY_STATE) is True
