@@ -90,7 +90,7 @@ class ModelView(MethodView):
             match self.model.__name__:
                 case Incident.__name__:
                     remove_database_cache_entries(
-                        Department.get(new_obj.department_id),
+                        Department.query.get(new_obj.department_id),
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -99,7 +99,7 @@ class ModelView(MethodView):
                     ).first()
                     if officer:
                         remove_database_cache_entries(
-                            Department.get(officer.department_id),
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} created!")
@@ -131,7 +131,7 @@ class ModelView(MethodView):
             match self.model.__name__:
                 case Incident.__name__:
                     remove_database_cache_entries(
-                        Department.get(obj.department_id),
+                        Department.query.get(obj.department_id),
                         [KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -140,14 +140,14 @@ class ModelView(MethodView):
                     ).first()
                     if officer:
                         remove_database_cache_entries(
-                            Department.get(officer.department_id),
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
                 case Link.__name__:
                     officer = db.session.get(Officer, obj.officer_id)
                     if officer:
                         remove_database_cache_entries(
-                            Department.get(officer.department_id),
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_LINKS],
                         )
             flash(f"{self.model_name} successfully updated!")
@@ -172,7 +172,7 @@ class ModelView(MethodView):
             match self.model.__name__:
                 case Incident.__name__:
                     remove_database_cache_entries(
-                        Department.get(obj.department_id),
+                        Department.query.get(obj.department_id),
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -181,7 +181,7 @@ class ModelView(MethodView):
                     ).first()
                     if officer:
                         remove_database_cache_entries(
-                            Department.get(officer.department_id),
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} successfully deleted!")
