@@ -1,4 +1,4 @@
-from http import HTTPMethod
+from http import HTTPMethod, HTTPStatus
 from typing import Callable, Union
 
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
@@ -15,6 +15,7 @@ from OpenOversight.app.models.database import (
     Officer,
     db,
 )
+from OpenOversight.app.models.database_cache import remove_database_cache_entries
 from OpenOversight.app.utils.auth import ac_or_admin_required
 from OpenOversight.app.utils.constants import (
     KEY_DEPT_ALL_INCIDENTS,
@@ -88,7 +89,8 @@ class ModelView(MethodView):
 
             match self.model.__name__:
                 case Incident.__name__:
-                    Department(id=new_obj.department_id).remove_database_cache_entries(
+                    remove_database_cache_entries(
+                        Department.query.get(new_obj.department_id),
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -96,9 +98,8 @@ class ModelView(MethodView):
                         department_id=new_obj.officer_id
                     ).first()
                     if officer:
-                        Department(
-                            id=officer.department_id
-                        ).remove_database_cache_entries(
+                        remove_database_cache_entries(
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} created!")
@@ -129,7 +130,8 @@ class ModelView(MethodView):
             self.populate_obj(form, obj)
             match self.model.__name__:
                 case Incident.__name__:
-                    Department(id=obj.department_id).remove_database_cache_entries(
+                    remove_database_cache_entries(
+                        Department.query.get(obj.department_id),
                         [KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -137,17 +139,15 @@ class ModelView(MethodView):
                         department_id=obj.officer_id
                     ).first()
                     if officer:
-                        Department(
-                            id=officer.department_id
-                        ).remove_database_cache_entries(
+                        remove_database_cache_entries(
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
                 case Link.__name__:
                     officer = db.session.get(Officer, obj.officer_id)
                     if officer:
-                        Department(
-                            id=officer.department_id
-                        ).remove_database_cache_entries(
+                        remove_database_cache_entries(
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_LINKS],
                         )
             flash(f"{self.model_name} successfully updated!")
@@ -164,14 +164,15 @@ class ModelView(MethodView):
                 not current_user.is_administrator
                 and current_user.ac_department_id != self.get_department_id(obj)
             ):
-                abort(403)
+                abort(HTTPStatus.FORBIDDEN)
 
         if request.method == HTTPMethod.POST:
             db.session.delete(obj)
             db.session.commit()
             match self.model.__name__:
                 case Incident.__name__:
-                    Department(id=obj.department_id).remove_database_cache_entries(
+                    remove_database_cache_entries(
+                        Department.query.get(obj.department_id),
                         [KEY_DEPT_TOTAL_INCIDENTS, KEY_DEPT_ALL_INCIDENTS],
                     )
                 case Note.__name__:
@@ -179,9 +180,8 @@ class ModelView(MethodView):
                         department_id=obj.officer_id
                     ).first()
                     if officer:
-                        Department(
-                            id=officer.department_id
-                        ).remove_database_cache_entries(
+                        remove_database_cache_entries(
+                            Department.query.get(officer.department_id),
                             [KEY_DEPT_ALL_NOTES],
                         )
             flash(f"{self.model_name} successfully deleted!")

@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from datetime import time as dt_time
 from datetime import timezone
-from typing import List, Optional
+from typing import Optional
 
 from authlib.jose import JoseError, JsonWebToken
 from cachetools import cached
@@ -31,7 +31,6 @@ from OpenOversight.app.models.database_cache import (
     get_database_cache_entry,
     model_cache_key,
     put_database_cache_entry,
-    remove_database_cache_entries,
 )
 from OpenOversight.app.utils.choices import GENDER_CHOICES, RACE_CHOICES
 from OpenOversight.app.utils.constants import (
@@ -46,6 +45,7 @@ from OpenOversight.app.utils.constants import (
     KEY_DEPT_TOTAL_ASSIGNMENTS,
     KEY_DEPT_TOTAL_INCIDENTS,
     KEY_DEPT_TOTAL_OFFICERS,
+    KEY_DEPTS_BY_STATE,
     SIGNATURE_ALGORITHM,
 )
 from OpenOversight.app.validators import state_validator, url_validator
@@ -313,6 +313,23 @@ class Department(BaseModel, TrackUpdates):
 
         return salaries
 
+    @staticmethod
+    def by_state() -> dict[str, list["Department"]]:
+        cache_params = (Department, KEY_DEPTS_BY_STATE)
+        departments_by_state = get_database_cache_entry(*cache_params)
+
+        if departments_by_state is None:
+            departments = Department.query.filter(Department.officers.any()).order_by(
+                Department.state.asc(), Department.name.asc()
+            )
+            departments_by_state = {
+                state: list(group)
+                for state, group in itertools.groupby(departments, lambda d: d.state)
+            }
+            put_database_cache_entry(*cache_params, departments_by_state)
+
+        return departments_by_state
+
     @cached(cache=DB_CACHE, key=model_cache_key(KEY_DEPT_TOTAL_ASSIGNMENTS))
     def total_documented_assignments(self) -> int:
         return (
@@ -333,21 +350,6 @@ class Department(BaseModel, TrackUpdates):
         return (
             db.session.query(Officer).filter(Officer.department_id == self.id).count()
         )
-
-    def remove_database_cache_entries(self, update_types: List[str]) -> None:
-        """Remove the Department model key from the cache if it exists."""
-        remove_database_cache_entries(self, update_types)
-
-    @staticmethod
-    def by_state() -> dict[str, list["Department"]]:
-        departments = Department.query.filter(Department.officers.any()).order_by(
-            Department.state.asc(), Department.name.asc()
-        )
-        departments_by_state = {
-            state: list(group)
-            for state, group in itertools.groupby(departments, lambda d: d.state)
-        }
-        return departments_by_state
 
 
 class Job(BaseModel, TrackUpdates):
