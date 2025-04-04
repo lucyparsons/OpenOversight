@@ -1710,9 +1710,7 @@ def submit_officer_images(officer_id: int):
 
 
 @main.post("/upload/department/<int:department_id>")
-@main.post(
-    "/upload/department/<int:department_id>/officer/<int:officer_id>",
-)
+@main.post("/upload/department/<int:department_id>/officer/<int:officer_id>")
 def redirect_upload(department_id: int, officer_id: Optional[int] = None):
     return redirect(
         url_for("main.upload", department_id=department_id, officer_id=officer_id),
@@ -1721,10 +1719,7 @@ def redirect_upload(department_id: int, officer_id: Optional[int] = None):
 
 
 @main.post("/upload/departments/<int:department_id>")
-@main.post(
-    "/upload/departments/<int:department_id>/officers/<int:officer_id>",
-    methods=[HTTPMethod.POST],
-)
+@main.post("/upload/departments/<int:department_id>/officers/<int:officer_id>")
 @limiter.limit("250/minute")
 def upload(department_id: int, officer_id: Optional[int] = None):
     if officer_id:
