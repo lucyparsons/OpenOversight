@@ -1085,35 +1085,35 @@ class User(UserMixin, BaseModel):
         """Override UserMixin.is_active to prevent disabled users from logging in."""
         return not self.disabled_at
 
-    def approve_user(self, approving_user_id: int):
+    def approve_user(self, approving_user_id: int, approved: bool):
         """Handle approving logic."""
-        if self.approved_at or self.approved_by:
-            return False
+        if approved and not self.approved_by and not self.approved_at:
+            self.approved_at = datetime.now(timezone.utc)
+            self.approved_by = approving_user_id
+            db.session.commit()
+        elif not approved and self.approved_by and self.approved_at:
+            self.approved_at = None
+            self.approved_by = None
+            db.session.commit()
 
-        self.approved_at = datetime.now(timezone.utc)
-        self.approved_by = approving_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
-
-    def confirm_user(self, confirming_user_id: int):
+    def confirm_user(self, confirming_user_id: int, confirmed: bool):
         """Handle confirming logic."""
-        if self.confirmed_at or self.confirmed_by:
-            return False
+        if confirmed and not self.confirmed_by and not self.confirmed_at:
+            self.confirmed_at = datetime.now(timezone.utc)
+            self.confirmed_by = confirming_user_id
+            db.session.commit()
+        elif not confirmed and self.confirmed_by and self.confirmed_at:
+            self.confirmed_at = None
+            self.confirmed_by = None
+            db.session.commit()
 
-        self.confirmed_at = datetime.now(timezone.utc)
-        self.confirmed_by = confirming_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
-
-    def disable_user(self, disabling_user_id: int):
+    def disable_user(self, disabling_user_id: int, is_disabled: bool):
         """Handle disabling logic."""
-        if self.disabled_at or self.disabled_by:
-            return False
-
-        self.disabled_at = datetime.now(timezone.utc)
-        self.disabled_by = disabling_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
+        if is_disabled and not self.disabled_by and not self.disabled_at:
+            self.disabled_at = datetime.now(timezone.utc)
+            self.disabled_by = disabling_user_id
+            db.session.commit()
+        elif not is_disabled and self.disabled_by and self.disabled_at:
+            self.disabled_at = None
+            self.disabled_by = None
+            db.session.commit()
