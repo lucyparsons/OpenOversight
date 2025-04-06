@@ -469,13 +469,13 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(client, session):
         user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).one()
         user.disabled_at = None
         user.disabled_by = None
-        session.add(user)
+        session.commit()
 
         rv, _ = login_modified_disabled_user(client)
         assert b"/user/sam" in rv.data
 
         # Disable account again and check that login_required redirects user correctly
-        user.disable_user(User.query.filter_by(is_administrator=True).first().id)
+        user.disable_user(User.query.filter_by(is_administrator=True).first().id, True)
 
         # Logged in disabled user cannot access pages requiring auth
         rv = client.get("/auth/logout")
