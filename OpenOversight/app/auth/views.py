@@ -315,6 +315,9 @@ def edit_user(user_id):
 
     if request.method == HTTPMethod.GET:
         form = EditUserForm(obj=user)
+        form.is_disabled.data = user.disabled_by and user.disabled_at
+        form.approved.data = user.approved_by and user.approved_at
+        form.confirmed.data = user.confirmed_by and user.confirmed_at
         return render_template("auth/user.html", user=user, form=form)
     elif request.method == HTTPMethod.POST:
         form = EditUserForm()
@@ -333,17 +336,7 @@ def edit_user(user_id):
                 already_approved = (
                     user.approved_at is not None and user.approved_by is not None
                 )
-                if form.approved.data:
-                    user.approve_user(current_user.id)
-
-                if form.confirmed.data:
-                    user.confirm_user(current_user.id)
-
-                if form.is_disabled.data:
-                    user.disable_user(current_user.id)
-
                 form.populate_obj(user)
-                db.session.add(user)
                 db.session.commit()
 
                 # automatically send a confirmation email when approving an

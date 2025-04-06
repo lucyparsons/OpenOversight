@@ -213,7 +213,7 @@ def test_admin_can_enable_user(client, session):
         _, current_user = login_admin(client)
 
         user = User.query.filter_by(email=GENERAL_USER_EMAIL).one()
-        user.disable_user(current_user.id)
+        user.disable_user(current_user.id, True)
 
         user = session.get(User, user.id)
         assert user.disabled_at is not None
@@ -233,8 +233,8 @@ def test_admin_can_enable_user(client, session):
         assert "updated!" in rv.data.decode(ENCODING_UTF_8)
 
         user = session.get(User, user.id)
-        assert user.disabled_at is not None
-        assert user.disabled_by == current_user.id
+        assert user.disabled_at is None
+        assert user.disabled_by is None
 
 
 def test_admin_can_resend_user_confirmation_email(client, session):
@@ -352,14 +352,14 @@ def test_admin_approval_sends_confirmation_email(
 
         user = User.query.filter_by(is_administrator=False).first()
         if currently_approved:
-            user.approve_user(current_user.id)
+            user.approve_user(current_user.id, True)
         else:
             user.approved_at = None
             user.approved_by = None
             session.commit()
 
         if currently_confirmed:
-            user.confirm_user(current_user.id)
+            user.confirm_user(current_user.id, True)
         else:
             user.confirmed_at = None
             user.confirmed_by = None

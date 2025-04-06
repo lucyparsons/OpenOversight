@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm as Form
 from wtforms import (
     BooleanField,
@@ -133,6 +134,15 @@ class EditUserForm(Form):
     submit = SubmitField(label="Update", false_values={"False", "false", ""})
     resend = SubmitField(label="Resend", false_values={"False", "false", ""})
     delete = SubmitField(label="Delete", false_values={"False", "false", ""})
+
+    def populate_obj(self, obj):
+        obj.is_area_coordinator = self.is_area_coordinator.data
+        obj.ac_department = self.ac_department.data
+        obj.is_administrator = self.is_administrator.data
+
+        obj.disable_user(current_user.id, self.is_disabled.data)
+        obj.approve_user(current_user.id, self.approved.data)
+        obj.confirm_user(current_user.id, self.confirmed.data)
 
     def validate(self, extra_validators=None):
         success = super(EditUserForm, self).validate(extra_validators=None)
