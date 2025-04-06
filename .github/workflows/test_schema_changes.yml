@@ -22,8 +22,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+          pip install -r requirements.txt -r dev-requirements.txt
 
       - name: Run create_db_diagram
         run: |
