@@ -23,6 +23,16 @@ jobs:
         with:
           name: playwright-traces
           path: build/test-results/
+      - name: Set up Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+      - name: Check for schema changes
+        run: |
+          make create_db_diagram | tee output.log
+          if ! grep -q "No schema changes detected!" output.log; then
+            echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
+            exit 1
+          fi
+
   pre-commit:
     runs-on: ubuntu-latest
     steps:
