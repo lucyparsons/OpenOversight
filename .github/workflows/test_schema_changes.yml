@@ -10,13 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - name: Run tests
+
+      - name: Install dependencies
         run: |
-          PYTHON_VERSION=${{ matrix.python-version }} make build_with_version
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r dev-requirements.txt
+          pip install eralchemy  # Ensure eralchemy is installed
+
       - name: Set up Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Build application
+        run: |
+          PYTHON_VERSION=${{ matrix.python-version }} make build_with_version
+
       - name: Run create_db_diagram
         run: |
           make create_db_diagram | tee output.log
