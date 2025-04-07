@@ -1868,6 +1868,11 @@ def test_incidents_csv(client, session, department, faker):
         assert form.description.data in csv[0]
 
 
+def test_download_all_data(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+
 def test_browse_filtering_filters_bad(client, session):
     with current_app.test_request_context():
         race_list = ["BLACK", "WHITE"]
