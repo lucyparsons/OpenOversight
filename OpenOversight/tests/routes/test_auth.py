@@ -557,3 +557,7 @@ def test_user_password_update_resets_session_token(app, session):
         # When session is invalidated, user is redirected to login page
         rv = client.get(url_for("main.leaderboard"), follow_redirects=False)
         assert rv.status_code == HTTPStatus.FOUND
+
+
+def test_admin_can_see_list_of_users(client, session):
+    pass
