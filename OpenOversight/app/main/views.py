@@ -145,8 +145,8 @@ def redirect_url(default="main.index"):
 
 
 @sitemap_include
-@main.route("/", methods=[HTTPMethod.GET])
-@main.route("/index", methods=[HTTPMethod.GET])
+@main.get("/")
+@main.get("/index")
 def index():
     departments_by_state = Department.by_state()
     department_count = sum(
@@ -166,7 +166,7 @@ def index():
     )
 
 
-@main.route("/timezone", methods=[HTTPMethod.POST])
+@main.post("/timezone")
 def set_session_timezone():
     if KEY_TIMEZONE not in session:
         timezone = request.data.decode(ENCODING_UTF_8)
@@ -178,13 +178,13 @@ def set_session_timezone():
 
 
 @sitemap_include
-@main.route("/browse", methods=[HTTPMethod.GET])
+@main.get("/browse")
 def browse():
     departments_by_state = Department.by_state()
     return render_template("browse.html", departments_by_state=departments_by_state)
 
 
-@main.route("/map.svg", methods=[HTTPMethod.GET])
+@main.get("/map.svg")
 def render_map():
     departments_by_state = Department.by_state()
     return Response(
@@ -301,12 +301,12 @@ def sort_images(department_id: int):
 
 
 @sitemap_include
-@main.route("/tutorial")
+@main.get("/tutorial")
 def get_tutorial():
     return render_template("tutorial.html")
 
 
-@main.route("/user/<username>")
+@main.get("/user/<username>")
 @login_required
 def profile(username: str):
     if re.search("^[A-Za-z][A-Za-z0-9_.]*$", username):
@@ -384,7 +384,7 @@ def sitemap_officers():
         yield "main.officer_profile", {"officer_id": officer.id}
 
 
-@main.route("/officer/<int:officer_id>/assignment/new", methods=[HTTPMethod.POST])
+@main.post("/officer/<int:officer_id>/assignment/new")
 @ac_or_admin_required
 def redirect_add_assignment(officer_id: int):
     return redirect(
@@ -393,7 +393,7 @@ def redirect_add_assignment(officer_id: int):
     )
 
 
-@main.route("/officers/<int:officer_id>/assignments/new", methods=[HTTPMethod.POST])
+@main.post("/officers/<int:officer_id>/assignments/new")
 @ac_or_admin_required
 def add_assignment(officer_id: int):
     form = AssignmentForm()
@@ -611,7 +611,7 @@ def edit_salary(officer_id: int, salary_id: int):
     return render_template("add_edit_salary.html", form=form, update=True)
 
 
-@main.route("/image/<int:image_id>")
+@main.get("/image/<int:image_id>")
 @login_required
 def redirect_display_submission(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -621,7 +621,7 @@ def redirect_display_submission(image_id: int):
     )
 
 
-@main.route("/images/<int:image_id>")
+@main.get("/images/<int:image_id>")
 @login_required
 def display_submission(image_id: int):
     try:
@@ -633,7 +633,7 @@ def display_submission(image_id: int):
     return render_template("image.html", image=image, path=proper_path)
 
 
-@main.route("/tag/<int:tag_id>")
+@main.get("/tag/<int:tag_id>")
 def redirect_display_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -642,7 +642,7 @@ def redirect_display_tag(tag_id: int):
     )
 
 
-@main.route("/tags/<int:tag_id>")
+@main.get("/tags/<int:tag_id>")
 def display_tag(tag_id: int):
     try:
         tag = Face.query.filter_by(id=tag_id).one()
@@ -655,9 +655,7 @@ def display_tag(tag_id: int):
     )
 
 
-@main.route(
-    "/image/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
-)
+@main.post("/image/classify/<int:image_id>/<int:contains_cops>")
 @login_required
 def redirect_classify_submission(image_id: int, contains_cops: int):
     return redirect(
@@ -668,9 +666,7 @@ def redirect_classify_submission(image_id: int, contains_cops: int):
     )
 
 
-@main.route(
-    "/images/classify/<int:image_id>/<int:contains_cops>", methods=[HTTPMethod.POST]
-)
+@main.post("/images/classify/<int:image_id>/<int:contains_cops>")
 @login_required
 def classify_submission(image_id: int, contains_cops: int):
     try:
@@ -887,7 +883,7 @@ def edit_department(department_id: int):
         )
 
 
-@main.route("/department/<int:department_id>")
+@main.get("/department/<int:department_id>")
 def redirect_list_officer(
     department_id: int,
 ):
@@ -900,7 +896,7 @@ def redirect_list_officer(
     )
 
 
-@main.route("/departments/<int:department_id>")
+@main.get("/departments/<int:department_id>")
 def list_officer(
     department_id: int,
 ):
@@ -1002,7 +998,7 @@ def list_officer(
     )
 
 
-@main.route("/department/<int:department_id>/ranks")
+@main.get("/department/<int:department_id>/ranks")
 def redirect_get_dept_ranks(department_id: int, is_sworn_officer: bool = False):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1015,8 +1011,8 @@ def redirect_get_dept_ranks(department_id: int, is_sworn_officer: bool = False):
     )
 
 
-@main.route("/departments/<int:department_id>/ranks")
-@main.route("/ranks")
+@main.get("/departments/<int:department_id>/ranks")
+@main.get("/ranks")
 def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool = False):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1041,7 +1037,7 @@ def get_dept_ranks(department_id: Optional[int] = None, is_sworn_officer: bool =
     return jsonify(rank_list)
 
 
-@main.route("/department/<int:department_id>/units")
+@main.get("/department/<int:department_id>/units")
 def redirect_get_dept_units(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1050,8 +1046,8 @@ def redirect_get_dept_units(department_id: int):
     )
 
 
-@main.route("/departments/<int:department_id>/units")
-@main.route("/units")
+@main.get("/departments/<int:department_id>/units")
+@main.get("/units")
 def get_dept_units(department_id: Optional[int] = None):
     if not department_id:
         department_id = request.args.get("department_id")
@@ -1202,7 +1198,7 @@ def add_unit():
         return render_template("add_unit.html", form=form)
 
 
-@main.route("/tag/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@main.post("/tag/delete/<int:tag_id>")
 @login_required
 @ac_or_admin_required
 def redirect_delete_tag(tag_id: int):
@@ -1213,7 +1209,7 @@ def redirect_delete_tag(tag_id: int):
     )
 
 
-@main.route("/tags/delete/<int:tag_id>", methods=[HTTPMethod.POST])
+@main.post("/tags/delete/<int:tag_id>")
 @login_required
 @ac_or_admin_required
 def delete_tag(tag_id: int):
@@ -1239,7 +1235,7 @@ def delete_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=officer_id))
 
 
-@main.route("/tag/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@main.post("/tag/set_featured/<int:tag_id>")
 @login_required
 def redirect_set_featured_tag(tag_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1249,7 +1245,7 @@ def redirect_set_featured_tag(tag_id: int):
     )
 
 
-@main.route("/tags/set_featured/<int:tag_id>", methods=[HTTPMethod.POST])
+@main.post("/tags/set_featured/<int:tag_id>")
 @login_required
 @ac_or_admin_required
 def set_featured_tag(tag_id: int):
@@ -1280,7 +1276,7 @@ def set_featured_tag(tag_id: int):
     return redirect(url_for("main.officer_profile", officer_id=tag.officer_id))
 
 
-@main.route("/leaderboard")
+@main.get("/leaderboard")
 @login_required
 def leaderboard():
     top_sorters, top_taggers = compute_leaderboard_stats()
@@ -1420,7 +1416,7 @@ def label_data(department_id: Optional[int] = None, image_id: Optional[int] = No
     )
 
 
-@main.route("/image/tagged/<int:image_id>")
+@main.get("/image/tagged/<int:image_id>")
 @login_required
 def redirect_complete_tagging(image_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
@@ -1430,7 +1426,7 @@ def redirect_complete_tagging(image_id: int):
     )
 
 
-@main.route("/images/tagged/<int:image_id>")
+@main.get("/images/tagged/<int:image_id>")
 @login_required
 def complete_tagging(image_id: int):
     # Select a random untagged image from the database
@@ -1494,9 +1490,7 @@ def submit_data():
         )
 
 
-@main.route(
-    "/download/department/<int:department_id>/officers", methods=[HTTPMethod.GET]
-)
+@main.get("/download/department/<int:department_id>/officers")
 def redirect_download_dept_officers_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1505,9 +1499,7 @@ def redirect_download_dept_officers_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/departments/<int:department_id>/officers", methods=[HTTPMethod.GET]
-)
+@main.get("/download/departments/<int:department_id>/officers")
 @limiter.limit("5/minute")
 def download_dept_officers_csv(department_id: int):
     officers = Department.get_officers(department_id)
@@ -1532,9 +1524,7 @@ def download_dept_officers_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/department/<int:department_id>/assignments", methods=[HTTPMethod.GET]
-)
+@main.get("/download/department/<int:department_id>/assignments")
 def redirect_download_dept_assignments_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1543,9 +1533,7 @@ def redirect_download_dept_assignments_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/departments/<int:department_id>/assignments", methods=[HTTPMethod.GET]
-)
+@main.get("/download/departments/<int:department_id>/assignments")
 @limiter.limit("5/minute")
 def download_dept_assignments_csv(department_id: int):
     assignments = Department.get_assignments(department_id)
@@ -1570,9 +1558,7 @@ def download_dept_assignments_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/department/<int:department_id>/incidents", methods=[HTTPMethod.GET]
-)
+@main.get("/download/department/<int:department_id>/incidents")
 def redirect_download_incidents_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1581,9 +1567,7 @@ def redirect_download_incidents_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/departments/<int:department_id>/incidents", methods=[HTTPMethod.GET]
-)
+@main.get("/download/departments/<int:department_id>/incidents")
 @limiter.limit("5/minute")
 def download_incidents_csv(department_id: int):
     incidents = Department.get_incidents(department_id)
@@ -1608,9 +1592,7 @@ def download_incidents_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/department/<int:department_id>/salaries", methods=[HTTPMethod.GET]
-)
+@main.get("/download/department/<int:department_id>/salaries")
 def redirect_download_dept_salaries_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1619,9 +1601,7 @@ def redirect_download_dept_salaries_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/departments/<int:department_id>/salaries", methods=[HTTPMethod.GET]
-)
+@main.get("/download/departments/<int:department_id>/salaries")
 @limiter.limit("5/minute")
 def download_dept_salaries_csv(department_id: int):
     salaries = Department.get_salaries(department_id)
@@ -1641,7 +1621,7 @@ def download_dept_salaries_csv(department_id: int):
     )
 
 
-@main.route("/download/department/<int:department_id>/links", methods=[HTTPMethod.GET])
+@main.get("/download/department/<int:department_id>/links")
 def redirect_download_dept_links_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1650,7 +1630,7 @@ def redirect_download_dept_links_csv(department_id: int):
     )
 
 
-@main.route("/download/departments/<int:department_id>/links", methods=[HTTPMethod.GET])
+@main.get("/download/departments/<int:department_id>/links")
 @limiter.limit("5/minute")
 def download_dept_links_csv(department_id: int):
     links = Department.get_links(department_id)
@@ -1670,9 +1650,7 @@ def download_dept_links_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/department/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
-)
+@main.get("/download/department/<int:department_id>/descriptions")
 def redirect_download_dept_descriptions_csv(department_id: int):
     flash(FLASH_MSG_PERMANENT_REDIRECT)
     return redirect(
@@ -1681,9 +1659,7 @@ def redirect_download_dept_descriptions_csv(department_id: int):
     )
 
 
-@main.route(
-    "/download/departments/<int:department_id>/descriptions", methods=[HTTPMethod.GET]
-)
+@main.get("/download/departments/<int:department_id>/descriptions")
 @limiter.limit("5/minute")
 def download_dept_descriptions_csv(department_id: int):
     descriptions = Department.get_descriptions(department_id)
@@ -1694,12 +1670,16 @@ def download_dept_descriptions_csv(department_id: int):
     ]
 
     return make_downloadable_csv(
-        descriptions, department_id, "Notes", field_names, descriptions_record_maker
+        descriptions,
+        department_id,
+        "Descriptions",
+        field_names,
+        descriptions_record_maker,
     )
 
 
 @sitemap_include
-@main.route("/download/all", methods=[HTTPMethod.GET])
+@main.get("/download/all")
 def all_data():
     departments_by_state = Department.by_state()
     return render_template(
@@ -1733,11 +1713,8 @@ def submit_officer_images(officer_id: int):
     return render_template("submit_officer_image.html", officer=officer)
 
 
-@main.route("/upload/department/<int:department_id>", methods=[HTTPMethod.POST])
-@main.route(
-    "/upload/department/<int:department_id>/officer/<int:officer_id>",
-    methods=[HTTPMethod.POST],
-)
+@main.post("/upload/department/<int:department_id>")
+@main.post("/upload/department/<int:department_id>/officer/<int:officer_id>")
 def redirect_upload(department_id: int, officer_id: Optional[int] = None):
     return redirect(
         url_for("main.upload", department_id=department_id, officer_id=officer_id),
@@ -1745,11 +1722,8 @@ def redirect_upload(department_id: int, officer_id: Optional[int] = None):
     )
 
 
-@main.route("/upload/departments/<int:department_id>", methods=[HTTPMethod.POST])
-@main.route(
-    "/upload/departments/<int:department_id>/officers/<int:officer_id>",
-    methods=[HTTPMethod.POST],
-)
+@main.post("/upload/departments/<int:department_id>")
+@main.post("/upload/departments/<int:department_id>/officers/<int:officer_id>")
 @limiter.limit("250/minute")
 def upload(department_id: int, officer_id: Optional[int] = None):
     if officer_id:
@@ -1810,24 +1784,24 @@ def upload(department_id: int, officer_id: Optional[int] = None):
 
 
 @sitemap_include
-@main.route("/about")
+@main.get("/about")
 def about_oo():
     return render_template("about.html")
 
 
 @sitemap_include
-@main.route("/contact")
+@main.get("/contact")
 def contact_oo():
     return render_template("contact.html")
 
 
 @sitemap_include
-@main.route("/privacy")
+@main.get("/privacy")
 def privacy_oo():
     return render_template("privacy.html")
 
 
-@main.route("/shutdown")  # pragma: no cover
+@main.get("/shutdown")  # pragma: no cover
 def server_shutdown():  # pragma: no cover
     if not current_app.testing:
         abort(HTTPStatus.NOT_FOUND)

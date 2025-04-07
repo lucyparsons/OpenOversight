@@ -153,7 +153,7 @@ def register():
     return render_template("auth/register.html", form=form, jsloads=js_loads)
 
 
-@auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
+@auth.get("/confirm/<token>")
 @login_required
 def confirm(token):
     if current_user.confirmed_at and current_user.confirmed_by:
@@ -172,7 +172,7 @@ def confirm(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/confirm")
+@auth.get("/confirm")
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
@@ -265,7 +265,7 @@ def change_email_request():
     return render_template("auth/change_email.html", form=form)
 
 
-@auth.route("/change-email/<token>")
+@auth.get("/change-email/<token>")
 @login_required
 def change_email(token):
     if current_user.change_email(token):
@@ -295,7 +295,7 @@ def change_dept():
     return render_template("auth/change_dept_pref.html", form=form)
 
 
-@auth.route("/users/", methods=[HTTPMethod.GET])
+@auth.get("/users/")
 @admin_required
 def get_users():
     page = int(request.args.get("page", 1))

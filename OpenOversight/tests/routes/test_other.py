@@ -16,6 +16,7 @@ from OpenOversight.tests.routes.route_helpers import login_user
         "/",
         "/index",
         "/browse",
+        "/contact",
         "/find",
         "/about",
         "/privacy",
