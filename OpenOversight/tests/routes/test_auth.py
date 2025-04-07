@@ -24,6 +24,7 @@ from OpenOversight.tests.constants import (
     UNCONFIRMED_USER_EMAIL,
 )
 from OpenOversight.tests.routes.route_helpers import (
+    login_admin,
     login_disabled_user,
     login_modified_disabled_user,
     login_unconfirmed_user,
@@ -560,4 +561,5 @@ def test_user_password_update_resets_session_token(app, session):
 
 
 def test_admin_can_see_list_of_users(client, session):
-    pass
+    with current_app.test_request_context():
+        _, user = login_admin(client)
