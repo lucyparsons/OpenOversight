@@ -1870,9 +1870,7 @@ def test_incidents_csv(client, session, department, faker):
 
 def test_download_all_data(client, session):
     with current_app.test_request_context():
-        login_admin(client)
-
-        rv = client.post(
+        rv = client.get(
             url_for("main.all_data"),
             follow_redirects=True,
         )
