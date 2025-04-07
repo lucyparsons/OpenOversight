@@ -1670,7 +1670,11 @@ def download_dept_descriptions_csv(department_id: int):
     ]
 
     return make_downloadable_csv(
-        descriptions, department_id, "Notes", field_names, descriptions_record_maker
+        descriptions,
+        department_id,
+        "Descriptions",
+        field_names,
+        descriptions_record_maker,
     )
 
 
