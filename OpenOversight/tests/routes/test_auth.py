@@ -562,4 +562,9 @@ def test_user_password_update_resets_session_token(app, session):
 
 def test_admin_can_see_list_of_users(client, session):
     with current_app.test_request_context():
-        _, user = login_admin(client)
+        login_admin(client)
+
+        rv = client.get(url_for("main.all_data"), follow_redirects=True)
+
+        assert rv.status_code == HTTPStatus.OK
+        assert b"Users" in rv.data
