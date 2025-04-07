@@ -1872,6 +1872,14 @@ def test_download_all_data(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
+        rv = client.post(
+            url_for("main.all_data"),
+            follow_redirects=True,
+        )
+
+        assert rv.status_code == HTTPStatus.OK
+        assert b"Download Department Data" in rv.data
+
 
 def test_browse_filtering_filters_bad(client, session):
     with current_app.test_request_context():
