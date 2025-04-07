@@ -24,6 +24,7 @@ from OpenOversight.tests.constants import (
     UNCONFIRMED_USER_EMAIL,
 )
 from OpenOversight.tests.routes.route_helpers import (
+    login_admin,
     login_disabled_user,
     login_modified_disabled_user,
     login_unconfirmed_user,
@@ -557,3 +558,13 @@ def test_user_password_update_resets_session_token(app, session):
         # When session is invalidated, user is redirected to login page
         rv = client.get(url_for("main.leaderboard"), follow_redirects=False)
         assert rv.status_code == HTTPStatus.FOUND
+
+
+def test_admin_can_see_list_of_users(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(url_for("main.all_data"), follow_redirects=True)
+
+        assert rv.status_code == HTTPStatus.OK
+        assert b"Users" in rv.data

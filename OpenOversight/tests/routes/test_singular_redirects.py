@@ -53,6 +53,7 @@ def test_redirect_no_params(client, session, source_route, target_route):
             "main.list_officer",
         ),
         ("main.redirect_get_dept_ranks", "main.get_dept_ranks"),
+        ("main.redirect_get_dept_units", "main.get_dept_units"),
         ("main.redirect_download_dept_officers_csv", "main.download_dept_officers_csv"),
         (
             "main.redirect_download_dept_assignments_csv",

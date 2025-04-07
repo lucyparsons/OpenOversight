@@ -21,6 +21,7 @@ from sqlalchemy.orm import (
     declarative_mixin,
     declared_attr,
     joinedload,
+    selectinload,
     validates,
 )
 from sqlalchemy.sql import func as sql_func
@@ -319,8 +320,10 @@ class Department(BaseModel, TrackUpdates):
         departments_by_state = get_database_cache_entry(*cache_params)
 
         if departments_by_state is None:
-            departments = Department.query.filter(Department.officers.any()).order_by(
-                Department.state.asc(), Department.name.asc()
+            departments = (
+                Department.query.options(selectinload(Department.incidents))
+                .filter(Department.officers.any())
+                .order_by(Department.state.asc(), Department.name.asc())
             )
             departments_by_state = {
                 state: list(group)
