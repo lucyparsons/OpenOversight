@@ -16,7 +16,7 @@ from OpenOversight.app.auth.forms import (
     RegistrationForm,
 )
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.constants import KEY_OO_MAIL_SUBJECT_PREFIX
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_OO_MAIL_SUBJECT_PREFIX
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import (
     GENERAL_USER_EMAIL,
@@ -564,7 +564,10 @@ def test_admin_can_see_list_of_users(client, session):
     with current_app.test_request_context():
         login_admin(client)
 
-        rv = client.get(url_for("main.all_data"), follow_redirects=True)
+        rv = client.get(url_for("auth.get_users"), follow_redirects=True)
+
+        first_user = User.query.order_by(User.username).first()
 
         assert rv.status_code == HTTPStatus.OK
         assert b"Users" in rv.data
+        assert f"{first_user.username}" in rv.data.decode(ENCODING_UTF_8)
