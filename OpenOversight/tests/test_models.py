@@ -1,6 +1,8 @@
 import datetime
 import random
 import time
+from unittest.mock import MagicMock
+from zoneinfo import ZoneInfo
 
 import pytest
 from pytest import raises
@@ -17,6 +19,7 @@ from OpenOversight.app.models.database import (
     Location,
     Officer,
     Salary,
+    TZDateTime,
     User,
 )
 from OpenOversight.app.utils.choices import STATE_CHOICES
@@ -733,3 +736,32 @@ def test_user_constraints(mockdata, session, faker, by_attr, at_attr):
     setattr(user, by_attr, 1)
     with pytest.raises(IntegrityError):
         session.commit()
+
+
+@pytest.mark.parametrize(
+    "dialect_name,original_value,intermediate_value",
+    [
+        ("sqlite", None, None),
+        (
+            "sqlite",
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+            datetime.datetime(1980, 1, 1, hour=6),
+        ),
+        ("postgresql", None, None),
+        (
+            "postgresql",
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+        ),
+    ],
+)
+def test_tzdatetime_type_decorator(dialect_name, original_value, intermediate_value):
+    tzdt = TZDateTime(timezone=True)
+    dialect = MagicMock()
+    dialect.name = dialect_name
+
+    value = tzdt.process_bind_param(original_value, dialect)
+    assert intermediate_value == value
+
+    value = tzdt.process_result_value(value, dialect)
+    assert original_value == value

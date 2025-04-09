@@ -41,12 +41,12 @@ create_db_diagram:
 	touch database/schema.dot
 	sort database/schema.dot -o schema.dot.sorted
 	# Create a new diagram if there are changes, otherwise clean up files
-	@if diff schema.dot.sorted schema.new.dot.sorted &>/dev/null; then \
-  		echo 'No schema changes detected!'; \
+	@if diff schema.dot.sorted schema.new.dot.sorted > /dev/null 2>&1; then \
+		echo 'No schema changes detected!'; \
 		rm database/schema.new.dot; \
 	else \
-	  	echo 'Detected schema changes, making new DB relationship diagram!'; \
-  		mv database/schema.new.dot database/schema.dot; \
+		echo 'Detected schema changes, making new DB relationship diagram!'; \
+		mv database/schema.new.dot database/schema.dot; \
 		dot -Tpng -o database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
 	fi
 	# Remove all sorted files
