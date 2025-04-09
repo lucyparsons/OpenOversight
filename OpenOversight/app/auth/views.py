@@ -34,7 +34,10 @@ from OpenOversight.app.models.emails import (
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.auth import admin_required
-from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
+from OpenOversight.app.utils.constants import (
+    KEY_APPROVE_REGISTRATIONS,
+    KEY_AUTH_EMAIL_COOLDOWN_HOURS,
+)
 from OpenOversight.app.utils.flask import sitemap
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
@@ -175,6 +178,20 @@ def confirm(token):
 @auth.get("/confirm")
 @login_required
 def resend_confirmation():
+    now = datetime.now(timezone.utc)
+    if (
+        current_user.last_confirmation_sent_at
+        and current_user.last_confirmation_sent_at
+        > now - current_app.config[KEY_AUTH_EMAIL_COOLDOWN_HOURS]
+    ):
+        flash(
+            "We already sent a confirmation email to you recently. Please try again later."
+        )
+        return redirect(url_for("main.index"))
+
+    current_user.last_confirmation_sent_at = now
+    db.session.commit()
+
     token = current_user.generate_confirmation_token()
     EmailClient.send_email(
         ConfirmAccountEmail(current_user.email, user=current_user, token=token)
@@ -211,11 +228,21 @@ def password_reset_request():
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
         user = User.by_email(form.email.data).first()
-        if user:
+        now = datetime.now(timezone.utc)
+        if user and (
+            not user.last_reset_sent_at
+            or user.last_reset_sent_at
+            < now - current_app.config[KEY_AUTH_EMAIL_COOLDOWN_HOURS]
+        ):
+            user.last_reset_sent_at = now
+            db.session.commit()
+
             token = user.generate_reset_token()
             EmailClient.send_email(
                 ResetPasswordEmail(user.email, user=user, token=token)
             )
+        # Show message regardless of whether an email was sent to avoid revealing
+        # whether an account is associated with the email
         flash("An email with instructions to reset your password has been sent to you.")
         return redirect(url_for("auth.login"))
     else:

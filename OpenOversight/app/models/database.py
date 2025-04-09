@@ -25,6 +25,7 @@ from sqlalchemy.orm import (
     validates,
 )
 from sqlalchemy.sql import func as sql_func
+from sqlalchemy.types import TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import (
@@ -55,6 +56,28 @@ from OpenOversight.app.validators import state_validator, url_validator
 db = SQLAlchemy()
 jwt = JsonWebToken(SIGNATURE_ALGORITHM)
 Base: DeclarativeMeta = db.Model
+
+
+class TZDateTime(TypeDecorator):
+    """
+    Store tz-aware datetimes as tz-naive UTC datetimes in sqlite.
+    https://docs.sqlalchemy.org/en/20/core/custom_types.html#store-timezone-aware-timestamps-as-timezone-naive-utc
+    """
+
+    cache_ok = True
+    impl = db.DateTime
+
+    def process_bind_param(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            if not value.tzinfo or value.tzinfo.utcoffset(value) is None:
+                raise TypeError("tzinfo is required")
+            value = value.astimezone(timezone.utc).replace(tzinfo=None)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class BaseModel(Base):
@@ -913,6 +936,8 @@ class User(UserMixin, BaseModel):
         db.ForeignKey("users.id", ondelete="SET NULL", name="users_disabled_by_fkey"),
         unique=False,
     )
+    last_confirmation_sent_at = db.Column(TZDateTime(timezone=True))
+    last_reset_sent_at = db.Column(TZDateTime(timezone=True))
 
     dept_pref = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")

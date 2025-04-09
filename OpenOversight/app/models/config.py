@@ -1,8 +1,10 @@
 import json
 import os
+from datetime import timedelta
 
 from OpenOversight.app.utils.constants import (
     KEY_APPROVE_REGISTRATIONS,
+    KEY_AUTH_EMAIL_COOLDOWN_HOURS,
     KEY_DATABASE_URI,
     KEY_ENV,
     KEY_ENV_DEV,
@@ -83,6 +85,10 @@ class BaseConfig:
 
         # User settings
         self.APPROVE_REGISTRATIONS = os.environ.get(KEY_APPROVE_REGISTRATIONS, False)
+        # Time a user must wait between consecutive confirm account or reset password requests
+        self.AUTH_EMAIL_COOLDOWN_HOURS = timedelta(
+            hours=int(os.environ.get(KEY_AUTH_EMAIL_COOLDOWN_HOURS, 1))
+        )
 
         # Map data
         with open("OpenOversight/map.json") as f:
@@ -110,6 +116,8 @@ class TestingConfig(BaseConfig):
         self.SQLALCHEMY_ENGINE_OPTIONS = {
             "connect_args": {"cached_statements": 0},
         }
+        # Prevent user env settings from interfering with tests
+        self.AUTH_EMAIL_COOLDOWN_HOURS = timedelta(hours=1)
 
 
 class ProductionConfig(BaseConfig):

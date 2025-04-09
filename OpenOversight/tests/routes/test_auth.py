@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from unittest import TestCase
 from urllib.parse import urlparse
@@ -204,6 +205,49 @@ def test_user_can_get_a_confirmation_token_resent(client, session):
         )
 
 
+@pytest.mark.parametrize(
+    "last_confirmation_sent_at,is_rate_limited",
+    [
+        (None, False),
+        (datetime.now(timezone.utc) - timedelta(hours=2), False),
+        (datetime.now(timezone.utc) - timedelta(minutes=10), True),
+    ],
+)
+def test_user_rate_limited_if_resending_confirmation_too_soon(
+    client, session, last_confirmation_sent_at, is_rate_limited
+):
+    # Should only send email if not rate limited
+    log_capture = TestCase.assertNoLogs if is_rate_limited else TestCase.assertLogs
+
+    with (
+        current_app.test_request_context(),
+        log_capture(current_app.logger) as log,
+    ):
+        _, user = login_user(client)
+        user.last_confirmation_sent_at = last_confirmation_sent_at
+        session.commit()
+
+        rv = client.get(url_for("auth.resend_confirmation"), follow_redirects=True)
+
+        if not is_rate_limited:
+            assert b"A new confirmation email has been sent to you." in rv.data
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
+                in str(log.output)
+            )
+
+            # check that confirmation time was updated
+            assert user.last_confirmation_sent_at > datetime.now(
+                timezone.utc
+            ) - timedelta(seconds=1)
+        else:
+            assert (
+                b"We already sent a confirmation email to you recently. Please try again later."
+                in rv.data
+            )
+            assert user.last_confirmation_sent_at == last_confirmation_sent_at
+
+
 def test_user_can_get_password_reset_token_sent(client, session):
     with (
         current_app.test_request_context(),
@@ -246,6 +290,49 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
             f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
             in str(log.output)
         )
+
+
+@pytest.mark.parametrize(
+    "last_reset_sent_at,is_rate_limited",
+    [
+        (None, False),
+        (datetime.now(timezone.utc) - timedelta(hours=2), False),
+        (datetime.now(timezone.utc) - timedelta(minutes=10), True),
+    ],
+)
+def test_user_rate_limited_if_resending_reset_too_soon(
+    client, session, last_reset_sent_at, is_rate_limited
+):
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
+        user = User.query.filter_by(is_administrator=True).first()
+        user.last_reset_sent_at = last_reset_sent_at
+        session.commit()
+
+        form = PasswordResetRequestForm(email=user.email)
+        rv = client.post(
+            url_for("auth.password_reset_request"),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert b"An email with instructions to reset your password" in rv.data
+        if not is_rate_limited:
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
+                in str(log.output)
+            )
+            assert user.last_reset_sent_at > datetime.now(timezone.utc) - timedelta(
+                seconds=1
+            )
+        else:
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
+                not in str(log.output)
+            )
+            assert user.last_reset_sent_at == last_reset_sent_at
 
 
 def test_user_can_get_reset_password_with_valid_token(client, session):
