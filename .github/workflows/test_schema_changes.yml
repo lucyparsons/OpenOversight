@@ -8,6 +8,22 @@ on:
 jobs:
   check-schema:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: openoversight
+          POSTGRES_PASSWORD: terriblepassword
+          POSTGRES_DB: openoversight-dev
+        options: >-
+          --health-cmd="pg_isready -U openoversight"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,17 +32,25 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Wait for Postgres to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U openoversight; do
+            echo "⏳ Waiting for Postgres..."
+            sleep 2
+          done
+          echo "✅ Postgres is ready!"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r dev-requirements.txt
+          pip install eralchemy pygraphviz
 
       - name: Set up Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
 
-      - name: Build application
-        run: |
-          PYTHON_VERSION=${{ matrix.python-version }} make build_with_version
+      - name: Run create_db.py
+        run: python create_db.py
 
       - name: Run create_db_diagram
         run: |
