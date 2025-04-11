@@ -9,7 +9,7 @@ jobs:
   check-schema:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
+      SQLALCHEMY_DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
     services:
       postgres:
