@@ -44,7 +44,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r dev-requirements.txt
-          pip install eralchemy pygraphviz
 
       - name: Set up Graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
