@@ -8,6 +8,8 @@ on:
 jobs:
   check-schema:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
 
     services:
       postgres:
@@ -49,8 +51,6 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
 
       - name: Run create_db.py
-        env:
-          SQLALCHEMY_DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
         run: python create_db.py
 
       - name: Run create_db_diagram
