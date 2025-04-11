@@ -15,7 +15,9 @@ jobs:
         ports:
           - 5432:5432
         env:
-          SQLALCHEMY_DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
+          POSTGRES_USER: openoversight
+          POSTGRES_PASSWORD: terriblepassword
+          POSTGRES_DB: openoversight-dev
         options: >-
           --health-cmd="pg_isready -U openoversight"
           --health-interval=10s
@@ -47,6 +49,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
 
       - name: Run create_db.py
+        env:
+          SQLALCHEMY_DATABASE_URI: postgresql://openoversight:terriblepassword@postgres/openoversight-dev
         run: python create_db.py
 
       - name: Run create_db_diagram
