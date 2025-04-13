@@ -34,7 +34,7 @@ create_db: start
 .PHONY: db_diagram
 db_diagram:
 	# Create new dot file showing current version of schema
-	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/schema.new.dot
+	eralchemy -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.dot
 	# Sort new version of schema file
 	sort database/schema.new.dot -o schema.new.dot.sorted
 	# Create old schema file if it does not exist and then sort it
@@ -53,7 +53,7 @@ db_diagram:
 	rm -f schema.dot.sorted schema.new.dot.sorted
 
 .PHONY: create_db_diagram
-create_db_diagram: build create_db
+create_db_diagram: build
 	docker compose run --rm web-test make db_diagram;
 
 .PHONY: dev
