@@ -8,50 +8,17 @@ on:
 jobs:
   check-schema:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: openoversight
-          POSTGRES_PASSWORD: terriblepassword
-          POSTGRES_DB: openoversight-dev
-        options: >-
-          --health-cmd="pg_isready -U openoversight"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    env:
+      FLASK_APP: OpenOversight.app
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-
-      - name: Wait for Postgres to be ready
-        run: |
-          until pg_isready -h localhost -p 5432 -U openoversight; do
-            echo "⏳ Waiting for Postgres..."
-            sleep 2
-          done
-          echo "✅ Postgres is ready!"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt -r dev-requirements.txt
-
-      - name: Set up Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz-dev graphviz
-
-      - name: Run create_db.py
-        env:
-          SQLALCHEMY_DATABASE_URI: postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev
-        run: python create_db.py
+      - name: Build Docker containers
+        run: docker compose build web-test
 
       - name: Run create_db_diagram
         run: |
