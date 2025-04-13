@@ -9,6 +9,21 @@ jobs:
   check-schema:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: openoversight
+          POSTGRES_PASSWORD: terriblepassword
+          POSTGRES_DB: openoversight-dev
+        options: >-
+          --health-cmd="pg_isready -U openoversight"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
