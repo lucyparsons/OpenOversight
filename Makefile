@@ -31,10 +31,10 @@ create_db: start
 	## Creating database
 	docker compose run --rm web python ./create_db.py
 
-.PHONY: create_db_diagram
-create_db_diagram:
+.PHONY: db_diagram
+db_diagram:
 	# Create new dot file showing current version of schema
-	eralchemy -i postgresql://openoversight:terriblepassword@localhost/openoversight-dev -o database/schema.new.dot
+	eralchemy -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.dot
 	# Sort new version of schema file
 	sort database/schema.new.dot -o schema.new.dot.sorted
 	# Create old schema file if it does not exist and then sort it
@@ -47,10 +47,14 @@ create_db_diagram:
 	else \
 		echo 'Detected schema changes, making new DB relationship diagram!'; \
 		mv database/schema.new.dot database/schema.dot; \
-		dot -Tpng -o database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
+		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
 	fi
 	# Remove all sorted files
-	rm schema.dot.sorted schema.new.dot.sorted
+	rm -f schema.dot.sorted schema.new.dot.sorted
+
+.PHONY: create_db_diagram
+create_db_diagram:
+	docker compose run --rm web-test make db_diagram;
 
 .PHONY: dev
 dev: create_empty_secret create_default_env build start create_db populate
