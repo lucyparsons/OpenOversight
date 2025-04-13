@@ -32,7 +32,7 @@ create_db: start
 	docker compose run --rm web python ./create_db.py
 
 .PHONY: db_diagram
-db_diagram:
+db_diagram: create_default_env
 	# Create new dot file showing current version of schema
 	eralchemy -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.dot
 	# Sort new version of schema file
