@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FLASK_APP: OpenOversight.app
-      UID: general-uid
 
     steps:
       - uses: actions/checkout@v4
