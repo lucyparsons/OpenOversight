@@ -106,6 +106,5 @@ services:
      OO_SERVICE_EMAIL: "openoversightchi@lucyparsonslabs.com"
      TIMEZONE: "America/Chicago"
    volumes:
-     - ./OpenOversight:/usr/src/app/OpenOversight/:z
-     - ./Makefile:/usr/src/app/Makefile:ro
-     - ./database:/usr/src/app/database:Z
+     - .:/usr/src/app:Z
+     - ./build/test-results:/test-results
