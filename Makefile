@@ -54,7 +54,7 @@ db_diagram:
 
 .PHONY: create_db_diagram
 create_db_diagram: build
-	docker compose run --rm web-test make db_diagram;
+	docker compose run --rm web-test make db_diagram
 
 .PHONY: dev
 dev: create_empty_secret create_default_env build start create_db populate
