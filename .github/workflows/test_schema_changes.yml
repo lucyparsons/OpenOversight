@@ -31,5 +31,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run create_db_diagram in Docker
-        run: docker compose run --rm web-test make db_diagram
+      - name: Run create_db_diagram
+        run: |
+          make create_db_diagram | tee output.log
+          if ! grep -q "No schema changes detected!" output.log; then
+            echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
+            exit 1
+          fi
