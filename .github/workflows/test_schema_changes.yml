@@ -41,6 +41,7 @@ jobs:
             exit 1
           fi
 
+        # This isn't entirely necessary, but it helps to clean up containers faster.
       - name: Shut down
         if: always()
         run: docker compose down -v
