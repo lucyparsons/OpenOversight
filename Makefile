@@ -38,7 +38,6 @@ db_diagram:
 	# Sort new version of schema file
 	sort database/schema.new.dot -o schema.new.dot.sorted
 	# Create old schema file if it does not exist and then sort it
-	touch database/schema.dot
 	LC_ALL=C sort database/schema.dot -o schema.dot.sorted
 	# Create a new diagram if there are changes, otherwise clean up files
 	@if diff schema.dot.sorted schema.new.dot.sorted > /dev/null 2>&1; then \
