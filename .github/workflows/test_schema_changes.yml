@@ -23,7 +23,7 @@ jobs:
         run: docker compose build
 
       - name: Start dependencies
-        run: docker compose up -d postgres minio createbucket
+        run: docker compose up -d postgres
 
       - name: Wait for Postgres to be ready
         run: |
