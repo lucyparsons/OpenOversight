@@ -53,7 +53,7 @@ db_diagram:
 	rm -f schema.dot.sorted schema.new.dot.sorted
 
 .PHONY: create_db_diagram
-create_db_diagram: build
+create_db_diagram: build start
 	docker compose run --rm web-test make db_diagram
 
 .PHONY: dev
