@@ -1,5 +1,3 @@
-version: "3.4"
-
 secrets:
   service-account-key:
     file: ./service_account_key.json
