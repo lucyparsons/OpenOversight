@@ -19,6 +19,9 @@ jobs:
       - name: Set environment UID for Docker
         run: echo "UID=$(id -u)" >> $GITHUB_ENV
 
+      - name: Create .env file
+        run: make create_default_env
+
       - name: Build services
         run: docker compose build
 
