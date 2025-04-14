@@ -34,7 +34,11 @@ jobs:
           docker compose exec -T postgres bash -c "until pg_isready -U openoversight; do sleep 1; done"
 
       - name: Run schema check
-        run: docker compose run --rm web-test make db_diagram
+        run: docker compose run --rm web-test make db_diagram | tee output.log
+          if ! grep -q "No schema changes detected!" output.log; then
+            echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
+            exit 1
+          fi
 
       - name: Shut down
         if: always()
