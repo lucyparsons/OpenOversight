@@ -15,7 +15,7 @@ jobs:
       - name: Set up Docker Compose
         run: |
           docker compose version
-      
+
       - name: Set environment UID for Docker
         run: echo "UID=$(id -u)" >> $GITHUB_ENV
 
