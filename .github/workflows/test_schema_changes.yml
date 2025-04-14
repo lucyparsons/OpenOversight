@@ -9,32 +9,30 @@ jobs:
   check-schema:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: openoversight
-          POSTGRES_PASSWORD: terriblepassword
-          POSTGRES_DB: openoversight-dev
-        options: >-
-          --health-cmd="pg_isready -U openoversight"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
 
-      - name: Run create_db_diagram
+      - name: Set up Docker Compose
         run: |
-          make create_db_diagram | tee output.log
-          if ! grep -q "No schema changes detected!" output.log; then
-            echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
-            exit 1
-          fi
+          docker compose version
+      
+      - name: Set environment UID for Docker
+        run: echo "UID=$(id -u)" >> $GITHUB_ENV
+
+      - name: Build services
+        run: docker compose build
+
+      - name: Start dependencies
+        run: docker compose up -d postgres minio createbucket
+
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for Postgres to be ready..."
+          docker compose exec -T postgres bash -c "until pg_isready -U openoversight; do sleep 1; done"
+
+      - name: Run schema check
+        run: docker compose run --rm web-test make db_diagram
+
+      - name: Shut down
+        if: always()
+        run: docker compose down -v
