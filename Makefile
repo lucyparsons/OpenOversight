@@ -35,13 +35,17 @@ create_db: start
 db_diagram:
 	# Create new dot file showing current version of schema
 	eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.md
+
 	# Remove hyperlink in file
 	sed -i '/^!\[\](/d' database/schema.new.md
+
 	# Sort new version of schema file
 	LC_ALL=C sort database/schema.new.md -o schema.new.md.sorted
+
 	# Create old schema file if it does not exist and then sort it
 	touch database/schema.md
 	LC_ALL=C sort database/schema.md -o schema.md.sorted
+
 	# Create a new diagram if there are changes, otherwise clean up files
 	@if diff schema.md.sorted schema.new.md.sorted > /dev/null 2>&1; then \
 		echo 'No schema changes detected!'; \
@@ -53,6 +57,7 @@ db_diagram:
 		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
 		rm database/schema.dot; \
 	fi
+
 	# Remove all sorted files
 	rm -f schema.md.sorted schema.new.md.sorted
 
