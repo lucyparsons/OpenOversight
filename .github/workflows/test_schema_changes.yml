@@ -42,6 +42,7 @@ jobs:
         run: |
           docker compose run --rm web-test make db_diagram | tee output.log
           if ! grep -q "No schema changes detected!" output.log; then
+            cat output.log
             echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
             exit 1
           fi
