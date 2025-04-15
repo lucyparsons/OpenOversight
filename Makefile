@@ -34,23 +34,27 @@ create_db: start
 .PHONY: db_diagram
 db_diagram:
 	# Create new dot file showing current version of schema
-	eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.dot
+	eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.md
+	# Remove hyperlink in file
+	sed -i '/^!\[\](/d' database/schema.new.md
 	# Sort new version of schema file
-	LC_ALL=C sort database/schema.new.dot -o schema.new.dot.sorted
+	LC_ALL=C sort database/schema.new.md -o schema.new.md.sorted
 	# Create old schema file if it does not exist and then sort it
-	touch database/schema.dot
-	LC_ALL=C sort database/schema.dot -o schema.dot.sorted
+	touch database/schema.md
+	LC_ALL=C sort database/schema.md -o schema.md.sorted
 	# Create a new diagram if there are changes, otherwise clean up files
-	@if diff schema.dot.sorted schema.new.dot.sorted > /dev/null 2>&1; then \
+	@if diff schema.md.sorted schema.new.md.sorted > /dev/null 2>&1; then \
 		echo 'No schema changes detected!'; \
-		rm database/schema.new.dot; \
+		rm database/schema.new.md; \
 	else \
 		echo 'Detected schema changes, making new DB relationship diagram!'; \
-		mv database/schema.new.dot database/schema.dot; \
+		mv database/schema.new.md database/schema.md; \
+		eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.dot; \
 		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
+		rm database/schema.new.dot; \
 	fi
 	# Remove all sorted files
-	rm -f schema.dot.sorted schema.new.dot.sorted
+	rm -f schema.md.sorted schema.new.md.sorted
 
 .PHONY: create_db_diagram
 create_db_diagram: build start
