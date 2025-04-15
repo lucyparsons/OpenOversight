@@ -38,6 +38,10 @@ jobs:
           echo "Waiting for Postgres to be ready..."
           docker compose exec -T postgres bash -c "until pg_isready -U openoversight; do sleep 1; done"
 
+      - name: Create database
+        run: |
+          docker compose run --rm web-test python ./create_db.py
+
       - name: Run schema check
         run: |
           docker compose run --rm web-test make db_diagram | tee output.log
