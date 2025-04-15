@@ -34,7 +34,7 @@ create_db: start
 .PHONY: db_diagram
 db_diagram:
 	# Create new dot file showing current version of schema
-	eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.new.md
+	eralchemy2 -i postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev -o database/schema.new.md
 
 	# Remove hyperlink in file
 	sed -i '/^!\[\](/d' database/schema.new.md
@@ -57,7 +57,7 @@ db_diagram:
 		echo 'New schema stuff'; \
 		cat database/schema.new.md; \
 		mv database/schema.new.md database/schema.md; \
-		eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.dot; \
+		eralchemy2 -i postgresql://openoversight:terriblepassword@localhost:5432/openoversight-dev -o database/schema.dot; \
 		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
 		rm database/schema.dot; \
 	fi
