@@ -1,14 +1,16 @@
 <!--
 
 classDiagram
-class license_plates{
+class departments{
  *INTEGER id NOT NULL
    TIMESTAMP created_at NOT NULL
    INTEGER created_by
    TIMESTAMP last_updated_at NOT NULL
    INTEGER last_updated_by
-   VARCHAR<8> number NOT NULL
-   VARCHAR<2> state
+   VARCHAR<255> name NOT NULL
+   VARCHAR<100> short_name NOT NULL
+   VARCHAR<2> state NOT NULL
+   VARCHAR<100> unique_internal_identifier_label
 }
 class users{
  *INTEGER id NOT NULL
@@ -30,16 +32,42 @@ class users{
    VARCHAR<128> password_hash
    VARCHAR<64> username
 }
-class departments{
+class jobs{
  *INTEGER id NOT NULL
    TIMESTAMP created_at NOT NULL
    INTEGER created_by
+   INTEGER department_id
+   BOOLEAN is_sworn_officer
+   VARCHAR<255> job_title NOT NULL
    TIMESTAMP last_updated_at NOT NULL
    INTEGER last_updated_by
-   VARCHAR<255> name NOT NULL
-   VARCHAR<100> short_name NOT NULL
-   VARCHAR<2> state NOT NULL
-   VARCHAR<100> unique_internal_identifier_label
+   INTEGER order NOT NULL
+}
+class officers{
+ *INTEGER id NOT NULL
+   INTEGER birth_year
+   TIMESTAMP created_at NOT NULL
+   INTEGER created_by
+   INTEGER department_id
+   DATE employment_date
+   VARCHAR<120> first_name
+   VARCHAR<5> gender
+   VARCHAR<120> last_name
+   TIMESTAMP last_updated_at NOT NULL
+   INTEGER last_updated_by
+   VARCHAR<120> middle_initial
+   VARCHAR<120> race
+   VARCHAR<120> suffix
+   VARCHAR<50> unique_internal_identifier
+}
+class unit_types{
+ *INTEGER id NOT NULL
+   TIMESTAMP created_at NOT NULL
+   INTEGER created_by
+   INTEGER department_id
+   VARCHAR<120> description
+   TIMESTAMP last_updated_at NOT NULL
+   INTEGER last_updated_by
 }
 class raw_images{
  *INTEGER id NOT NULL
@@ -67,6 +95,15 @@ class locations{
    VARCHAR<100> street_name
    VARCHAR<5> zip_code
 }
+class license_plates{
+ *INTEGER id NOT NULL
+   TIMESTAMP created_at NOT NULL
+   INTEGER created_by
+   TIMESTAMP last_updated_at NOT NULL
+   INTEGER last_updated_by
+   VARCHAR<8> number NOT NULL
+   VARCHAR<2> state
+}
 class links{
  *INTEGER id NOT NULL
    VARCHAR<255> author
@@ -84,43 +121,6 @@ class officer_links{
  *INTEGER link_id NOT NULL
    *INTEGER officer_id NOT NULL
    TIMESTAMP created_at NOT NULL
-}
-class officers{
- *INTEGER id NOT NULL
-   INTEGER birth_year
-   TIMESTAMP created_at NOT NULL
-   INTEGER created_by
-   INTEGER department_id
-   DATE employment_date
-   VARCHAR<120> first_name
-   VARCHAR<5> gender
-   VARCHAR<120> last_name
-   TIMESTAMP last_updated_at NOT NULL
-   INTEGER last_updated_by
-   VARCHAR<120> middle_initial
-   VARCHAR<120> race
-   VARCHAR<120> suffix
-   VARCHAR<50> unique_internal_identifier
-}
-class jobs{
- *INTEGER id NOT NULL
-   TIMESTAMP created_at NOT NULL
-   INTEGER created_by
-   INTEGER department_id
-   BOOLEAN is_sworn_officer
-   VARCHAR<255> job_title NOT NULL
-   TIMESTAMP last_updated_at NOT NULL
-   INTEGER last_updated_by
-   INTEGER order NOT NULL
-}
-class unit_types{
- *INTEGER id NOT NULL
-   TIMESTAMP created_at NOT NULL
-   INTEGER created_by
-   INTEGER department_id
-   VARCHAR<120> description
-   TIMESTAMP last_updated_at NOT NULL
-   INTEGER last_updated_by
 }
 class notes{
  *INTEGER id NOT NULL
@@ -213,58 +213,58 @@ class incident_officers{
    *INTEGER officers_id NOT NULL
    TIMESTAMP created_at NOT NULL
 }
-users "0..1" -- "0..n" license_plates
-users "0..1" -- "0..n" license_plates
+users "0..1" -- "0..n" departments
+users "0..1" -- "0..n" departments
+users "0..1" -- "0..n" users
 users "0..1" -- "0..n" users
 departments "0..1" -- "0..n" users
 users "0..1" -- "0..n" users
 departments "0..1" -- "0..n" users
-users "0..1" -- "0..n" users
-users "0..1" -- "0..n" departments
-users "0..1" -- "0..n" departments
+users "0..1" -- "0..n" jobs
+departments "0..1" -- "0..n" jobs
+users "0..1" -- "0..n" jobs
+departments "0..1" -- "0..n" officers
+users "0..1" -- "0..n" officers
+users "0..1" -- "0..n" officers
+users "0..1" -- "0..n" unit_types
+users "0..1" -- "0..n" unit_types
+departments "0..1" -- "0..n" unit_types
+users "0..1" -- "0..n" raw_images
 users "0..1" -- "0..n" raw_images
 departments "0..1" -- "0..n" raw_images
-users "0..1" -- "0..n" raw_images
 users "0..1" -- "0..n" locations
 users "0..1" -- "0..n" locations
+users "0..1" -- "0..n" license_plates
+users "0..1" -- "0..n" license_plates
 users "0..1" -- "0..n" links
 users "0..1" -- "0..n" links
 officers "1" -- "0..n" officer_links
 links "1" -- "0..n" officer_links
-users "0..1" -- "0..n" officers
-users "0..1" -- "0..n" officers
-departments "0..1" -- "0..n" officers
-users "0..1" -- "0..n" jobs
-departments "0..1" -- "0..n" jobs
-users "0..1" -- "0..n" jobs
-users "0..1" -- "0..n" unit_types
-departments "0..1" -- "0..n" unit_types
-users "0..1" -- "0..n" unit_types
-users "0..1" -- "0..n" notes
 officers "0..1" -- "0..n" notes
+users "0..1" -- "0..n" notes
 users "0..1" -- "0..n" notes
 users "0..1" -- "0..n" descriptions
 officers "0..1" -- "0..n" descriptions
 users "0..1" -- "0..n" descriptions
-users "0..1" -- "0..n" salaries
-users "0..1" -- "0..n" salaries
 officers "0..1" -- "0..n" salaries
+users "0..1" -- "0..n" salaries
+users "0..1" -- "0..n" salaries
 officers "0..1" -- "0..n" assignments
-jobs "1" -- "0..n" assignments
-users "0..1" -- "0..n" assignments
 users "0..1" -- "0..n" assignments
 unit_types "0..1" -- "0..n" assignments
-raw_images "0..1" -- "0..n" faces
+users "0..1" -- "0..n" assignments
+jobs "1" -- "0..n" assignments
 raw_images "0..1" -- "0..n" faces
 users "0..1" -- "0..n" faces
-users "0..1" -- "0..n" faces
+raw_images "0..1" -- "0..n" faces
 officers "0..1" -- "0..n" faces
+users "0..1" -- "0..n" faces
 users "0..1" -- "0..n" incidents
-locations "0..1" -- "0..n" incidents
+users "0..1" -- "0..n" incidents
 departments "0..1" -- "0..n" incidents
-users "0..1" -- "0..n" incidents
-incidents "1" -- "0..n" officer_incidents
+locations "0..1" -- "0..n" incidents
 officers "1" -- "0..n" officer_incidents
+incidents "1" -- "0..n" officer_incidents
 incidents "1" -- "0..n" incident_links
 links "1" -- "0..n" incident_links
 incidents "1" -- "0..n" incident_license_plates
