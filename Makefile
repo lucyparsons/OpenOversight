@@ -51,7 +51,7 @@ db_diagram:
 		mv database/schema.new.md database/schema.md; \
 		eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.dot; \
 		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \
-		rm database/schema.new.dot; \
+		rm database/schema.dot; \
 	fi
 	# Remove all sorted files
 	rm -f schema.md.sorted schema.new.md.sorted
