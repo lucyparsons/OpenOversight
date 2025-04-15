@@ -1,37 +1,7 @@
 <!--
 
 classDiagram
-class departments{
- *INTEGER id NOT NULL
-   TIMESTAMP created_at NOT NULL
-   INTEGER created_by
-   TIMESTAMP last_updated_at NOT NULL
-   INTEGER last_updated_by
-   VARCHAR<255> name NOT NULL
-   VARCHAR<100> short_name NOT NULL
-   VARCHAR<2> state NOT NULL
-   VARCHAR<100> unique_internal_identifier_label
-}
-class users{
- *INTEGER id NOT NULL
-   VARCHAR<36> _uuid NOT NULL
-   INTEGER ac_department_id
-   TIMESTAMP approved_at
-   INTEGER approved_by
-   TIMESTAMP confirmed_at
-   INTEGER confirmed_by
-   TIMESTAMP created_at NOT NULL
-   INTEGER dept_pref
-   TIMESTAMP disabled_at
-   INTEGER disabled_by
-   VARCHAR<64> email
-   BOOLEAN is_administrator
-   BOOLEAN is_area_coordinator
-   TIMESTAMP last_confirmation_sent_at
-   TIMESTAMP last_reset_sent_at
-   VARCHAR<128> password_hash
-   VARCHAR<64> username
-}
+
 class jobs{
  *INTEGER id NOT NULL
    TIMESTAMP created_at NOT NULL
