@@ -52,10 +52,6 @@ db_diagram:
 		rm database/schema.new.md; \
 	else \
 		echo 'Detected schema changes, making new DB relationship diagram!'; \
-		echo 'Old schema stuff'; \
-		cat database/schema.md; \
-		echo 'New schema stuff'; \
-		cat database/schema.new.md; \
 		mv database/schema.new.md database/schema.md; \
 		eralchemy2 -i postgresql://openoversight:terriblepassword@postgres/openoversight-dev -o database/schema.dot; \
 		dot -Tpng -o /usr/src/app/database/database_relationships.png -Grankdir=TB -Kdot database/schema.dot; \

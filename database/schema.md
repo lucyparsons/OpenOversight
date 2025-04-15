@@ -1,7 +1,37 @@
 <!--
 
 classDiagram
-
+class users{
+ *INTEGER id NOT NULL
+   VARCHAR<36> _uuid NOT NULL
+   INTEGER ac_department_id
+   TIMESTAMP approved_at
+   INTEGER approved_by
+   TIMESTAMP confirmed_at
+   INTEGER confirmed_by
+   TIMESTAMP created_at NOT NULL
+   INTEGER dept_pref
+   TIMESTAMP disabled_at
+   INTEGER disabled_by
+   VARCHAR<64> email
+   BOOLEAN is_administrator
+   BOOLEAN is_area_coordinator
+   TIMESTAMP last_confirmation_sent_at
+   TIMESTAMP last_reset_sent_at
+   VARCHAR<128> password_hash
+   VARCHAR<64> username
+}
+class departments{
+ *INTEGER id NOT NULL
+   TIMESTAMP created_at NOT NULL
+   INTEGER created_by
+   TIMESTAMP last_updated_at NOT NULL
+   INTEGER last_updated_by
+   VARCHAR<255> name NOT NULL
+   VARCHAR<100> short_name NOT NULL
+   VARCHAR<2> state NOT NULL
+   VARCHAR<100> unique_internal_identifier_label
+}
 class jobs{
  *INTEGER id NOT NULL
    TIMESTAMP created_at NOT NULL
@@ -183,22 +213,22 @@ class incident_officers{
    *INTEGER officers_id NOT NULL
    TIMESTAMP created_at NOT NULL
 }
-users "0..1" -- "0..n" departments
-users "0..1" -- "0..n" departments
 users "0..1" -- "0..n" users
 users "0..1" -- "0..n" users
 departments "0..1" -- "0..n" users
-users "0..1" -- "0..n" users
 departments "0..1" -- "0..n" users
-users "0..1" -- "0..n" jobs
+users "0..1" -- "0..n" users
+users "0..1" -- "0..n" departments
+users "0..1" -- "0..n" departments
 departments "0..1" -- "0..n" jobs
 users "0..1" -- "0..n" jobs
+users "0..1" -- "0..n" jobs
+users "0..1" -- "0..n" officers
+users "0..1" -- "0..n" officers
 departments "0..1" -- "0..n" officers
-users "0..1" -- "0..n" officers
-users "0..1" -- "0..n" officers
-users "0..1" -- "0..n" unit_types
-users "0..1" -- "0..n" unit_types
 departments "0..1" -- "0..n" unit_types
+users "0..1" -- "0..n" unit_types
+users "0..1" -- "0..n" unit_types
 users "0..1" -- "0..n" raw_images
 users "0..1" -- "0..n" raw_images
 departments "0..1" -- "0..n" raw_images
@@ -210,31 +240,31 @@ users "0..1" -- "0..n" links
 users "0..1" -- "0..n" links
 officers "1" -- "0..n" officer_links
 links "1" -- "0..n" officer_links
-officers "0..1" -- "0..n" notes
 users "0..1" -- "0..n" notes
+officers "0..1" -- "0..n" notes
 users "0..1" -- "0..n" notes
 users "0..1" -- "0..n" descriptions
 officers "0..1" -- "0..n" descriptions
 users "0..1" -- "0..n" descriptions
+users "0..1" -- "0..n" salaries
+users "0..1" -- "0..n" salaries
 officers "0..1" -- "0..n" salaries
-users "0..1" -- "0..n" salaries
-users "0..1" -- "0..n" salaries
-officers "0..1" -- "0..n" assignments
+users "0..1" -- "0..n" assignments
 users "0..1" -- "0..n" assignments
 unit_types "0..1" -- "0..n" assignments
-users "0..1" -- "0..n" assignments
+officers "0..1" -- "0..n" assignments
 jobs "1" -- "0..n" assignments
 raw_images "0..1" -- "0..n" faces
 users "0..1" -- "0..n" faces
 raw_images "0..1" -- "0..n" faces
-officers "0..1" -- "0..n" faces
 users "0..1" -- "0..n" faces
-users "0..1" -- "0..n" incidents
+officers "0..1" -- "0..n" faces
 users "0..1" -- "0..n" incidents
 departments "0..1" -- "0..n" incidents
 locations "0..1" -- "0..n" incidents
-officers "1" -- "0..n" officer_incidents
+users "0..1" -- "0..n" incidents
 incidents "1" -- "0..n" officer_incidents
+officers "1" -- "0..n" officer_incidents
 incidents "1" -- "0..n" incident_links
 links "1" -- "0..n" incident_links
 incidents "1" -- "0..n" incident_license_plates
