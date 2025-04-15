@@ -40,9 +40,9 @@ jobs:
 
       - name: Create database
         run: |
-          docker compose run --rm web-test \
+          docker compose run --rm \
           -e SQLALCHEMY_DATABASE_URI="postgresql://openoversight:terriblepassword@postgres/openoversight-dev" \
-          python ./create_db.py
+          web-test python ./create_db.py
 
       - name: Run schema check
         run: |
