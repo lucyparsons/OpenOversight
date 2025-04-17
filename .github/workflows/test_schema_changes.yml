@@ -1,0 +1,53 @@
+name: Check for Schema Changes
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  check-schema:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose version
+
+      - name: Set environment UID for Docker
+        run: echo "UID=$(id -u)" >> $GITHUB_ENV
+
+      - name: Create .env file
+        run: make create_default_env
+
+      - name: Build services
+        run: docker compose build
+
+      - name: Start dependencies
+        run: docker compose up -d postgres
+
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for Postgres to be ready..."
+          docker compose exec -T postgres bash -c "until pg_isready -U openoversight; do sleep 1; done"
+
+      - name: Create database
+        run: |
+          docker compose run --rm \
+          -e SQLALCHEMY_DATABASE_URI="postgresql://openoversight:terriblepassword@postgres/openoversight-dev" \
+          web-test python ./create_db.py
+
+      - name: Run schema check
+        run: |
+          docker compose run --rm web-test make db_diagram | tee output.log
+          if ! grep -q "No schema changes detected!" output.log; then
+            echo "❌ Detected schema changes. Please run 'make create_db_diagram' and commit the updated diagram."
+            exit 1
+          fi
+
+        # This isn't entirely necessary, but it helps to clean up containers faster.
+      - name: Shut down
+        if: always()
+        run: docker compose down -v
