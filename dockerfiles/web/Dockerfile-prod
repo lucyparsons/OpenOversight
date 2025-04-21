@@ -29,7 +29,7 @@ COPY requirements.txt /usr/src/app/
 RUN pip3 install -r requirements.txt
 
 # Copy python script to initialize database.
-COPY create_db.py /usr/src/app/
+COPY ./scripts/create_db.py /usr/src/app/
 
 WORKDIR /usr/src/app/
 

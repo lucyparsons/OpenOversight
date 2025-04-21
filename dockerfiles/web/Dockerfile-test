@@ -21,7 +21,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 
 RUN playwright install --with-deps chromium
 
-COPY create_db.py test_data.py /usr/src/app/
+COPY ./scripts/create_db.py ./scripts/test_data.py /usr/src/app/
 
 ENV SECRET_KEY 4Q6ZaQQdiqtmvZaxP1If
 

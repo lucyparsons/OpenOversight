@@ -37,7 +37,7 @@ jobs:
         run: |
           docker compose run --rm \
           -e SQLALCHEMY_DATABASE_URI="postgresql://openoversight:terriblepassword@postgres/openoversight-dev" \
-          web-test python ./create_db.py
+          web-test python ./scripts/create_db.py
 
       - name: Run schema check
         run: |
