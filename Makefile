@@ -77,7 +77,7 @@ populate: create_db
 	done
 	@echo "Postgres is up"
 	## Populate database with test data
-	docker compose run --rm web python ./test_data.py -p
+	docker compose run --rm web python ./scripts/test_data.py -p
 
 # Run tests
 .PHONY: test
