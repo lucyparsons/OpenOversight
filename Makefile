@@ -29,7 +29,7 @@ create_db: start
 	done
 	@echo "Postgres is up"
 	## Creating database
-	docker compose run --rm web python ./scripts/create_db.py
+	docker compose run --rm web python scripts/create_db.py
 
 .PHONY: db_diagram
 db_diagram:
