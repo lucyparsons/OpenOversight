@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="card p-5">
-          <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
+          <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else None) }}"
                 method="post">
             {% if form.errors %}
               <div>
@@ -118,7 +118,7 @@
             </div>
           </div>
           <div class="text-center mt-3">
-            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else None, contains_cops=0) }}"
                class="done-button btn btn-lg btn-success mx-auto">
               {{ render_icon("check") }}
               All officers have been identified!
@@ -126,7 +126,7 @@
           </div>
         </div>
         <div class="mt-5 text-md-end text-center">
-          <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
+          <a href="{{ url_for('main.label_data', department_id=department.id if department else None) }}"
              class="skip-button btn btn-lg btn-primary"
              role="button">
             Next Photo
