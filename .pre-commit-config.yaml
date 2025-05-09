@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         exclude: ^database/schema.dot$
@@ -33,7 +33,7 @@ repos:
       - id: python-no-log-warn
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         name: Run isort to sort imports
@@ -65,7 +65,7 @@ repos:
             - --quiet
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
+    rev: v0.11.9
     hooks:
       - id: ruff
         types_or: [python,pyi]
@@ -79,12 +79,12 @@ repos:
           - --target-version=py311
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.0
+    rev: v1.15.0
     hooks:
       - id: mypy
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.34.1
+    rev: v1.36.4
     hooks:
       - id: djlint-reformat
         pass_filenames: false
