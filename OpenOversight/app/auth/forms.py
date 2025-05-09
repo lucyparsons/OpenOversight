@@ -31,7 +31,7 @@ class RegistrationForm(Form):
             Regexp(
                 "^[A-Za-z][A-Za-z0-9_.]*$",
                 0,
-                "Usernames must have only letters, " "numbers, dots or underscores",
+                "Usernames must have only letters, numbers, dots or underscores",
             ),
         ],
     )

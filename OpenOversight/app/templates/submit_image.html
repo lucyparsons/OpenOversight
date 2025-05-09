@@ -24,7 +24,7 @@
       </p>
       {% if not current_user.id %}
         <p>
-          Please consider first <a href="{{ url_for("auth.register") }}">creating an account</a> and <a href="{{ url_for("auth.login") }}">logging in</a> so that we can keep track of the images you've submitted and contact you with any questions.
+          Please consider first <a href="{{ url_for('auth.register') }}">creating an account</a> and <a href="{{ url_for('auth.login') }}">logging in</a> so that we can keep track of the images you've submitted and contact you with any questions.
         </p>
       {% else %}
         <p>Your user ID will be attached to all photo submissions while you are signed in.</p>

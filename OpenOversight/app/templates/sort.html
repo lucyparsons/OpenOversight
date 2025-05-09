@@ -79,7 +79,7 @@
       {% else %}
         <h1>All images have been classified!</h1>
         <p>
-          <a href="{{ url_for("main.submit_data") }}"
+          <a href="{{ url_for('main.submit_data') }}"
              class="btn btn-lg btn-primary"
              role="button">Submit officer pictures to us</a>
           <a href="{{ url_for('main.label_data', department_id=department_id) }}"

@@ -111,9 +111,9 @@ class BaseModel(Base):
             if isinstance(value, (date, datetime)):
                 ret_str += f"{column.key}: {value.isoformat()}"
             elif isinstance(value, date):
-                ret_str += f'{column.key}: {value.strftime("%Y-%m-%d")}'
+                ret_str += f"{column.key}: {value.strftime('%Y-%m-%d')}"
             elif isinstance(value, dt_time):
-                ret_str += f'{column.key}: {value.strftime("%I:%M %p")}'
+                ret_str += f"{column.key}: {value.strftime('%I:%M %p')}"
             else:
                 ret_str += f"{column.key}: {value}"
 

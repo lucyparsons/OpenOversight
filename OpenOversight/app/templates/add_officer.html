@@ -13,7 +13,7 @@
             method="post"
             role="form"
             id="add-officer-form"
-            data-jobs-url="{{ url_for("main.get_dept_ranks") }}">
+            data-jobs-url="{{ url_for('main.get_dept_ranks') }}">
         {{ form.hidden_tag() }}
         {{ wtf.render_hidden_errors(form) }}
         {{ wtf.render_field(form.department, class="form-select") }}
@@ -27,7 +27,7 @@
         {{ wtf.render_field(form.unique_internal_identifier) }}
         {{ wtf.render_field(form.job_id, class="form-select") }}
         {{ wtf.render_field(form.unit, class="form-select") }}
-        <a href="{{ url_for("main.add_unit") }}">Don't see your unit? Add one!</a>
+        <a href="{{ url_for('main.add_unit') }}">Don't see your unit? Add one!</a>
         {{ wtf.render_field(form.employment_date) }}
         {{ wtf.render_field(form.birth_year) }}
         <div>
