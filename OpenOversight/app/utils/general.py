@@ -123,7 +123,7 @@ def prompt_yes_no(prompt, default="no"):
         try:
             ret = str_to_bool(choice)
         except ValueError:
-            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
             continue
         return ret
 

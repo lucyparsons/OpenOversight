@@ -20,7 +20,7 @@
     </div>
     <div class="col-md-9 mx-sm-auto">
       <p>
-        In the <a href="{{ url_for("main.get_started_labeling") }}">Volunteer</a> page, you will see under each law enforcement agency links to the two volunteer tasks when logged in:
+        In the <a href="{{ url_for('main.get_started_labeling') }}">Volunteer</a> page, you will see under each law enforcement agency links to the two volunteer tasks when logged in:
       </p>
       <div class="row text-center">
         <div class="col-sm-6 mx-sm-auto">
@@ -116,11 +116,11 @@
       </p>
       <p>
         You can also see how you are doing compared to other volunteers by
-        <a href="{{ url_for("main.leaderboard") }}">checking out the leaderboard</a>.
+        <a href="{{ url_for('main.leaderboard') }}">checking out the leaderboard</a>.
       </p>
       <h2>Ready to get started?</h2>
       <div class="text-center">
-        <a href="{{ url_for("main.get_started_labeling") }}">
+        <a href="{{ url_for('main.get_started_labeling') }}">
           <button type="button" class="btn btn-lg btn-primary">Proceed</button>
         </a>
       </div>

@@ -36,7 +36,7 @@
   {% endblock js_footer %}
 {% endif %}
 {% if is_admin_or_coordinator %}
-  <a href="{{ url_for("main.incident_api_new", officer_id=officer.id) }}"
+  <a href="{{ url_for('main.incident_api_new', officer_id=officer.id) }}"
      class="btn btn-primary">New
   Incident</a>
 {% endif %}
