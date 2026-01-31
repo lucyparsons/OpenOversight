@@ -43,7 +43,7 @@ services:
 
  postgres:
    restart: always
-   image: postgres:latest
+   image: postgres:17
    environment:
      POSTGRES_USER: openoversight
      POSTGRES_PASSWORD: terriblepassword
