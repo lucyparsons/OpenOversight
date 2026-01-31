@@ -86,8 +86,18 @@ class ConfirmAccountEmail(Email):
         subject = (
             f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
         )
-        body = render_template(f"{self.EMAIL_PATH}confirm.txt", user=user, token=token)
-        html = render_template(f"{self.EMAIL_PATH}confirm.html", user=user, token=token)
+        body = render_template(
+            f"{self.EMAIL_PATH}confirm.txt",
+            user=user,
+            token=token,
+            help_email=current_app.config[KEY_OO_HELP_EMAIL],
+        )
+        html = render_template(
+            f"{self.EMAIL_PATH}confirm.html",
+            user=user,
+            token=token,
+            help_email=current_app.config[KEY_OO_HELP_EMAIL],
+        )
         super().__init__(body, html, subject, receiver)
 
 

@@ -49,7 +49,7 @@
   <body role="document" class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-dark navbar-expand-lg bg-body-tertiary sticky-top">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for("main.index") }}">OpenOversight</a>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">OpenOversight</a>
         <button type="button"
                 class="navbar-toggler"
                 data-bs-toggle="collapse"
@@ -62,26 +62,26 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.browse") }}">Browse</a>
+              <a class="nav-link" href="{{ url_for('main.browse') }}">Browse</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
+              <a class="nav-link" href="{{ url_for('main.get_officer') }}">Find an Officer</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.submit_data") }}">Submit Images</a>
+              <a class="nav-link" href="{{ url_for('main.submit_data') }}">Submit Images</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
+              <a class="nav-link" href="{{ url_for('main.get_started_labeling') }}">Volunteer</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.about_oo") }}">About</a>
+              <a class="nav-link" href="{{ url_for('main.about_oo') }}">About</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for("main.contact_oo") }}">Contact</a>
+              <a class="nav-link" href="{{ url_for('main.contact_oo') }}">Contact</a>
             </li>
             {% if current_user and current_user.is_administrator %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for("auth.get_users") }}">Users</a>
+                <a class="nav-link" href="{{ url_for('auth.get_users') }}">Users</a>
               </li>
             {% endif %}
           </ul>
@@ -100,26 +100,26 @@
                        href="{{ url_for('main.profile', username=current_user.username) }}">Profile</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{{ url_for("auth.change_password") }}">Change Password</a>
+                    <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">Change Password</a>
                   </li>
                   <li>
                     <a class="dropdown-item"
-                       href="{{ url_for("auth.change_email_request") }}">Change Email</a>
+                       href="{{ url_for('auth.change_email_request') }}">Change Email</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{{ url_for("auth.change_dept") }}">Change Default Department</a>
+                    <a class="dropdown-item" href="{{ url_for('auth.change_dept') }}">Change Default Department</a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="{{ url_for("auth.logout") }}">Log Out</a>
+                    <a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log Out</a>
                   </li>
                 </ul>
               </li>
             {% else %}
               <li class="nav-item usernav register">
-                <a class="nav-link" href="{{ url_for("auth.register") }}">Register</a>
+                <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
               </li>
               <li class="nav-item usernav">
-                <a class="nav-link" href="{{ url_for("auth.login") }}">Log In</a>
+                <a class="nav-link" href="{{ url_for('auth.login') }}">Log In</a>
               </li>
             {% endif %}
           </ul>
@@ -149,13 +149,13 @@
       <div class="container">
         <div class="row text-center horizontal-padding">
           <div class="col-sm-12 d-lg-flex justify-content-center">
-            <a class="nav-link mx-4" href="{{ url_for("main.get_officer") }}">Find an Officer</a>
-            <a class="nav-link mx-4" href="{{ url_for("main.browse") }}">Browse Officers</a>
-            <a class="nav-link mx-4" href="{{ url_for("main.submit_data") }}">Submit Images</a>
+            <a class="nav-link mx-4" href="{{ url_for('main.get_officer') }}">Find an Officer</a>
+            <a class="nav-link mx-4" href="{{ url_for('main.browse') }}">Browse Officers</a>
+            <a class="nav-link mx-4" href="{{ url_for('main.submit_data') }}">Submit Images</a>
             <a class="nav-link mx-4"
-               href="{{ url_for("main.get_started_labeling") }}">Volunteer</a>
-            <a class="nav-link mx-4" href="{{ url_for("main.about_oo") }}">About</a>
-            <a class="nav-link mx-4" href="{{ url_for("main.contact_oo") }}">Contact</a>
+               href="{{ url_for('main.get_started_labeling') }}">Volunteer</a>
+            <a class="nav-link mx-4" href="{{ url_for('main.about_oo') }}">About</a>
+            <a class="nav-link mx-4" href="{{ url_for('main.contact_oo') }}">Contact</a>
           </div>
         </div>
         <div class="row text-center horizontal-padding">
@@ -165,7 +165,9 @@
               <br>
             </p>
             <a href="https://lucyparsonslabs.com/" target="_blank">
-              <img src="{{ url_for("static", filename="images/lpl-logo-white-transparent.png") }}" class="mt-4 lpl-logo" alt="Lucy Parsons Labs logo">
+              <img src="{{ url_for('static', filename='images/lpl-logo-white-transparent.png') }}"
+                   class="mt-4 lpl-logo"
+                   alt="Lucy Parsons Labs logo">
             </a>
             <p>
               <a href="https://www.facebook.com/lucyparsonslabs"><i class="fa-brands fa-facebook fa-3x social"></i></a>
@@ -175,11 +177,11 @@
               <a href="mailto:info@lucyparsonslabs.com"><i class="fa fa-envelope fa-3x social"></i></a>
             </p>
             <p>
-              <a href="{{ url_for("main.privacy_oo") }}">Privacy Policy</a>
+              <a href="{{ url_for('main.privacy_oo') }}">Privacy Policy</a>
               <br />
               <a href="https://lucyparsonslabs.com/donate" target="_blank">Donate</a>
               <br>
-              <a href="{{ url_for("main.all_data") }}" target="_blank">Download Department Data</a>
+              <a href="{{ url_for('main.all_data') }}" target="_blank">Download Department Data</a>
             </p>
             <p>
               <a href="https://repeater.digital">Designed by Repeater.Digital</a>

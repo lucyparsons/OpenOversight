@@ -34,7 +34,10 @@ from OpenOversight.app.models.emails import (
     ResetPasswordEmail,
 )
 from OpenOversight.app.utils.auth import admin_required
-from OpenOversight.app.utils.constants import KEY_APPROVE_REGISTRATIONS
+from OpenOversight.app.utils.constants import (
+    KEY_APPROVE_REGISTRATIONS,
+    KEY_AUTH_EMAIL_COOLDOWN_HOURS,
+)
 from OpenOversight.app.utils.flask import sitemap
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
@@ -153,7 +156,7 @@ def register():
     return render_template("auth/register.html", form=form, jsloads=js_loads)
 
 
-@auth.route("/confirm/<token>", methods=[HTTPMethod.GET])
+@auth.get("/confirm/<token>")
 @login_required
 def confirm(token):
     if current_user.confirmed_at and current_user.confirmed_by:
@@ -172,9 +175,23 @@ def confirm(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/confirm")
+@auth.get("/confirm")
 @login_required
 def resend_confirmation():
+    now = datetime.now(timezone.utc)
+    if (
+        current_user.last_confirmation_sent_at
+        and current_user.last_confirmation_sent_at
+        > now - current_app.config[KEY_AUTH_EMAIL_COOLDOWN_HOURS]
+    ):
+        flash(
+            "We already sent a confirmation email to you recently. Please try again later."
+        )
+        return redirect(url_for("main.index"))
+
+    current_user.last_confirmation_sent_at = now
+    db.session.commit()
+
     token = current_user.generate_confirmation_token()
     EmailClient.send_email(
         ConfirmAccountEmail(current_user.email, user=current_user, token=token)
@@ -211,11 +228,21 @@ def password_reset_request():
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
         user = User.by_email(form.email.data).first()
-        if user:
+        now = datetime.now(timezone.utc)
+        if user and (
+            not user.last_reset_sent_at
+            or user.last_reset_sent_at
+            < now - current_app.config[KEY_AUTH_EMAIL_COOLDOWN_HOURS]
+        ):
+            user.last_reset_sent_at = now
+            db.session.commit()
+
             token = user.generate_reset_token()
             EmailClient.send_email(
                 ResetPasswordEmail(user.email, user=user, token=token)
             )
+        # Show message regardless of whether an email was sent to avoid revealing
+        # whether an account is associated with the email
         flash("An email with instructions to reset your password has been sent to you.")
         return redirect(url_for("auth.login"))
     else:
@@ -265,7 +292,7 @@ def change_email_request():
     return render_template("auth/change_email.html", form=form)
 
 
-@auth.route("/change-email/<token>")
+@auth.get("/change-email/<token>")
 @login_required
 def change_email(token):
     if current_user.change_email(token):
@@ -295,7 +322,7 @@ def change_dept():
     return render_template("auth/change_dept_pref.html", form=form)
 
 
-@auth.route("/users/", methods=[HTTPMethod.GET])
+@auth.get("/users/")
 @admin_required
 def get_users():
     page = int(request.args.get("page", 1))
@@ -315,6 +342,9 @@ def edit_user(user_id):
 
     if request.method == HTTPMethod.GET:
         form = EditUserForm(obj=user)
+        form.is_disabled.data = user.disabled_by and user.disabled_at
+        form.approved.data = user.approved_by and user.approved_at
+        form.confirmed.data = user.confirmed_by and user.confirmed_at
         return render_template("auth/user.html", user=user, form=form)
     elif request.method == HTTPMethod.POST:
         form = EditUserForm()
@@ -333,17 +363,7 @@ def edit_user(user_id):
                 already_approved = (
                     user.approved_at is not None and user.approved_by is not None
                 )
-                if form.approved.data:
-                    user.approve_user(current_user.id)
-
-                if form.confirmed.data:
-                    user.confirm_user(current_user.id)
-
-                if form.is_disabled.data:
-                    user.disable_user(current_user.id)
-
                 form.populate_obj(user)
-                db.session.add(user)
                 db.session.commit()
 
                 # automatically send a confirmation email when approving an

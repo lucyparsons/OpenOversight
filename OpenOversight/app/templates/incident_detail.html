@@ -37,7 +37,7 @@
       <ol class="breadcrumb">
         <li class="breadcrumb-item{% if not incident.department %} active{% endif %}"
             {% if not incident.department %}aria-current="page"{% endif %}>
-          <a href="{{ url_for("main.incident_api") }}">Incidents</a>
+          <a href="{{ url_for('main.incident_api') }}">Incidents</a>
         </li>
         {% if incident.department %}
           <li class="breadcrumb-item active" aria-current="page">{{ incident.department.state | get_state_full_name }}</li>

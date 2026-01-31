@@ -1,6 +1,8 @@
 import datetime
 import random
 import time
+from unittest.mock import MagicMock
+from zoneinfo import ZoneInfo
 
 import pytest
 from pytest import raises
@@ -17,6 +19,7 @@ from OpenOversight.app.models.database import (
     Location,
     Officer,
     Salary,
+    TZDateTime,
     User,
 )
 from OpenOversight.app.utils.choices import STATE_CHOICES
@@ -613,94 +616,152 @@ def test_officer_incident_sort_order(mockdata, session):
     assert officer.incidents == sorted_incidents
 
 
-def test_user_confirmed_constraint(mockdata, session, faker):
-    email = faker.company_email()
-
-    session.add(
-        User(
-            email=email,
-            username=faker.word(),
-            password=faker.word(),
-        )
+def test_user_approved(mockdata, session, faker):
+    user = User(
+        email=faker.company_email(),
+        username=faker.word(),
+        password=faker.word(),
     )
+    session.add(user)
     session.commit()
 
-    user_one = User.query.filter_by(email=email).one()
+    # Unapproved -> Approved
+    user.approve_user(1, True)
+    assert user.approved_at is not None
+    assert user.approved_by == 1
 
-    assert user_one.confirm_user(1) is True
-    assert user_one.confirmed_at is not None
-    assert user_one.confirmed_by is not None
-    session.add(user_one)
+    # Approved -> Approved
+    old_approved_at = user.approved_at
+    user.approve_user(1, True)
+    assert user.approved_at == old_approved_at
+    assert user.approved_by == 1
+
+    # Approved -> Unapproved
+    user.approve_user(1, False)
+    assert user.approved_at is None
+    assert user.approved_by is None
+
+    # Unapproved -> Unapproved
+    user.approve_user(1, False)
+    assert user.approved_at is None
+    assert user.approved_by is None
+
+
+def test_user_confirmed(mockdata, session, faker):
+    user = User(
+        email=faker.company_email(),
+        username=faker.word(),
+        password=faker.word(),
+    )
+    session.add(user)
     session.commit()
 
-    user_two = User.query.filter_by(email=email).one()
-    assert user_two.confirm_user(1) is False
+    # Unconfirmed -> Confirmed
+    user.confirm_user(1, True)
+    assert user.confirmed_at is not None
+    assert user.confirmed_by == 1
 
-    user_two.confirmed_by = None
-    session.add(user_two)
+    # Confirmed -> Confirmed
+    old_confirmed_at = user.confirmed_at
+    user.confirm_user(1, True)
+    assert user.confirmed_at == old_confirmed_at
+    assert user.confirmed_by == 1
 
-    # Confirm that both _at and _by fields must be not None
+    # Confirmed -> Unconfirmed
+    user.confirm_user(1, False)
+    assert user.confirmed_at is None
+    assert user.confirmed_by is None
+
+    # Unconfirmed -> Unconfirmed
+    user.confirm_user(1, False)
+    assert user.confirmed_at is None
+    assert user.confirmed_by is None
+
+
+def test_user_disabled(mockdata, session, faker):
+    user = User(
+        email=faker.company_email(),
+        username=faker.word(),
+        password=faker.word(),
+    )
+    session.add(user)
+    session.commit()
+
+    # Undisabled -> Disabled
+    user.disable_user(1, True)
+    assert user.disabled_at is not None
+    assert user.disabled_by == 1
+
+    # Disabled -> Disabled
+    old_disabled_at = user.disabled_at
+    user.disable_user(1, True)
+    assert user.disabled_at == old_disabled_at
+    assert user.disabled_by == 1
+
+    # Disabled -> Undisabled
+    user.disable_user(1, False)
+    assert user.disabled_at is None
+    assert user.disabled_by is None
+
+    # Undisabled -> Undisabled
+    user.disable_user(1, False)
+    assert user.disabled_at is None
+    assert user.disabled_by is None
+
+
+@pytest.mark.parametrize(
+    "by_attr, at_attr",
+    [
+        ("approved_by", "approved_at"),
+        ("confirmed_by", "confirmed_at"),
+        ("disabled_by", "disabled_at"),
+    ],
+)
+def test_user_constraints(mockdata, session, faker, by_attr, at_attr):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    user = User(
+        email=faker.company_email(),
+        username=faker.word(),
+        password=faker.word(),
+    )
+    session.add(user)
+    session.commit()
+
+    setattr(user, at_attr, now)
+    setattr(user, by_attr, 1)
+    session.commit()
+
+    # Both or neither "_at" and "_by" must be set
+    setattr(user, at_attr, None)
+    setattr(user, by_attr, 1)
     with pytest.raises(IntegrityError):
         session.commit()
 
 
-def test_user_approved_constraint(mockdata, session, faker):
-    email = faker.company_email()
+@pytest.mark.parametrize(
+    "dialect_name,original_value,intermediate_value",
+    [
+        ("sqlite", None, None),
+        (
+            "sqlite",
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+            datetime.datetime(1980, 1, 1, hour=6),
+        ),
+        ("postgresql", None, None),
+        (
+            "postgresql",
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+            datetime.datetime(1980, 1, 1, hour=0, tzinfo=ZoneInfo("America/Chicago")),
+        ),
+    ],
+)
+def test_tzdatetime_type_decorator(dialect_name, original_value, intermediate_value):
+    tzdt = TZDateTime(timezone=True)
+    dialect = MagicMock()
+    dialect.name = dialect_name
 
-    session.add(
-        User(
-            email=email,
-            username=faker.word(),
-            password=faker.word(),
-        )
-    )
-    session.commit()
+    value = tzdt.process_bind_param(original_value, dialect)
+    assert intermediate_value == value
 
-    user_one = User.query.filter_by(email=email).one()
-
-    assert user_one.approve_user(1) is True
-    assert user_one.approved_at is not None
-    assert user_one.approved_by is not None
-    session.add(user_one)
-    session.commit()
-
-    user_two = User.query.filter_by(email=email).one()
-    assert user_two.approve_user(1) is False
-
-    user_two.approved_by = None
-    session.add(user_two)
-
-    # Confirm that both _at and _by fields must be not None
-    with pytest.raises(IntegrityError):
-        session.commit()
-
-
-def test_user_disabled_constraint(mockdata, session, faker):
-    email = faker.company_email()
-
-    session.add(
-        User(
-            email=email,
-            username=faker.word(),
-            password=faker.word(),
-        )
-    )
-    session.commit()
-
-    user_one = User.query.filter_by(email=email).one()
-
-    assert user_one.disable_user(1) is True
-    assert user_one.disabled_at is not None
-    assert user_one.disabled_by is not None
-    session.add(user_one)
-    session.commit()
-
-    user_two = User.query.filter_by(email=email).one()
-    assert user_two.disable_user(1) is False
-
-    user_two.disabled_by = None
-    session.add(user_two)
-
-    # Confirm that both _at and _by fields must be not None
-    with pytest.raises(IntegrityError):
-        session.commit()
+    value = tzdt.process_result_value(value, dialect)
+    assert original_value == value

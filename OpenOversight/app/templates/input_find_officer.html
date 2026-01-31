@@ -16,14 +16,14 @@
         There are a lot of cops out there. Fill in whatever information you have and OpenOversight will narrow the options down to a digital gallery of officers who may be a match.
       </p>
     </div>
-    <form action="{{ url_for("main.get_officer") }}"
+    <form action="{{ url_for('main.get_officer') }}"
           method="post"
           class="form col-lg-6 mx-auto">
       {{ form.hidden_tag() }}
       <div id="step-1"
            class="card mb-5"
-           data-ranks-url="{{ url_for("main.get_dept_ranks") }}"
-           data-units-url="{{ url_for("main.get_dept_units") }}">
+           data-ranks-url="{{ url_for('main.get_dept_ranks') }}"
+           data-units-url="{{ url_for('main.get_dept_units') }}">
         <div class="card-header bg-light-subtle">
           <h2 class="card-title">
             <small>Department</small>

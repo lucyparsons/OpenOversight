@@ -455,6 +455,7 @@ tr:hover .row-actions {
     border: none;
     height: 300px;
     margin: auto;
+    object-fit: cover;
 }
 
 .officer-face.officer-profile {

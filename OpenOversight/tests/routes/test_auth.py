@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from unittest import TestCase
 from urllib.parse import urlparse
@@ -16,7 +17,7 @@ from OpenOversight.app.auth.forms import (
     RegistrationForm,
 )
 from OpenOversight.app.models.database import User
-from OpenOversight.app.utils.constants import KEY_OO_MAIL_SUBJECT_PREFIX
+from OpenOversight.app.utils.constants import ENCODING_UTF_8, KEY_OO_MAIL_SUBJECT_PREFIX
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import (
     GENERAL_USER_EMAIL,
@@ -24,6 +25,7 @@ from OpenOversight.tests.constants import (
     UNCONFIRMED_USER_EMAIL,
 )
 from OpenOversight.tests.routes.route_helpers import (
+    login_admin,
     login_disabled_user,
     login_modified_disabled_user,
     login_unconfirmed_user,
@@ -203,6 +205,49 @@ def test_user_can_get_a_confirmation_token_resent(client, session):
         )
 
 
+@pytest.mark.parametrize(
+    "last_confirmation_sent_at,is_rate_limited",
+    [
+        (None, False),
+        (datetime.now(timezone.utc) - timedelta(hours=2), False),
+        (datetime.now(timezone.utc) - timedelta(minutes=10), True),
+    ],
+)
+def test_user_rate_limited_if_resending_confirmation_too_soon(
+    client, session, last_confirmation_sent_at, is_rate_limited
+):
+    # Should only send email if not rate limited
+    log_capture = TestCase.assertNoLogs if is_rate_limited else TestCase.assertLogs
+
+    with (
+        current_app.test_request_context(),
+        log_capture(current_app.logger) as log,
+    ):
+        _, user = login_user(client)
+        user.last_confirmation_sent_at = last_confirmation_sent_at
+        session.commit()
+
+        rv = client.get(url_for("auth.resend_confirmation"), follow_redirects=True)
+
+        if not is_rate_limited:
+            assert b"A new confirmation email has been sent to you." in rv.data
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Confirm Your Account"
+                in str(log.output)
+            )
+
+            # check that confirmation time was updated
+            assert user.last_confirmation_sent_at > datetime.now(
+                timezone.utc
+            ) - timedelta(seconds=1)
+        else:
+            assert (
+                b"We already sent a confirmation email to you recently. Please try again later."
+                in rv.data
+            )
+            assert user.last_confirmation_sent_at == last_confirmation_sent_at
+
+
 def test_user_can_get_password_reset_token_sent(client, session):
     with (
         current_app.test_request_context(),
@@ -245,6 +290,49 @@ def test_user_can_get_password_reset_token_sent_with_differently_cased_email(
             f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
             in str(log.output)
         )
+
+
+@pytest.mark.parametrize(
+    "last_reset_sent_at,is_rate_limited",
+    [
+        (None, False),
+        (datetime.now(timezone.utc) - timedelta(hours=2), False),
+        (datetime.now(timezone.utc) - timedelta(minutes=10), True),
+    ],
+)
+def test_user_rate_limited_if_resending_reset_too_soon(
+    client, session, last_reset_sent_at, is_rate_limited
+):
+    with (
+        current_app.test_request_context(),
+        TestCase.assertLogs(current_app.logger) as log,
+    ):
+        user = User.query.filter_by(is_administrator=True).first()
+        user.last_reset_sent_at = last_reset_sent_at
+        session.commit()
+
+        form = PasswordResetRequestForm(email=user.email)
+        rv = client.post(
+            url_for("auth.password_reset_request"),
+            data=form.data,
+            follow_redirects=True,
+        )
+
+        assert b"An email with instructions to reset your password" in rv.data
+        if not is_rate_limited:
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
+                in str(log.output)
+            )
+            assert user.last_reset_sent_at > datetime.now(timezone.utc) - timedelta(
+                seconds=1
+            )
+        else:
+            assert (
+                f"{current_app.config[KEY_OO_MAIL_SUBJECT_PREFIX]} Reset Your Password"
+                not in str(log.output)
+            )
+            assert user.last_reset_sent_at == last_reset_sent_at
 
 
 def test_user_can_get_reset_password_with_valid_token(client, session):
@@ -469,13 +557,13 @@ def test_disabled_user_cannot_visit_pages_requiring_auth(client, session):
         user = User.query.filter_by(email=MOD_DISABLED_USER_EMAIL).one()
         user.disabled_at = None
         user.disabled_by = None
-        session.add(user)
+        session.commit()
 
         rv, _ = login_modified_disabled_user(client)
         assert b"/user/sam" in rv.data
 
         # Disable account again and check that login_required redirects user correctly
-        user.disable_user(User.query.filter_by(is_administrator=True).first().id)
+        user.disable_user(User.query.filter_by(is_administrator=True).first().id, True)
 
         # Logged in disabled user cannot access pages requiring auth
         rv = client.get("/auth/logout")
@@ -557,3 +645,16 @@ def test_user_password_update_resets_session_token(app, session):
         # When session is invalidated, user is redirected to login page
         rv = client.get(url_for("main.leaderboard"), follow_redirects=False)
         assert rv.status_code == HTTPStatus.FOUND
+
+
+def test_admin_can_see_list_of_users(client, session):
+    with current_app.test_request_context():
+        login_admin(client)
+
+        rv = client.get(url_for("auth.get_users"), follow_redirects=True)
+
+        first_user = User.query.order_by(User.username).first()
+
+        assert rv.status_code == HTTPStatus.OK
+        assert b"Users" in rv.data
+        assert f"{first_user.username}" in rv.data.decode(ENCODING_UTF_8)

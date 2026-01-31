@@ -16,7 +16,7 @@
     <div class="container theme-showcase vertical-padding" role="main">
       <div class="volunteer-top-buttons row my-5">
         <div class="col-lg-6 mb-1">
-          <a href="{{ url_for("main.get_tutorial") }}"
+          <a href="{{ url_for('main.get_tutorial') }}"
              class="tutorial-btn-lg text-center">
             <img alt="Document icon"
                  class="p-2"
@@ -26,7 +26,7 @@
           </a>
         </div>
         <div class="col-lg-6 mb-1">
-          <a href="{{ url_for("main.leaderboard") }}"
+          <a href="{{ url_for('main.leaderboard') }}"
              class="leaderboard-btn-lg text-center">
             <img alt="Trophy icon"
                  class="p-2"
@@ -40,7 +40,7 @@
         <h2>Upload photos of officers</h2>
         <p>Submit photos containing uniformed law enforcement officers.</p>
         <a class="btn btn-full btn-primary upload fs-4"
-           href="{{ url_for("main.submit_data") }}">
+           href="{{ url_for('main.submit_data') }}">
           <img alt="Officer image upload"
                class="me-2"
                height="50"
@@ -81,7 +81,7 @@
       </div>
       <div class="row justify-content-center mb-5">
         {% if current_user.is_administrator %}
-          <a href="{{ url_for("main.add_department") }}"
+          <a href="{{ url_for('main.add_department') }}"
              class="btn btn-primary m-1 col-12 col-md-2"
              role="button">
             {{ render_icon("plus") }}
@@ -89,19 +89,19 @@
           </a>
         {% endif %}
         {% if current_user.is_administrator or current_user.is_area_coordinator %}
-          <a href="{{ url_for("main.add_officer") }}"
+          <a href="{{ url_for('main.add_officer') }}"
              class="btn btn-primary m-1 col-12 col-md-2"
              role="button">
             {{ render_icon("plus") }}
             Add New Officer
           </a>
-          <a href="{{ url_for("main.add_unit") }}"
+          <a href="{{ url_for('main.add_unit') }}"
              class="btn btn-primary m-1 col-12 col-md-2"
              role="button">
             {{ render_icon("plus") }}
             Add New Unit
           </a>
-          <a href="{{ url_for("main.incident_api_new") }}"
+          <a href="{{ url_for('main.incident_api_new') }}"
              class="btn btn-primary m-1 col-12 col-md-2"
              role="button">
             {{ render_icon("plus") }}
@@ -155,9 +155,9 @@
         <div class="col-lg-6 mx-auto my-2 py-5 text-center">
           <h2>Get Started!</h2>
           <a class="btn btn-lg btn-info btn-primary m-2"
-             href="{{ url_for("auth.register") }}">Register a new account</a>
+             href="{{ url_for('auth.register') }}">Register a new account</a>
           <a class="btn btn-lg btn-info btn-primary m-2"
-             href="{{ url_for("auth.login") }}">Log In</a>
+             href="{{ url_for('auth.login') }}">Log In</a>
         </div>
       </div>
     </div>

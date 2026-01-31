@@ -21,9 +21,11 @@ from sqlalchemy.orm import (
     declarative_mixin,
     declared_attr,
     joinedload,
+    selectinload,
     validates,
 )
 from sqlalchemy.sql import func as sql_func
+from sqlalchemy.types import TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from OpenOversight.app.models.database_cache import (
@@ -54,6 +56,28 @@ from OpenOversight.app.validators import state_validator, url_validator
 db = SQLAlchemy()
 jwt = JsonWebToken(SIGNATURE_ALGORITHM)
 Base: DeclarativeMeta = db.Model
+
+
+class TZDateTime(TypeDecorator):
+    """
+    Store tz-aware datetimes as tz-naive UTC datetimes in sqlite.
+    https://docs.sqlalchemy.org/en/20/core/custom_types.html#store-timezone-aware-timestamps-as-timezone-naive-utc
+    """
+
+    cache_ok = True
+    impl = db.DateTime
+
+    def process_bind_param(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            if not value.tzinfo or value.tzinfo.utcoffset(value) is None:
+                raise TypeError("tzinfo is required")
+            value = value.astimezone(timezone.utc).replace(tzinfo=None)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if dialect.name == "sqlite" and value is not None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class BaseModel(Base):
@@ -87,9 +111,9 @@ class BaseModel(Base):
             if isinstance(value, (date, datetime)):
                 ret_str += f"{column.key}: {value.isoformat()}"
             elif isinstance(value, date):
-                ret_str += f'{column.key}: {value.strftime("%Y-%m-%d")}'
+                ret_str += f"{column.key}: {value.strftime('%Y-%m-%d')}"
             elif isinstance(value, dt_time):
-                ret_str += f'{column.key}: {value.strftime("%I:%M %p")}'
+                ret_str += f"{column.key}: {value.strftime('%I:%M %p')}"
             else:
                 ret_str += f"{column.key}: {value}"
 
@@ -319,8 +343,10 @@ class Department(BaseModel, TrackUpdates):
         departments_by_state = get_database_cache_entry(*cache_params)
 
         if departments_by_state is None:
-            departments = Department.query.filter(Department.officers.any()).order_by(
-                Department.state.asc(), Department.name.asc()
+            departments = (
+                Department.query.options(selectinload(Department.incidents))
+                .filter(Department.officers.any())
+                .order_by(Department.state.asc(), Department.name.asc())
             )
             departments_by_state = {
                 state: list(group)
@@ -910,6 +936,8 @@ class User(UserMixin, BaseModel):
         db.ForeignKey("users.id", ondelete="SET NULL", name="users_disabled_by_fkey"),
         unique=False,
     )
+    last_confirmation_sent_at = db.Column(TZDateTime(timezone=True))
+    last_reset_sent_at = db.Column(TZDateTime(timezone=True))
 
     dept_pref = db.Column(
         db.Integer, db.ForeignKey("departments.id", name="users_dept_pref_fkey")
@@ -1085,35 +1113,35 @@ class User(UserMixin, BaseModel):
         """Override UserMixin.is_active to prevent disabled users from logging in."""
         return not self.disabled_at
 
-    def approve_user(self, approving_user_id: int):
+    def approve_user(self, approving_user_id: int, approved: bool):
         """Handle approving logic."""
-        if self.approved_at or self.approved_by:
-            return False
+        if approved and not self.approved_by and not self.approved_at:
+            self.approved_at = datetime.now(timezone.utc)
+            self.approved_by = approving_user_id
+            db.session.commit()
+        elif not approved and self.approved_by and self.approved_at:
+            self.approved_at = None
+            self.approved_by = None
+            db.session.commit()
 
-        self.approved_at = datetime.now(timezone.utc)
-        self.approved_by = approving_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
-
-    def confirm_user(self, confirming_user_id: int):
+    def confirm_user(self, confirming_user_id: int, confirmed: bool):
         """Handle confirming logic."""
-        if self.confirmed_at or self.confirmed_by:
-            return False
+        if confirmed and not self.confirmed_by and not self.confirmed_at:
+            self.confirmed_at = datetime.now(timezone.utc)
+            self.confirmed_by = confirming_user_id
+            db.session.commit()
+        elif not confirmed and self.confirmed_by and self.confirmed_at:
+            self.confirmed_at = None
+            self.confirmed_by = None
+            db.session.commit()
 
-        self.confirmed_at = datetime.now(timezone.utc)
-        self.confirmed_by = confirming_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
-
-    def disable_user(self, disabling_user_id: int):
+    def disable_user(self, disabling_user_id: int, is_disabled: bool):
         """Handle disabling logic."""
-        if self.disabled_at or self.disabled_by:
-            return False
-
-        self.disabled_at = datetime.now(timezone.utc)
-        self.disabled_by = disabling_user_id
-        db.session.add(self)
-        db.session.commit()
-        return True
+        if is_disabled and not self.disabled_by and not self.disabled_at:
+            self.disabled_at = datetime.now(timezone.utc)
+            self.disabled_by = disabling_user_id
+            db.session.commit()
+        elif not is_disabled and self.disabled_by and self.disabled_at:
+            self.disabled_at = None
+            self.disabled_by = None
+            db.session.commit()

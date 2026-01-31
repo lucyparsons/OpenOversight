@@ -6,6 +6,8 @@ To confirm your account please click on the following link:
 
 {{ url_for('auth.confirm', token=token, _external=True) }}
 
+If you did not create this account, reach out to {{ help_email }} to disable your account.
+
 Sincerely,
 
 The OpenOversight Team

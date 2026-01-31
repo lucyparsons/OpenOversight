@@ -19,12 +19,12 @@
             <h1>Identify officers in the photo below.</h1>
             <p>For photos with multiple faces, you will be able to select another face after completing your current one.</p>
             <p>
-              <a href="{{ url_for("main.get_tutorial") }}">Learn more in our quick tutorial</a>
+              <a href="{{ url_for('main.get_tutorial') }}">Learn more in our quick tutorial</a>
             </p>
           </div>
         </div>
         <div class="card p-5">
-          <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else 0) }}"
+          <form action="{{ url_for('main.label_data', image_id=image.id, department_id=department.id if department else None) }}"
                 method="post">
             {% if form.errors %}
               <div>
@@ -93,7 +93,7 @@
                 </div>
                 <div class="col-12 col-md-4 text-md-end text-start">
                   <a class="btn btn-primary icon-btn find launchroster-button text-start w-100 m-1"
-                     href="{{ url_for("main.get_officer") }}"
+                     href="{{ url_for('main.get_officer') }}"
                      target='_blank'>
                     Search for the officer
                     <sup>
@@ -118,7 +118,7 @@
             </div>
           </div>
           <div class="text-center mt-3">
-            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else 0, contains_cops=0) }}"
+            <a href="{{ url_for('main.complete_tagging', image_id=image.id, department_id=department.id if department else None, contains_cops=0) }}"
                class="done-button btn btn-lg btn-success mx-auto">
               {{ render_icon("check") }}
               All officers have been identified!
@@ -126,7 +126,7 @@
           </div>
         </div>
         <div class="mt-5 text-md-end text-center">
-          <a href="{{ url_for('main.label_data', department_id=department.id if department else 0) }}"
+          <a href="{{ url_for('main.label_data', department_id=department.id if department else None) }}"
              class="skip-button btn btn-lg btn-primary"
              role="button">
             Next Photo
@@ -143,7 +143,7 @@
       {% else %}
         <h3>All images have been tagged!</h3>
         <p>
-          <a href="{{ url_for("main.submit_data") }}"
+          <a href="{{ url_for('main.submit_data') }}"
              class="btn btn-lg btn-primary"
              role="button">Submit officer pictures to us</a>
         </p>
