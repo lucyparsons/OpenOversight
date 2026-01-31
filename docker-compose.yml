@@ -61,11 +61,13 @@ services:
  web:
    restart: always
    build:
-      context: .
-      dockerfile: dockerfiles/web/Dockerfile-dev
+     context: .
+     dockerfile: dockerfiles/web/Dockerfile-dev
    depends_on:
-     - postgres
-     - minio
+     postgres:
+       condition: service_healthy
+     minio:
+       condition: service_started
    env_file:
      - .env
    environment:
