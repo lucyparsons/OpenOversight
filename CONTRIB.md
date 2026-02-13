@@ -180,14 +180,14 @@ flask db downgrade
 ```
 
 ## Using a Virtual Environment
-One way to avoid hitting version incompatibility errors when running `flask` commands is to use a virtualenv. 
-See [Python Packaging user guidelines](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/) 
+One way to avoid hitting version incompatibility errors when running `flask` commands is to use a virtualenv.
+See [Python Packaging user guidelines](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/)
 for instructions on installing [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to manage the  virtualenv.
-After installing virtualenv, you can create a virtual environment by navigating to the OpenOversight directory and 
+After installing virtualenv, you can create a virtual environment by navigating to the OpenOversight directory and
 running the below:
 
 ```shell
-uv venv
+make env
 ```
 
 Confirm you're in the virtualenv by running
@@ -212,13 +212,7 @@ source .venv/bin/activate
 While in the virtualenv, you can install project dependencies by running
 
 ```shell
-uv pip install -r requirements.txt
-```
-
-and
-
-```shell
-uv pip install -r dev-requirements.txt
+make install
 ```
 
 ## OpenOversight Management Interface
