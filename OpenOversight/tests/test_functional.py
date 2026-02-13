@@ -246,7 +246,7 @@ def test_edit_officer_form_coerces_none_race_or_gender_to_not_sure(
     assert selected_text == "Not Sure"
 
 
-@skip("Continually fails, S3 mock seems wonky")
+@skip("Sporadically fails, S3 mock seems wonky")
 def test_image_classification_and_tagging(page, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
@@ -319,7 +319,7 @@ def test_image_classification_and_tagging(page, server_port, session):
     assert image_box["y"] <= frame_box["y"]
 
 
-@skip("Continually fails, S3 mock seems wonky")
+@skip("Sporadically fails, S3 mock seems wonky")
 def test_anonymous_user_can_upload_image(page, server_port, session):
     test_dir = os.path.dirname(os.path.realpath(__file__))
     img_path = os.path.join(test_dir, "images/200Cat.jpeg")
