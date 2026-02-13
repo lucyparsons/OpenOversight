@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 
 ENV CURL_FLAGS="--proto =https --tlsv1.2 -sSf -L --max-redirs 1 -O"
 
-ENV DEBIAN-FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
