@@ -13,11 +13,14 @@ RUN apt-get update && apt-get install -y curl libpq-dev python3-dev && \
     apt-get install -y libsqlite3-0 graphviz-dev graphviz && apt-get clean
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
-# install rust and cargo so we can use jellyfish
+
+# install rust + python dependencies via uv
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     . "$HOME/.cargo/env" && \
-    pip3 install --no-cache-dir -r requirements.txt && \
-    pip3 install --no-cache-dir -r dev-requirements.txt
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    export PATH="$HOME/.local/bin:$PATH" && \
+    uv pip install --system -r requirements.txt -r dev-requirements.txt
+
 
 RUN playwright install --with-deps chromium
 
