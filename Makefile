@@ -90,7 +90,15 @@ test: start
 
 .PHONY: lint
 lint:
-	pre-commit run --all-files
+	uv run pre-commit run --all-files
+
+.PHONY: env
+env:
+	uv venv
+
+.PHONY: install
+install:
+	uv pip install -r requirements.txt -r dev-requirements.txt
 
 # Stop containers
 .PHONY: stop
