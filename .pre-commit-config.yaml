@@ -56,7 +56,7 @@ repos:
         types_or: [python,pyi]
         args:
           - --fix
-          - --select=B,C,E,F,W,I
+          - --select=B,C,E,F,W,I,TID
           - --ignore=C901,E203,E402,E501,W391,E261
       - id: ruff-format
         types_or: [python,pyi]
