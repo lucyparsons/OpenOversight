@@ -42,7 +42,6 @@ from OpenOversight.app.utils.flask import sitemap
 from OpenOversight.app.utils.forms import set_dynamic_default
 from OpenOversight.app.utils.general import validate_redirect_url
 
-
 auth = Blueprint("auth", __name__, url_prefix="/auth")
 js_loads = ["js/zxcvbn.js", "js/password.js"]
 sitemap_endpoints = []

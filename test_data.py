@@ -7,7 +7,6 @@ from OpenOversight.app.models.database import db
 from OpenOversight.app.utils.constants import KEY_ENV_DEV
 from OpenOversight.tests.conftest import add_mockdata
 
-
 app = create_app(KEY_ENV_DEV)
 ctx = app.app_context()
 ctx.push()

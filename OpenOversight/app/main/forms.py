@@ -49,7 +49,6 @@ from OpenOversight.app.utils.general import (
 )
 from OpenOversight.app.widgets import BootstrapListWidget, FormFieldWidget
 
-
 # Normalizes the "not sure" option to what it needs to be when writing to the database.
 # Note this should only be used for forms which save a record to the DB--not those that
 # are used to look up existing records.

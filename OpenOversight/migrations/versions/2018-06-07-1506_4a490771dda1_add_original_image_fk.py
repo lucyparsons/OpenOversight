@@ -9,7 +9,6 @@ Create Date: 2018-06-07 15:32:25.524117
 import sqlalchemy as sa
 from alembic import op
 
-
 revision = "4a490771dda1"
 down_revision = "8ce7926aa132"
 

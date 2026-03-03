@@ -6,7 +6,6 @@ from flask_sqlalchemy.model import Model
 
 from OpenOversight.app.utils.constants import HOUR
 
-
 DB_CACHE = TTLCache(maxsize=1024, ttl=24 * HOUR)
 
 

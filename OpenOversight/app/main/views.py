@@ -120,7 +120,6 @@ from OpenOversight.app.utils.general import (
     validate_redirect_url,
 )
 
-
 main = Blueprint("main", __name__)
 sitemap_endpoints = []
 
