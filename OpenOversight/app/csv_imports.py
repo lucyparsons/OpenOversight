@@ -391,7 +391,7 @@ def _handle_incidents_csv(
             for license_plate_str in row.get("license_plates", "").split("|"):
                 if license_plate_str:
                     parts = license_plate_str.split("_")
-                    data = dict(zip(["number", "state"], parts, strict=False))
+                    data = dict(zip(["number", "state"], parts))
                     license_plate, _ = get_or_create_license_plate_from_dict(data)
                     license_plates.append(license_plate)
             db.session.flush()
