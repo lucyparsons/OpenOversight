@@ -20,7 +20,6 @@ from OpenOversight.app.models.users import AnonymousUser
 from OpenOversight.app.utils.constants import MEGABYTE
 from OpenOversight.app.utils.flask import limiter, sitemap
 
-
 bootstrap = Bootstrap5()
 compress = Compress()
 

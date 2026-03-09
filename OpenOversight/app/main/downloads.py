@@ -17,7 +17,6 @@ from OpenOversight.app.models.database import (
     db,
 )
 
-
 T = TypeVar("T")
 _Record = Dict[str, Any]
 

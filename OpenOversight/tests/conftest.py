@@ -65,7 +65,6 @@ from OpenOversight.tests.constants import (
     UNCONFIRMED_USER_USERNAME,
 )
 
-
 factory = Faker()
 
 

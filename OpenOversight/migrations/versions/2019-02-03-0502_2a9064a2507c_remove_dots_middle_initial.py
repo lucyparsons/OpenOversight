@@ -11,11 +11,9 @@ import sys
 
 from flask import current_app
 
-
 # Add our Flask app to the search paths for modules
 sys.path.insert(0, os.path.dirname(current_app.root_path))
 from OpenOversight.app.models.database import Officer, db  # noqa: E402
-
 
 revision = "2a9064a2507c"
 down_revision = "5c5b80cab45e"

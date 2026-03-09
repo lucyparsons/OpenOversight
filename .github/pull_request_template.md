@@ -27,4 +27,3 @@ dispatcher where…", "Improve our handling of…", etc.
 ## Tests and Linting
 - [ ] This branch is up-to-date with the `develop` branch.
 - [ ] `pytest` passes on my local development environment.
-- [ ] `pre-commit` passes on my local development environment.

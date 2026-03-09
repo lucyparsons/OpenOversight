@@ -25,7 +25,6 @@ from OpenOversight.app.utils.constants import (
 )
 from OpenOversight.app.utils.general import str_is_true
 
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 

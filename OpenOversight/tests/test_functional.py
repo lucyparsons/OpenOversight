@@ -10,7 +10,6 @@ from OpenOversight.app.utils.constants import KEY_OFFICERS_PER_PAGE
 from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import ADMIN_USER_EMAIL
 
-
 DESCRIPTION_CUTOFF = 700
 
 

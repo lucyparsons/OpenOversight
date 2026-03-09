@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 
 from OpenOversight.app.models.database import User
 
-
 revision = "52d3f6a21dd9"
 down_revision = "a35aa1a114fa"
 

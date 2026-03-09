@@ -10,7 +10,6 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.sql import column, table
 
-
 revision = "562bd5f1bc1f"
 down_revision = "6045f42587ec"
 

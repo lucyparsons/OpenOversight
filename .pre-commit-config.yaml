@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: ^database/schema.dot$
@@ -16,9 +16,6 @@ repos:
         exclude: ^database/schema.dot$
       - id: check-symlinks
       - id: mixed-line-ending
-      - id: fix-encoding-pragma
-        args:
-          - --remove
       - id: pretty-format-json
         args:
           - --autofix
@@ -32,18 +29,6 @@ repos:
       - id: python-no-eval
       - id: python-no-log-warn
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 6.0.1
-    hooks:
-      - id: isort
-        name: Run isort to sort imports
-        files: \.py$
-        # To keep consistent with the global isort skip config defined in setup.cfg
-        exclude: ^build/.*$|^.tox/.*$|^venv/.*$
-        args:
-          - --lines-after-imports=2
-          - --profile=black
-
   - repo: local
     hooks:
       - id: no-shebang
@@ -56,7 +41,7 @@ repos:
         files: \.py$
 
   - repo: https://github.com/ikamensh/flynt/
-    rev: 1.0.1
+    rev: 1.0.6
     hooks:
         - id: flynt
           exclude: ^build/.*$|^.tox/.*$|^venv/.*$
@@ -65,21 +50,21 @@ repos:
             - --quiet
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.9
+    rev: v0.15.4
     hooks:
       - id: ruff
         types_or: [python,pyi]
         args:
           - --fix
-          - --select=B,C,E,F,W
-          - --ignore=C901,E203,E402,E501,W391,E261
+          - --select=B,C,E,F,W,I,TID
+          - --ignore=B905,C901,E203,E402,E501,W391,E261
       - id: ruff-format
         types_or: [python,pyi]
         args:
           - --target-version=py311
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.19.1
     hooks:
       - id: mypy
 

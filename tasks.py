@@ -29,7 +29,6 @@ from time import gmtime
 from fabric import Connection
 from invoke import task
 
-
 logging.basicConfig(
     format="[{asctime}] {levelname: <8} [{filename}:{lineno}] {message}",
     level=logging.INFO,
