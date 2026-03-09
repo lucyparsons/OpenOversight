@@ -19,7 +19,6 @@ from OpenOversight.app.utils.forms import filter_by_form
 from OpenOversight.app.utils.general import allowed_file, validate_redirect_url
 from OpenOversight.tests.routes.route_helpers import login_user
 
-
 # Utils tests
 upload_s3_patch = patch(
     "OpenOversight.app.utils.cloud.upload_file_to_s3",

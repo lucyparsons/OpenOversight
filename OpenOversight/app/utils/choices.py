@@ -2,7 +2,6 @@
 
 from us import states
 
-
 AGE_CHOICES = [(str(age), str(age)) for age in range(16, 101)]
 
 GENDER_CHOICES = [

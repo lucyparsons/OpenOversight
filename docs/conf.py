@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 from recommonmark.parser import CommonMarkParser
 
-
 #
 # Configuration file for the Sphinx documentation builder.
 #

@@ -3,9 +3,8 @@ import operator
 import re
 import time
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from datetime import time as dt_time
-from datetime import timezone
 from typing import Optional
 
 from authlib.jose import JoseError, JsonWebToken
@@ -51,7 +50,6 @@ from OpenOversight.app.utils.constants import (
     SIGNATURE_ALGORITHM,
 )
 from OpenOversight.app.validators import state_validator, url_validator
-
 
 db = SQLAlchemy()
 jwt = JsonWebToken(SIGNATURE_ALGORITHM)

@@ -14,7 +14,6 @@ from OpenOversight.tests.constants import (
 )
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
-
 routes_methods = [
     ("/auth/users/", [HTTPMethod.GET]),
     ("/auth/users/1", [HTTPMethod.GET, HTTPMethod.POST]),

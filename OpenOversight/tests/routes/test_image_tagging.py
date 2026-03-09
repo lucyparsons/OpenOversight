@@ -14,7 +14,6 @@ from OpenOversight.tests.conftest import AC_DEPT
 from OpenOversight.tests.constants import INVALID_ID
 from OpenOversight.tests.routes.route_helpers import login_ac, login_admin, login_user
 
-
 PROJECT_ROOT = os.path.abspath(os.curdir)
 
 
