@@ -20,7 +20,7 @@ docutils~=0.20.1
 dominate~=2.8.0
 email-validator==2.0.0.post2
 Faker==18.13.0
-Flask==2.3.2
+Flask==3.1.3
 Flask-Compress==1.13
 Flask-Limiter==3.3.1
 Flask-Login==0.6.3
