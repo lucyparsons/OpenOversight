@@ -1,7 +1,7 @@
 alembic~=1.11.1
 apiclient==1.0.4
 attrs~=23.1.0
-Authlib==1.4.0
+Authlib==1.6.6
 Babel~=2.12.1
 bleach==6.0.0
 bleach-allowlist==1.0.3
@@ -30,7 +30,7 @@ Flask-Sitemap==0.4.0
 Flask-SQLAlchemy==3.0.5
 Flask-WTF==1.1.2
 google-api-python-client==2.92.0
-gunicorn==22.0.0
+gunicorn==23.0.0
 httplib2==0.22.0
 idna~=3.7
 itsdangerous~=2.1.2
@@ -54,7 +54,7 @@ pytest-playwright==0.7.0
 python-dateutil==2.8.2
 PyYAML~=6.0
 recommonmark==0.7.1
-requests==2.32.1
+requests==2.32.4
 rich~=13.4.2
 s3transfer~=0.6.1
 six~=1.16.0
