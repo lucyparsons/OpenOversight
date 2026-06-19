@@ -3,7 +3,7 @@ apiclient==1.0.4
 attrs~=23.1.0
 Authlib==1.6.6
 Babel~=2.12.1
-bleach==6.0.0
+bleach==6.4.0
 bleach-allowlist==1.0.3
 blinker~=1.6.2
 Bootstrap-Flask==2.4.0
