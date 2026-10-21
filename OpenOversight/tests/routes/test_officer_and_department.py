@@ -1879,6 +1879,44 @@ def test_download_all_data(client, session):
         assert b"Download Department Data" in rv.data
 
 
+@pytest.mark.parametrize("search_page", ["browse", "find"])
+def test_search_ignores_spaces_in_names(client, session, search_page):
+    department = Department.query.first()
+    officer = Officer(
+        department=department, first_name="ANNE MARIE", last_name="VANVOOREN"
+    )
+    other_officer = Officer(
+        department=department, first_name="UNRELATED", last_name="VANVOOREN"
+    )
+    session.add_all([officer, other_officer])
+    session.flush()
+
+    with current_app.test_request_context():
+        search = {"first_name": "annemarie", "last_name": "van vooren"}
+        if search_page == "browse":
+            response = client.get(
+                url_for("main.list_officer", department_id=department.id),
+                query_string=search,
+            )
+        else:
+            form = FindOfficerForm(dept=department.id, **search)
+            response = client.post(
+                url_for("main.get_officer"),
+                data=process_form_data(form.data),
+                follow_redirects=True,
+            )
+
+        assert response.status_code == HTTPStatus.OK
+        html = response.data.decode(ENCODING_UTF_8)
+        assert (
+            f'href="{url_for("main.officer_profile", officer_id=officer.id)}"' in html
+        )
+        assert (
+            f'href="{url_for("main.officer_profile", officer_id=other_officer.id)}"'
+            not in html
+        )
+
+
 def test_browse_filtering_filters_bad(client, session):
     with current_app.test_request_context():
         race_list = ["BLACK", "WHITE"]
