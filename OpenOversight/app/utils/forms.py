@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Union
 
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import selectinload
 
 from OpenOversight.app.main.forms import (
@@ -274,14 +274,12 @@ def edit_officer_profile(officer, form: EditOfficerForm) -> Officer:
 
 
 def filter_by_form(form_data: BrowseForm, officer_query, department_id=None):
-    if form_data.get("last_name"):
-        officer_query = officer_query.filter(
-            Officer.last_name.ilike(f"%%{form_data['last_name']}%%")
-        )
-    if form_data.get("first_name"):
-        officer_query = officer_query.filter(
-            Officer.first_name.ilike(f"%%{form_data['first_name']}%%")
-        )
+    for field in ("last_name", "first_name"):
+        name = (form_data.get(field) or "").replace(" ", "")
+        if name:
+            officer_query = officer_query.filter(
+                func.replace(getattr(Officer, field), " ", "").ilike(f"%%{name}%%")
+            )
     if department_id:
         officer_query = officer_query.filter(Officer.department_id == department_id)
 

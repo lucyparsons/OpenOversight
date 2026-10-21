@@ -114,6 +114,48 @@ def test_filter_by_name(mockdata):
         assert "J" in element.last_name
 
 
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+@pytest.mark.parametrize(
+    "stored_name, search_name, matches",
+    [
+        ("VANVOOREN", "van vooren", True),
+        ("VAN VOOREN", "vanvooren", True),
+        ("VAN  VOOREN", "  van vooren  ", True),
+        ("DE LA CRUZ", "la cr", True),
+        ("VAN VOOREN", "van%ren", True),
+        ("O'NEIL", "o' neil", True),
+        ("O'NEIL", "oneil", False),
+        ("ÉLODIE", "É lo die", True),
+        ("李 小龍", "李小龍", True),
+    ],
+)
+def test_name_filter_ignores_spaces(session, field, stored_name, search_name, matches):
+    department, other_department = Department.query.limit(2).all()
+    officer = Officer(department=department, **{field: stored_name})
+    other_officer = Officer(department=other_department, **{field: stored_name})
+    session.add_all([officer, other_officer])
+    session.flush()
+
+    results = grab_officers({field: search_name}, department.id).all()
+
+    assert results == ([officer] if matches else [])
+    assert getattr(officer, field) == stored_name
+
+
+@pytest.mark.parametrize("field", ["first_name", "last_name"])
+def test_name_filter_with_only_spaces_does_not_exclude_null_names(session, field):
+    department = Department.query.first()
+    officer = Officer(department=department)
+    session.add(officer)
+    session.flush()
+    unfiltered = grab_officers({}, department.id).all()
+
+    results = grab_officers({field: "   "}, department.id).all()
+
+    assert officer in results
+    assert {result.id for result in results} == {result.id for result in unfiltered}
+
+
 def test_filters_do_not_exclude_officers_without_assignments(mockdata):
     department = Department.query.first()
     results = grab_officers({"name": "S"}, department_id=department.id)
