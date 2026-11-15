@@ -121,7 +121,7 @@ from OpenOversight.app.utils.general import (
 )
 
 main = Blueprint("main", __name__)
-sitemap_endpoints = []
+sitemap_endpoints: list[str] = []
 
 
 def sitemap_include(view):
