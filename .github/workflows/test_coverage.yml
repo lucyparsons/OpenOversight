@@ -10,12 +10,10 @@ jobs:
     env:
       FLASK_APP: OpenOversight.app
     steps:
-      - uses: actions/checkout@v4
-        with:
-          python-version: "3.11"
+      - uses: actions/checkout@v6
       - name: Run tests
         run: |
-          PYTHON_VERSION=${{ matrix.python-version }} make test_with_version
+          PYTHON_VERSION=3.11 make test_with_version
       - name: Upload Coverage Results
         uses: coverallsapp/github-action@v2
         with:
