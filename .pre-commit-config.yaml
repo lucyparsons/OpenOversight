@@ -87,3 +87,8 @@ repos:
           - --profile=jinja
           - --use-gitignore
           - --ignore=H006,T028,H031,H011
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
