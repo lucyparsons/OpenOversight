@@ -1,4 +1,4 @@
-FROM python:3.11-bullseye
+FROM python:3.11-slim-bookworm
 
 WORKDIR /usr/src/app
 
@@ -9,8 +9,17 @@ ENV DISPLAY=:1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
-RUN apt-get update && apt-get install -y xvfb libpq-dev python3-dev graphviz-dev graphviz && \
-    apt-get clean
+# The slim image doesn't ship curl or a compiler, so install them here, along
+# with the build dependencies used by the prod image (gcc, libpq-dev, etc.).
+RUN apt-get update && \
+    apt-get install -y \
+        ca-certificates \
+        curl \
+        gcc \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
+        xvfb libpq-dev python3-dev graphviz-dev graphviz && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh

@@ -1,5 +1,5 @@
 ARG MAKE_PYTHON_VERSION
-FROM python:${MAKE_PYTHON_VERSION:-3.11}-bullseye
+FROM python:${MAKE_PYTHON_VERSION:-3.11}-slim-bookworm
 
 WORKDIR /usr/src/app
 
@@ -9,8 +9,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # install apt dependencies
+# The slim image doesn't ship curl or a compiler, so install them here, along
+# with the build dependencies used by the prod image (gcc, libpq-dev, etc.).
 RUN apt-get update -y && \
-    apt-get install -y xvfb libpq-dev python3-dev graphviz-dev graphviz && \
+    apt-get install -y \
+        ca-certificates \
+        curl \
+        gcc \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
+        xvfb libpq-dev python3-dev graphviz-dev graphviz && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt dev-requirements.txt /usr/src/app/
